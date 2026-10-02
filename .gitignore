@@ -1,0 +1,6 @@
+# Downloaded historical binaries, extracted content, and local tooling.
+/artifacts/
+
+# Local analysis copies and tool-generated working data.
+/work/
+

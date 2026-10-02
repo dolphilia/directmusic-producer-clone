@@ -1,0 +1,780 @@
+{
+  "schema": 1,
+  "method": "Static instruction and resource extraction; no registry writes or DLL execution",
+  "modules": [
+    {
+      "module": "work/producer/app/AudioPathDesigner.ocx",
+      "sha256": "6eb44bf5381b59c9205584520e9bec5676f3170a31e4a043d2983db4fedf9ec5",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x12af0",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x28f4",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x2928",
+          "uses": []
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Audiopath Designer",
+        "resource": "resource-0039.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/BandEditor.ocx",
+      "sha256": "b2cf00b7f46508618356690233a83ca007bb3b76f41326d8717974020074ab0e",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x1492d",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x31f8",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x322c",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/BandStripMgr.dll",
+      "sha256": "032f5fd29c3176c532927dcc669bd31d2be0b6fd4d4f207683341964512b17d7",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xd511",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x19b8",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/ChordMapDesigner.ocx",
+      "sha256": "bc5090c7bec982b5c9b69ddfe18b3e6a4d47f131cc58aa2a64bd78bcaea0b50e",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x1bb45",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x3f80",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x3fbc",
+          "uses": []
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Chordmap",
+        "resource": "resource-0058.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/ChordMapRefStripMgr.dll",
+      "sha256": "6ecb93cdf17eaa2f900f8d7caa66d4b3231d4884244dae346dc039859518e37a",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xad6d",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1990",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/ChordStripMgr.dll",
+      "sha256": "33db8e6f8e2eeaf7aeab68e368b2fd38478b1157278a91f5895e24640d39288b",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x11a68",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x23f8",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/CommandStripMgr.dll",
+      "sha256": "c03ad80ae029ee24768c8859e1081597f8cd527e5cccf382c00fb36c272c05bb",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xbba8",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1f70",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/Conductor.dll",
+      "sha256": "09a0a40ea983eb78a76826ec5b6faa077d3dae393eddd31db93dfc2512e53cf7",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x126fd",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\PortConfiguration\\",
+          "rva": "0x17b0",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x2428",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\",
+          "rva": "0x4b24",
+          "uses": []
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Select a transport\nSelect Transport",
+        "resource": "resource-0012.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/ContainerDesigner.ocx",
+      "sha256": "7ccebafb8435398c8d824728b8bb2a562a490640f349bd57d7ec7d4017098a44",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xb847",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects",
+          "rva": "0x193c",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x2184",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x21b8",
+          "uses": []
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Container Designer",
+        "resource": "resource-0036.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/DLSDesigner.ocx",
+      "sha256": "db9c3d57ee2c6c2446489c3146f198b79797fda4f2f41d4ea67b92391560c065",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x216fd",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\DLSDesigner\\",
+          "rva": "0x3238",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\DLSDesigner\\Configs\\",
+          "rva": "0x3334",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\DLSDesigner\\Queries\\",
+          "rva": "0x3414",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x3620",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x3654",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/DMUSProd.exe",
+      "sha256": "fad2eec4d5dacd3bfd67694ea63ca169517902b73e30d283998cf7726e41c011",
+      "disassemblyAvailable": true,
+      "registerExport": null,
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components",
+          "rva": "0x3604",
+          "uses": [
+            {
+              "rva": "0x18cbd",
+              "instruction": "push\t0x1003604"
+            }
+          ]
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer",
+          "rva": "0x64c4",
+          "uses": [
+            {
+              "rva": "0x34943",
+              "instruction": "push\t0x10064c4"
+            },
+            {
+              "rva": "0x368a4",
+              "instruction": "push\t0x10064c4"
+            }
+          ]
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/LyricStripMgr.dll",
+      "sha256": "94fd222036aefcf11b6e39386a750bc71ed07b3bc5710609657f0b3959724762",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xbf29",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1a68",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/MarkerStripMgr.dll",
+      "sha256": "d7d1e14f7288444377b3494ba1a647e631feddff15e1dff1d1441322786ffd05",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xc720",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1a20",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/MIDIStripMgr.dll",
+      "sha256": "cba6013d41a7ffb45068ee51a2629cf136351068cb211427ec792a87d1542de3",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x1f605",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x2c50",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/MuteStripMgr.dll",
+      "sha256": "8c0d35f0de784b03c328cf56336b2da16bc27c8662a33f40fb149bc7ae4e6652",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xce63",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x21a8",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/ParamStripMgr.dll",
+      "sha256": "a00255b501d15e677980be8026cd8a15847ab5ec5c66db83c0182279a9dd8a57",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x11f5c",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x23b8",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/ScriptDesigner.ocx",
+      "sha256": "3424aa2b64047a77f935b09e1b0653d811f7d75314d86a6153e134a97f481a42",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xd8b0",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x2f1c",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x2f50",
+          "uses": []
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Script Designer",
+        "resource": "resource-0024.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/ScriptStripMgr.dll",
+      "sha256": "46bf4682d864b7fd82e357a0b9050680774b71eec278003a550af3d348639967",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xba92",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1b00",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/SegmentDesigner.ocx",
+      "sha256": "541e5dd87c62cb0b449c571aba4e7ac863b093877ded7793eea89e4c6877c1bb",
+      "disassemblyAvailable": true,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x1ffec",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors",
+          "rva": "0x1a00",
+          "uses": [
+            {
+              "rva": "0x76cc",
+              "instruction": "mov\tesi, 0x401a00"
+            }
+          ]
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x2474",
+          "uses": [
+            {
+              "rva": "0x124e9",
+              "instruction": "mov\tesi, 0x402474"
+            }
+          ]
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x3480",
+          "uses": [
+            {
+              "rva": "0x1f7b2",
+              "instruction": "mov\tesi, 0x403480"
+            },
+            {
+              "rva": "0x1fdd4",
+              "instruction": "mov\tesi, 0x403480"
+            }
+          ]
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x34b4",
+          "uses": [
+            {
+              "rva": "0x1f723",
+              "instruction": "mov\tesi, 0x4034b4"
+            },
+            {
+              "rva": "0x1fc81",
+              "instruction": "mov\tesi, 0x4034b4"
+            }
+          ]
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Segment Designer",
+        "resource": "resource-0036.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/SegmentStripMgr.dll",
+      "sha256": "19f98fc728a7167e2f7651eae1749012d643fc65666918bb05f1249b59a6771b",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xb6d5",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1ae8",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/SequenceStripMgr.dll",
+      "sha256": "1857edef76a0b60cf4ed7941d36e812493b4e781f8af0c79f7da5d9f2a1552e3",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x2ae3a",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x3e60",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/SignPostStripMgr.dll",
+      "sha256": "919ede35a87162c0644ab54367832da9ddb30672f18bddd1f44abe42b4d85e2a",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xbbe7",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1e38",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/StyleDesigner.ocx",
+      "sha256": "c694ce12de2703cce131281e059fd8083472ad16aa5d00f1c425c40586a6e9d9",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x26350",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x47ac",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x47e0",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/StyleRefStripMgr.dll",
+      "sha256": "db2bb1b1e7e99acd32607738a94a834a4befb5ff4826e0347e45e2c957bc4682",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xea00",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x2310",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/TempoStripMgr.dll",
+      "sha256": "bb9811c74f68dcf0b37d32fe2ae89d3e45962e59b95f1ec93ddf7a12635a5c95",
+      "disassemblyAvailable": true,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xd695",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x1ee0",
+          "uses": [
+            {
+              "rva": "0xb37f",
+              "instruction": "mov\tesi, 0x401ee0"
+            },
+            {
+              "rva": "0xc2ae",
+              "instruction": "mov\tesi, 0x401ee0"
+            }
+          ]
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/TimeSigStripMgr.dll",
+      "sha256": "898258cfbf1b17bef0054695d25331c530e2ee2846c5d45073a8fd5670484bb7",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0xd6d5",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x2260",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    },
+    {
+      "module": "work/producer/app/ToolGraphDesigner.ocx",
+      "sha256": "67cfab8a022ed7793df69afd5ef5c58c35cbe6ddca4ae040e2900a12bd5ded18",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x1603e",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Container Objects\\",
+          "rva": "0x3be4",
+          "uses": []
+        },
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\Components\\",
+          "rva": "0x3c18",
+          "uses": []
+        }
+      ],
+      "componentNameResource": {
+        "id": 201,
+        "text": "Toolgraph Designer",
+        "resource": "resource-0028.bin"
+      }
+    },
+    {
+      "module": "work/producer/app/WaveStripMgr.dll",
+      "sha256": "81be606a6b62511f805b6074396d2d2d328f05563dfaf45414ceb44d1f435dba",
+      "disassemblyAvailable": false,
+      "registerExport": {
+        "ordinal": 3,
+        "name": "DllRegisterServer",
+        "rva": "0x26635",
+        "forwarder": null
+      },
+      "registryStrings": [
+        {
+          "text": "Software\\Microsoft\\DMUSProducer\\StripEditors\\",
+          "rva": "0x3ed0",
+          "uses": []
+        }
+      ],
+      "componentNameResource": null
+    }
+  ],
+  "host": {
+    "module": "work/producer/app/DMUSProd.exe",
+    "sha256": "fad2eec4d5dacd3bfd67694ea63ca169517902b73e30d283998cf7726e41c011",
+    "componentLoaderRva": "0x18c93",
+    "registryPath": "Software\\Microsoft\\DMUSProducer\\Components",
+    "hive": "HKEY_LOCAL_MACHINE",
+    "access": "KEY_READ (0x20019), x86 default view",
+    "nameValue": "",
+    "skipValue": "Skip",
+    "errorResource": {
+      "id": 61046,
+      "text": "Unable to load DirectMusic Producer Components.  Please run Setup and reinstall.",
+      "resource": "resource-0076.bin"
+    },
+    "componentIid": "9F3ED901-46B7-11D0-89AC-00A0C9054129",
+    "coCreateCallRva": "0x18e02"
+  },
+  "segment": {
+    "module": "work/producer/app/SegmentDesigner.ocx",
+    "sha256": "541e5dd87c62cb0b449c571aba4e7ac863b093877ded7793eea89e4c6877c1bb",
+    "registerHelperRva": "0x1f9be",
+    "defaultName": {
+      "id": 201,
+      "text": "Segment Designer",
+      "resource": "resource-0036.bin"
+    },
+    "skip": 0,
+    "identifiers": [
+      {
+        "role": "Component",
+        "rva": "0x50dc",
+        "guid": "DFCE860B-A6FA-11D1-8881-00C04FBF8D15"
+      },
+      {
+        "role": "RefNode",
+        "rva": "0x50ac",
+        "guid": "DFCE8609-A6FA-11D1-8881-00C04FBF8D15"
+      },
+      {
+        "role": "Segment node",
+        "rva": "0x509c",
+        "guid": "DFCE860A-A6FA-11D1-8881-00C04FBF8D15"
+      },
+      {
+        "role": "DirectMusic object",
+        "rva": "0x3284",
+        "guid": "D2AC2882-B39B-11D1-8704-00600893B1BD"
+      },
+      {
+        "role": "Control",
+        "rva": "0x526c",
+        "guid": "853BAF7B-D3C8-11D1-88BC-00C04FBF8D15"
+      },
+      {
+        "role": "Separate COM class",
+        "rva": "0x50ec",
+        "guid": "DFCE860E-A6FA-11D1-8881-00C04FBF8D15"
+      }
+    ],
+    "associationValues": [
+      {
+        "name": "RefNode",
+        "rva": "0x35c0",
+        "text": "RefNode"
+      },
+      {
+        "name": "Component",
+        "rva": "0x35b4",
+        "text": "Component"
+      },
+      {
+        "name": "DMObject",
+        "rva": "0x35a8",
+        "text": "DMObject"
+      }
+    ]
+  },
+  "caveat": "Only Segment registration roles are traced here. String references in other modules are leads, not a complete installer or COM registration manifest."
+}

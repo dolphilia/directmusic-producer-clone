@@ -1,0 +1,31 @@
+#include <windows.h>
+// Reconstructed MENU/243: command routing is still an integration task.
+243 MENU
+BEGIN
+    POPUP "Drag"
+    BEGIN
+        MENUITEM "Move", 0x8026
+        MENUITEM "Copy", 0x8028
+        MENUITEM SEPARATOR
+        MENUITEM "Cancel", 0x8027
+    END
+END
+// Reconstructed layout and IDs from TempoStripMgr DIALOG/105/1033.
+105 DIALOG 0, 0, 250, 111
+STYLE 0x48c00040
+CAPTION "Tempo"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL "Tempo:", -1, "Static", 0x50000000, 25, 5, 25, 8
+    CONTROL "", 223, "Edit", 0x50810080, 55, 5, 40, 12
+    CONTROL "Spin1", 232, "msctls_updown32", 0x50000035, 90, 5, 10, 10
+    CONTROL "Measure", -1, "Static", 0x50000000, 25, 20, 28, 8
+    CONTROL "", 224, "Edit", 0x50812080, 55, 20, 40, 12
+    CONTROL "Spin1", 229, "msctls_updown32", 0x500000b6, 90, 20, 10, 10
+    CONTROL "Beat", -1, "Static", 0x50000000, 25, 35, 16, 8
+    CONTROL "", 225, "Edit", 0x50812080, 55, 35, 40, 12
+    CONTROL "Spin2", 230, "msctls_updown32", 0x500000b6, 90, 35, 11, 10
+    CONTROL "", 233, "Edit", 0x50810080, 55, 50, 40, 12
+    CONTROL "Spin1", 234, "msctls_updown32", 0x500000b6, 90, 50, 11, 10
+    CONTROL "Tick", -1, "Static", 0x50020000, 25, 50, 15, 8
+END

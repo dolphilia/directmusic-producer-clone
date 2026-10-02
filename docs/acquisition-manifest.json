@@ -1,0 +1,610 @@
+{
+  "acquired_date": "2026-10-02",
+  "timezone": "Asia/Tokyo",
+  "product": "DirectMusic Producer for DirectX 9",
+  "executable_version": "5.3.0.900",
+  "urls": [
+    "https://w2krepo.somnolescent.net/Audio/dx90_directmusicproducer.exe",
+    "https://files.rajko.info/dx90_directmusicproducer.exe"
+  ],
+  "authenticode": {
+    "distribution": "NotSigned",
+    "executable": "NotSigned"
+  },
+  "installed": false,
+  "launched": false,
+  "producer_source_found": false,
+  "inventory_scope": "Both downloaded distributions and the 116 files extracted from the Producer data1.cab",
+  "files": [
+    {
+      "path": "artifacts/downloads/dx90_directmusicproducer.exe",
+      "bytes": 33139712,
+      "sha256": "087b43e9efc43915fdbd3352c1144a69a7f3a728e088b187f823b6b293839d6f"
+    },
+    {
+      "path": "artifacts/downloads/dx90_directmusicproducer.rajko.exe",
+      "bytes": 33139712,
+      "sha256": "087b43e9efc43915fdbd3352c1144a69a7f3a728e088b187f823b6b293839d6f"
+    },
+    {
+      "path": "artifacts/extracted/producer/dmusprod_ini/DMUSProd.INI",
+      "bytes": 2992,
+      "sha256": "bfdf49ad5e73b2d009fb1d8d0458f1b3f922126eef59fa796090dc7ab534fa6b"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameApp/Farm.exe",
+      "bytes": 532480,
+      "sha256": "078e6b5929c2ba974c70cca710d63bde631df72a172758fb1fe76e177df11be6"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameApp/README.TXT",
+      "bytes": 1256,
+      "sha256": "45c9b26263d17062806ae0923713e4955b088caf81e222fc26292ae9bc23ef95"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/APFarm.aud",
+      "bytes": 638,
+      "sha256": "680d05ab2df0817b2f7334bab0e6d41fbd1bc31588d92ce179451762908c933a"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/BGDawn.sgt",
+      "bytes": 3030,
+      "sha256": "f79ce1be851276e1d8d8ab2695870ab6eb6a1ea41021e637e1ad7c6c869b5582"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/BGNight.sgt",
+      "bytes": 2892,
+      "sha256": "d9d5d9538d13bb68bf321c0f762192ee672ce4b70bec9cdffefc168b136977a8"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/BGPredawn.sgt",
+      "bytes": 3036,
+      "sha256": "ff55da23ddd50b6d2810d4c1ddd3c2986fb07ff54c0cae9026e835cae844e6e2"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/FarmGame.dls",
+      "bytes": 163588,
+      "sha256": "615eab9a6eb2eaeadfb7f69afa5d6b53d1a2ce8e4699b4d18c5f1f0994b399df"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/FarmGame.sty",
+      "bytes": 166288,
+      "sha256": "324c3af5ff21a9b45d608e58345fe48e7ef1272110c1500a968f1b59e6adfbfa"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/FarmMusic.spt",
+      "bytes": 5334,
+      "sha256": "172b951cd75ee457935e10d70c4071b57eb7bf295643336a331946d1faae0415"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxAlarm.sgt",
+      "bytes": 1154,
+      "sha256": "3fd08aca8f6307ca040061e54b6fae959b13495cebed8c5d1b17ffb898c1aae0"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxAlarm.wav",
+      "bytes": 129436,
+      "sha256": "10e9afc6cea8af1da464c2c9ae465e2fcdcbc6466a196174ba3e532f7b9e242b"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxCougar.sgt",
+      "bytes": 1160,
+      "sha256": "e1756f7f6a17f3e78889d01c943552183c5cf31aa688ca1de4197a3454f9d902"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxCougar.wav",
+      "bytes": 64950,
+      "sha256": "3d2f2dcb2ccb79306509dc64280e8b8782fe92386c39f158e2426581c92973fb"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxCow.sgt",
+      "bytes": 1142,
+      "sha256": "dd8999f642ed08340eedfec4dd3c42da1223c162c47f4af4732e44a4f581a5e2"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxCow.wav",
+      "bytes": 128218,
+      "sha256": "b1c3e038770b27a421c5609fcf97d79556e7323e755d569d5a0fc5b7d206c2ce"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxRooster.sgt",
+      "bytes": 1166,
+      "sha256": "37754b82662e17e94f4b1fb1e2fe0a37588eab5a948de81f8b35a24c8a21ee08"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxRooster.wav",
+      "bytes": 186170,
+      "sha256": "e2c6a2df7d8193934e50542a0110bdbe0edeb0c573105ee0ce0ffdf44b757a35"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxSheep.sgt",
+      "bytes": 1154,
+      "sha256": "6a0c5e5c449c43f8c03ed73be57fc55cad587d4102d56b3ddb957c2b3faaa4c3"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxSheep.wav",
+      "bytes": 103022,
+      "sha256": "c0eca639c40dd488b40f949e3c985a8691d0f1db6840d6a47e2622ac672a8b89"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxWolf.sgt",
+      "bytes": 1148,
+      "sha256": "b1d907e01cf987e2ac62d2b31abadc0e546b0bcfa424723d468dc614b253e993"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SfxWolf.wav",
+      "bytes": 182666,
+      "sha256": "a1fab40707370db23b60febc28276082e6f005b9110540d81d55d1257da9bb47"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/SSBird.sgt",
+      "bytes": 10998,
+      "sha256": "497f937f8dd9fafb2b5f5e9b70d4787b8a6fc93c0781bcd97ba1eb41e8e9dc78"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppRes/UI.BMP",
+      "bytes": 446656,
+      "sha256": "07b2015eb12e6e73e4d270166a852f312aaf67156f04f5feeec37846d6e0ef1a"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppSrc/directx.ico",
+      "bytes": 25214,
+      "sha256": "7bde34e08a41effdc9e211c599cb3213058864c4f07174de773f31d862816d55"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppSrc/FARM.CPP",
+      "bytes": 20089,
+      "sha256": "ad1f9f3c27568f1ddf3ff9e62104cda56a219f7d8669fbcdfccbb042ae76d0e7"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppSrc/Farm.dsp",
+      "bytes": 4563,
+      "sha256": "1395e7e18030b77c18aa6c4b878a8c88cb29858641fed48d830be514da409183"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppSrc/FARM.DSW",
+      "bytes": 531,
+      "sha256": "6715f25403bb12d55c96e56c176f6ba1f2f565fb466ce6e85dde78d1ce74ccdc"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppSrc/Farm.rc",
+      "bytes": 4478,
+      "sha256": "79a6baa186d45c71029a707b3501af28f3bed302fb88cd333e7269b0a63b7ad5"
+    },
+    {
+      "path": "artifacts/extracted/producer/FarmGameAppSrc/RESOURCE.H",
+      "bytes": 1278,
+      "sha256": "424b1c06f4f02edd24b4b2b726b8ccaaa807c36b396cd33b2e714df9bce7e1c8"
+    },
+    {
+      "path": "artifacts/extracted/producer/Flex_Grid_control/MSFLXGRD.OCX",
+      "bytes": 241672,
+      "sha256": "14c7e6588250e35030f198353f0ddc65c49515d875db6ba9e01d6596845c8fe8"
+    },
+    {
+      "path": "artifacts/extracted/producer/Fonts/MusicSym.ttf",
+      "bytes": 3764,
+      "sha256": "a883346a32a6a6718b3292d18c5e1d7697c585392a5f807a893e90954f5ad6b7"
+    },
+    {
+      "path": "artifacts/extracted/producer/Help_Files/DMUSProd.bmp",
+      "bytes": 196662,
+      "sha256": "aa553ad7d93eb087d4d4bee5531b2042dd394432c66334fa10729efe04b4bda9"
+    },
+    {
+      "path": "artifacts/extracted/producer/Help_Files/dmusprod.chm",
+      "bytes": 1981273,
+      "sha256": "cc99ff2d87602444c0f9962fe1685e5f0899b49ef3562ba7eae6bae977c13eed"
+    },
+    {
+      "path": "artifacts/extracted/producer/Help_Files/dmusprod.txt",
+      "bytes": 13693,
+      "sha256": "1df753acc50c80a9b81ac4d9c8e80cd189b1c66b16f10af9ec7df071fb775bdc"
+    },
+    {
+      "path": "artifacts/extracted/producer/QuickStart_Files/DemoMIDI.mid",
+      "bytes": 4387,
+      "sha256": "895cfe8ac0111ca0756ce92f845c837c1fc9719e1e11f8c5b66426e17f81fea8"
+    },
+    {
+      "path": "artifacts/extracted/producer/QuickStart_Files/DemoStyle.stp",
+      "bytes": 28942,
+      "sha256": "f3d78a46bf86ab596e42d1c314f85e63a1421c201c3c729adbf21df565c5c8b6"
+    },
+    {
+      "path": "artifacts/extracted/producer/QuickStart_Files/heartland.sgp",
+      "bytes": 2962,
+      "sha256": "cfff2d948051dc7dbdaca2009982086e50cfd00e046b9717ad96cb31c6fbec05"
+    },
+    {
+      "path": "artifacts/extracted/producer/QuickStart_Files/Heartlnd.stp",
+      "bytes": 108480,
+      "sha256": "00600efd7ce8cb7133b327115fe961f4ff825d2d1f56840b2c86206eea17b0a5"
+    },
+    {
+      "path": "artifacts/extracted/producer/QuickStart_Files/QuickStart.pro",
+      "bytes": 2904,
+      "sha256": "ed0cf7e70698edd48f517022e07d8a3320ee76fc4913d09eceebcab873ac92f1"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_MFC_DLLs/MFC42.DLL",
+      "bytes": 995383,
+      "sha256": "ec63a85030c60716acdcf060abfaa95a6a3528631622fa60e7d17fbea2f751f9"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_MFC_DLLs/MSVCRT.DLL",
+      "bytes": 278581,
+      "sha256": "887eb5ce93edb7192ca3e9220f07f9ca0f94db02af5862ebcbdfcb852db99fd1"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ADSREnvelope.ocx",
+      "bytes": 29696,
+      "sha256": "d3be910f7e8f2d17ae1216d0588eef08e1e2cb98c1c9f70f77799cb571be8e58"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/AudioPathDesigner.ocx",
+      "bytes": 266752,
+      "sha256": "6eb44bf5381b59c9205584520e9bec5676f3170a31e4a043d2983db4fedf9ec5"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/BandEditor.ocx",
+      "bytes": 208384,
+      "sha256": "b2cf00b7f46508618356690233a83ca007bb3b76f41326d8717974020074ab0e"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/BandStripMgr.dll",
+      "bytes": 97280,
+      "sha256": "032f5fd29c3176c532927dcc669bd31d2be0b6fd4d4f207683341964512b17d7"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ChordMapDesigner.ocx",
+      "bytes": 282112,
+      "sha256": "bc5090c7bec982b5c9b69ddfe18b3e6a4d47f131cc58aa2a64bd78bcaea0b50e"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ChordMapRefStripMgr.dll",
+      "bytes": 80896,
+      "sha256": "6ecb93cdf17eaa2f900f8d7caa66d4b3231d4884244dae346dc039859518e37a"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ChordMapStripMgr.dll",
+      "bytes": 170496,
+      "sha256": "24f5c6f67772d148c9520b0210d04f0be18a9d6719029ddbad0623042a52e9f2"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ChordStripMgr.dll",
+      "bytes": 155648,
+      "sha256": "33db8e6f8e2eeaf7aeab68e368b2fd38478b1157278a91f5895e24640d39288b"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/CommandStripMgr.dll",
+      "bytes": 82944,
+      "sha256": "c03ad80ae029ee24768c8859e1081597f8cd527e5cccf382c00fb36c272c05bb"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/Conductor.dll",
+      "bytes": 294400,
+      "sha256": "09a0a40ea983eb78a76826ec5b6faa077d3dae393eddd31db93dfc2512e53cf7"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ContainerDesigner.ocx",
+      "bytes": 165888,
+      "sha256": "7ccebafb8435398c8d824728b8bb2a562a490640f349bd57d7ec7d4017098a44"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/DLSDesigner.ocx",
+      "bytes": 651264,
+      "sha256": "db9c3d57ee2c6c2446489c3146f198b79797fda4f2f41d4ea67b92391560c065"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/FileOutputDMO.dll",
+      "bytes": 23040,
+      "sha256": "527d01290411984999a54ed8950330714c63ddaa998709c913cacb83dfff845e"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/LyricStripMgr.dll",
+      "bytes": 86016,
+      "sha256": "94fd222036aefcf11b6e39386a750bc71ed07b3bc5710609657f0b3959724762"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/MarkerStripMgr.dll",
+      "bytes": 87040,
+      "sha256": "d7d1e14f7288444377b3494ba1a647e631feddff15e1dff1d1441322786ffd05"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/MIDIStripMgr.dll",
+      "bytes": 514048,
+      "sha256": "cba6013d41a7ffb45068ee51a2629cf136351068cb211427ec792a87d1542de3"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/MuteStripMgr.dll",
+      "bytes": 87040,
+      "sha256": "8c0d35f0de784b03c328cf56336b2da16bc27c8662a33f40fb149bc7ae4e6652"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/PanVol.ocx",
+      "bytes": 42496,
+      "sha256": "b2b0c3b9fc9cf027aeeb1e6ba8640fc4ced47d8e41471b45b9726849b12a6fd4"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ParamStripMgr.dll",
+      "bytes": 180736,
+      "sha256": "a00255b501d15e677980be8026cd8a15847ab5ec5c66db83c0182279a9dd8a57"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/RegionKeyboard.ocx",
+      "bytes": 94720,
+      "sha256": "3f7809a6d2ac4ff744a60db44cbe9a929ff3b2d4ed2390387b12b8d2867a75d6"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ScriptDesigner.ocx",
+      "bytes": 137216,
+      "sha256": "3424aa2b64047a77f935b09e1b0653d811f7d75314d86a6153e134a97f481a42"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ScriptStripMgr.dll",
+      "bytes": 109056,
+      "sha256": "46bf4682d864b7fd82e357a0b9050680774b71eec278003a550af3d348639967"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/SegmentDesigner.ocx",
+      "bytes": 286720,
+      "sha256": "541e5dd87c62cb0b449c571aba4e7ac863b093877ded7793eea89e4c6877c1bb"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/SegmentStripMgr.dll",
+      "bytes": 115200,
+      "sha256": "19f98fc728a7167e2f7651eae1749012d643fc65666918bb05f1249b59a6771b"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/SequenceStripMgr.dll",
+      "bytes": 317952,
+      "sha256": "1857edef76a0b60cf4ed7941d36e812493b4e781f8af0c79f7da5d9f2a1552e3"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/SignPostStripMgr.dll",
+      "bytes": 83968,
+      "sha256": "919ede35a87162c0644ab54367832da9ddb30672f18bddd1f44abe42b4d85e2a"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/StyleDesigner.ocx",
+      "bytes": 436736,
+      "sha256": "c694ce12de2703cce131281e059fd8083472ad16aa5d00f1c425c40586a6e9d9"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/StyleRefStripMgr.dll",
+      "bytes": 94208,
+      "sha256": "db2bb1b1e7e99acd32607738a94a834a4befb5ff4826e0347e45e2c957bc4682"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/TempoStripMgr.dll",
+      "bytes": 86016,
+      "sha256": "bb9811c74f68dcf0b37d32fe2ae89d3e45962e59b95f1ec93ddf7a12635a5c95"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/Timeline.dll",
+      "bytes": 136192,
+      "sha256": "bebc8149e31f3b4b0b74bffbf482acc38ba8b5b28a1468c9741e71961c6db176"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/TimeSigStripMgr.dll",
+      "bytes": 131584,
+      "sha256": "898258cfbf1b17bef0054695d25331c530e2ee2846c5d45073a8fd5670484bb7"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/ToolGraphDesigner.ocx",
+      "bytes": 164352,
+      "sha256": "67cfab8a022ed7793df69afd5ef5c58c35cbe6ddca4ae040e2900a12bd5ded18"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_DLLs/WaveStripMgr.dll",
+      "bytes": 223744,
+      "sha256": "81be606a6b62511f805b6074396d2d2d328f05563dfaf45414ceb44d1f435dba"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_Executable_Files/DMUSProd.exe",
+      "bytes": 518144,
+      "sha256": "fad2eec4d5dacd3bfd67694ea63ca169517902b73e30d283998cf7726e41c011"
+    },
+    {
+      "path": "artifacts/extracted/producer/Release_Program_Executable_Files/Uninst.dll",
+      "bytes": 8192,
+      "sha256": "0fc8954f15982de1a6e6bf60de7def72f6e4efc1160a7c1ab1384743fe92c327"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial_doc/dmp_gametutorial.doc",
+      "bytes": 601088,
+      "sha256": "974f12c6415bd48ac7d0e5c1de5ad3a9bc04b122020e8736b9cbce9215cc4503"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/APFarm.aup",
+      "bytes": 872,
+      "sha256": "8204a64afb6f23af9938ff122f2a5d77b459cb756e0686fb612c0b7a302bdffd"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/BGDawn.sgp",
+      "bytes": 3294,
+      "sha256": "45205092771f05798a2167a829ff9aa84e5c968b8833ccd4ba7bcb4427fe9174"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/BGNight.sgp",
+      "bytes": 3140,
+      "sha256": "6495a3989eb7e34d282e3a4e22acea589c1a35cb50345ebebe3fb8bcc9daf3a2"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/BGPredawn.sgp",
+      "bytes": 3300,
+      "sha256": "89680cd15d2d7995ead9a57374cd120b7abc5818d6221fccb1cdc028cf707e0a"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/FarmGame.dlp",
+      "bytes": 163598,
+      "sha256": "35d6a6789d9a66bb645730b01984ce32ae90acf7ae0b432d78cff11906d2084e"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/FarmGame.stp",
+      "bytes": 163048,
+      "sha256": "e81dcd612c2c164cd43689e15eb48e0bab3d1f90a23f7b23239d99a0f2066ae4"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/FarmGameProject.pro",
+      "bytes": 11128,
+      "sha256": "96924dd73ba646488bba7c00e7c5fad0501676afb8de22d03d98c714c98a1288"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/FarmMusic.spp",
+      "bytes": 6096,
+      "sha256": "d2ed2e84c202203d6b8b8ff75ef2b769c79868f848748fb2ef7df84a930b3577"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxAlarm.sgp",
+      "bytes": 1722,
+      "sha256": "bec4708476075a1f27d8be9ce0b417fb2e118c5017627116f43cba0cf2cc759d"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxAlarm.wvp",
+      "bytes": 129436,
+      "sha256": "2ce761c2898831ae0ec26c5d0b314fe18147c04e9342cfaf7d11e0b4317498cf"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxCougar.sgp",
+      "bytes": 1728,
+      "sha256": "62d32d6a847f5aa66e00f252576a8ceb8cbd7806a66395aced71ee6f631140d3"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxCougar.wvp",
+      "bytes": 64950,
+      "sha256": "c527b1ec5fcf1e94e25a206cf4b00cf107605113b37b273dbdca0b3d25080019"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxCow.sgp",
+      "bytes": 1710,
+      "sha256": "16ffe9e34863a0eb5be5c3d2e59acca1f52205f20f9086458912431900a2d2bb"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxCow.wvp",
+      "bytes": 128218,
+      "sha256": "42f15043bd0f4b6bfc716fa8ce14186700a9d488ca419c8468ee732805aa9bb9"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxRooster.sgp",
+      "bytes": 1734,
+      "sha256": "6d44dc594adb92386ea7a7da67d0c0f773ca5afa5e9f787c151c8d8eb888f353"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxRooster.wvp",
+      "bytes": 186170,
+      "sha256": "c01c1a1915b6bb7beeadb7365ce69e51b2aab4b665823be942ef504e4bb503cd"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxSheep.sgp",
+      "bytes": 1722,
+      "sha256": "2ef2366400375178b00316b7b4ef94af1b89d7f461b5d4aa05d169febca78c31"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxSheep.wvp",
+      "bytes": 103022,
+      "sha256": "6c9c8e25bf87b6bb54fd7e6f44dbc0881ef3beddbe9d19809c89dafbf8ecc5c0"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxWolf.sgp",
+      "bytes": 1716,
+      "sha256": "b8d098a8afa0ca3d99163624cc0c66ee4e814de0de8cf595860f074e973cdf8d"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SfxWolf.wvp",
+      "bytes": 182666,
+      "sha256": "c145b21116cc679a8ce85df9a9b75190ae3804194dcf7d814e0502ddfa7f7218"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-FinishedProject/SSBird.sgp",
+      "bytes": 11900,
+      "sha256": "c5a727519f68b91ab75d6e70985d67665d1aafc134b5b179ecd6238151fc0597"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/DawnA.mid",
+      "bytes": 7157,
+      "sha256": "efb495a2665e6ae6c91af5f2303b56cd6dd709b12fd5cf0a684322756ac3dc42"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/DawnB.mid",
+      "bytes": 1033,
+      "sha256": "8b9e50acda564c2d8a75368e40f2c7ed33760f0914cc00a26e2203bde357a780"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/Ending.mid",
+      "bytes": 1016,
+      "sha256": "24329dbec0847f1654acad2a17e0e96d3360d04c1bf6fe8cbf24cad7a4f8d535"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/FarmScript.txt",
+      "bytes": 1519,
+      "sha256": "5044a362761b3419164d731bbdf77d5d7fe7915ce9570d0a32127cca3be5309d"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/NightA.mid",
+      "bytes": 2352,
+      "sha256": "97ef691bafacf2f708e18b4a001412fb93f5466c6afa615acecbf97e73c3763d"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/NightB.mid",
+      "bytes": 1594,
+      "sha256": "f9eaef9703f5db02db89249b0b8c27403fbf04911406c8cf7b4ce12b09104f32"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/Ocarina.wav",
+      "bytes": 162952,
+      "sha256": "53f2222ff84ba1c7e4413ae68d4a1ee4a4a2897021be5cb25a986853a5a6fe3b"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/PredawnA.mid",
+      "bytes": 6065,
+      "sha256": "6d051e7b576a4edbab8e2841cecdc187fd1c76edf39250f5b38ad004dbe83e0c"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/PredawnB.mid",
+      "bytes": 2234,
+      "sha256": "def62c4cbf227d7b13f59982a1661a5faf49f456be2ad6fa604d5f4a3e8391bf"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SfxAlarm.wav",
+      "bytes": 129256,
+      "sha256": "653f0655ca215e6c3f050e8d7bb7f627c32e852b3070dbc92258cb392ec8a179"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SfxCougar.wav",
+      "bytes": 64748,
+      "sha256": "d0eca03468bf2d3de8d302cbb5eae9b7d153eece569160e9a450d0170022b0b0"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SfxCow.wav",
+      "bytes": 128040,
+      "sha256": "08aa830cc3b2a4137301e4d337a1484813d2bb4b74e673b59bcd78478c542cf9"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SfxRooster.wav",
+      "bytes": 185988,
+      "sha256": "3e0eb200de518aa5adad0e03c57e19c58e93e051c81c1e1b28e2a03c55993eae"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SfxSheep.wav",
+      "bytes": 102842,
+      "sha256": "b6c72aa4e32a31d5259f2730d03ceb888248f4116ea897f06c0b98c16b6b0c3f"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SfxWolf.wav",
+      "bytes": 182488,
+      "sha256": "ca03deccb7035360fcfe9c55dde36072ff3dad8559d9fbe3f60377bb9c00b6c0"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/SSBird.mid",
+      "bytes": 1236,
+      "sha256": "5b630705cd44110d04c79ebfe5bbd3cd4b4b73d9a34f42474db2fcd4e8a9f255"
+    },
+    {
+      "path": "artifacts/extracted/producer/Tutorial-RawElements/Transition.mid",
+      "bytes": 329,
+      "sha256": "dc8154ec2e51bdf344cdf51ee9f5f324cd24af8d43092d5d71b086ceef44e55a"
+    }
+  ]
+}

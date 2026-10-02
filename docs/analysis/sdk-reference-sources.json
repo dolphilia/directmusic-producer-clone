@@ -1,0 +1,17 @@
+[
+  {
+    "file": "work/analysis/sources/dmplugin.h",
+    "url": "https://raw.githubusercontent.com/edgeforce/directx8/e6fa10f5f92bf523c15fdb068206ce25c8d2121d/include/dmplugin.h",
+    "sha256": "4b35b3b1fb245831bbdb2ce83c39165ef1f1111e8d5cf84186886799d024a175"
+  },
+  {
+    "file": "work/analysis/sources/dmusici.h",
+    "url": "https://raw.githubusercontent.com/edgeforce/directx8/e6fa10f5f92bf523c15fdb068206ce25c8d2121d/include/dmusici.h",
+    "sha256": "4801df72813ff1aa5a7609c0efb78b888b2f064c962051eb900198cad974a796"
+  },
+  {
+    "file": "work/analysis/sources/dmusicf.h",
+    "url": "https://raw.githubusercontent.com/edgeforce/directx8/e6fa10f5f92bf523c15fdb068206ce25c8d2121d/include/dmusicf.h",
+    "sha256": "39bf0460f3373f58e6709fcb7eb1c179289f0c98dd828cab29151f6ebefbff38"
+  }
+]

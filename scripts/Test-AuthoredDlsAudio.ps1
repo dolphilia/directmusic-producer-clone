@@ -1,0 +1,24 @@
+[CmdletBinding()]
+param([Parameter(Mandatory)][string]$BuildSummaryPath,[Parameter(Mandatory)][string]$PreparationRun,[string]$RecorderBuildSummaryPath='work/build/audio-capture/20261003T102354462Z/build-summary.json',[string]$Node='C:/Users/dolph/Tools/node-v24.18.1-win-x64/node.exe')
+$ErrorActionPreference='Stop'
+function Hash([string]$p){(Get-FileHash -LiteralPath $p).Hash.ToLowerInvariant()}
+$repo=Split-Path $PSScriptRoot -Parent;$summaryPath=[IO.Path]::GetFullPath($BuildSummaryPath);$b=Get-Content -LiteralPath $summaryPath -Raw|ConvertFrom-Json
+if(-not $b.passed -or -not $b.sourceSnapshotUnchanged){throw 'Successful unchanged build required'}
+foreach($s in $b.sources){if((Hash (Join-Path $b.sourceRoot $s.path)) -ne $s.sha256){throw 'Snapshot changed'}}
+$exe=Join-Path (Split-Path $summaryPath -Parent) 'install/bin/Producer.exe';$output=@($b.outputs|Where-Object path -eq 'install/bin/Producer.exe');if($output.Count -ne 1 -or (Hash $exe) -ne $output[0].sha256){throw 'Producer mismatch'}
+$prepPath=[IO.Path]::GetFullPath($PreparationRun);$prep=Get-Content -LiteralPath $prepPath -Raw|ConvertFrom-Json;if(-not $prep.passed -or -not $prep.inputUnchanged -or $prep.buildSha256 -ne (Hash $summaryPath)){throw 'Preparation must use same build and unchanged input'}
+foreach($f in $prep.outputs){if((Hash $f.path) -ne $f.sha256){throw 'Preparation output changed'}}
+$fixture=Join-Path (Split-Path $prepPath -Parent) 'AuthoredDls';$inputs=@('Authored.sgp','Authored.bnp','AuthoredDls.pro','owned.dls','input.dlp','fixture.json'|ForEach-Object {$f=Join-Path $fixture $_;[ordered]@{path=$f;sha256=Hash $f}})
+$recSummary=[IO.Path]::GetFullPath($RecorderBuildSummaryPath);$rec=Get-Content -LiteralPath $recSummary -Raw|ConvertFrom-Json;if(-not $rec.passed -or (Hash $rec.executable) -ne $rec.sha256){throw 'Recorder mismatch'}
+foreach($s in $rec.sources){if((Hash (Join-Path (Split-Path $recSummary -Parent) ('sources/'+$s.path))) -ne $s.sha256){throw 'Recorder source changed'}}
+$run=Join-Path $repo ('work/acceptance/authored-dls-audio/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'));New-Item -ItemType Directory -Path $run|Out-Null;Copy-Item -LiteralPath $PSCommandPath -Destination (Join-Path $run 'driver.ps1')
+$capture=Start-Process -FilePath $rec.executable -ArgumentList @(('"'+$run+'"'),'16') -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $run 'capture.stdout.txt') -RedirectStandardError (Join-Path $run 'capture.stderr.txt')
+$limit=[DateTime]::UtcNow.AddSeconds(5);while(-not (Test-Path -LiteralPath (Join-Path $run 'ready.json')) -and [DateTime]::UtcNow -lt $limit -and -not $capture.HasExited){Start-Sleep -Milliseconds 50}
+if(-not (Test-Path -LiteralPath (Join-Path $run 'ready.json'))){throw ('Recorder not ready; evidence '+$run)}
+$readyUtc=[DateTime]::UtcNow.ToString('o');Start-Sleep -Seconds 2;$startUtc=[DateTime]::UtcNow.ToString('o')
+$player=Start-Process -FilePath $exe -ArgumentList @('--audio-lifecycle',('"'+(Join-Path $run 'lifecycle')+'"'),('"'+(Join-Path $fixture 'AuthoredDls.pro')+'"')) -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $run 'player.stdout.txt') -RedirectStandardError (Join-Path $run 'player.stderr.txt')
+$playerTimeout=-not $player.WaitForExit(14000);$exit=$null;if(-not $playerTimeout){$player.Refresh();$exit=$player.ExitCode};$endUtc=[DateTime]::UtcNow.ToString('o');$captureTimeout=-not $capture.WaitForExit(20000);$captureExit=$null;if(-not $captureTimeout){$capture.Refresh();$captureExit=$capture.ExitCode}
+[ordered]@{schema=1;profile='lifecycle';dlsMode=$true;readyUtc=$readyUtc;playerStartUtc=$startUtc;playerEndUtc=$endUtc;playerPid=$player.Id;playerExitCode=$exit;captureExitCode=$captureExit;playerTimedOut=$playerTimeout;captureTimedOut=$captureTimeout;buildSummary=$summaryPath;buildSummarySha256=Hash $summaryPath;producer=$exe;producerSha256=Hash $exe;recorder=$rec.executable;recorderSha256=$rec.sha256;recorderBuildSummary=$recSummary;recorderBuildSummarySha256=Hash $recSummary;driverSha256=Hash $PSCommandPath;preparation=$prepPath;preparationSha256=Hash $prepPath;inputs=$inputs;cases=@([ordered]@{name='audio-lifecycle';executable=$exe;sha256=Hash $exe;passed=($exit -eq 0 -and -not $playerTimeout)});scope='Endpoint recording of GUI-authored DLS loop/owned Band/Segment; physical speaker and GUI playback not tested';fullAcceptance=$false}|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $run 'run.json') -Encoding UTF8
+Write-Output ('Evidence: '+$run);if($playerTimeout -or $captureTimeout -or $exit -ne 0 -or $captureExit -ne 0){throw 'Player/capture failed; inspect evidence'}
+& $Node (Join-Path $PSScriptRoot 'Inspect-AudioLifecycle.mjs') $run --dls | Set-Content -LiteralPath (Join-Path $run 'analysis.stdout.txt') -Encoding UTF8;if($LASTEXITCODE -ne 0){throw 'DLS audio verification failed'}
+& (Join-Path $PSScriptRoot 'Inspect-ProductModules.ps1') -RunPath (Join-Path $run 'run.json') -CaseName audio-lifecycle

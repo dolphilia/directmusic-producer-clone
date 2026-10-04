@@ -1,0 +1,47 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const self=fileURLToPath(import.meta.url),read=p=>fs.readFileSync(p),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const json=p=>JSON.parse(read(p).toString().replace(/^\uFEFF/,''));
+const runPath=path.resolve(process.argv[2]),run=json(runPath),build=json(run.buildSummary),test=run.cases[0];
+assert.equal(hash(read(run.buildSummary)),run.buildSummarySha256);
+assert(build.passed&&build.sourceSnapshotUnchanged&&test.passed&&test.exitCode===0);
+for(const s of build.sources)assert.equal(hash(read(path.join(build.sourceRoot,s.path))),s.sha256);
+assert.equal(hash(read(test.executable)),test.sha256);
+assert.equal(hash(read(run.runtimeDriverCopy)),run.runtimeDriverSha256);
+const directory=path.join(path.dirname(runPath),'notifications'),reportPath=path.join(directory,'notifications.json'),report=json(reportPath);
+const original=read(run.groupPlaybackInput.path),source=read(path.join(directory,'input.sgp')),runtime=read(path.join(directory,'runtime.sgp'));
+assert.equal(hash(original),run.groupPlaybackInput.sha256);assert(original.equals(source));
+function chunks(bytes,start=0,end=bytes.length,result=[]){
+    for(let p=start;p<end;){assert(p+8<=end);const size=bytes.readUInt32LE(p+4),stop=p+8+size,id=bytes.toString('ascii',p,p+4);assert(stop+(size&1)<=end);
+        result.push({id,data:bytes.subarray(p+8,stop)});
+        if(id==='RIFF'||id==='LIST')chunks(bytes,p+12,stop,result);p=stop+(size&1);
+    }return result;
+}
+const sc=chunks(source),rc=chunks(runtime),commands=sc.filter(c=>c.id==='cmnd'),runtimeCommands=rc.filter(c=>c.id==='cmnd');
+assert.equal(commands.length,1);assert.equal(runtimeCommands.length,1);
+const data=commands[0].data,stride=data.readUInt32LE(0),records=[];assert(stride>=12&&(data.length-4)%stride===0);
+for(let p=4;p<data.length;p+=stride)records.push({time:data.readInt32LE(p),type:data[p+7],bytes:data.subarray(p,p+stride)});
+const reverse=records.length>=2&&records[0].time>0&&records.every((e,i)=>!i||e.time>records[i-1].time);
+const expectedData=Buffer.concat([data.subarray(0,4),...(reverse?[...records].reverse():records).map(e=>e.bytes)]);
+assert(expectedData.equals(runtimeCommands[0].data));
+const length=sc.find(c=>c.id==='segh').data.readInt32LE(4);
+assert(report.passed&&report.started&&report.stopped&&report.restarted&&!report.error);
+assert(report.events.every(e=>e.currentSegment));
+const first=report.events.filter(e=>e.run===1),second=report.events.filter(e=>e.run===2);
+const start=first.filter(e=>e.kind==='segment'&&e.option===0),end=first.filter(e=>e.kind==='segment'&&e.option===1);
+assert.equal(start.length,1);assert.equal(end.length,1);assert.equal(end[0].clocks-start[0].clocks,length);
+assert.equal(second.filter(e=>e.kind==='segment'&&e.option===0).length,1);
+const expected=records.filter(e=>e.time>0).map(e=>({time:e.time,option:e.type===0?0:1}));
+const actual=first.filter(e=>e.kind==='command').map(e=>({time:e.clocks-start[0].clocks,option:e.option}));
+assert.deepEqual(actual,expected);assert(first.filter(e=>e.kind==='command').every(e=>e.group===1));
+const frees=report.calls.filter(c=>c.operation==='Free notification');assert(frees.length>=report.events.length&&frees.every(c=>c.hresult===0));
+assert(report.calls.filter(c=>c.operation==='Get notification').every(c=>c.hresult===0||c.hresult===1));
+const styles=[];
+for(let i=0;fs.existsSync(path.join(directory,`source-style-${i}.stp`));++i){const a=read(path.join(directory,`source-style-${i}.stp`)),b=read(path.join(directory,`runtime-style-${i}.stp`));assert(a.equals(b));styles.push({index:i,sourceSha256:hash(a),runtimeSha256:hash(b),wholeBytesEqual:true});}
+const moduleFile=path.join(path.dirname(runPath),'notification-module-provenance.json'),modules=json(moduleFile);assert(modules.passed);
+const result={schema:1,passed:true,createdUtc:new Date().toISOString(),run:runPath,runSha256:hash(read(runPath)),build:run.buildSummary,producerSha256:test.sha256,inputSha256:hash(source),runtimeSha256:hash(runtime),reportSha256:hash(read(reportPath)),moduleProofSha256:hash(read(moduleFile)),moduleCount:modules.moduleCount,expected,actual,starts:report.starts,ends:report.ends,notificationCount:report.events.length,freeCount:frees.length,styles,auditorSha256:hash(read(self)),scope:'Notification clocks relative to observed current Segment start; exact positive Command boundaries/type and normal end, restart/ownership. Groove field values, Pattern selection, original Producer equivalence, GUI/audio and full acceptance remain unverified.',fullAcceptance:false};
+fs.writeFileSync(path.join(path.dirname(runPath),'notification-proof.json'),JSON.stringify(result,null,2)+'\n');fs.copyFileSync(self,path.join(path.dirname(runPath),'notification-auditor.mjs'));
+console.log(JSON.stringify({passed:true,commands:actual.length,styles:styles.length,modules:modules.moduleCount}));

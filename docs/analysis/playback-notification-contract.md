@@ -1,0 +1,42 @@
+# 本体の再生通知契約 — 2026-10-03
+
+全体未完了。通知は実際のPattern名・Groove値・発音列の証明ではない。
+
+ConductorはWindows DirectMusic PerformanceにCommandとSegment通知を登録する。GUIの100msタイマーで取得し、IUnknown同一性で現在のSegmentStateに属する通知だけを表示する。メッセージは値へコピーし、FreePMsgで解放する。punkUserは借用参照であり独立Releaseしない。空キューのS_FALSEを通常状態として扱う。Stopでは前回のキューを排出し、次のPlayに混ぜない。未知のCommand optionはUIへ既知の種類として表示しない。連続取得は4096件に制限する。
+
+ABIは凍結SDK `work/analysis/sources/dmusici.h`（SHA4801df72813ff1aa5a7609c0efb78b888b2f064c962051eb900198cad974a796）のDMUS_PMSG_PART、DMUS_NOTIFICATION_PMSG、GUID_NOTIFICATION_COMMAND/SEGMENTに従う。x86 pack8で基底56bytes、通知88bytes、GUID offset56、option offset72をコンパイル時検証。公開Microsoftの[通知構造の説明](https://learn.microsoft.com/en-us/previous-versions/ms898027(v=msdn.10))も参照した。Web取得はcache missを保持し、宣言の直接根拠はローカル保存SDK。CLIのGetNotificationPMsg/FreePMsgと空キュー・通知生成はWindows実行で確認した。
+
+最終保存版081303273Z（54sources/3targets）はconfigure/compile/install各exit0、warning/error0。Producer927232bytes SHA f3bbe234938d8eb1772e6df1d8904921d136bc30df7c79ebb1422321804f1af3。host081513418Z成功。通知試験081440583Zは0742 GUI再保存入力、081507906Zは所有Style入力。両方でstart2/end1、現在SegmentのCommand2、他Segment混入0、実行exit0。通知時刻は観測したSegment開始時刻を差し引くと、前者3072 Fill/4608 Groove、後者1536 Fill/3072 Groove。endはstart+6144/4608。通知6件をFreePMsg6回で解放。後者のsource/runtime Styleは全bytes一致、SHA62ad6358083e255bbb95e70248992c34e5b88839d6b8840ff490e1327b93fe28。各57modules原版40hash一致0。
+
+独立監査 `Inspect-PlaybackNotifications.mjs` は保存ソース・生成物・driver・入力hash、RIFFのCommand bytes、通知境界/type/group、開始/終了/再開、解放結果、保存Styleと再生Style全bytes、モジュール証拠を検証する。field1/field2はこの入力で0であり、Groove値を含むと解釈しない。時刻0の初期Groove通知はこの2入力で出なかった。初期Groove通知があるとの期待は置かない。
+
+再現: `Build-ProductSnapshot.ps1` → `Test-PlaybackNotifications.ps1 -BuildSummaryPath <build-summary.json> -Segment <input.sgp>` → `Inspect-ProductModules.ps1 -RunPath <run.json> -CaseName notifications-api` → `node scripts/Inspect-PlaybackNotifications.mjs <run.json>`。入力生成根拠は `work/analysis/notification-inputs/20261003T081100Z/inputs.json`。原版Segmentのsegh repeats/lengthとcmndだけを変更し、編集済み所有Styleを同じディレクトリへコピーした。
+
+中間失敗080630410Zは試験側SegmentDocument::openという存在しないAPI名でcompile失敗、隠蔽warning2。Framework::open_segmentと変数名を修正した080834211Zは構成/compile/install・通知2入力に成功したが、Styleコピー出力を追加する前の版。成功を081303273Zへ転用せず、最終版で2入力とhostを実行し直した。
+
+次: 081303273Z GUIで通知表示・Play途中Stop・再開・音声と保存projectの別起動復元を確認する。その後、所有StyleのGroove範囲が異なるPatternと識別可能な発音を使い、実際の選択を観測する。原版Producer動的比較、文書別再生状態、重複/未整列/拡張Command stride、全40責務/全8受入は継続。OS DirectMusic/DirectSound/GM.DLSは宣言した依存として残る。
+
+
+# 2026-10-04 停止済みCOM参照を持たない通知ID対応
+
+全体未完了。前回184500Zは予約取消・準備失敗/短再生通知の実装・検証・記録で進捗あり。最新計画/実装/記録を確認し再開、既存変更/成果を保持。全40責務・全八受入の条件は維持。
+
+旧ConductorはStopごとにcanonical IUnknownをAddRefし、retiredIdentitiesへshutdownまで保管していた。今回この所有COM参照cacheを除去。PlaySegmentEx後とStop前にcanonical IUnknownを一時QIし、アドレス→単調増加PlaybackIdだけを保持する。QI所有参照はRAIIで直ちにRelease。cacheアドレスをdereference/Releaseしない。通知が持つpunkUserの所有参照により、旧通知が存在する間はそのIUnknownアドレスは再利用されない。新instanceの登録では同アドレスの旧scalar IDを上書きできる。通知を読む時点のcanonical identityでIDを値コピーしFreePMsgするため、後で新instanceが同アドレスを使ってもコピー済IDへ影響しない。
+
+内部collect_notificationsをPlay前とStop/Unload/SegmentState release前にも呼ぶ。通知のGUID/option/clock/IDを値だけのpendingNotificationsへ保存し、public notificationsがまとめて返す。public返却時にcurrentSegmentを現在の選択IDで再計算する。Stop Allがpublic通知を捨てる旧drainも廃止。Segment end1/abort4を読んだIDの弱いアドレスキーは、同drainがS_FALSEへ達して全現在queueをIDへ対応した後に除去。shutdownはCloseDown後にscalar map/値queueを消去する。ランタイム通知そのものが所有する参照はFreePMsgまで必要であり、一般のプロセスメモリ全体が有界であるとの証明ではない。終端通知が届かない/期限切れの弱いキーや、consumerがpublic通知を読まない時の値queue、診断calls_の長期増加は別途制約として残る。
+
+先に試したruntime Segment descriptorへnamespace/IDを付ける方式は不合格。work/build/product-snapshot/20261003T185245781Z保存62sourceは構成/compile/install0、work/acceptance/notification-identity/20261003T185419524Zは32回primary継続とsecondary停止自体は成功したが、最後の通知16件しか取得できず6件がID0、Delayed retired identity attribution missingでexit1。GetSegment/GetDescriptorの個別HRESULTは記録していないので、どの段階で参照がなくなったか直接原因は未確定。全32回を最後までランタイムqueueへ放置したことによる期限切れも疑われるが、今回timeout値や破棄を個別観測していない。先の会話の「ランタイム側で古い通知が破棄された」は直接観測より強い表現であり、この記録では未確定とする。この方式は採用せず、現行のSegment descriptor/保存文書/原版登録は変更しない。失敗版の成功hostも最終版へ転用しない。
+
+現行work/build/product-snapshot/20261003T190056597Z/build-summary.json保存62sources、構成/compile/install各0、EXE 2749c02b868a1a01475feb5cf496cae39a837af1bde1b9f32b75edb44ac7d857、core 56364646342fabf1a49207dec3b78c29c6e8a24bdd5ae136ba64e43fdfdad49c。build.logにwarning/errorコードなし。全core suiteと現行core監視15は未実行（前版成功を転用しない）。現在workspaceと保存sourcesのhash一致を本unitで確認。
+
+work/acceptance/notification-identity/20261003T190234651Z/run.jsonは現行EXEの32 secondary starts/stops、primary ID1を維持、32回のclock単調/Playing確認、public notificationsを最後まで呼ばず内部の値コピーを検証。最終public drain前pending72、返却通知72。停止ID2..33それぞれの開始0/Abort4が元のIDへ対応し、currentSegment false。最終弱いキー数1は現に再生中のprimary1だけ、public pending0。各secondaryのloader/SegmentState/resourcesは返却前に既に解放。Inspect-NotificationIdentityは保存source/生成物/入力/PID/native hash/通知/所有状態を独立監査passed。32回の音を録音した証拠ではない。
+
+work/acceptance/short-playback-monitor/20261003T190336277Z/run.jsonは同版本体の96clock Segment、Playing samples0、通知0/1→Ended完了・解放、source/runtime SGP全bytes一致、独立監査passed。work/acceptance/motif-concurrent/20261003T190339146Z/run.jsonは同版両Playing/invalid保持/副Stop後主継続/副再開/主Stop後副継続/全解放、通知IDと独立監査passed。これらはGUI window timerの操作試験ではない。
+
+work/acceptance/audio-concurrent/20261003T190508858Z/run.jsonは同版player/capture exit0、新24秒default-render WASAPI loopback解析passed。repeat15の保存入力work/analysis/motif-concurrent-audio/fixture-20261003T171900Z、owned DLS patch777/MIDI60 PChannel4/MIDI67 PChannel5、期待成分130.37263943915892/195.33824830278377Hz。単独/両音/副Stop後主継続/副再開/主Stop後副継続/全Stop無音をQPC区間で確認。API/GUID memory snapshot/入力DLS/出力WAV/packet/生成notesを結合。timestampErrors0、maxGap2frames、packet integrity passed。物理speaker、GUI音声、厳密な音響境界時刻は未確認。work/analysis/notification-identity/controls-20261003T190700Z/negative-tests.jsonは新WAV派生6対照、unchanged pass、silence/primary-lost/secondary-lost/both一音/backgroundは全reject。別録音ではない。対照をコピー後に古いproofを消し、今回の解析が生成したproofだけで判定するようdriverも修正。
+
+work/acceptance/product-host/20261003T190343117Z/run.json本体host exit0。現行identity57modules、host/short/concurrent/audio由来点監査passed、原版40hash一致0。Windows DirectMusic/DirectSound/GM.DLS依存は残る。現行予約primary通常切替/取消/準備失敗、GUI操作、原版比較、全40/全八受入は未実行または未完了。前版の各成功を現行へ転用しない。
+
+再現：Build-ProductSnapshot.ps1 → Test-NotificationIdentity.ps1 -BuildSummaryPath <同summary> -FixtureDirectory work/analysis/motif-concurrent-audio/fixture-20261003T171900Z → Inspect-NotificationIdentity.mjs <run dir> → Inspect-ProductModules -CaseName notification-identity。関連はTest-ShortPlaybackMonitor/Inspect-ShortPlaybackMonitor、Test-MotifConcurrent/Inspect-MotifConcurrent、Test-ProductHost、対応module監査。録音はTest-MotifConcurrentAudio.ps1同summary/fixture/ソース製録音器102354462Z、ready確認、Hidden起動、24秒録音・既存auditor・module監査。Test-MotifConcurrentAudioAuditor.mjs <新audio dir> <新control dir>。人の聴取/追加OS設定は不要。
+
+次の具体的な一手：本体GUIで短再生/通知による終了・個別Stopを確認し、実Segment default resolutionと指定境界、Tempo反映を新API/無人録音へ結合する。診断/値queue/弱いキーの長時間運用の制約、Clipboard/JAZP、原版比較、全40責務・全八受入も継続する。範囲/完成条件を縮小しない。

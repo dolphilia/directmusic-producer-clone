@@ -48,6 +48,10 @@ $sourcePaths += @('src/tempo/tempo_track.h', 'src/tempo/tempo_track.cpp', 'src/t
         'src/tempo/tempo_pages.rc', 'src/tempo/tempo_data_object.h',
         'src/tempo/tempo_dll.def', 'src/compat/tempo_runtime.h', 'src/compat/prop_page_object.h', 'src/compat/host_services.h',
         'src/compat/strip.h', 'src/compat/timeline_services.h', 'src/compat/tempo_notifications.h')
+$sourcePaths += @('tests/native/time_signature_probe.cpp','tests/native/time_signature_connection_probe.cpp',
+        'tests/native/time_signature_style_probe.cpp','tests/native/time_signature/CMakeLists.txt',
+        'src/compat/time_signature.h','src/time_signature/CMakeLists.txt','src/time_signature/time_signature_map.h',
+        'src/time_signature/time_signature_map.cpp','src/time_signature/time_signature_dll.cpp','src/time_signature/time_signature_dll.def')
 $sourceHashes = @($sourcePaths | ForEach-Object {
     [ordered]@{ path = $_; sha256 = (Get-FileHash -LiteralPath (Join-Path $repo $_) -Algorithm SHA256).Hash.ToLowerInvariant() }
 })

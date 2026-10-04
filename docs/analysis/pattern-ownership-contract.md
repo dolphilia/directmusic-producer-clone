@@ -1,0 +1,31 @@
+# 本体Pattern複製とPart共有解除（2026-10-03）
+
+全体未完了。現行build092031617Z保存54sources/3targets構成・compile・install各exit0、warning/errorなし。Producer949248bytes SHA2563d6c38cf201707db8bb955d0b789089a59ab04079583ca13ee373b17873dee33、core1203200bytes SHA25664299ac71d87251b8b870d5c8d95e30be5e21d2460d4a90a298ca36e6e44e5c7。core全suite未実行。
+
+## 契約と実装
+
+StyleDocument::duplicate_patternは選択Patternを末尾へコピーしUNFO/UNAMだけ指定名へ変更。Part参照は共有したまま、元Pattern/Part/未知chunk/flags/tail/paddingは保持する。名前1..255 UTF16 code units・埋込NUL拒否・1000Pattern上限。入力index/name不正はfalseで履歴不変、壊れた参照/曖昧metadataは例外で原子的拒否。固有名の衝突回避やrenameは未実装。
+
+unshare_pattern_partは選択Patternのpref indexを対象とする。全PatternのPart GUID参照数を読み、既に固有ならfalse・履歴なし。共有なら完全なPartをコピーしCoCreateGuidで新しいidentityを生成、選択prfc GUIDだけ付け替える。Part prthの132..147と選択prfcの0..15だけ変更。コピーPartは選択Patternの直前へ挿入。その他のPart参照/PChannel/variation lock/randomization/notes/曲線/未知bytesは保持する。Undo/Redoは全bytes snapshotなのでRedo時にGUIDを再生成しない。参照共有とvariation lockは別契約で、共有解除はvariation lockを変更しない。
+
+FrameworkはStyleの編集コピーを作り、既知Segmentの所有Style再生snapshotを先行解決後に一括反映する。保存Segmentのbytes/dirty/Timeline位置はPattern編集だけでは変更しない。本体PatternメニューにDuplicate Pattern（名前末尾 Copy）とMake Selected Part Independentを追加。複製後はコピーPatternを選択、選択Part参照だけを共有解除する。既に固有なら状態不変のエラー表示。
+
+## 比較・障害
+
+固定SDK dmusicf.h DMUS_IO_STYLEPART/DMUS_IO_PARTREFのGUID/flags/variation lock/PChannel配置と既存原版Heartlnd形式観測を再利用。原版Producerの同じGUI複製/共有解除による動的保存比較は未実行で、原版同値とは扱わない。
+
+途中091739580Zは新PartをStyle末尾へ追加し、native保存/別Framework復元36件は成功したが、通常再生のowned Style loadが0x88781184/exit1で失敗。失敗run091928975Zと生成物を保持。全chunk bytesを変えずPartをコピーPattern直前へ移すと、同じEXEでrun092121848Zのload/12音比較が成功。原因比較はwork/analysis/pattern-order/20261003T092240Z/order-proof.json。修正はこれを実装へ反映し、最終092031617Zで新規検証した。途中版の結果を最終版へ転用しない。OS拒否ではなくruntime RIFF順序の問題。原版の一般reader仕様まで断定しない。
+
+最終native092203678Zの36件：共有コピー/名前以外全bytes保持、新PartGUID・選択参照のみ付替え、全Partコピー保持、無変更/不正入力/壊れたbindingのbytes・履歴原子性、UndoRedo GUID再利用、独立Part音符編集、Framework所有snapshot更新、元Part不変・Segmentbytes/dirty不変、Style/project保存・別Framework復元・全bytes再保存。対象入力は所有selection.sgp SHA51237528b240c2659a9b463cb6238de1f96fe86a373ac77c47d7d13b64065572 / Heartlnd.stp SHA47e6e060a7ba2e4974d3e950d377fe757c7ad6928c999d993ab4a4be12308ae8。
+
+最終notes092242336Zは同版Frameworkで保存したコピーPatternのPart72×4→High84×4→コピー72×4の12音をraw RIFFから独立比較。Groove範囲を元1..24/コピー25..49/High50..100に分離し、Command25/75/25でコピーを確実に選択する。全音符属性/通知時刻/全Style source/runtime bytes一致。自然終了/Stop/CloseDown、overflow=false/forwardingFailed=false、57modules原版40hash一致0。host092211652Zも成功、24modules原版40hash0。
+
+GUI092218471Zで元所有StyleのLow60をメニュー複製、コピー参照をPart1→Part3へ共有解除、Undo1/Redo3、コピーfirst-note72と元Pattern60の表示・Style保存。通常Close exit0/PID8628。別launch092749884Z/PID16572でコピーPattern/Part3/music72復元、再保存SHA14ce9b1e1a3f1e1620a8f07d0789ac423bde38d8f974072219b1de6eb214bddb全bytes一致、通常Close exit0。各GUI45modules原版40hash0。起動時のGUI入力geometry不足は新window/state取得で解消。ユーザー操作競合検出時は入力を控えて独立oracle実装を進め、後の新観測で競合がなくなってから復元検証を再開した。古い窓を再利用せず通常Closeだけで終了。GUI再生・音声はこの単位で未実行。
+
+独立Inspect-PatternOwnership.mjsは元Style全treeから期待コピー/新GUIDPart/選択ref・音高・Groove変更だけのtreeを構成し、保存した原本/duplicate/unshared/edited/resavedおよびGUI保存全bytesと比較。生成音符proof/同版EXE/保存source54/hash/coredriver/input/result、2launch/異なるPID/同版module監査/全GUI画像hash/復元文字列/再保存hashを照合。ownership-proof.jsonとauditorコピーに固定。
+
+## 再現と残作業
+
+Build-ProductSnapshot.ps1、Test-PatternOwnership.ps1 -BuildSummaryPath/-Segment/-Style、生成core/pattern-ownership/selection.sgp/Heartlnd.stpをTest-PlaybackNotes.ps1へ渡し、Inspect-ProductModules.ps1 -CaseName notes-apiとInspect-CopiedPatternNotes.mjs run.json style。hostはTest-ProductHost.ps1。GUIは専用コピーprojectをTest-ProductProjectGui.ps1で起動しComputer Useメニュー/保存/別起動/通常Close、Capture-ProductGuiModules.ps1とInspect-ProductGuiModules.ps1。最後にInspect-PatternOwnership.mjsへnative run/notes run/最初GUI dir/別GUI dir。新規runを使用する。
+
+Windows DirectMusic/DirectSound/GM.DLSは残る。今回の本体経路では原版40hash依存なしだが全40責務・全8受入は未完了。Pattern新規/rename/delete/clipboard・embellishment編集/variation lock・同一Pattern複数pref/旧stride/opaque tailの追加境界比較、原版動的比較を残す。次は本体Patternの名前/装飾の編集を保存復元と実音符へ接続し、長い入力でGUI Stop/再開を確認する。JAZP書込み/他Designerと全体条件も維持。

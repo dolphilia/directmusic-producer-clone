@@ -1,0 +1,23 @@
+# 所有Styleの実Pattern選択と音符観測（2026-10-03）
+
+全体未完了。最終対象版はproduct-snapshot/20261003T085934923Z。通知の成功だけではPatternが選ばれたか判断できなかったため、本体Conductorへ実音符の観測経路を追加した。
+
+公開SDKのIDirectMusicTool/GraphとDMUS_NOTE_PMSGに対応するprefix ABIを定義。pack8のNote80bytes/duration56/midiValue75をstatic_assert。凍結dmusici.h/dmplugin.hとinstalled SDK26100 dmerror.hのhashはwork/analysis/style-selection/20261003T085200Z/abi-reference.json。[Microsoft SendPMsg資料](https://learn.microsoft.com/en-au/previous-versions/ms809725(v=msdn.10))はメッセージ・Tool配送・Graph stampの契約を説明する。メッセージの実生成元は宣言したWindows DirectMusicランタイム。
+
+Conductor::enable_note_observation()を最初のplay前に呼ぶとPerformance graphへ自作Toolを登録。既定GUIでは無効。NoteだけをTOOL_QUEUEで受信し、stamp前の時刻/長さ/PChannel/group/musicValue/MIDI/velocity/flags/playModeを値コピー。4096件固定配列と短いSRWLOCK、callback内にメモリ割当/ファイルIO/GUI操作なし。stampで次Toolへ進めDMUS_S_REQUEUE、失敗はDMUS_S_FREEと転送失敗フラグ。親Graph参照をToolに保持せず循環参照なし。CloseDown後にGraph/Tool所有参照を解放。overflow/転送失敗は成功から除外。観測は同じConductorの累積値、一般の複数同時Segment帰属やGUI表示は未実装。
+
+本体--note-observeでFrameworkがSegmentと所有Styleを解決し、通常Conductor::playへ渡す。入力/再生コピー/Style source/runtimeコピー、実音符、通知、API結果、module一覧を保存。最大12秒で自然終了を観測し、Stop/cleanupまで行う。生成音符は音声出力そのものの証明とは分ける。
+
+Create-StyleSelectionFixture.mjsは前回の所有Heartlnd.stpとstyle-command.sgpから別入力を生成。原本は保持。元のBand/Chord/Style GUID/参照を保持し、normal Patternを2つに限定。各Partを新しいGUIDへ分離し、4/4/4・1小節・固定MIDI60または84・grid0/4/8/12・長さ384・velocity96・全variation有効・randomization0。Groove範囲は1–49/50–100、PChannel5。Segment長9216、Tempo120、Command0/3072/6144でGroove25/75/25。fixture選択以外の一般Style動作は未証明。inputs.jsonに元/生成hash、selection.dmpjの所有文書参照も保存。
+
+最終54sources/3targets、configure/build/install各exit0、warning/errorなし。Producer942592bytes SHA256 `8bbb75ab6ec4e3e187c12bed17cd0c3b80d8cca3d429cf88ed2bf43561a432cb`、core1180160bytes SHA256 `92f4a4ef76f8eb1ed0f755f469b0de777beb816117c495a7ac0a0d273ea98f63`。host090107965Z成功。core全suiteは未実行、以前の成功を転用しない。
+
+最終notes090109696ZのStyleは12音、notes090122018ZのSequence対照は8音、両exit0/自然終了/Stop/CloseDown成功・overflow=false・forwardingFailed=false。独立Inspect-PlaybackNotes.mjsは保存source/EXE/driver/入力hash、RIFF Pattern→Part GUID→音符とGroove Command境界から期待列を算出。Style12音の全時刻/長さ/PChannel/group/musicValue/MIDI/velocity/flags/playModeが一致。低音60×4→高音84×4→低音60×4を、通知に依存せず音符から帰属できた。Command通知も相対0/3072/6144一致。Style source/runtime全bytes一致SHA47e6e060a7ba2e4974d3e950d377fe757c7ad6928c999d993ab4a4be12308ae8。Sequenceは元evtl20bytesレコードからの8音期待列と全属性一致。
+
+最終Style57modules/Sequence56modules、host依存も独立監査、原版40PE hash一致0。Windows DirectMusic/DirectSound/GM.DLSは残る。一点module一覧であり常時監視とは扱わない。証拠は各product-notes run/notes-proof.json、notes-module-provenance.json、notes-auditor.mjsとdriverコピー。
+
+途中084813099Zはshadow warning1あり、8音観測成功。その後変数名を修正した085214931ZでStyle12/Sequence8独立照合、host/GUI成功。さらに転送失敗フラグを追加して085934923Zで上記を新規実行した。途中版成果を最終版へ転用しない。GUI085721586Zは085214931Zだけ: selection.dmpj復元、GUI Play/自然終了表示、74modules原版40hash0、通常Close exit0/PID3460。音声はaudio-question.jsonの回答待ち。最終085934923Z GUI/音声は未実行。
+
+再現：Build-ProductSnapshot.ps1で保存ビルド。Create-StyleSelectionFixture.mjsへ元Segment、所有Style、新規出力dir。Test-PlaybackNotes.ps1へBuildSummaryPath/Segment/StyleのInputPaths。対照SequenceはSegmentだけ。各runへInspect-ProductModules.ps1 -CaseName notes-api、その後Inspect-PlaybackNotes.mjsへrun.jsonとstyleまたはsequence。hostはTest-ProductHost.ps1/Inspect-ProductModules.ps1。GUIを試す場合はTest-ProductProjectGui.ps1へfixture project/依存入力、Computer Useで別記録・通常Close。生成物/入力/試験版ごとに新規runを作る。
+
+残る原版依存は今回経路では観測なし。ただし全40責務の移植は未完了。次はFill/Break/Intro/End等のembellishmentを識別可能なPartへ分離して実選択を検証し、本体編集でのPattern複製/Part共有解除・保存復元へ接続する。GUI Stop/再開を余裕ある長い入力で実行、Style音声回答の版別記録、JAZP書込み/他Designer/全8受入も継続。合成fixtureの成功を一般のPattern/変奏/原版Producer動的同値の完成に拡大しない。

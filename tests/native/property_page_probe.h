@@ -274,7 +274,11 @@ inline bool run(IUnknown* manager, ReferenceTimeline& timeline
     const auto remaining = framework->Release();
     std::printf("{\"operation\":\"page_sheet_lifecycle\",\"framework_refs\":%lu,\"sheet_refs\":%lu,\"set_calls\":%u,\"visible_calls\":%u}\n",
         remaining, sheet.refs, sheet.setCalls, sheet.visibleCalls);
-    ok = ok && remaining == 0 && sheet.refs == 1 && sheet.setCalls == 4 && sheet.visibleCalls == 5;
+    unsigned expectedSetCalls=4,expectedVisibleCalls=5;
+#ifdef PRODUCER_WINDOWED_PROBE
+    if(exercise){expectedSetCalls+=6;expectedVisibleCalls+=6;}
+#endif
+    ok = ok && remaining == 0 && sheet.refs == 1 && sheet.setCalls == expectedSetCalls && sheet.visibleCalls == expectedVisibleCalls;
     check("object_remove_callback", object->OnRemoveFromPageManager(), E_NOTIMPL);
     object->Release();
     std::printf("{\"operation\":\"end_property_page_probe\",\"passed\":%s}\n", ok ? "true" : "false");

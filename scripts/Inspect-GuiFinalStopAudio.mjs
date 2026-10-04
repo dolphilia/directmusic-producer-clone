@@ -1,0 +1,40 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+const dir=path.resolve(process.argv[2]);
+const json=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const run=json(dir+'/run.json'),capture=json(dir+'/capture.json'),actions=json(run.guiRun+'/actions.json');
+assert.equal(run.captureExitCode,0);assert.equal(run.state,'exited');assert(capture.passed);
+for(const [p,h] of [[run.executable,run.exeSha256],[run.buildSummary,run.buildSummarySha256],[run.recorder,run.recorderSha256],[run.recorderBuildSummary,run.recorderBuildSummarySha256],[dir+'/driver.ps1',run.driverSha256]])assert.equal(hash(p),h);
+const build=json(run.buildSummary);assert(build.passed&&build.sourceSnapshotUnchanged);
+for(const s of build.sources)assert.equal(hash(path.join(build.sourceRoot,s.path)),s.sha256);
+for(const p of run.inputs)assert.equal(hash(p.path),p.sha256);
+const launch=json(dir+'/gui-launch-at-capture.json');assert.equal(launch.processId,run.processId);assert.equal(launch.exeSha256,run.exeSha256);
+const fixtureInput=run.inputs.find(p=>path.basename(p.path)==='inputs.json');assert(fixtureInput);
+const fixture=json(fixtureInput.path);assert.equal(fixture.notes,256);assert.equal(fixture.nominalSeconds,128);assert.equal(fixture.tempo,120);
+for(const f of fixture.outputs){assert.equal(hash(f.path),f.sha256);assert(run.inputs.some(p=>path.resolve(p.path)===path.resolve(f.path)&&p.sha256===f.sha256));}
+const tree=l=>json(run.guiRun+'/'+l+'.json').accessibility.tree;
+assert.match(tree('08-project-opened'),/Notes: 256/);assert.match(tree('08-project-opened'),/Authored\.bnp/);
+assert.match(tree('11-playing-observed'),/Playing document snapshot/);assert.match(tree('13-stopped-observed'),/Stopped\./);assert.match(tree('15-replaying-observed'),/Playing document snapshot/);assert.match(tree('17-final-stopped-observed'),/Stopped\./);
+const b=fs.readFileSync(dir+'/output.wav');assert.equal(b.readUInt32LE(4)+8,b.length);let fmt,data;
+for(let p=12;p<b.length;){const n=b.readUInt32LE(p+4),id=b.toString('ascii',p,p+4);assert(p+8+n<=b.length);if(id==='fmt ')fmt=b.subarray(p+8,p+8+n);if(id==='data')data=b.subarray(p+8,p+8+n);p+=8+n+(n&1);}
+assert(fmt&&data);assert.equal(fmt.readUInt16LE(14),32);assert(fmt.readUInt16LE(0)===3||(fmt.readUInt16LE(0)===65534&&fmt.readUInt32LE(24)===3));
+const rate=fmt.readUInt32LE(4),channels=fmt.readUInt16LE(2),align=fmt.readUInt16LE(12);assert.equal(data.length/align,rate*capture.seconds);
+const sample=i=>{let v=0;for(let c=0;c<channels;c++){const x=data.readFloatLE(i*align+c*4);assert(Number.isFinite(x));v+=x/channels;}return v;};
+const t=a=>(Date.parse(a)-Date.parse(run.readyUtc))/1000;
+const action=name=>{const a=actions.find(a=>a.action===name);assert(a);return {before:t(a.beforeUtc),after:t(a.afterUtc)};};
+const play=action('play'),stop=action('stop'),restart=action('restart'),finalStop=action('final-stop');
+assert(play.before>2&&stop.before>play.after+4&&restart.before>stop.after+4&&restart.after<capture.seconds-4&&finalStop.before>restart.after+4&&finalStop.after<capture.seconds-4);for(const a of [play,stop,restart,finalStop])assert(a.after>=a.before);
+assert(stop.after-play.before<fixture.nominalSeconds-2&&finalStop.after-restart.before<fixture.nominalSeconds-2,'Both Stops must precede natural completion');
+function phase(name,a,z){assert(a>=0&&z<=capture.seconds&&z-a>=2);let sum=0,peak=0,count=0;const windows=[];for(let p=Math.ceil(a*rate);p<Math.floor(z*rate);p+=Math.round(rate*.1)){let s=0,n=0,cos=0,sin=0;const end=Math.min(Math.floor(z*rate),p+Math.round(rate*.1));for(let i=p;i<end;i++){const v=sample(i),w=.5-.5*Math.cos(2*Math.PI*(i-p)/(end-p-1));s+=v*v;n++;cos+=v*w*Math.cos(2*Math.PI*440*i/rate);sin+=v*w*Math.sin(2*Math.PI*440*i/rate);peak=Math.max(peak,Math.abs(v));}sum+=s;count+=n;windows.push({rms:Math.sqrt(s/n),energy440:2*Math.hypot(cos,sin)/n});}return {name,start:a,end:z,rms:Math.sqrt(sum/count),peak,max440:Math.max(...windows.map(w=>w.energy440)),soundingWindows:windows.filter(w=>w.rms>.002&&w.energy440>.001).length};}
+const phases=[phase('baseline',.3,play.before-1),phase('playing',play.after+1,stop.before-1),phase('stopped',stop.after+1,restart.before-1),phase('restarted',restart.after+1,finalStop.before-1),phase('final-stopped',finalStop.after+1,capture.seconds-1)];
+const packets=fs.readFileSync(dir+'/packets.csv','utf8').trim().split(/\r?\n/).slice(1).map(s=>s.split(',').map(Number));let maxGapFrames=0;for(let i=1;i<packets.length;i++)maxGapFrames=Math.max(maxGapFrames,packets[i][0]-packets[i-1][0]-packets[i-1][1]);
+const packetIntegrity=packets.length>0&&packets.every((p,i)=>(p[2]&4)===0&&(!(p[2]&1)||i===0))&&maxGapFrames<=rate*.002&&capture.timestampErrors===0;
+const passed=packetIntegrity&&phases.filter(p=>['baseline','stopped','final-stopped'].includes(p.name)).every(p=>p.rms<.0001&&p.peak<.0005)&&phases.filter(p=>['playing','restarted'].includes(p.name)).every(p=>p.rms>.002&&p.soundingWindows>=4);
+const proof={schema:1,passed,createdUtc:new Date().toISOString(),phases,packetIntegrity,maxGapFrames,finalStopWithinCapture:finalStop.after<capture.seconds,processId:run.processId,producerSha256:run.exeSha256,runSha256:hash(dir+'/run.json'),actionsSha256:hash(run.guiRun+'/actions.json'),wavSha256:hash(dir+'/output.wav'),captureSha256:hash(dir+'/capture.json'),packetsSha256:hash(dir+'/packets.csv'),auditorSha256:hash(process.argv[1]),scope:'Known authored 440Hz DLS fixture; GUI Play/Stop/restart default-render recording; conservative 1 second timing margins',limitations:['System-wide endpoint capture, not physical speaker proof','Single process dependency snapshot; no continuous module inventory'],fullAcceptance:false};
+fs.copyFileSync(process.argv[1],dir+'/gui-final-stop-auditor.mjs');fs.writeFileSync(dir+'/gui-final-stop-audio-proof.json',JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify(proof));if(!passed)process.exitCode=1;
+
+
+

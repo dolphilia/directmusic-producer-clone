@@ -129,6 +129,82 @@ PID7868はAlt+F4で終了した（clipboard-reference-ui-exit.json）。4ケー�
 
 再貼付けのUndoで3小節目が消え、Redoで復元された。保存後、File/Close Projectで候補プロジェクトを閉じ、同じ明示パスから読み直すと1・3小節目の112を表示した。閉鎖時に共有styleリンクを外す確認が出たため、その確認と実際の閉鎖を区別して記録する。独立した複数文書の受入試験には数えない。ui-actions.jsonlのclipboard_candidate_*と、入力・DLL・3保存・UI操作・再読込・終了を照合するSummarize-TempoIntegrationで再検査できる。
 
-PID5564をAlt+F4で終了し、プロセス不存在を確認した（clipboard-candidate-ui-exit.json）。Set-TempoClipboardTrialのRestoreで元DLLへ戻し、元ハッシュを確認した（tempo-clipboard-restoration.json）。候補保存物の原版再読込用PID19980は起動警告の手動OK待ち（clipboard-original-reload-startup-windows.jsonl）。この候補690のプロセス再起動後の再読込、原版での相互読込は未確認。HKCU471値／87ルート、HKLM105値は引き続き試験用に保持し、復元待ちである。
+PID5564をAlt+F4で終了し、プロセス不存在を確認した（clipboard-candidate-ui-exit.json）。Set-TempoClipboardTrialのRestoreで元DLLへ戻し、元ハッシュを確認した（tempo-clipboard-restoration.json）。候補保存物の原版再読込用PID19980は、起動警告の手動OK後に編集画面が開いた。明示パスでClipboardCandidateのQuickStartを開き、プロジェクトのプロパティでも同じパスを照合した。heartlandの1・3小節目に112を表示し、実ロードDLLのハッシュは元版bb9811c74…だった（clipboard-original-reload-loaded-identity.json、ui-actions.jsonlのclipboard_original_reload_*）。原版終了後も保存ファイルのSHA-256はe0e44c37…のままで、元へ戻したDLLのハッシュも一致した（clipboard-original-reload-ui-exit.json）。候補690のプロセス再起動後の再読込は未確認。HKCU471値／87ルート、HKLM105値は引き続き試験用に保持し、復元待ちである。
+
+PID19980の原版で同じheartlandを再生した。ElapsedとOffsetが進み、発音数17・最大19、その後最大20を表示した。ユーザーから「音楽が聞こえた」と聴取確認を得た。停止後の発音数0とAlt+F4によるプロセス終了も確認した（clipboard_original_playback_*）。これは原版DLL群による候補保存物の再生であり、候補TempoDLLをロードした状態の音声出力、録音波形の比較、Producer全体の互換実装による再生は未検証である。
 
 クリップボードのネイティブ比較については、原版TimelineのExportでカウンターが残ることを動的にも確認した。[寿命の調査](timeline-clipboard-lifetime.md)に、復元処理の異常終了と修正、同一36ソース・プローブによる再比較を記録する。候補UIの成功をTimelineアンロードの成功や全体再構築の完了へ拡大しない。
+
+## 候補690の終了・別プロセスでの再読込
+
+2026-10-02 19:08〜19:21（日本時間）。前回のPID5564終了記録と原版バックアップ・復元を照合し、同じ候補690を再配置した。`Set-TempoClipboardTrial.ps1 -Mode Reinstall` は以前の置換記録と元バックアップを上書きせず、新しい `tempo-clipboard-reinstall-20261002T100850085Z.json` を残す。原版PID18600の終了を確認してから配置した。
+
+新しいPID6548の起動警告を公式署名付きAutoItで撮影・照合し、実ボタンのControlClickで進めた（`startup-autoit-20261002T100926320Z-click`）。Skyの旧式Open Project入力は、キャッシュ要素不一致、geometry unavailable、settable不一致で成功しなかった。入力成功に数えず、同じ生存プロセスのままAutoItで対象ダイアログと入力欄・実ボタンを照合した。ID1検索は一覧を返す場合があり、Button1は読取り専用チェックだったため、ボタン群の実ID1・親ダイアログを確認して開くButton2を特定した。失敗観測を `project-autoit-*` に保持した。
+
+`project-autoit-20261002T101446001Z-open` のログは明示パス `app/UiTest/ClipboardCandidate/QuickStart/QuickStart.pro` の入力文字列とControlClick=1、ダイアログ閉鎖を保持する。`tree-autoit-20261002T101700911Z-observe` が追加された5番目のQuickStartと4子項目を観測し、`tree-autoit-20261002T101813571Z-open` がそのheartland.sgpをテキスト・PID・実行ファイル照合後に開いた。F11でプロジェクトルートのプロパティを要求した際はNo properties availableであり、プロジェクトの実パスをプロパティ画面で確認できたとはしない。
+
+セグメント読込後、実ロードの候補SHA-256 `69029024df3a082e14343cc8684d2baeb9162b3087fa8f310a2d29e3b5bdd733` を確認した（`clipboard-candidate-restarted-loaded-identity.json`）。画面の1・3小節目に112.00を表示し、3小節目のTempo PropertiesはMeasure=3、Beat=1、Tick=0、Tempo=112.00だった。`ui-actions.jsonl` の `clipboard_candidate_restart_reloaded_overview` と `clipboard_candidate_restart_measure3_112`、`clipboard-candidate-restart-frame.png` が証拠。前回保存のheartland.sgpは読込前後・終了後もSHA-256 `e0e44c37ed4d5c6064ec9da533138f3f7a6fbd127cb454ca8c7a9845ae4f419c` のままである。
+
+別の未確認点を二つ残す。先頭イベントを選んだ表示後もTempo PropertiesがMeasure=3を示した（`clipboard-candidate-restart-property-selection.png`、`clipboard_candidate_restart_selection_property_pending`）。選択の更新、ページの更新、操作ツールの配送のどこに原因があるか、同じ操作を原版で比較する必要がある。また `.pro` は読込前SHA-256 `4a9209d66d56e5604afd1628f7f16981f7000ad47ed1e750a3cd06077d1deea1`、終了後 `5698951e97c71f94002b896d17c997ca4bbdf6614dd629a6533f739ba654cd44` に変わった。終了後ファイルを `clipboard-candidate-restart-project-after.pro` に保持したが、今回は読込前のバイト列を保存しておらず、差分の原因は未確定。次回はOpen-ProducerTrialProjectAutoItが読込前コピーも保持する。文書を意図的に編集しなかったことを、プロジェクトファイル全体の不変性とは扱わない。
+
+PID6548はAlt+F4後に不存在を確認し（`clipboard-candidate-restarted-ui-exit.json`）、元DLLへ戻した。現在の試験コピーのTempoStripMgrは原版 `bb9811c74…`。Summarize-TempoIntegrationのschema4が別PID・実ロードDLL・元入力・ツール成功・保存ソース・明示パス・セグメント開閉・PNGハッシュを照合し、限定した再起動読込を確認する。同時に選択／ページ更新とプロジェクトメタデータの未確認を残す。音声出力、実ドラッグ、複数文書と全体再構築の合格は増やしていない。
+
+```powershell
+node scripts/Summarize-TempoIntegration.mjs work/integration/user-trial/20261002T074920855Z
+```
+
+次は復元した原版で同じ1・3小節目の選択とプロパティ切替を比較し、`.pro` の読込前後をコピーして差分のチャンクを特定する。
+
+## 原版による選択表示とプロジェクトメタデータの切り分け
+
+2026-10-02 19:30〜19:33（日本時間）、復元済み原版でPID17040を起動した。公式AutoItによる撮影・自動OKは再び成功した（`startup-autoit-20261002T103020465Z-click`、ControlClick=1、dialogDismissed=true）。原版フレームのプロジェクトプロパティには、候補保存物の `UiTest/ClipboardCandidate/QuickStart/QuickStart.pro` が表示された。ここからセグメントを開く前に `.pro` をコピーした。これは起動前のコピーではなく、自動再開後・セグメント操作前のコピーである。ハッシュ5698951e…は前回候補終了後のスナップショットとも一致した。
+
+AutoItで5番目のQuickStartとその4子項目を読取り、heartland.sgpを開いた（`tree-autoit-20261002T103100745Z-observe`、`tree-autoit-20261002T103110869Z-open`）。実ロードのTempo DLLは原版bb9811c74…だった。画面の3小節目の112.00をクリックするとTempo PropertiesはMeasure=3、続いて1小節目をクリックするとMeasure=1へ更新された。閉じてF11で再表示してもMeasure=1だった。UI観測は `clipboard_original_selection_measure3`、`clipboard_original_selection_measure1`、`clipboard_original_selection_measure1_reopened`、画像は `clipboard-original-selection-measure1.png` と `clipboard-original-selection-measure1-reopened.png`。候補PID6548のMeasure=3残存と原版の表示は異なる。原因と修正は未確定で、選択／プロパティ更新の受入は未合格とする。
+
+同一対象のSetObjectがGetDataを再取得しない契約は、既存の原版プローブと静的コードの両方で確認済みである。この契約を変えて表示差を隠さず、マウス選択後にページ更新を要求する原版の経路を調べる。
+
+Alt+F4で終了後、PID17040の不存在を確認した（`clipboard-original-selection-ui-exit.json`）。heartland.sgpはe0e44c37…のまま。`.pro` は5698951e…から89ff596d…へ変わった。`clipboard-original-selection-project-before.pro` と `clipboard-original-selection-project-after.pro` の全leaf payloadを正規化なしで比較し、63件中56件が一致、7件が変更された（`clipboard-original-project-metadata-comparison.json`）。差分はpjctのoffset 2〜17、open/guidの16 bytes、edtwと4つのfilhの先頭16 bytesに限られる。GUID配置に見える識別子領域であり、各識別子の意味と再生成理由はまだ仕様化していない。原版でも管理情報が変わることは分かったが、候補の読込前バイト列がないため、候補側の変更全体を説明できたとはしない。
+
+Summarize-TempoIntegrationのschema5は原版DLL・同じ保存セグメント・プロセス終了・AutoItソース・UI値・PNGと前後ファイルのハッシュを検査し、RIFF比較を再実行して記録と照合する。原版比較待ちは解除し、候補の表示差と原因未確定を残す。現在はProducer終了済み、試験用Tempo DLLは原版へ復元済み。一時登録は後続試験用に保持中。
+
+## 選択後のプロパティ更新の修正
+
+原版TempoStripMgrの左ボタン処理では、選択変更・Invalidate・ShowPropertiesに続いてページ管理のRefreshDataを呼んでいた。WM_LBUTTONDOWNのRVA aec8〜aee1と、複数選択を単一へ縮小するWM_LBUTTONUPのb0bb〜b121で確認した。候補にこの更新要求を追加した。同一対象のSetObjectがGetDataを省略する既存契約は維持した。
+
+実ネイティブページを表示したまま、3小節目・1小節目・Ctrlで3小節目を追加・1小節目への縮小・2小節目の空拍を順にクリックし、各ボタン押下／解放の10段階で選択モデルと実コントロールの表示を照合する回帰を追加した。テスト側からクリック後のRefreshDataは呼ばない。修正前候補690の `work/candidate/tempo/20261002T103841783Z` は全10段階で古い137.25／Measure 1／Beat 2／Tick 42が残り終了1、原版 `work/reference/tempo/20261002T103829395Z` は終了0。保存データの不変性は両方で確認した。これはロード拒否ではなく表示回帰の失敗である。
+
+新候補SHA-256 `00c3a3aaf7a8cbfeb2a6a0aa9c954f8421dba5e5ec75d74ee865bc6ecfd8448f` と原版を、同じプローブSHA-256 `3d93c73cf4970a794063cd1973e572a0228f78629823e4a19e4394d0f8713f1c` と36ソースで比較した。原版 `20261002T103949808Z` と候補 `20261002T104000544Z` はともに終了0。比較 `work/comparison/tempo-dll/20261002T104031478Z/comparison.json` は6,914観測、445通常ファイル、123コピー用データ、66画像で差異0、選択更新10段階と保存不変を検査する。比較器のページ呼出し期待数を追加ケースに対応させた。ネイティブ実行時の比較器スナップショットと、この集計時の比較器ハッシュは区別して保持する。
+
+`Set-TempoSelectionTrial.ps1` はこの成功比較、実行メタデータとログ、対象ソース・DLLのハッシュ、原版42ファイルを照合し、原版と候補の両バイナリを保存して試験コピーだけを置換した（`tempo-selection-replacement.json`）。新PID5896の既知警告を公式AutoItで撮影・自動OKし、Project Propertiesに表示された同じClipboardCandidateの実パスを照合してheartlandを開いた。実ロードの新候補ハッシュは `selection-fixed-loaded-identity.json` に保持する。
+
+本体画面で3小節目を選ぶとMeasure 3、続けて1小節目を選ぶとMeasure 1に更新された。閉じてF11で再表示してもMeasure 1／Beat 1／Tick 0／112.00だった。`ui-actions.jsonl` の `selection_fixed_measure3`、`selection_fixed_measure1`、`selection_fixed_measure1_reopened` と、`selection-fixed-measure1.png`、`selection-fixed-measure1-reopened.png` が証拠である。Alt+F4後にPID5896の不存在、heartland.sgpのe0e44c37…不変を確認し（`selection-fixed-ui-exit.json`）、原版bb9811c74…へ復元した（`tempo-selection-restoration.json`）。
+
+Summarize-TempoIntegrationのschema6は新候補の成功を `selectionFix` に分けて検査する。候補690の失敗履歴は残す。今回のネイティブ比較はsystemClipboard=falseであり、旧候補のクリップボードUI・終了再起動・原版での聴取結果を新候補の合格へ引き継がない。新候補のそれらの受入、実ドラッグ、複数文書、プロジェクト管理情報と非テンポ保存差分、TimeSigの比較と全体再構築を継続する。
+## 2026-10-02 選択表示修正候補の新しいクリップボード試験
+
+状態：候補SHA-256 `00c3a3aaf7a8cbfeb2a6a0aa9c954f8421dba5e5ec75d74ee865bc6ecfd8448f` の本体コピー・切り取り・再貼付け・保存・Undo／Redoを確認した。今回の保存データの再起動読込・原版相互運用・音声出力は未確認。全体の完了判定は変更しない。
+
+独立した所有記録とバックアップを作る `Set-TempoHostRound.ps1` を追加し、検証済み候補の保存DLLだけを試験コピーへ設置した。新しい原版QuickStart入力5ファイルを `UiTest/SelectionClipboard/QuickStart` へコピーし、以前の `ClipboardCandidate` 入力と証拠は保持した。PID20076で起動警告の自動OK、明示したプロジェクトの読込、ツリーからのheartland.sgp起動を公式AutoItで実行した。実ロードDLLのパス・基底アドレス・ハッシュを確認した。
+
+証拠は `work/integration/user-trial/20261002T074920855Z/tempo-host-rounds/20261002T110939964Z`。保存した5つのRIFFを境界検査付きで再解析した結果は次の通り。
+
+| 操作 | 保存テンポ（時刻、BPM） | スナップショット |
+| --- | --- | --- |
+| 先頭をコピーして2小節目へ貼付け | (0,112)、(3072,112) | paste-second.sgp |
+| 2小節目を切り取り | (0,112) | cut-second.sgp |
+| 3小節目へ再貼付け | (0,112)、(6144,112) | paste-third.sgp |
+| Undo | (0,112) | undo-third.sgp |
+| Redo | (0,112)、(6144,112) | redo-third.sgp |
+
+Undo保存はcut-secondと、Redo保存はpaste-thirdとファイル全体のSHA-256が一致した。PID20076終了後の保存ファイルもRedoと一致した。終了を確認してから原版TempoのSHA-256 `bb9811c74f68dcf0b37d32fe2ae89d3e45962e59b95f1ec93ddf7a12635a5c95` へ復元した。42個の元アプリファイルの照合、候補のネイティブ比較6914件、公式AutoItの保存ソースと実行ログ、保存RIFF、終了・復元を `Summarize-TempoHostRound.mjs` で再検査し、integration-summary schema7へ追加した。
+
+記録上の制限：画面で選択3→1への表示更新は観測したが、今回の `recordHostUi` は以前の変数束縛をクロージャに保持し、25件すべてに起動直後の古いアクセシビリティツリーを保存していた。元ログを改変せず `ui-log-quality.json` に原因とハッシュを残し、今回のツリーをプロジェクト／選択プロパティの証拠から除外した。AutoItの独立ログ・実ロードDLL照合・保存ファイルと復元はこの不具合の影響を受けない。前回PID5896の別証拠による選択修正の確認は維持する。次の記録は現在の観測を明示的な関数引数として渡す。
+
+再検査コマンド：
+
+```powershell
+node scripts/Summarize-TempoHostRound.mjs work/integration/user-trial/20261002T074920855Z/tempo-host-rounds/20261002T110939964Z
+node scripts/Summarize-TempoIntegration.mjs work/integration/user-trial/20261002T074920855Z
+```
+
+次はこの候補と保存した新しいSGPで終了・再起動読込と選択プロパティの証拠を取り、原版で同じファイルを開く。候補音声出力、保存時のテンポ以外のメタデータの差、実ドラッグ、複数文書、TimeSig接続とProducer全体の再構築は残っている。登録試験の87ルート471値と32ビットHKLM105値は継続試験のため復元待ちである。

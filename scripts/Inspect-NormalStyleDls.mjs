@@ -1,0 +1,34 @@
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import assert from 'node:assert/strict';
+const runPath=path.resolve(process.argv[2]),dir=path.dirname(runPath),core=path.join(dir,'core');
+const read=p=>fs.readFileSync(p),json=p=>JSON.parse(read(p).toString().replace(/^\uFEFF/,'')),hash=p=>crypto.createHash('sha256').update(read(p)).digest('hex');
+function parse(b,a=0,z=b.length){const out=[];for(let p=a;p<z;){assert(p+8<=z);const id=b.toString('ascii',p,p+4),n=b.readUInt32LE(p+4),e=p+8+n,box=id==='RIFF'||id==='LIST';assert(e+(n&1)<=z);assert(!box||n>=4);out.push({id,type:box?b.toString('ascii',p+8,p+12):'',data:box?null:b.subarray(p+8,e),children:box?parse(b,p+12,e):[]});p=e+(n&1);}return out;}
+const one=(ns,id,type='')=>{const found=ns.filter(x=>x.id===id&&x.type===type);assert.equal(found.length,1);return found[0];};
+const root=p=>{const ns=parse(read(p));assert.equal(ns.length,1);return ns[0];};
+const r=json(runPath),b=json(r.buildSummary);assert(r.passed&&r.exitCode===0&&r.checks===17&&!r.timedOut&&!r.launchError);assert(b.passed&&b.sourceSnapshotUnchanged);
+for(const [p,h] of [[r.buildSummary,r.buildSummarySha256],[r.executable,r.executableSha256],[path.join(dir,'driver.ps1'),r.driverSha256],[r.inputPath,r.inputSha256],[path.join(dir,'input.dls'),r.inputSha256]])assert.equal(hash(p),h);
+for(const s of b.sources){assert.equal(hash(path.join(b.sourceRoot,s.path)),s.sha256);assert.equal(hash(path.resolve(s.path)),s.sha256);}for(const o of b.outputs)assert.equal(hash(path.join(path.dirname(r.buildSummary),o.path)),o.sha256);
+const style=root(path.join(core,'Heartlnd.stp'));assert.equal(style.type,'DMST');
+const ptn=one(style.children,'LIST','pttn'),part=one(style.children,'LIST','part'),header=one(ptn.children,'ptnh').data;
+assert.equal(header.readUInt16LE(6),0);assert(!ptn.children.some(x=>x.type==='DMBD'||x.id==='mtfs'));assert.equal(header.readUInt16LE(8),1);
+const prfc=one(one(ptn.children,'LIST','pref').children,'prfc').data;
+assert(prfc.subarray(0,16).equals(one(part.children,'prth').data.subarray(132,148)));assert.equal(prfc.readUInt32LE(24),5);
+const notes=one(part.children,'note').data;assert.equal(notes.readUInt32LE(0),24);assert.equal(notes.length,100);
+for(let i=0;i<4;i++){const p=4+i*24;assert.equal(notes.readInt32LE(p),i*4);assert.equal(notes.readUInt32LE(p+4),0xffffffff);assert.equal(notes.readInt32LE(p+8),384);assert.equal(notes.readInt16LE(p+12),0);assert.equal(notes.readUInt16LE(p+14),60);assert.equal(notes[p+16],96);assert.equal(notes[p+21],0);}
+const band=one(style.children,'RIFF','DMBD'),instrument=one(one(band.children,'LIST','lbil').children,'LIST','lbin'),bins=one(instrument.children,'bins').data;
+assert.equal(bins.readUInt32LE(0),519);assert.equal(bins.readUInt32LE(24),5);assert.equal(bins[32],64);assert.equal(bins[33],100);
+const ref=one(instrument.children,'LIST','DMRF'),dls=root(path.join(core,'owned.dls'));assert(read(path.join(core,'owned.dls')).equals(read(r.inputPath)));
+assert(one(ref.children,'guid').data.equals(one(dls.children,'dlid').data));assert.equal(one(ref.children,'file').data.toString('utf16le').replace(/\0+$/,''),'owned.dls');
+const segment=root(path.join(core,'Normal.sgp'));assert.equal(segment.type,'DMSG');assert.equal(one(segment.children,'segh').data.readUInt32LE(4),49152);
+const tracks=one(segment.children,'LIST','trkl').children;assert.equal(tracks.length,4);assert(tracks.every(x=>!x.children.some(c=>c.id==='seqt'||c.id==='evtl')));
+const beforeBand=root(path.join(core,'BeforeBand.sgp'));assert.equal(one(beforeBand.children,'LIST','trkl').children.length,3);
+const bandTrack=one(tracks.flatMap(x=>x.children),'RIFF','DMBT');const item=one(one(bandTrack.children,'LIST','lbdl').children,'LIST','lbnd');
+assert.equal(one(item.children,'bd2h').data.readInt32LE(0),0);assert.equal(one(item.children,'bd2h').data.readInt32LE(4),0);
+const copiedBand=one(item.children,'RIFF','DMBD'),copiedInstrument=one(one(copiedBand.children,'LIST','lbil').children,'LIST','lbin');
+assert(one(copiedInstrument.children,'bins').data.equals(bins));assert(one(copiedBand.children,'guid').data.equals(one(band.children,'guid').data));
+const copiedRef=one(copiedInstrument.children,'LIST','DMRF');assert.equal(one(copiedRef.children,'refh').data.readUInt32LE(16),3);assert(one(copiedRef.children,'guid').data.equals(one(dls.children,'dlid').data));assert(!copiedRef.children.some(x=>x.id==='file'));
+const tempo=one(tracks.flatMap(x=>x.children),'tetr').data;assert.equal(tempo.readUInt32LE(0),16);assert.equal(tempo.length,36);assert.equal(tempo.readInt32LE(4),0);assert.equal(tempo.readDoubleLE(12),120);assert.equal(tempo.readInt32LE(20),3072);assert.equal(tempo.readDoubleLE(28),180);
+const command=one(tracks.flatMap(x=>x.children),'cmnd').data;assert.equal(command.length,16);assert.equal(command.readUInt32LE(0),12);assert.equal(command.readInt32LE(4),0);assert.equal(command[11],0);assert.equal(command[12],50);
+const styleRef=one(one(tracks.flatMap(x=>x.children),'LIST','sttr').children,'LIST','strf');assert.equal(one(styleRef.children,'stmp').data.readInt32LE(0),0);assert(one(one(styleRef.children,'LIST','DMRF').children,'guid').data.equals(one(style.children,'guid').data));
+const outputs=['Heartlnd.stp','owned.dls','Normal.sgp','Normal.dmpj'].map(n=>({path:path.join(core,n),sha256:hash(path.join(core,n))}));
+const proof={schema:1,createdUtc:new Date().toISOString(),passed:true,scope:'Source authored normal Pattern/root ownedDLS, explicit source Style Band copy, no Sequence fallback, tempo and command, saved Project only',runSha256:hash(runPath),buildSummarySha256:r.buildSummarySha256,sources:b.sources.length,outputs,notes:4,channel:5,midiValue:60,tempos:[{clocks:0,bpm:120},{clocks:3072,bpm:180}],audioVerified:false,fullAcceptancePassed:false,auditorSha256:hash(new URL(import.meta.url))};
+fs.copyFileSync(new URL(import.meta.url),path.join(dir,'auditor.mjs'));fs.writeFileSync(path.join(dir,'normal-style-dls-proof.json'),JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify(proof,null,2));

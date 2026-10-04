@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const self=fileURLToPath(import.meta.url),repo=path.resolve(path.dirname(self),'..'),dir=path.resolve(process.argv[2]);
+const read=p=>fs.readFileSync(p),hash=b=>crypto.createHash('sha256').update(b).digest('hex'),json=p=>JSON.parse(read(p).toString().replace(/^\uFEFF/,''));
+const statePath=path.join(dir,'states.json'),state=json(statePath),build=json(state.buildSummary);
+assert(build.passed&&build.sourceSnapshotUnchanged);assert.equal(hash(read(state.exe)),state.exeSha256); assert.equal(build.outputs.find(o=>o.path==='install/bin/Producer.exe').sha256,state.exeSha256);
+for(const s of build.sources){assert.equal(hash(read(path.join(build.sourceRoot,s.path))),s.sha256);assert.equal(hash(read(path.join(repo,s.path))),s.sha256);}
+for(const record of state.records){assert.equal(record.window.app.toLowerCase(),('process:'+state.exe.replaceAll('/','\\')).toLowerCase());for(const shot of record.screenshots)assert.equal(hash(read(path.join(dir,shot.path))),shot.sha256);}
+const record=label=>{const r=state.records.find(r=>r.label===label);assert(r,label);return r;};
+assert(record('command-editor-opened').accessibility.tree.includes('Saved. 2 commands.'));
+for(const label of ['command-moved-settled','command-reopened']) assert(record(label).accessibility.tree.includes('Command 2: 4608 clocks, measure 2, beat 3')); assert(record('group2-settled').accessibility.tree.includes('Modified. 0 commands.')); assert(record('command-move-saved').accessibility.tree.includes('Saved. 2 commands.'));assert(record('reload-command-first').accessibility.tree.includes('Command 1: 3072 clocks, measure 2, beat 1')); assert(record('reload-command-second').accessibility.tree.includes('Command 2: 4608 clocks, measure 2, beat 3'));assert(record('reload-command-second').accessibility.tree.includes('Saved. 2 commands.'));assert.notEqual(record('reload-moved-opened').window.id,record('owned-opened').window.id);
+function chunks(b,start=0,end=b.length){const out=[];for(let p=start;p<end;){assert(p+8<=end);const n=b.readUInt32LE(p+4),stop=p+8+n,next=stop+(n&1);assert(next<=end);const id=b.toString('ascii',p,p+4),container=id==='RIFF'||id==='LIST';if(container)assert(n>=4);out.push({id,type:container?b.toString('ascii',p+8,p+12):'',offset:p,children:container?chunks(b,p+12,stop):[],data:b.subarray(p+8,stop)});p=next;}return out;}
+const owned=read(path.join(dir,'owned.sgp')),edited=read(path.join(dir,'moved.sgp'));
+const root=chunks(owned)[0];assert.equal(root.type,'DMSG');const tracks=root.children.filter(c=>c.id==='LIST'&&c.type==='trkl');assert.equal(tracks.length,1);
+const commands=tracks[0].children.flatMap(c=>c.children.filter(d=>d.id==='cmnd'));assert.equal(commands.length,1);const c=commands[0];assert.equal(c.data.readUInt32LE(0),12);assert.equal(c.data.length,28);assert.equal(c.data[12],50);
+const expected=Buffer.from(owned),first=Buffer.from(c.data.subarray(4,16)),second=Buffer.from(c.data.subarray(16,28));first.writeInt32LE(4608,0);first.writeUInt16LE(1,4);first[6]=2;second.copy(expected,c.offset+12);first.copy(expected,c.offset+24);assert(edited.equals(expected),'Only moved Command record order/time/measure/beat may change');
+const proof={schema:1,passed:true,fullAcceptance:false,createdUtc:new Date().toISOString(),buildSummary:state.buildSummary,buildSummarySha256:hash(read(state.buildSummary)),exeSha256:state.exeSha256,sourceCount:build.sources.length,statesSha256:hash(read(statePath)),captureCount:state.records.length,ownedSha256:hash(owned),editedSha256:hash(edited),commandBefore:0,commandAfter:4608,auditorSha256:hash(read(self)),scope:'Current main Command time move, group1/empty group2 selection restoration, editor close/reopen selection retention and SaveAs with exact full bytes. Separate launch reload displays both saved records; original GUI process remains open. Normal exit/re-save/GUI CRUD/copy/paste/audio/Style Pattern/original comparison/all40/all8 unfinished.'};
+fs.copyFileSync(self,path.join(dir,'Inspect-CommandSelectionGui.mjs'));fs.writeFileSync(path.join(dir,'command-selection-gui-proof.json'),JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify(proof));

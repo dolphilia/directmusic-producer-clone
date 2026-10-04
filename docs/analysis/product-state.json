@@ -1,0 +1,1230 @@
+{
+  "schema": 1,
+  "updatedJst": "2026-10-05",
+  "fullGoal": "active; incomplete",
+  "productBuild": "work/build/product-snapshot/20261004T150511775Z/build-summary.json",
+  "productExeSha256": "d0a7abbee86dcb391262efefde6ecb07170aea02595776830990d803214a411e",
+  "coreTestExeSha256": "fe16fdf97e520b4ba6ea3c1ea2a632dfb4fe4ed8ecd2b9e1d1d04079abbfa3a8",
+  "configuration": "passed configure0 saved75",
+  "compilation": "passed build0",
+  "install": "passed install0",
+  "runtimeAttempt": "work/acceptance/runtime-motif-input/20261004T150755662Z/audio-20261004T150819088Z/Motif/run.json",
+  "attemptedExeSha256": "d0a7abbee86dcb391262efefde6ecb07170aea02595776830990d803214a411e",
+  "attemptedBuild": "work/build/product-snapshot/20261004T150511775Z/build-summary.json",
+  "runtime": "現行150511775Z保存75sources構成/build/install0。Conductor共通default AudioPathを次のSegment/Motif要求へ適用し、埋込Segment優先・私有コピー/元文書保持を11checks/独立RIFF全bytes監査で確認。本体TransportメニューとMotif Transport defaultを接続、現行GUI未実行。新native Motif28/Runtime11出力・元Source不在、共通default経由GetMotifとWASAPI2回880Hz120BPM/Stop再開/3区間RMS0/3派生PCM拒否passed。再生56modules原版40hash一致0。再生中切替/未接続silent互換/GUI/全core/物理隔離/全40/全八未完了。",
+  "coreTests": "current Transport11/Motif28 passed; full core unexecuted",
+  "hostAcceptance": "現行150511775Z保存75sources構成/build/install0。Conductor共通default AudioPathを次のSegment/Motif要求へ適用し、埋込Segment優先・私有コピー/元文書保持を11checks/独立RIFF全bytes監査で確認。本体TransportメニューとMotif Transport defaultを接続、現行GUI未実行。新native Motif28/Runtime11出力・元Source不在、共通default経由GetMotifとWASAPI2回880Hz120BPM/Stop再開/3区間RMS0/3派生PCM拒否passed。再生56modules原版40hash一致0。再生中切替/未接続silent互換/GUI/全core/物理隔離/全40/全八未完了。",
+  "runtimeModuleInventory": "work/acceptance/runtime-motif-input/20261004T150755662Z/audio-20261004T150819088Z/Motif/lifecycle-module-provenance.json",
+  "staticImports": [
+    "USER32.dll",
+    "GDI32.dll",
+    "COMDLG32.dll",
+    "SHELL32.dll",
+    "ole32.dll",
+    "KERNEL32.dll",
+    "ADVAPI32.dll"
+  ],
+  "originalModuleDependencies": "Point captures CLI56/GUI128/reopen105/host24 original40 hash matches0; physical isolation and full40/full8 unverified",
+  "featureMap": "docs/analysis/feature-map.csv",
+  "inputObservation": "work/analysis/product-inputs/20261002T132547062Z/inputs.json",
+  "commonBuild": "work/build/recovery-snapshot/20261002T132755385Z/build-summary.json",
+  "commonBuildScope": "60 saved files, 15 targets; intermediate source version, before final GUID/group/header/transaction fixes. All binaries unexecuted. Legacy probes have two C4702 warnings.",
+  "nextActions": [
+    "Validate current Transport menu and Motif default selection in actual GUI with calibrated WASAPI capture and normal exit/separate reload; verify real Segment embedded-path precedence using a conflicting default configuration. Then implement live AudioPath switching and original silent unconnected-PChannel behavior with multi-session ownership, without dropping document bytes. Continue retained per-file Runtime folder memory/native save/reopen and all40/all8; do not repeat frozen OS error5 failures without changed-condition evidence."
+  ],
+  "previousPolicyRefusal": "work/acceptance/product/20261002T132157931Z/run.json",
+  "userEnvironmentChange": "User explicitly reported switching SAC off; read-only registry confirmed state 0 at 2026-10-02T13:58:02Z. Agent did not change security settings.",
+  "guiEvidence": "work/acceptance/audiopath-gui/20261004T125500Z/gui-file-proof.json",
+  "previousGuiReloadEvidence": "work/acceptance/product-ui/20261002T140310Z/resave-comparison.json; SHA053d831c7b7edab2076f33257bd00f8f83df9dfc7f2068ffc8956d377f6b130c; only135712877Z",
+  "playbackApi": "Current063439196Z unexecuted",
+  "audioAcceptance": "work/acceptance/runtime-motif-input/20261004T150755662Z/audio-20261004T150819088Z/Motif/runtime-motif-audio-proof.json",
+  "audioEvidence": [
+    "work/acceptance/normal-style-audio/20261004T025034077Z/normal-style-audio-proof.json",
+    "work/analysis/normal-style-gui-audio/20261004T035000Z/audio-20261004T035622082Z/normal-style-gui-audio-proof.json"
+  ],
+  "playbackModuleEvidence": [
+    "work/acceptance/normal-style-audio/20261004T025034077Z/lifecycle-module-provenance.json"
+  ],
+  "playbackContract": "docs/analysis/playback-contract.md",
+  "previousPlaybackModuleEvidence": "work/acceptance/product/20261003T012644800Z/playback-module-provenance.json",
+  "styleObservation": "work/analysis/style-inputs/20261002T165724213Z/observation.json",
+  "styleContract": "docs/analysis/style-contract.md",
+  "styleAcceptance": "Current060504851Z Style generation unexecuted",
+  "previousGuiEvidence": "work/acceptance/product-ui/20261003T080000Z/gui-lifecycle-proof.json",
+  "stylePlaybackModuleEvidence": "work/acceptance/normal-style-audio/20261004T025034077Z/lifecycle-module-provenance.json",
+  "styleIdentityProof": null,
+  "stylePlaybackFailure": "work/acceptance/product/20261002T154330301Z/style-playback/playback.json; old154241666Z filename+memory descriptor failed0x88781182. Retained, not policy refusal.",
+  "styleMappingProof": null,
+  "previousMappingFailure": "work/build/product-snapshot/20261002T164331781Z/build-summary.json; work/acceptance/product/20261002T164755472Z/run.json. APIs succeeded but fixed100ms IsPlaying check returned S_FALSE; corrected to bounded2s polling in164907492Z, not a policy refusal.",
+  "patternUnitAudit": "work/acceptance/product-ui/20261002T170200Z/unit-audit.json",
+  "previousStyleIdentityProof": "work/acceptance/product/20261003T000852011Z/style-playback/identity-proof.json",
+  "partUnitAudit": "work/acceptance/product-ui/20261002T171900Z/unit-audit.json",
+  "noteCrudUnitAudit": "work/acceptance/product-ui/20261002T173800Z/unit-audit.json",
+  "guiEvidenceLimitations": "Previous141957011Z actual GUI Motif AP evidence retained only for that candidate; current menu/default selection unexecuted",
+  "clonePlaybackRun": "work/acceptance/product/20261002T174855031Z/run.json",
+  "clonePlaybackMappingProof": "work/acceptance/product/20261002T174855031Z/style-playback/mapping-proof.json",
+  "clonePlaybackScope": "Previous174855031Z only: GUI saved five-note Style e2604b86 copied as Heartlnd.stp; OS memory Style API/Stop passed; actual selection/order/audio unverified. Not current201437359Z evidence.",
+  "previousProductBuild": "work/build/product-snapshot/20261004T040836168Z/build-summary.json",
+  "previousRuntimeAttempt": "work/acceptance/command-track/20261003T063754253Z/run.json",
+  "bandUnitAudit": "work/acceptance/product-ui/20261002T181900Z/unit-audit.json",
+  "bandObservation": "work/analysis/style-bands-observed.json",
+  "bandPlaybackRun": "work/acceptance/product/20261002T215048185Z/run.json",
+  "previousBandUnitAudit": "work/acceptance/product-ui/20261002T180100Z/unit-audit.json",
+  "previousStyleMappingProof": "work/acceptance/product/20261003T000852011Z/style-playback/mapping-proof.json",
+  "previousStylePlaybackModuleEvidence": "work/acceptance/product/20261003T000852011Z/style-playback-module-provenance.json",
+  "bandTrackProof": null,
+  "bandTrackObservation": "work/analysis/bandtrack-headers-observed.json",
+  "previousBandTrackProof": "work/acceptance/product/20261002T193550235Z/playback/bandtrack-proof.json",
+  "bandTimingUnitAudit": "work/acceptance/product-ui/20261002T185300Z/unit-audit.json",
+  "dlsProof": null,
+  "dlsObservation": "work/analysis/dls-references-observed.json",
+  "previousDlsProof": "work/acceptance/product/20261002T191412418Z/dls-proof.json",
+  "previousPlaybackApi": "Current191312627Z unexecuted. Previous185105419Z exact timed Band move/delete snapshot and Play/Stop/tempo evidence retained separately.",
+  "dlsPlaybackModuleEvidence": null,
+  "dlsPlaybackProof": null,
+  "dlsPlaybackAudioQuestion": null,
+  "previousDlsPlaybackProof": "work/acceptance/product/20261003T010615612Z/dls-playback/dls-playback-proof.json",
+  "previousDlsPlaybackAudioQuestion": "work/acceptance/product-ui/20261002T215515Z/audio-question.json",
+  "dlsGuiAudit": null,
+  "dlsEditorProof": null,
+  "dlsEditorObservation": "work/analysis/dls-editor-observed.json",
+  "previousDlsEditorProof": "work/acceptance/product/20261002T223544561Z/core/dls-editor/editor-proof.json",
+  "dlsEditorGuiProof": null,
+  "dlsEditorUiIntermediate": "work/acceptance/product-ui/20261002T201000Z/wave-unit-audit.json",
+  "dlsEditorUiRecovery": "200441108Z owned-window typing lost focus; stopped retry. 201437359Z independently targetable task window preserves disabled-main/synchronous Framework lifetime; bank/Program/Region GUI now verified.",
+  "previousDlsEditorGuiProof": "work/acceptance/product-ui/20261002T201700Z/unit-audit.json",
+  "dlsBindingGuiProof": null,
+  "dlsBindingFailure": "work/acceptance/product/20261002T203059340Z/run.json: core failed313 because GUI-edited DLS was incorrectly used for fixed original-fixture tests; DLS API patch519 exit0. Separate original/core and edited/playback input metadata in current script. Not OS refusal.",
+  "previousDlsBindingGuiProof": "work/acceptance/product-ui/20261002T203400Z/binding-gui-proof.json",
+  "dlsSelectionGuiProof": null,
+  "guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T160843451Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T161207132Z/gui-module-provenance.json"
+  ],
+  "previousDlsSelectionGuiProof": "work/acceptance/product-ui/20261002T204700Z/selection-gui-proof.json",
+  "previousGuiModuleEvidence": "work/acceptance/product-ui/20261003T080000Z/gui-module-provenance.json",
+  "dlsRegionProof": null,
+  "dlsRegionGuiProof": null,
+  "previousDlsRegionProof": "work/acceptance/product/20261002T223544561Z/core/dls-editor/region-proof.json",
+  "previousDlsRegionGuiProof": "work/acceptance/product-ui/20261002T211200Z/region-gui-proof.json",
+  "dlsWaveProof": null,
+  "dlsWaveGuiProof": null,
+  "previousDlsWaveProof": "work/acceptance/product/20261002T221432238Z/core/dls-editor/wave-crud/wave-proof.json",
+  "previousDlsWaveGuiProof": "work/acceptance/product-ui/20261002T213300Z/wave-gui-proof.json",
+  "dlsPcmIoProof": null,
+  "dlsPcmGuiProof": null,
+  "previousDlsPcmIoProof": "work/acceptance/product/20261002T215048185Z/core/dls-editor/pcm-io/pcm-io-proof.json",
+  "previousDlsPcmGuiProof": "work/acceptance/product-ui/20261002T215515Z/pcm-gui-proof.json",
+  "dlsPcmResizeProof": null,
+  "dlsPcmResizeGuiProof": null,
+  "dlsPcmResizeObservation": "work/analysis/dls-pcm-resize-observation.json",
+  "previousDlsPcmResizeProof": "work/acceptance/product/20261002T221432238Z/core/dls-editor/pcm-resize/pcm-resize-proof.json",
+  "previousDlsPcmResizeGuiProof": "work/acceptance/product-ui/20261002T221600Z/pcm-resize-gui-proof.json",
+  "dlsRegionCreateProof": null,
+  "dlsRegionCreateGuiProof": null,
+  "dlsRegionCreateObservation": "work/analysis/dls-region-create-observation.json",
+  "dlsRegionCreateFirstFailure": "work/analysis/dls-region-create-first-failure.json",
+  "previousDlsRegionCreateProof": "work/acceptance/product/20261002T223544561Z/core/dls-editor/region-create/region-create-proof.json",
+  "previousDlsRegionCreateGuiProof": "work/acceptance/product-ui/20261002T223650Z/region-create-gui-proof.json",
+  "dlsSaveAsProof": null,
+  "dlsSaveAsGuiProof": null,
+  "dlsSaveAsObservation": "work/analysis/dls-saveas-observation.json",
+  "dlsSaveAsFirstFailure": "work/analysis/dls-saveas-first-failure.json",
+  "previousDlsSaveAsProof": "work/acceptance/product/20261002T230304051Z/core/dls-editor/save-as/save-as-proof.json",
+  "previousDlsSaveAsGuiProof": "work/acceptance/product-ui/20261002T230350Z/save-as-gui-proof.json",
+  "dlsWaveRemoveProof": null,
+  "dlsWaveRemoveObservation": "work/analysis/dls-wave-remove-observation.json",
+  "previousDlsWaveRemoveProof": "work/acceptance/product/20261003T000852011Z/core/dls-editor/wave-remove/wave-remove-proof.json",
+  "dlsWaveRemoveGuiCandidate": "work/acceptance/product-ui/20261002T232850Z/states.json",
+  "dlsWaveRemoveGuiConfirmation": "Historical unexecuted GUI deletion; user closed verification apps; do not retry old handles",
+  "segmentSaveAsProof": null,
+  "segmentSaveAsObservation": "work/analysis/segment-saveas-observation.json",
+  "currentGUIEvidence": null,
+  "nextConcreteStep": "Open current authored native Project in current GUI, save/normal exit/separate restart/resave and GUI Play/Stop/restart loopback capture; preserve old GUI initial documents if still running",
+  "fullAcceptance": false,
+  "styleSaveAsProof": null,
+  "styleSaveAsObservation": "work/analysis/style-saveas-observation.json",
+  "styleSaveAsFailures": "work/analysis/style-saveas-failures.json",
+  "stylePlaybackIdentityProof": null,
+  "stylePlaybackMappingProof": null,
+  "documentSaveAsGuiProof": null,
+  "previousCurrentGUIEvidence": "work/acceptance/product-ui/20261003T031821972Z/parameter-gui-proof.json",
+  "previousDocumentSaveAsGuiProof": "work/acceptance/product-ui/20261003T000950Z/document-save-as-proof.json",
+  "previousStylePlaybackIdentityProof": "work/acceptance/product/20261003T000852011Z/style-playback/identity-proof.json",
+  "previousStylePlaybackMappingProof": "work/acceptance/product/20261003T000852011Z/style-playback/mapping-proof.json",
+  "previousDlsPlaybackModuleEvidence": "work/acceptance/product/20261003T010615612Z/dls-playback-module-provenance.json",
+  "dlsLoopProof": null,
+  "dlsLoopObservation": "work/analysis/dls-loop-observation.json",
+  "previousDlsLoopProof": "work/acceptance/product/20261003T010615612Z/core/dls-editor/loops/loop-proof.json",
+  "dlsLoopStateProof": null,
+  "dlsLoopStateObservation": "work/analysis/dls-loop-state-observation.json",
+  "previousDlsLoopStateProof": "work/acceptance/product/20261003T010615612Z/core/dls-editor/loop-state/loop-state-proof.json",
+  "dlsLoopGuiProof": null,
+  "previousDlsLoopGuiProof": "work/acceptance/product-ui/20261003T004900Z/loop-gui-proof.json",
+  "preflightFailures": [
+    "work/build/product-snapshot/20261003T010251703Z/build-summary.json: configuration denied SDK path read in restricted sandbox, no binary success.",
+    "work/build/product-snapshot/20261003T010336021Z/build-summary.json: configuration passed; compile failed due misplaced report variable and local shadow warning. Fixed only in010502792Z; failed snapshots retained."
+  ],
+  "previousAttemptedExeSha256": "7a055c07dc5d9dbb335792400197845efed9e4cb1e3fd0d379faf7a13550489d",
+  "previousAttemptedBuild": "work/build/product-snapshot/20261003T031059939Z/build-summary.json",
+  "staticImportsScope": "Retained prior PE import inventory; current PE-specific static audit not rerun. Current dynamic host/DLS module evidence is separately verified.",
+  "trackGroupProof": "work/acceptance/product/20261003T022055389Z/core/track-groups/group-proof.json",
+  "previousTrackGroupProof": "work/acceptance/product/20261003T021405339Z/core/track-groups/group-proof.json",
+  "meterBatchProof": "work/acceptance/product/20261003T031302411Z/core/meter-batch/meter-batch-proof.json",
+  "meterBatchFailures": [
+    "work/build/product-snapshot/20261003T012114974Z/build-summary.json: compiled intermediate snapshot before negative-position guard; unexecuted, superseded.",
+    "work/acceptance/product/20261003T012401732Z/run.json (build012233747Z): host/standard playback exit0 but core failed after196 checks on unknown TIMS sibling; two shadow warnings. Corrected only in012514289Z."
+  ],
+  "groupGuiProof": null,
+  "atomicSaveDiagnostic": "work/acceptance/product/20261003T022055389Z/core/save-lock-diagnostic.txt: controlled lock native test passed; older generic DLS save cause unknown.",
+  "groupGuiFailures": [
+    "build013152132Z/run013326028Z native613 passed but GUI group column overlapped MIDI; preserved screenshots, fixed layout only in later builds. Old window1247394 remains untouched.",
+    "build013517282Z/run013649122Z host passed/core failed after552 during DLS wave-remove atomic save; destination retained, precise cause unknown. No retry of same artifact.",
+    "build013823586Z/run013959627Z core failed after66: lock test assumed Windows32; file retained but actual code5. Corrected test requires captured nonzero actual code and replace stage; latest615 passes."
+  ],
+  "groupGuiReloadResave": null,
+  "previousGroupGuiProof": "work/acceptance/product-ui/20261003T014300Z/group-gui-proof.json",
+  "previousGroupGuiReloadResave": {
+    "status": "passed for indexed fixture",
+    "proof": "work/acceptance/product-ui/20261003T014300Z/group-gui-proof.json",
+    "sourceAndResavedSha256": "09be650e154da77d483deb3cfba584e3d4071712e7049d757b54c9ea73ea8238",
+    "projectReferences": [
+      "empty.sgp",
+      "resaved-after-restart.sgp"
+    ],
+    "normalCloseObserved": true,
+    "guiExitCode": null
+  },
+  "previousMeterBatchProof": "work/acceptance/product/20261003T021405339Z/core/meter-batch/meter-batch-proof.json",
+  "sequenceBandGroupProof": "work/acceptance/product/20261003T022055389Z/core/sequence-band-groups/sequence-band-group-proof.json",
+  "previousSequenceBandGroupProof": "work/acceptance/product/20261003T021405339Z/core/sequence-band-groups/sequence-band-group-proof.json",
+  "sequenceBandGroupGuiProof": "work/acceptance/product-ui/20261003T022100Z/sequence-band-group-gui-proof.json",
+  "sequenceBandGroupGuiReloadResave": {
+    "status": "passed for indexed fixture",
+    "proof": "work/acceptance/product-ui/20261003T022100Z/sequence-band-group-gui-proof.json",
+    "sourceAndResavedSha256": "d398c0053c7db8d0cbf6c70e5b58bfc6902319c3fd2071832735c197131d9526",
+    "projectReferences": [
+      "empty.sgp",
+      "resaved-after-restart.sgp"
+    ],
+    "normalCloseObserved": true,
+    "guiExitCode": null
+  },
+  "groupPlaybackProof": "work/acceptance/product/20261003T031302411Z/group-playback/group-playback-proof.json",
+  "groupPlaybackObservation": {
+    "tracks": 7,
+    "queries": 23,
+    "runtimeOrderMatchesRiff": false,
+    "sequenceAllGroups": [
+      1,
+      2,
+      6
+    ],
+    "bandRiff": [
+      1,
+      2,
+      6
+    ],
+    "bandRuntime": [
+      6,
+      2,
+      1
+    ],
+    "mask2BandRiff": [
+      2,
+      6
+    ],
+    "mask2BandRuntime": [
+      6,
+      2
+    ],
+    "scope": "GetTrack/GetTrackGroup only; no note output, exact runtime event time or original Producer behavior asserted",
+    "audio": "unverified"
+  },
+  "groupPlaybackFailures": [
+    "025203571Z configure failed before compilation: sandbox SDK directory read denied;025230015Z compiled intermediate offset16 candidate never executed;025429160Z/run025539071Z native645 passed but group runtime stopped at fifth query because RIFF order equality assumption failed. All preserved. Corrected comparison in025721417Z retains runtime order difference explicitly."
+  ],
+  "parameterRuntimeProof": null,
+  "parameterRuntimeModuleEvidence": null,
+  "parameterRuntimeObservation": {
+    "tempoIndices": [
+      0,
+      1,
+      2
+    ],
+    "meterIndices": [
+      0,
+      1
+    ],
+    "tempoValues": [
+      120,
+      130,
+      150
+    ],
+    "meters": [
+      "4/4 grids4",
+      "5/4 grids4"
+    ],
+    "changedTempoTime": 3840,
+    "parameters": 18,
+    "scope": "Segment parameter values at event times,not performance scheduling/audio; future event3840 may exceed this fixture segment length"
+  },
+  "trackPersistenceFailure": "build030533135Z/run030659116Z: Tempo QI IPersistStream0,Save0x80004001 E_NOTIMPL;core645 success;cleanupStopEx/Unload/CloseDown0;Band serialization unexecuted. Removed unsupported persistence dependency in031059939Z. Intermediate030935055Z compiled but unexecuted before nestedTIMS fix.",
+  "parameterGuiProof": null,
+  "parameterGuiFailures": "work/acceptance/product-ui/20261003T031821972Z/failures.json",
+  "previousParameterGuiProof": "work/acceptance/product-ui/20261003T031821972Z/parameter-gui-proof.json",
+  "previousParameterRuntimeProof": "work/acceptance/product-group/20261003T031318943Z/group-playback/group-playback-proof.json",
+  "previousParameterRuntimeModuleEvidence": "work/acceptance/product-group/20261003T031318943Z/group-playback-module-provenance.json",
+  "trackPositionContract": "docs/analysis/track-order-contract.md",
+  "trackPositionComparisonProof": "work/acceptance/track-position/20261003-position/position-proof.json",
+  "appendedTrackPositionProof": "work/acceptance/product-group/20261003T034828605Z/group-playback/appended-position-proof.json",
+  "currentGroupRuntime": "work/acceptance/product-group/20261003T074414429Z/run.json",
+  "originalPositionObservation": "work/analysis/reference-track-position/20261003T041600Z/launch-attempt.json",
+  "originalPositionObservationStatus": "unexecuted GUI: one launch created PID5400, no targetable window/main HWND0; cause unknown, no launch policy rejection established. Stop-Process access denied, owned PID still present; no escalation/retry",
+  "sequenceCrudProof": "work/acceptance/sequence-crud/20261003T043309507Z/core/sequence-crud/sequence-crud-proof.json",
+  "sequenceCrudPlaybackProof": "work/acceptance/sequence-crud/20261003T043309507Z/core/sequence-crud/sequence-crud-playback-proof.json",
+  "sequenceCrudGuiProgress": "work/acceptance/product-ui/20261003T044500Z/sequence-crud-gui-progress-proof.json",
+  "pendingGuiDeletion": {
+    "build": "work/build/product-snapshot/20261003T044136915Z/build-summary.json",
+    "window": {
+      "app": "process:C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\build\\product-snapshot\\20261003T044136915Z\\install\\bin\\Producer.exe",
+      "id": 224135258,
+      "title": "DirectMusic Producer — source reconstruction"
+    },
+    "evidence": "work/acceptance/product-ui/20261003T044500Z/sequence-crud-gui-progress-proof.json",
+    "status": "User closed verification apps; old modal no longer targetable. Sequence deletion unexecuted; fresh fixture/action-time confirmation required when resumed"
+  },
+  "commandTrackProof": "work/acceptance/command-track/20261003T064845191Z/core/command-track/command-track-proof.json",
+  "commandObservation": "work/analysis/command-track/saved-reference.json",
+  "commandCurrentProof": "work/acceptance/command-track/20261003T074356471Z/core/command-track/command-track-proof.json",
+  "commandEditorGuiProgressProof": "work/acceptance/product-ui/20261003T070200Z/command-editor-gui-progress-proof.json",
+  "nextAction": "Current GUI moved input Open/PlayStop/normal exit/separate-launch exact re-save, then owned Style Pattern/Groove/Command connection",
+  "commandSelectionGuiProof": "work/acceptance/product-ui/20261003T071700Z/command-selection-gui-proof.json",
+  "commandRuntimeFailure": "work/acceptance/product-group/20261003T072127640Z/run.json",
+  "previousSequenceCrudProof": "work/acceptance/sequence-crud/20261003T064929086Z/core/sequence-crud/sequence-crud-proof.json",
+  "previousCommandSelectionBuild": {
+    "build": "work/build/product-snapshot/20261003T071214854Z/build-summary.json",
+    "exe": "a1475a97deb6ef1cb2af3b7dc60af7508cbbb39e8804b2ab887ab938a4998237",
+    "gui": "work/acceptance/product-ui/20261003T071700Z/command-selection-gui-proof.json",
+    "runtimeFailure": "work/acceptance/product-group/20261003T072127640Z/run.json",
+    "scope": "Historical GUI input provenance only"
+  },
+  "commandRuntimeCorrection": {
+    "unit": "work/acceptance/command-track/20261003T074356471Z/unit-record.json",
+    "diagnostic": "work/analysis/command-runtime/20261003T073400Z/observation-proof.json",
+    "runtimes": [
+      "work/acceptance/product-group/20261003T074414429Z/run.json",
+      "work/acceptance/product-group/20261003T074414851Z/run.json",
+      "work/acceptance/product-group/20261003T074415229Z/run.json",
+      "work/acceptance/product-group/20261003T074415600Z/run.json"
+    ]
+  },
+  "previousCommandCurrentProof": "work/acceptance/command-track/20261003T071633049Z/core/command-track/command-track-proof.json",
+  "previousCurrentGroupRuntime": "work/acceptance/product-group/20261003T072211802Z/run.json",
+  "previousCommandRuntimeAttempt": "work/acceptance/command-track/20261003T074356471Z/run.json",
+  "previousCommandRuntimeScope": "074230941Z Command37 and four group inputs only; not executed on081303273Z",
+  "previousGuiScope": "074230941Z 47captures, first normal Close, separate launch exact Segment re-save and Command fields restored; project saved but GUI reload unexecuted; second window open with startup unsaved; user subsequently closed verification apps, old handles invalid",
+  "notificationContract": "docs/analysis/playback-notification-contract.md",
+  "notificationProofs": [],
+  "previousNotificationProofs": [
+    "work/acceptance/product-notifications/20261003T081440583Z/notification-proof.json",
+    "work/acceptance/product-notifications/20261003T081507906Z/notification-proof.json"
+  ],
+  "startupFailureEvidence": null,
+  "beforeNoteObservation_productBuild": "work/build/product-snapshot/20261003T082511918Z/build-summary.json",
+  "beforeNoteObservation_runtimeAttempt": "work/acceptance/product-host/20261003T082701698Z/run.json",
+  "beforeNoteObservation_guiEvidence": "work/acceptance/product-project-gui/20261003T083103049Z/project-startup-proof.json",
+  "beforeNoteObservation_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T083103049Z/project-startup-proof.json",
+  "beforeNoteObservation_audioEvidence": "work/acceptance/product-project-gui/20261003T082648179Z/audio-confirmation.json",
+  "beforeNoteObservation_startupFailureEvidence": "work/acceptance/product-startup-failures/20261003T083956333Z/run.json",
+  "beforeNoteObservation_documentSaveAsGuiProof": "work/acceptance/product-project-gui/20261003T083103049Z/project-startup-proof.json",
+  "beforeNoteObservation_guiModuleEvidence": "work/acceptance/product-project-gui/20261003T083103049Z/gui-module-provenance.json",
+  "beforeNoteObservation_playbackModuleEvidence": "work/acceptance/product-project-gui/20261003T083103049Z/gui-module-provenance.json",
+  "styleSelectionProof": [
+    "work/acceptance/product-notes/20261003T094736359Z/notes-proof.json",
+    "work/acceptance/product-notes/20261003T094803393Z/notes-proof.json"
+  ],
+  "sequenceNoteProof": null,
+  "styleSelectionContract": "docs/analysis/style-selection-contract.md",
+  "intermediateStyleGuiEvidence": {
+    "build": "work/build/product-snapshot/20261003T085214931Z/build-summary.json",
+    "proof": "work/acceptance/product-project-gui/20261003T085721586Z/style-gui-proof.json",
+    "audioQuestion": "work/acceptance/product-project-gui/20261003T085721586Z/audio-question.json",
+    "audioAnswer": null
+  },
+  "noteObservationUnit": "work/acceptance/pattern-properties/20261003T094717628Z/unit-record.json",
+  "styleEmbellishmentContract": "docs/analysis/style-embellishment-contract.md",
+  "styleEmbellishmentProofs": [],
+  "previousPatternOwnership_styleSelectionProof": "work/acceptance/product-notes/20261003T090109696Z/notes-proof.json",
+  "previousPatternOwnership_sequenceNoteProof": "work/acceptance/product-notes/20261003T090122018Z/notes-proof.json",
+  "previousPatternOwnership_styleEmbellishmentProofs": [
+    {
+      "name": "fill",
+      "run": "work/acceptance/product-notes/20261003T091059804Z/run.json",
+      "proof": "work/acceptance/product-notes/20261003T091059804Z/notes-proof.json",
+      "noteCount": 12,
+      "moduleCount": 57,
+      "exeSha256": "8bbb75ab6ec4e3e187c12bed17cd0c3b80d8cca3d429cf88ed2bf43561a432cb",
+      "passed": true
+    },
+    {
+      "name": "intro",
+      "run": "work/acceptance/product-notes/20261003T091106568Z/run.json",
+      "proof": "work/acceptance/product-notes/20261003T091106568Z/notes-proof.json",
+      "noteCount": 12,
+      "moduleCount": 57,
+      "exeSha256": "8bbb75ab6ec4e3e187c12bed17cd0c3b80d8cca3d429cf88ed2bf43561a432cb",
+      "passed": true
+    },
+    {
+      "name": "break",
+      "run": "work/acceptance/product-notes/20261003T091113288Z/run.json",
+      "proof": "work/acceptance/product-notes/20261003T091113288Z/notes-proof.json",
+      "noteCount": 12,
+      "moduleCount": 57,
+      "exeSha256": "8bbb75ab6ec4e3e187c12bed17cd0c3b80d8cca3d429cf88ed2bf43561a432cb",
+      "passed": true
+    },
+    {
+      "name": "end",
+      "run": "work/acceptance/product-notes/20261003T091120004Z/run.json",
+      "proof": "work/acceptance/product-notes/20261003T091120004Z/notes-proof.json",
+      "noteCount": 12,
+      "moduleCount": 57,
+      "exeSha256": "8bbb75ab6ec4e3e187c12bed17cd0c3b80d8cca3d429cf88ed2bf43561a432cb",
+      "passed": true
+    }
+  ],
+  "previousPatternOwnership_noteObservationUnit": "work/acceptance/product-notes/20261003T091059804Z/unit-record.json",
+  "previousPatternOwnership_productBuild": "work/build/product-snapshot/20261003T085934923Z/build-summary.json",
+  "previousPatternOwnership_runtimeAttempt": "work/acceptance/product-host/20261003T090107965Z/run.json",
+  "previousPatternOwnership_styleAcceptance": "085934923Z two distinct normal Pattern Groove selections: 12 generated notes exact raw-byte oracle; general embellishment/variation/original dynamic comparison incomplete; four embellishment cases each exact12-note comparison passed",
+  "patternOwnershipUnit": null,
+  "patternOwnershipContract": "docs/analysis/pattern-ownership-contract.md",
+  "patternOwnershipProof": null,
+  "patternOwnershipFailure": "work/acceptance/product-notes/20261003T091928975Z/run.json",
+  "patternOrderDiagnostic": "work/analysis/pattern-order/20261003T092240Z/order-proof.json",
+  "previousPatternProperties_productBuild": "work/build/product-snapshot/20261003T092031617Z/build-summary.json",
+  "previousPatternProperties_runtimeAttempt": "work/acceptance/product-host/20261003T092211652Z/run.json",
+  "previousPatternProperties_guiEvidence": "work/acceptance/pattern-ownership/20261003T092203678Z/ownership-proof.json",
+  "previousPatternProperties_currentGUIEvidence": "work/acceptance/pattern-ownership/20261003T092203678Z/ownership-proof.json",
+  "previousPatternProperties_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T092218471Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T092749884Z/gui-module-provenance.json"
+  ],
+  "previousPatternProperties_styleSelectionProof": "work/acceptance/product-notes/20261003T092242336Z/notes-proof.json",
+  "previousPatternProperties_playbackModuleEvidence": "work/acceptance/product-notes/20261003T092242336Z/notes-module-provenance.json",
+  "previousPatternProperties_patternOwnershipProof": "work/acceptance/pattern-ownership/20261003T092203678Z/ownership-proof.json",
+  "previousPatternProperties_patternOwnershipUnit": "work/acceptance/pattern-ownership/20261003T092203678Z/unit-record.json",
+  "previousPatternProperties_styleAcceptance": "Current copied/unshared normal Pattern12 notes independently compared; original dynamic comparison/variation/general CRUD incomplete; prior0859 embellishment results historical",
+  "patternPropertiesContract": "docs/analysis/pattern-properties-contract.md",
+  "patternPropertiesProof": null,
+  "patternPropertiesUnit": null,
+  "previousPropertiesNativeUnit": "work/acceptance/pattern-properties/20261003T094717628Z/unit-record.json",
+  "patternPropertiesGuiUnit": null,
+  "audioAutomationContract": "docs/analysis/audio-automation-contract.md",
+  "audioAutomationUnit": "work/analysis/motif-playback/20261003T134500Z/unit-record-v2.json",
+  "audioSilenceControl": null,
+  "guiStopRestartProof": "work/acceptance/product-project-gui/20261003T100413080Z/stop-restart-proof.json",
+  "guiAudioFirstFailure": "work/acceptance/product-project-gui/20261003T100413080Z/audio-question.json",
+  "guiAudioAuthorizedRepeat": "work/acceptance/product-project-gui/20261003T100912895Z/audio-question.json",
+  "previousAudioLifecycle_productBuild": "work/build/product-snapshot/20261003T094600314Z/build-summary.json",
+  "previousAudioLifecycle_productExeSha256": "ac0f17480bb25ed0303ec42209712229c84858701290adb8592720171a7bf8a3",
+  "previousAudioLifecycle_coreTestExeSha256": "79dce2b4b65e8aa1a0d4a609aa22a1f94032900797cfa0cb3b9c134de0885ac4",
+  "previousAudioLifecycle_runtimeAttempt": "work/acceptance/product-host/20261003T094718542Z/run.json",
+  "previousAudioLifecycle_runtime": "094600314Z host/properties20/notes12x2 plus GUI long Style Stop/restart/normal exits and new loopback notes12/capture passed; full suite unexecuted",
+  "previousAudioLifecycle_coreTests": "Current targeted Pattern properties20 passed; fullsuite/ownership/Sequence/four embellishment regressions unexecuted",
+  "previousAudioLifecycle_hostAcceptance": "Current Pattern metadata native20 and Fill/Intro12 each plus GUI edit/UndoRedo/save/restore/resave/normal exit0 passed; remaining responsibilities/all40/all8 incomplete",
+  "previousAudioLifecycle_guiEvidence": "work/acceptance/product-project-gui/20261003T095313400Z/properties-gui-proof.json",
+  "previousAudioLifecycle_playbackApi": "Current Style API notes12/natural end/cleanup; GUI early Stop/restart states passed; captured explicit Stop/restart/tempo change pending",
+  "previousAudioLifecycle_audioAcceptance": "Current094600314Z captured C4/C5/C4 digital output/natural-end silence passed; negative silence/incorrect-pitch controls passed. Earlier GUI first no-audio and same-input repeat heard strings kept separately. Explicit Stop/restart/tempo waveform unverified",
+  "previousAudioLifecycle_audioEvidence": "work/acceptance/audio-loopback/20261003T102448148Z/audio-proof.json",
+  "previousAudioLifecycle_runtimeModuleInventory": "Current host24/two note paths57 each independently audited original40hash0; point inventories",
+  "previousAudioLifecycle_playbackModuleEvidence": [
+    "work/acceptance/product-notes/20261003T094736359Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T094803393Z/notes-module-provenance.json"
+  ],
+  "previousAudioLifecycle_patternPropertiesProof": "work/acceptance/pattern-properties/20261003T094717628Z/properties-proof.json",
+  "previousAudioLifecycle_patternPropertiesUnit": "work/acceptance/pattern-properties/20261003T094717628Z/unit-record.json",
+  "previousAudioLifecycle_patternPropertiesGuiUnit": "work/acceptance/product-project-gui/20261003T095313400Z/unit-record.json",
+  "previousAudioLifecycle_audioAutomationUnit": "work/acceptance/audio-loopback/20261003T102448148Z/unit-record.json",
+  "previousAudioLifecycle_styleAcceptance": "Current renamed/swapped Pattern Fill ->72 and Intro ->64, each12 generated notes exact raw-byte oracle; current normal copied Pattern/other embellishments not rerun",
+  "previousAudioLifecycle_stylePlaybackModuleEvidence": [
+    "work/acceptance/product-notes/20261003T094736359Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T094803393Z/notes-module-provenance.json"
+  ],
+  "previousAudioLifecycle_audioSilenceControl": "work/acceptance/audio-loopback/20261003T102549376Z/audio-proof.json",
+  "lifecycleCompileFailure": "work/build/product-snapshot/20261003T103423429Z/build-summary.json",
+  "previousTempoAudio_productBuild": "work/build/product-snapshot/20261003T103503304Z/build-summary.json",
+  "previousTempoAudio_productExeSha256": "4e6a6c074c152de215551e2a2b667f46ed23d0533bf0eae9e8164bc381e8daee",
+  "previousTempoAudio_coreTestExeSha256": "6032431e95dcddd5456489343165253b531fd5929197746bb93567474a294989",
+  "previousTempoAudio_runtimeAttempt": "work/acceptance/product-host/20261003T103853447Z/run.json",
+  "previousTempoAudio_runtime": "Current host and explicit early Stop/hold/replay/final Stop API plus digital waveform passed",
+  "previousTempoAudio_playbackApi": "Current103503304Z long Style first playing/early Stop/replay/final Stop passed",
+  "previousTempoAudio_audioAcceptance": "Current digital first/replay C4 sound, silence during3sec stop hold and after final Stop passed; tempo-change waveform pending",
+  "previousTempoAudio_audioEvidence": "work/acceptance/audio-loopback/20261003T103741753Z/lifecycle-audio-proof.json",
+  "previousTempoAudio_audioAutomationUnit": "work/acceptance/audio-loopback/20261003T103741753Z/unit-record.json",
+  "previousTempoAudio_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T103741753Z/lifecycle-module-provenance.json"
+  ],
+  "previousTempoAudio_audioAuditorControls": "work/acceptance/audio-lifecycle-controls/20261003T103900Z/negative-tests.json",
+  "tempoAudioInitialFailure": "work/acceptance/audio-loopback/20261003T104730723Z/initial-failed-proof.json",
+  "playbackStartFix": "Conductor PlaySegmentEx AFTERPREPARETIME0x400, measured prepare1000ms; lifecycle waits actual start clocks before timing",
+  "previousPatternCrud_productBuild": "work/build/product-snapshot/20261003T105414596Z/build-summary.json",
+  "previousPatternCrud_productExeSha256": "4d7c0f21601d020adfa342d97d0c5b6e5b9416e72144712af2955417ae5b0ce8",
+  "previousPatternCrud_coreTestExeSha256": "628409e9778a8d2e301d22baf350cadf28b977205789e784330ea2c2fd0eed03",
+  "previousPatternCrud_runtimeAttempt": "work/acceptance/product-host/20261003T105733464Z/run.json",
+  "previousPatternCrud_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T105546720Z/tempo-audio-proof.json",
+    "work/acceptance/audio-loopback/20261003T105642085Z/lifecycle-audio-proof.json"
+  ],
+  "previousPatternCrud_audioAcceptance": "Current captured8 pitches/onsets120->180 BPM and prepared Style Stop/restart silence/sound passed; all audio paths incomplete",
+  "previousPatternCrud_audioAutomationUnit": "work/acceptance/audio-loopback/20261003T105546720Z/unit-record.json",
+  "previousPatternCrud_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T105546720Z/tempo-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T105642085Z/lifecycle-module-provenance.json"
+  ],
+  "previousPatternCrud_coreTests": "Current compiled but unexecuted; old native suites not transferred",
+  "patternCrudContract": "docs/analysis/pattern-crud-contract.md",
+  "patternCrudProof": "work/acceptance/pattern-crud/20261003T111400850Z/crud-proof.json",
+  "patternCrudUnit": "work/acceptance/pattern-crud/20261003T111400850Z/unit-record.json",
+  "previousPatternCrud_audioAuditorControls": [
+    "work/acceptance/tempo-audio-controls/20261003T105800Z/negative-tests.json",
+    "work/acceptance/audio-lifecycle-controls/20261003T105800Z/negative-tests.json"
+  ],
+  "audioAuditorControls": [
+    "work/acceptance/audio-auditor-controls/20261003T160500Z-motif-dls/negative-tests.json"
+  ],
+  "unattendedAudioPolicy": "Standard WASAPI loopback capture and fixed-input analysis; human answer optional. Quiet gates and negative controls required; physical speaker outside digital proof.",
+  "previousPatternClipboard_productBuild": "work/build/product-snapshot/20261003T111240720Z/build-summary.json",
+  "previousPatternClipboard_productExeSha256": "f3c795ae016373a01d3195acd3a543c1d8dabbd603ed2e99f4b62dd6edc9966c",
+  "previousPatternClipboard_coreTestExeSha256": "880d07d3fda1ef6c802df29b924e29e94bcdef38ac4a73af45891c6a7881a84f",
+  "previousPatternClipboard_runtimeAttempt": "work/acceptance/product-host/20261003T111531455Z/run.json",
+  "previousPatternClipboard_runtime": "Current host/Pattern CRUD23/native authored Pattern playback and digital audio passed",
+  "previousPatternClipboard_coreTests": "Current targeted CRUD23 passed; fullsuite unexecuted",
+  "previousPatternClipboard_hostAcceptance": "Current targeted Framework/Pattern CRUD/reload/authored Pattern12 notes/audio passed; GUI/all40/all8 incomplete",
+  "previousPatternClipboard_audioEvidence": "work/acceptance/audio-loopback/20261003T111436846Z/audio-proof.json",
+  "previousPatternClipboard_audioAcceptance": "Current authored PatternC4x12 captured digital output/quiet before-after passed; previous tempo/Stop recordings historical",
+  "previousPatternClipboard_audioAutomationUnit": "work/acceptance/pattern-crud/20261003T111400850Z/unit-record.json",
+  "previousPatternClipboard_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T111436846Z/crud-module-provenance.json"
+  ],
+  "previousPatternClipboard_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T095313400Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T095750876Z/gui-module-provenance.json"
+  ],
+  "previousPatternClipboard_audioAuditorControls": "work/acceptance/audio-auditor-controls/20261003T112405950Z/negative-tests.json",
+  "patternClipboardContract": "docs/analysis/pattern-clipboard-contract.md",
+  "patternClipboardProof": "work/acceptance/pattern-clipboard/20261003T121132566Z/clipboard-proof.json",
+  "patternClipboardUnit": "work/acceptance/part-variation/20261003T121131490Z/unit-record.json",
+  "patternClipboardGuiUnit": "work/acceptance/product-project-gui/20261003T114156212Z/unit-record.json",
+  "previousPartVariation_productBuild": "work/build/product-snapshot/20261003T113326946Z/build-summary.json",
+  "previousPartVariation_productExeSha256": "1db790ac91686ecc30e0870255827ea43157e37a802ed5f3228dfd95e4a3905d",
+  "previousPartVariation_coreTestExeSha256": "b0c7f00838dae7158ffd166506ad2bead62089b8eaafb564ff0625bd32a805dc",
+  "previousPartVariation_runtimeAttempt": "work/acceptance/product-host/20261003T113550413Z/run.json",
+  "previousPartVariation_runtime": "Current host/Pattern clipboard32/saved pasted Pattern playback/digital audio passed",
+  "previousPartVariation_coreTests": "Current targeted clipboard32 passed; fullsuite unexecuted",
+  "previousPartVariation_hostAcceptance": "Current targeted clipboard32/native audio and GUI ownership/history/save/separate PID restore passed; deletion/original clipboard/all40/all8 incomplete",
+  "previousPartVariation_guiEvidence": "work/acceptance/product-project-gui/20261003T114156212Z/clipboard-gui-proof.json",
+  "previousPartVariation_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T114156212Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T114900427Z/gui-module-provenance.json"
+  ],
+  "previousPartVariation_audioEvidence": "work/acceptance/audio-loopback/20261003T113453171Z/audio-proof.json",
+  "previousPartVariation_audioAcceptance": "Current pasted PatternC4x12 digital output/quiet before-after passed; old tempo/Stop historical",
+  "previousPartVariation_playbackApi": "Current pasted saved Pattern generates12 C4 notes with fixed attributes",
+  "previousPartVariation_playbackModuleEvidence": "work/acceptance/audio-loopback/20261003T113453171Z/crud-module-provenance.json",
+  "previousPartVariation_patternClipboardProof": "work/acceptance/pattern-clipboard/20261003T113437815Z/clipboard-proof.json",
+  "previousPartVariation_patternClipboardUnit": "work/acceptance/pattern-clipboard/20261003T113437815Z/unit-record.json",
+  "partVariationProof": "work/acceptance/part-variation/20261003T121131490Z/variation-proof.json",
+  "partVariationUnit": "work/acceptance/part-variation/20261003T121131490Z/unit-record.json",
+  "partVariationContract": "docs/analysis/part-variation-contract.md",
+  "beforeVariationPlayback_runtime": "Current Part variation18/Clipboard32/native host passed",
+  "beforeVariationPlayback_audioEvidence": null,
+  "beforeVariationPlayback_audioAcceptance": "Current build audio unexecuted; earlier recordings retained historically",
+  "beforeVariationPlayback_audioAuditorControls": "work/acceptance/audio-auditor-controls/20261003T113642533Z/negative-tests.json",
+  "beforeVariationPlayback_playbackApi": "Current variation selection/composition unexecuted",
+  "beforeVariationPlayback_playbackModuleEvidence": null,
+  "beforeVariationPlayback_audioAutomationUnit": "work/acceptance/pattern-clipboard/20261003T113437815Z/unit-record.json",
+  "beforeVariationPlayback_guiEvidenceLimitations": "Same-build GUI first variation edit0->127/Undo0/Redo127/save exact bytes; separate GUI reload/last variation selection/audio/original/full acceptance unverified",
+  "beforeVariationPlayback_nextActions": [
+    "Current Variation GUI edit/history/save/separate process restore",
+    "Fixed variation Compose/generated notes/audio; original dynamic observation",
+    "Motif/empty Style Band/JAZP/remaining40/all8"
+  ],
+  "partVariationPlaybackUnit": "work/acceptance/part-variation-playback/20261003T123500Z/unit-record.json",
+  "partVariationPlaybackProof": "work/analysis/part-variation-playback/20261003T122000Z/playback-proof.json",
+  "guiReloadEvidence": null,
+  "previousMotif_productBuild": "work/build/product-snapshot/20261003T120854267Z/build-summary.json",
+  "previousMotif_productExeSha256": "9a83ac2d6c1f2dbf62fa11c9e9457ddee1a51d53c086156eda714ef768044e46",
+  "previousMotif_coreTestExeSha256": "9dacf743a9064ab28af3438f456e2083f34d3e2235e58107cbdb8da9a5c01472",
+  "previousMotif_runtimeAttempt": "work/acceptance/product-host/20261003T121133520Z/run.json",
+  "previousMotif_runtime": "Current120854267Z targeted native/host plus variation1/32 API and digital audio, separate GUI PID restore/resave passed",
+  "previousMotif_coreTests": "Current targeted variation18 and related clipboard32 passed; fullsuite unexecuted",
+  "previousMotif_hostAcceptance": "Current targeted Part eligibility/full bytes/Framework reload passed; whole host acceptance incomplete",
+  "previousMotif_guiEvidence": "work/acceptance/product-project-gui/20261003T121157754Z/variation-gui-proof.json",
+  "previousMotif_guiReloadEvidence": "work/acceptance/product-project-gui/20261003T122419895Z/variation-gui-reload-proof.json",
+  "previousMotif_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T095313400Z/properties-gui-proof.json",
+  "previousMotif_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T121157754Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T122419895Z/gui-module-provenance.json"
+  ],
+  "previousMotif_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T122059286Z/audio-proof.json",
+    "work/acceptance/audio-loopback/20261003T122213065Z/audio-proof.json"
+  ],
+  "previousMotif_audioAcceptance": "Current fixed eligible Variation1 C4/Variation32 C5 each12 notes recorded, quiet before/after, packet and controls passed; general sources/physical speaker/full acceptance unverified",
+  "previousMotif_playbackApi": "Current fixed candidate-only difference generates12 C4 vs12 C5 at exact768clock intervals",
+  "previousMotif_playbackModuleEvidence": [
+    "work/acceptance/product-notes/20261003T121912515Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T121936079Z/notes-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T122059286Z/crud-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T122213065Z/crud-module-provenance.json"
+  ],
+  "previousMotif_audioAutomationUnit": "work/acceptance/part-variation-playback/20261003T123500Z/unit-record.json",
+  "previousMotif_stylePlaybackModuleEvidence": [
+    "work/acceptance/product-notes/20261003T121912515Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T121936079Z/notes-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T122059286Z/crud-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T122213065Z/crud-module-provenance.json"
+  ],
+  "previousMotif_styleAcceptance": "Current candidate-only selection1 vs32 API/digital recording independently confirmed; general variation/original incomplete",
+  "previousMotif_runtimeModuleInventory": "Current host24, both GUI45 and four playback point inventories; original40hash0; see separate provenance files",
+  "previousMotif_audioAuditorControls": [
+    "work/acceptance/audio-auditor-controls/20261003T122500Z-first/negative-tests.json",
+    "work/acceptance/audio-auditor-controls/20261003T122500Z-last/negative-tests.json"
+  ],
+  "previousMotif_guiEvidenceLimitations": "Current first GUI edit/history/save and separate PID reload first/last candidates/byte-identical resave passed; GUI Play/original/full acceptance incomplete",
+  "motifContract": "docs/analysis/motif-contract.md",
+  "motifProof": null,
+  "motifUnit": "work/analysis/standalone-motif/20261003T142000Z/unit-record.json",
+  "beforeMotifGui_productBuild": "work/build/product-snapshot/20261003T124140507Z/build-summary.json",
+  "beforeMotifGui_productExeSha256": "4d08012c6ed58a108aa233b3221632f44e0b395a2618aac2e7cd79db1fcebb52",
+  "beforeMotifGui_coreTestExeSha256": "83e0b7454e5d93c0b00507c087e55bb6171039a007234fb713ff5c762a812b79",
+  "beforeMotifGui_runtimeAttempt": "work/acceptance/product-host/20261003T124257405Z/run.json",
+  "beforeMotifGui_runtime": "Current Motif27/related CRUD22/host passed; GUI/audio unexecuted",
+  "beforeMotifGui_coreTests": "Current targeted Motif27 and related Pattern CRUD22 passed; fullsuite unexecuted",
+  "beforeMotifGui_hostAcceptance": "Current targeted Motif owned creation/settings/history/Framework snapshot/save/reload passed; full host acceptance incomplete",
+  "beforeMotifGui_guiEvidence": null,
+  "beforeMotifGui_guiModuleEvidence": null,
+  "beforeMotifGui_runtimeModuleInventory": "Current host24 original40hash0 only; GUI/playback unexecuted",
+  "beforeMotifGui_guiEvidenceLimitations": "Current New Motif menu compiled but GUI unexecuted; settings GUI pending",
+  "beforeMotifGui_motifProof": "work/acceptance/motif/20261003T124256919Z/motif-proof.json",
+  "beforeMotifGui_motifUnit": "work/acceptance/motif/20261003T124256919Z/unit-record.json",
+  "originalGuiObservation": "After user closed registry warning existing original target447416902 became available; no new launch; dynamic comparison pending",
+  "beforeNamedMotif_productBuild": "work/build/product-snapshot/20261003T130022039Z/build-summary.json",
+  "beforeNamedMotif_productExeSha256": "72c81be6f0225ba06d6325599d8cd783e7b24551d591128e81a92d6446f37eda",
+  "beforeNamedMotif_coreTestExeSha256": "87dded8fbb0bdd0d1846be17218fc0272f3bfa97bb6bd937146a6bc41abebae9",
+  "beforeNamedMotif_runtimeAttempt": "work/acceptance/product-host/20261003T130216142Z/run.json",
+  "beforeNamedMotif_runtime": "Current Motif27 and host exit0; GUI edit/save passed; GUI launcher timed out, exit unknown; named runtime/audio unexecuted",
+  "beforeNamedMotif_coreTests": "Current targeted Motif27 passed; related CRUD22 historical1241; fullsuite unexecuted",
+  "beforeNamedMotif_hostAcceptance": "Current Motif ownership/settings native and GUI editing/save; whole acceptance incomplete",
+  "beforeNamedMotif_guiEvidence": "work/acceptance/product-project-gui/20261003T130219053Z/motif-gui-proof.json",
+  "beforeNamedMotif_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T130219053Z/motif-gui-proof.json",
+  "beforeNamedMotif_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T130219053Z/gui-module-provenance.json"
+  ],
+  "beforeNamedMotif_runtimeModuleInventory": "Current host24 and GUI45 original40hash0; point snapshots only",
+  "beforeNamedMotif_guiEvidenceLimitations": "Motif settings Apply/UndoRedo/save passed; final GUI launcher timeout/exit unknown; New Motif and separate GUI reload/play unverified",
+  "beforeNamedMotif_motifProof": "work/acceptance/motif/20261003T130215600Z/motif-proof.json",
+  "beforeNamedMotif_motifUnit": "work/acceptance/product-project-gui/20261003T130219053Z/unit-record.json",
+  "beforeNamedMotif_playbackApi": "Current Motif named playback unimplemented; old Pattern API success historical",
+  "beforeNamedMotif_audioEvidence": null,
+  "beforeNamedMotif_audioAcceptance": "Current build audio unexecuted; old1208 recordings frozen separately",
+  "beforeNamedMotif_playbackModuleEvidence": null,
+  "motifPlaybackProof": "work/analysis/standalone-motif/20261003T142000Z/standalone-proof.json",
+  "motifGuiLifecycleUnit": "work/analysis/motif-gui-long/20261003T135000Z/unit-record.json",
+  "beforeMotifLifecycle_productBuild": "work/build/product-snapshot/20261003T133344134Z/build-summary.json",
+  "beforeMotifLifecycle_productExeSha256": "b95cddb9dcc9ad849904e9838a67f369f887524e402634b497e2d9cca52de1da",
+  "beforeMotifLifecycle_coreTestExeSha256": "1a5a22070adbf811b1d2f84f17394a0bf8fd617b8a493e62dd246d5ba4410363",
+  "beforeMotifLifecycle_runtimeAttempt": "work/acceptance/product-host/20261003T133554768Z/run.json",
+  "beforeMotifLifecycle_runtime": "Current Motif native27/host/API/finite audio passed; current GUI settings reload/resave and Play/Stop/restart/natural-end/exit0 passed; GUI sound unrecorded",
+  "beforeMotifLifecycle_coreTests": "Current targeted Motif27 passed; fullsuite unexecuted",
+  "beforeMotifLifecycle_hostAcceptance": "Named Motif attributes/natural end and digital endpoint passed; whole acceptance incomplete",
+  "beforeMotifLifecycle_runtimeModuleInventory": "Current host24; API57/58/57; finite audio57; reload GUI45 and playing GUI75; original40hash0 point snapshots",
+  "beforeMotifLifecycle_guiEvidence": [
+    "work/acceptance/product-project-gui/20261003T134503517Z/motif-gui-reload-proof.json",
+    "work/acceptance/product-project-gui/20261003T134919847Z/motif-gui-playback-proof.json"
+  ],
+  "beforeMotifLifecycle_currentGUIEvidence": [
+    "work/acceptance/product-project-gui/20261003T134503517Z/motif-gui-reload-proof.json",
+    "work/acceptance/product-project-gui/20261003T134919847Z/motif-gui-playback-proof.json"
+  ],
+  "beforeMotifLifecycle_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T134503517Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T134919847Z/gui-module-provenance.json"
+  ],
+  "beforeMotifLifecycle_guiEvidenceLimitations": "Current GUI settings restored/byte-identical resave and selected named Motif command states verified, both exits0; GUI audio/exact tempo not measured. Old save EXE differs and exit unknown.",
+  "beforeMotifLifecycle_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T133532974Z/audio-proof.json"
+  ],
+  "beforeMotifLifecycle_audioAcceptance": "Current finite named Motif C5x6 unattended digital endpoint passed; explicit playing Stop/restart, physical speaker/full acceptance unverified",
+  "beforeMotifLifecycle_playbackApi": "Current named Motif repeat0 C5x4/repeat1 C5x6 versus normal C4x12 exact attributes and natural end",
+  "beforeMotifLifecycle_playbackModuleEvidence": [
+    "work/acceptance/product-notes/20261003T133527325Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T133500259Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T133614350Z/notes-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T133532974Z/crud-module-provenance.json"
+  ],
+  "beforeMotifLifecycle_motifProof": "work/acceptance/motif/20261003T133554816Z/motif-proof.json",
+  "beforeMotifLifecycle_motifUnit": "work/analysis/motif-playback/20261003T134500Z/unit-record-v2.json",
+  "beforeMotifLifecycle_motifPlaybackProof": "work/analysis/motif-playback/20261003T134500Z/playback-proof.json",
+  "beforeStandaloneMotif_productBuild": "work/build/product-snapshot/20261003T140334534Z/build-summary.json",
+  "beforeStandaloneMotif_productExeSha256": "4a2188b97f39eb484dd2d572f9e52363d67e3ccd3f52cab098a20bdcce716524",
+  "beforeStandaloneMotif_coreTestExeSha256": "b56d26af239285603190e37c715ea51ca6066b8a6f0fa31fd30d6fb893913759",
+  "beforeStandaloneMotif_runtimeAttempt": "work/acceptance/product-host/20261003T140523324Z/run.json",
+  "beforeStandaloneMotif_runtime": "Current host exit0, named Motif Stop/restart and ordinary lifecycle new digital recordings, finite Motif/normal note regressions passed; GUI/native model/full acceptance unexecuted",
+  "beforeStandaloneMotif_coreTests": "No current native model/fullsuite execution; prior native27 historical source version",
+  "beforeStandaloneMotif_hostAcceptance": "Current CLI named Motif Stop/restart sound/silence and host startup passed; whole acceptance incomplete",
+  "beforeStandaloneMotif_runtimeModuleInventory": "Current host23, named lifecycle58, ordinary lifecycle57, finite APIs57/57; original40hash0 point inventories",
+  "beforeStandaloneMotif_guiEvidence": null,
+  "beforeStandaloneMotif_currentGUIEvidence": null,
+  "beforeStandaloneMotif_guiModuleEvidence": null,
+  "beforeStandaloneMotif_guiEvidenceLimitations": "Current GUI unexecuted; prior1333 GUI restore/command states remain separate",
+  "beforeStandaloneMotif_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T140509870Z/lifecycle-audio-proof.json",
+    "work/acceptance/audio-loopback/20261003T140722303Z/lifecycle-audio-proof.json"
+  ],
+  "beforeStandaloneMotif_audioAcceptance": "Current explicit Stop digital silence after release-tail allowance, restarted C5 and final silence passed; GUI/physical speaker/exact tempo/full acceptance unverified",
+  "beforeStandaloneMotif_playbackApi": "Current named C5x6 vs ordinary C4x12 finite regression; named lifecycle generated notes + GetMotif twice and Stop state",
+  "beforeStandaloneMotif_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T140509870Z/lifecycle-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T140722303Z/lifecycle-module-provenance.json",
+    "work/acceptance/product-notes/20261003T140618882Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T140646678Z/notes-module-provenance.json"
+  ],
+  "beforeStandaloneMotif_motifProof": null,
+  "beforeStandaloneMotif_motifUnit": "work/analysis/motif-audio-lifecycle/20261003T141000Z/unit-record.json",
+  "beforeStandaloneMotif_motifPlaybackProof": "work/analysis/motif-audio-lifecycle/20261003T141000Z/related-api-proof.json",
+  "beforeStandaloneMotif_audioAuditorControls": [
+    "work/acceptance/audio-auditor-controls/20261003T140900Z-motif-lifecycle/negative-tests.json"
+  ],
+  "beforeStyleBandCreation_productBuild": "work/build/product-snapshot/20261003T141622797Z/build-summary.json",
+  "beforeStyleBandCreation_productExeSha256": "92a428c698cb8613fc8cb978d95170e469b4c78fc1555faf19849c32d951f2b0",
+  "beforeStyleBandCreation_coreTestExeSha256": "a496f91fc25a7f08f5353013d59477f6be6a9b02f15744b4ceed4f52c029751a",
+  "beforeStyleBandCreation_runtimeAttempt": "work/acceptance/product-host/20261003T141815185Z/run.json",
+  "beforeStyleBandCreation_runtime": "Current host/Style-only GUI Play-Stop-exit0, standalone Motif existing/generated GUID APIs and new recordings, context Motif/normal note regressions passed; model/fullsuite and whole acceptance unexecuted",
+  "beforeStyleBandCreation_coreTests": "No current native model/fullsuite execution; prior native27 historical source version",
+  "beforeStyleBandCreation_hostAcceptance": "Style-only owned snapshot connected to GUI/Conductor; exact finite notes/new digital audio; whole acceptance incomplete",
+  "beforeStyleBandCreation_runtimeModuleInventory": "Current host23; three APIs57; two audio58/57; GUI75; original40hash0 point snapshots",
+  "beforeStyleBandCreation_guiEvidence": "work/acceptance/product-project-gui/20261003T142334515Z/standalone-motif-gui-proof.json",
+  "beforeStyleBandCreation_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T142334515Z/standalone-motif-gui-proof.json",
+  "beforeStyleBandCreation_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T142334515Z/gui-module-provenance.json"
+  ],
+  "beforeStyleBandCreation_guiEvidenceLimitations": "Current Style-only GUI selected Motif Play/Stop/exit0; GUI sound/restart not measured; prior GUI settings retained separately",
+  "beforeStyleBandCreation_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T141800649Z/audio-proof.json",
+    "work/acceptance/audio-loopback/20261003T142029205Z/audio-proof.json"
+  ],
+  "beforeStyleBandCreation_audioAcceptance": "Current standalone existing/generated runtime GUID C5x6 new digital recordings passed; GUI/physical speaker/Stop-restart current version unverified",
+  "beforeStyleBandCreation_playbackApi": "Current standalone with-ID/no-ID and context Motif C5x6; normal C4x12 exact finite attributes/natural-end",
+  "beforeStyleBandCreation_playbackModuleEvidence": [
+    "work/acceptance/product-notes/20261003T142020540Z/notes-module-provenance.json",
+    "work/acceptance/audio-loopback/20261003T142029205Z/crud-module-provenance.json",
+    "work/acceptance/product-notes/20261003T141815445Z/notes-module-provenance.json",
+    "work/acceptance/product-notes/20261003T141849323Z/notes-module-provenance.json"
+  ],
+  "beforeStyleBandCreation_nextActions": [
+    "Observe original Motif settings/standalone Style playback from existing GUI; record differences",
+    "Implement empty Style owned Band creation in Framework/main and validate save/history/playback",
+    "Motif custom DLS/scheduled/secondary/tempo, original Clipboard, JAZP and remaining40/all8"
+  ],
+  "styleBandCreationProof": "work/acceptance/style-band-creation/20261003T144009668Z/style-band-proof.json",
+  "styleBandUnit": "work/analysis/style-band-creation/20261003T144200Z/unit-record.json",
+  "originalStyleBandObservation": "work/analysis/original-style-band/20261003T143300Z/observation.json",
+  "beforeAuthoredStyleBand_productBuild": "work/build/product-snapshot/20261003T143452471Z/build-summary.json",
+  "beforeAuthoredStyleBand_productExeSha256": "a8424fd8d8e334a3b9efa0ff1b8959bd43f9a1199f801cd550e3f381a7f8e5ed",
+  "beforeAuthoredStyleBand_coreTestExeSha256": "7e0b775e5e218a7c903671a7fd35742f33e7a4b4731a55485e48f967f5a462a1",
+  "beforeAuthoredStyleBand_runtimeAttempt": "work/acceptance/product-host/20261003T144010658Z/run.json",
+  "beforeAuthoredStyleBand_runtime": "Current targeted native14 and host exit0; GUI empty Style Band Add/Undo/Redo/Save/exit0; audio and full acceptance unexecuted",
+  "beforeAuthoredStyleBand_coreTests": "Current targeted Style Band creation14 passed; fullsuite unexecuted",
+  "beforeAuthoredStyleBand_hostAcceptance": "Empty Style owned Band creation connected to model/Framework/main; save/history/reload passed; whole acceptance incomplete",
+  "beforeAuthoredStyleBand_runtimeModuleInventory": "Current host and GUI45 point observations passed original40hash0",
+  "beforeAuthoredStyleBand_guiEvidence": "work/acceptance/product-project-gui/20261003T144214163Z/style-band-gui-proof.json",
+  "beforeAuthoredStyleBand_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T144214163Z/style-band-gui-proof.json",
+  "beforeAuthoredStyleBand_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T144214163Z/gui-module-provenance.json"
+  ],
+  "beforeAuthoredStyleBand_audioEvidence": [],
+  "beforeAuthoredStyleBand_audioAcceptance": "Current build unexecuted; prior recordings remain linked under beforeStyleBandCreation fields",
+  "beforeAuthoredStyleBand_playbackApi": "Current runtime notes/audio unexecuted; native owned Style snapshot only",
+  "beforeAuthoredStyleBand_playbackModuleEvidence": [],
+  "beforeAuthoredStyleBand_audioAuditorControls": [
+    "work/acceptance/audio-auditor-controls/20261003T142400Z-standalone/negative-tests.json"
+  ],
+  "beforeAuthoredStyleBand_nextActions": [
+    "Create Part/Motif using newly owned Style Band and verify current API/new loopback recording",
+    "Verify referenced Segment cache refresh and Style Band history directly",
+    "Observe original new Style/Band defaults in a work copy; Motif/custom DLS/secondary/tempo/Clipboard/JAZP/remaining40/all8"
+  ],
+  "authoredStyleBandProof": "work/acceptance/authored-style-band/20261003T150036596Z/authored-style-band-proof.json",
+  "authoredStyleBandUnit": "work/analysis/authored-style-band/20261003T150300Z/unit-record.json",
+  "unassignedMotifSilentEvidence": "work/acceptance/audio-loopback/20261003T145621134Z/audio-proof.json",
+  "beforeMotifBandGui_runtime": "Current native14/host/standalone Authored Motif C5x6 new digital audio passed; GUI/full acceptance unexecuted",
+  "beforeMotifBandGui_hostAcceptance": "Explicit Motif Band assignment implemented in model/Framework/main; whole acceptance incomplete",
+  "beforeMotifBandGui_guiEvidence": null,
+  "beforeMotifBandGui_currentGUIEvidence": null,
+  "beforeMotifBandGui_guiModuleEvidence": [],
+  "beforeMotifBandGui_nextActions": [
+    "Current GUI explicit Style Band assignment/UndoRedo/Save/separate reload raw comparison",
+    "Motif Band reassignment/editing/custom DLS",
+    "Original defaults/Motif timing secondary tempo/Clipboard/JAZP/remaining40/all8"
+  ],
+  "motifBandGuiUnit": "work/analysis/motif-band-gui/20261003T150500Z/unit-record.json",
+  "beforeMotifBandEdit_productBuild": "work/build/product-snapshot/20261003T145909887Z/build-summary.json",
+  "beforeMotifBandEdit_productExeSha256": "5b56b22cc64028b851274ffcf54084d65601090df6a83209af9cfab696a1cdd0",
+  "beforeMotifBandEdit_coreTestExeSha256": "8f238b53d72999e8682be5c95db80d3313f728211821ff696006ef0360ac2f7a",
+  "beforeMotifBandEdit_runtimeAttempt": "work/acceptance/product-host/20261003T150037463Z/run.json",
+  "beforeMotifBandEdit_runtime": "Current native14/host/standalone authored Motif digital audio and GUI assignment/UndoRedo/save/separate reload/resave exit0 passed; full acceptance incomplete",
+  "beforeMotifBandEdit_hostAcceptance": "Explicit Motif Band assignment GUI and exact save/separate-process reload verified; all8 incomplete",
+  "beforeMotifBandEdit_guiEvidence": "work/acceptance/product-project-gui/20261003T150534116Z/motif-band-gui-proof.json",
+  "beforeMotifBandEdit_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T150534116Z/motif-band-gui-proof.json",
+  "beforeMotifBandEdit_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T150534116Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T151432382Z/gui-module-provenance.json"
+  ],
+  "beforeMotifBandEdit_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T150057747Z/audio-proof.json"
+  ],
+  "beforeMotifBandEdit_audioAcceptance": "Current explicit assigned Motif C5x6 new digital recording passed; GUI/physical sound unverified",
+  "beforeMotifBandEdit_playbackApi": "Current recording CLI authored Motif C5x6 exact attributes/natural end; no implicit Segment",
+  "beforeMotifBandEdit_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T150057747Z/crud-module-provenance.json"
+  ],
+  "beforeMotifBandEdit_audioAuditorControls": [
+    "work/acceptance/audio-auditor-controls/20261003T150200Z-authored/negative-tests.json"
+  ],
+  "beforeMotifBandEdit_nextActions": [
+    "Implement Motif Band instrument editing with root Band unchanged, cache/history/save/reload and unattended audio",
+    "Motif Band reassignment/custom DLS and original defaults comparison",
+    "Motif scheduled/secondary/tempo, Clipboard/JAZP/remaining40/all8"
+  ],
+  "motifBandEditProof": "work/acceptance/motif-band-edit/20261003T152727628Z/motif-band-edit-proof.json",
+  "motifBandEditUnit": "work/analysis/motif-band-edit/20261003T153000Z/unit-record.json",
+  "beforeMotifBandEditorGui_runtime": "Current native24/host and edited standalone Motif C5x6 new digital recording passed; current GUI/full acceptance unexecuted",
+  "beforeMotifBandEditorGui_hostAcceptance": "Motif Band editor connected to model/Framework/main; targeted cache/history/reload and CLI audio passed; GUI/all8 incomplete",
+  "beforeMotifBandEditorGui_guiEvidence": null,
+  "beforeMotifBandEditorGui_currentGUIEvidence": null,
+  "beforeMotifBandEditorGui_guiModuleEvidence": [],
+  "beforeMotifBandEditorGui_nextActions": [
+    "Current Motif Band editor GUI select/edit/UndoRedo/save/separate reload raw validation",
+    "Motif owned custom DLS playback and original defaults comparison",
+    "Scheduled/secondary/tempo, Clipboard/JAZP/all40/all8"
+  ],
+  "motifBandEditorGuiUnit": "work/analysis/motif-band-editor-gui/20261003T153200Z/unit-record.json",
+  "beforeMotifDls_productBuild": "work/build/product-snapshot/20261003T152544174Z/build-summary.json",
+  "beforeMotifDls_productExeSha256": "2dd0d4b37db900868689323a2a05bc296c32ca6956674341a4153fbc47993823",
+  "beforeMotifDls_coreTestExeSha256": "c4ecb41cb8069b884ce53d795eda05ff1de8e1cf0bee30365f7b15d0bf385d33",
+  "beforeMotifDls_runtimeAttempt": "work/acceptance/product-host/20261003T152810268Z/run.json",
+  "beforeMotifDls_runtime": "Current native24/host/CLI authored Motif digital audio and GUI two Motif instruments edit/history/save/separate reload passed; full acceptance incomplete",
+  "beforeMotifDls_coreTests": "Targeted24 passed; fullsuite unexecuted",
+  "beforeMotifDls_hostAcceptance": "Current Motif Band editor GUI both instrument selection/Apply/UndoRedo/Save/separate reload raw verified; all8 incomplete",
+  "beforeMotifDls_guiEvidence": "work/acceptance/product-project-gui/20261003T153210755Z/motif-band-editor-gui-proof.json",
+  "beforeMotifDls_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T153210755Z/motif-band-editor-gui-proof.json",
+  "beforeMotifDls_guiModuleEvidence": [
+    "work/acceptance/product-project-gui/20261003T153210755Z/gui-module-provenance.json",
+    "work/acceptance/product-project-gui/20261003T153815121Z/gui-module-provenance.json"
+  ],
+  "beforeMotifDls_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T152756163Z/audio-proof.json"
+  ],
+  "beforeMotifDls_audioAcceptance": "Current edited Motif digital C5x6 recording passed; GUI/physical speaker/timbre/pan-volume acoustic comparison unverified",
+  "beforeMotifDls_playbackApi": "Standalone edited Motif C5x6 exact attributes and natural end",
+  "beforeMotifDls_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T152756163Z/crud-module-provenance.json"
+  ],
+  "beforeMotifDls_nextActions": [
+    "Motif owned custom DLS assignment/cache/references and standalone API/new unattended recording",
+    "Original defaults, Motif scheduled/secondary/tempo comparison",
+    "Clipboard/JAZP/all40/all8"
+  ],
+  "motifDlsProof": "work/acceptance/motif-dls/20261003T155334348Z/motif-dls-proof.json",
+  "motifDlsUnit": "work/analysis/motif-dls/20261003T155800Z/unit-record.json",
+  "beforeMotifDlsAudio_productBuild": "work/build/product-snapshot/20261003T155125479Z/build-summary.json",
+  "beforeMotifDlsAudio_productExeSha256": "4be83c1b26344397d7ac04a1aa87b78960b247055cf30e9ce6e2e5d747731ff7",
+  "beforeMotifDlsAudio_coreTestExeSha256": "fe9ba97f27abdf2542f66a272b3664b6f07c120449b48b0a436fce791ed9261b",
+  "beforeMotifDlsAudio_runtimeAttempt": "work/acceptance/product-host/20261003T155339879Z/run.json",
+  "beforeMotifDlsAudio_runtime": "Current native28/host/owned Motif DLS API exit0; new digital recording nonzero but pitch assertion FAILED; GUI/full acceptance unexecuted",
+  "beforeMotifDlsAudio_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T155410446Z/audio-proof.json"
+  ],
+  "beforeMotifDlsAudio_audioAcceptance": "FAILED current custom DLS GM C5 pitch expectation; nonzero digital recording and API passed, source WSMP attribution unverified",
+  "beforeMotifDlsAudio_playbackApi": "Current standalone Motif MIDI72x6, owned DLS registration/instrument retrieval and natural end exit0; runtime collection bytes not yet dumped",
+  "beforeMotifDlsAudio_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T155410446Z/crud-module-provenance.json"
+  ],
+  "beforeMotifDlsAudio_nextActions": [
+    "Determine DLS sample/WSMP pitch and dump runtime owned collection bytes/locale; source-aware unattended analyzer and controls/new recording",
+    "Current Motif DLS GUI assignment/history/save/separate reload",
+    "Original defaults/scheduled/secondary/tempo; Clipboard/JAZP/all40/all8"
+  ],
+  "motifDlsAudioUnit": "work/analysis/motif-dls-audio/20261003T160600Z/unit-record.json",
+  "beforeMotifDlsGui_runtime": "Current native28/host/custom DLS MIDI72x6 source-aware new digital recording passed; GUI/all8 incomplete",
+  "beforeMotifDlsGui_hostAcceptance": "Owned Motif DLS assignment/cache/history/reload passed; GUI/all8 incomplete",
+  "beforeMotifDlsGui_guiEvidence": null,
+  "beforeMotifDlsGui_currentGUIEvidence": null,
+  "beforeMotifDlsGui_guiModuleEvidence": [],
+  "beforeMotifDlsGui_nextActions": [
+    "Current Motif DLS GUI collection/instrument selection/history/save/separate reload",
+    "Original defaults/Motif scheduled/secondary/tempo",
+    "Clipboard/JAZP/all40/all8"
+  ],
+  "motifDlsGuiUnit": "work/analysis/motif-dls-gui/20261003T161800Z/unit-record.json",
+  "beforeMotifSecondAudio_runtime": "Current native28/host/single-instrument DLS source-aware CLI recording and separate second-DLS GUI assignment/history/save/reload passed; all8 incomplete",
+  "beforeMotifSecondAudio_nextActions": [
+    "Original Motif defaults/Band/DLS assignment observation and contract comparison",
+    "GUI saved second DLS instrument API/recording with selected instrument-aware analyzer",
+    "Motif scheduled/secondary/tempo; Clipboard/JAZP/all40/all8"
+  ],
+  "motifSecondAudioEvidence": "work/acceptance/audio-loopback/20261003T162026845Z/audio-dls-proof.json",
+  "motifSecondAudioControls": "work/acceptance/audio-auditor-controls/20261003T162100Z-motif-second/negative-tests.json",
+  "originalMotifSettings": "work/analysis/original-motif-settings/20261003T162000Z/observation.json",
+  "motifSecondAudioUnit": "work/analysis/motif-second-audio/20261003T163000Z/unit-record.json",
+  "beforeMotifScheduling_productBuild": "work/build/product-snapshot/20261003T160017103Z/build-summary.json",
+  "beforeMotifScheduling_productExeSha256": "b725e52a0259c41abb45c28a29626c76566a90ed10392d950c639a18d81fe48a",
+  "beforeMotifScheduling_coreTestExeSha256": "cf25d6d44b43a10e0a956e2114f30583a787cf660dcb6a2e991c8ca4eae9b167",
+  "beforeMotifScheduling_runtime": "Current GUI-saved second DLS instrument source-aware CLI recording/negative controls passed; GUI playback/all8 incomplete",
+  "beforeMotifScheduling_coreTests": "Targeted28 passed; fullsuite unexecuted",
+  "beforeMotifScheduling_runtimeAttempt": "work/acceptance/product-host/20261003T160313413Z/run.json",
+  "beforeMotifScheduling_attemptedExeSha256": "b725e52a0259c41abb45c28a29626c76566a90ed10392d950c639a18d81fe48a",
+  "beforeMotifScheduling_attemptedBuild": "work/build/product-snapshot/20261003T160017103Z/build-summary.json",
+  "beforeMotifScheduling_guiEvidence": "work/acceptance/product-project-gui/20261003T160843451Z/motif-dls-gui-proof.json",
+  "beforeMotifScheduling_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T160843451Z/motif-dls-gui-proof.json",
+  "beforeMotifScheduling_hostAcceptance": "Current second DLS instrument Motif GUI assignment/history/save/separate reload/raw resave verified; all8 incomplete",
+  "beforeMotifScheduling_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T160300614Z/audio-dls-proof.json"
+  ],
+  "beforeMotifScheduling_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T160300614Z/crud-module-provenance.json"
+  ],
+  "beforeMotifScheduling_nextActions": [
+    "Map original saved Motif resolution and SDK boundary/prepare/secondary flags; implement explicit playback options across host/Framework/Conductor",
+    "Scheduled/secondary/actual tempo API and source-aware unattended recording",
+    "Clipboard/JAZP/all40/all8"
+  ],
+  "motifSchedulingEvidence": "work/acceptance/motif-scheduling/20261003T163942120Z/scheduling-proof.json",
+  "motifSchedulingUnit": "work/analysis/motif-scheduling/20261003T164300Z/unit-record.json",
+  "beforeMotifPlaybackGui_guiEvidence": null,
+  "beforeMotifPlaybackGui_currentGUIEvidence": null,
+  "beforeMotifPlaybackGui_hostAcceptance": "Fresh host smoke only; new GUI/full8 unexecuted",
+  "beforeMotifPlaybackGui_nextActions": [
+    "New playback-options GUI and original saved mtfs/runtime default-resolution boundary alignment",
+    "Individual primary/secondary owners, concurrent playback/individual Stop/notification identity",
+    "Actual tempo; Clipboard/JAZP/all40/all8"
+  ],
+  "motifPlaybackGuiUnit": "work/analysis/motif-playback-gui/20261003T165800Z/unit-record.json",
+  "beforeMotifConcurrent_productBuild": "work/build/product-snapshot/20261003T163814810Z/build-summary.json",
+  "beforeMotifConcurrent_productExeSha256": "1bf851951a8255fd96c5087d351454905e308f594c27613f167bf6a067b9bf50",
+  "beforeMotifConcurrent_coreTestExeSha256": "f3f908242a04a8a9c4528ffd38b9e7c20b13d288c53e64a5abb6482e32412aca",
+  "beforeMotifConcurrent_runtime": "Fresh scheduled primary/secondary-only notes and secondary DLS digital recording passed; no concurrent playback/all8",
+  "beforeMotifConcurrent_coreTests": "Current core executable unexecuted; prior28 belongs to160017103Z",
+  "beforeMotifConcurrent_runtimeAttempt": "work/acceptance/product-host/20261003T163953290Z/run.json",
+  "beforeMotifConcurrent_attemptedExeSha256": "1bf851951a8255fd96c5087d351454905e308f594c27613f167bf6a067b9bf50",
+  "beforeMotifConcurrent_attemptedBuild": "work/build/product-snapshot/20261003T163814810Z/build-summary.json",
+  "beforeMotifConcurrent_guiEvidence": "work/acceptance/product-project-gui/20261003T164547643Z/motif-playback-gui-proof.json",
+  "beforeMotifConcurrent_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T164547643Z/motif-playback-gui-proof.json",
+  "beforeMotifConcurrent_hostAcceptance": "Current GUI Motif dialog cancel/delay submission/natural end and normal exit passed; GUI audio/full8 unverified",
+  "beforeMotifConcurrent_audioEvidence": [
+    "work/acceptance/audio-loopback/20261003T164008086Z/audio-dls-proof.json"
+  ],
+  "beforeMotifConcurrent_playbackModuleEvidence": [
+    "work/acceptance/audio-loopback/20261003T164008086Z/crud-module-provenance.json",
+    "work/acceptance/product-host/20261003T163953290Z/module-provenance.json"
+  ],
+  "beforeMotifConcurrent_nextActions": [
+    "Individual primary/secondary owners, concurrent playback/individual Stop/notification identity",
+    "Saved mtfs/GetDefaultResolution/runtime boundary rounding comparison",
+    "Actual tempo; Clipboard/JAZP/all40/all8"
+  ],
+  "motifConcurrentEvidence": "work/acceptance/motif-concurrent/20261003T170726655Z/concurrent-proof.json",
+  "motifConcurrentUnit": "work/analysis/motif-concurrent/20261003T171100Z/unit-record.json",
+  "beforeConcurrentAudio_productBuild": "work/build/product-snapshot/20261003T170530848Z/build-summary.json",
+  "beforeConcurrentAudio_productExeSha256": "1da22f95a19d771d8bc4c6f8de375db34081379fb6e9bad0dcf26869423311b2",
+  "beforeConcurrentAudio_coreTestExeSha256": "cb7af287effc857b5852aba96014324d2b5fdae264d5dea9fb75526a3dc3fa56",
+  "beforeConcurrentAudio_runtime": "Current concurrent primary/secondary API and individual Stop, live/retired notification identity, targeted scheduled notes passed; audio/GUI/full8 unexecuted",
+  "beforeConcurrentAudio_coreTests": "Current core suite unexecuted; prior28 belongs to160017103Z",
+  "beforeConcurrentAudio_runtimeAttempt": "work/acceptance/product-host/20261003T170728591Z/run.json",
+  "beforeConcurrentAudio_attemptedExeSha256": "1da22f95a19d771d8bc4c6f8de375db34081379fb6e9bad0dcf26869423311b2",
+  "beforeConcurrentAudio_attemptedBuild": "work/build/product-snapshot/20261003T170530848Z/build-summary.json",
+  "beforeConcurrentAudio_guiEvidence": null,
+  "beforeConcurrentAudio_currentGUIEvidence": null,
+  "beforeConcurrentAudio_hostAcceptance": "Current host smoke only; concurrent GUI/full8 unexecuted",
+  "beforeConcurrentAudio_audioEvidence": [],
+  "beforeConcurrentAudio_playbackModuleEvidence": [
+    "work/acceptance/motif-concurrent/20261003T170726655Z/concurrent-module-provenance.json",
+    "work/acceptance/product-host/20261003T170728591Z/module-provenance.json"
+  ],
+  "beforeConcurrentAudio_nextActions": [
+    "Distinct pitch/channel concurrent WASAPI recording through individual Stop/restart/all Stop",
+    "Concurrent GUI playback selection and individual Stop; scheduled primary replacement and retired identity lifetime",
+    "Saved resolution/actual tempo; Clipboard/JAZP/all40/all8"
+  ],
+  "concurrentAudioUnit": "work/analysis/motif-concurrent-audio/20261003T172500Z/unit-record.json",
+  "concurrentAudioControls": "work/acceptance/audio-auditor-controls/20261003T172200Z-concurrent/negative-tests.json",
+  "beforePlaybackSessions_productBuild": "work/build/product-snapshot/20261003T171458542Z/build-summary.json",
+  "beforePlaybackSessions_productExeSha256": "0b0486ab4a7fd35d006c01488896dd25d06e1aff8f193cc5fb48bf591c7f15d7",
+  "beforePlaybackSessions_coreTestExeSha256": "f6a53d28a82270ceaa21788c5d73a09e9a6d1e0357581c82682efdc62012ac60",
+  "beforePlaybackSessions_runtime": "Current two distinct DLS tones concurrent/individual Stop/restart/all Stop digital and API passed; GUI/full8 incomplete",
+  "beforePlaybackSessions_coreTests": "Current core suite unexecuted; prior28 belongs to160017103Z",
+  "beforePlaybackSessions_guiEvidence": null,
+  "beforePlaybackSessions_currentGUIEvidence": null,
+  "beforePlaybackSessions_runtimeAttempt": "work/acceptance/product-host/20261003T172249996Z/run.json",
+  "beforePlaybackSessions_audioEvidence": [
+    "work/acceptance/audio-concurrent/20261003T171910126Z/concurrent-audio-proof.json"
+  ],
+  "beforePlaybackSessions_audioAcceptance": "Limited distinct DLS tones through concurrent/individual Stop/restart/all Stop digital recording passed with 6 derived controls; physical/GUI unverified",
+  "beforePlaybackSessions_playbackModuleEvidence": [
+    "work/acceptance/audio-concurrent/20261003T171910126Z/concurrent-audio-module-provenance.json",
+    "work/acceptance/product-host/20261003T172249996Z/module-provenance.json"
+  ],
+  "beforePlaybackSessions_nextActions": [
+    "Concurrent playback list/selection/individual Stop GUI and actual operation",
+    "Scheduled primary replacement and retired identity lifetime",
+    "Saved resolution/actual tempo; Clipboard/JAZP/original/all40/all8"
+  ],
+  "playbackSessionsUnit": "work/analysis/playback-sessions-gui/20261003T174500Z/unit-record.json",
+  "beforePlaybackMonitor_productBuild": "work/build/product-snapshot/20261003T172842472Z/build-summary.json",
+  "beforePlaybackMonitor_productExeSha256": "137fdf030259df50eb532e6acbfc137576bfe9b2cebcc64e9db724d207b4ad5a",
+  "beforePlaybackMonitor_coreTestExeSha256": "a993f342969952fd72e0467ea22dda126a4c68b5abab9e8c9b77973d5de5ad35",
+  "beforePlaybackMonitor_runtime": "Concurrent GUI selected primary Stop/all Stop plus separate CLI digital concurrent audio passed; main status/history defects recorded",
+  "beforePlaybackMonitor_coreTests": "Current core unexecuted",
+  "beforePlaybackMonitor_currentGUIEvidence": "work/acceptance/product-project-gui/20261003T173031057Z/playback-sessions-gui-proof.json",
+  "beforePlaybackMonitor_audioEvidence": [
+    "work/acceptance/audio-concurrent/20261003T174149244Z/concurrent-audio-proof.json"
+  ],
+  "beforePlaybackMonitor_audioAcceptance": "Current separate CLI distinct DLS tone concurrent/individual Stop recording passed; GUI audio unexecuted",
+  "beforePlaybackMonitor_runtimeAttempt": "work/acceptance/product-host/20261003T174216353Z/run.json",
+  "beforePlaybackMonitor_nextActions": [
+    "Per-session start history and scheduled-clock monitor; list Stop main status",
+    "Scheduled primary replacement and retired identity lifetime",
+    "Actual resolution/tempo; Clipboard/JAZP/original/all40/all8"
+  ],
+  "playbackMonitorUnit": "work/analysis/playback-monitor/20261003T181500Z/unit-record.json",
+  "previousNaturalEndEvidence": "work/acceptance/product-project-gui/20261003T180255845Z/playback-monitor-gui-proof.json",
+  "beforePrimaryReplacement": {
+    "build": "work/build/product-snapshot/20261003T180832339Z/build-summary.json",
+    "exeSha256": "3c1988fbe4d87533190b69ce2942b37fc2f07a5eb08f22113f5b0baf49b19ab4",
+    "gui": "work/acceptance/product-project-gui/20261003T181010475Z/playback-monitor-gui-proof.json",
+    "audio": []
+  },
+  "primaryReplacementUnit": "work/analysis/primary-replacement-audio/20261003T183000Z/unit-record.json",
+  "beforePrimaryCancel": {
+    "build": "work/build/product-snapshot/20261003T182228331Z/build-summary.json",
+    "exeSha256": "dd463824469db8b719e7d9827f89849da1c4fd82f2ec7f6b9c1f73ae11985082",
+    "audio": [
+      "work/acceptance/audio-primary-replacement/20261003T182722308Z/primary-replacement-proof.json",
+      "work/analysis/primary-replacement-audio/controls-20261003T182800Z/negative-tests.json"
+    ]
+  },
+  "primaryCancelUnit": "work/analysis/primary-cancel-audio/20261003T184500Z/unit-record.json",
+  "shortPlaybackProof": "work/acceptance/short-playback-monitor/20261003T190336277Z/short-monitor-proof.json",
+  "beforeNotificationIdentity": {
+    "build": "work/build/product-snapshot/20261003T184053874Z/build-summary.json",
+    "exeSha256": "ba1341bb4d5d4d7d2b333b9caa2d369eba8bb18afc0552432f3bb8c1c7a02401",
+    "audio": [
+      "work/acceptance/audio-primary-cancel/20261003T184236466Z/primary-cancel-proof.json",
+      "work/analysis/primary-cancel-audio/controls-20261003T184400Z/negative-tests.json"
+    ]
+  },
+  "notificationIdentityUnit": "work/analysis/notification-identity/20261003T190800Z/unit-record.json",
+  "boundaryRuntimeUnit": "work/analysis/boundary-runtime/20261003T193000Z/unit-record.json",
+  "motifTempoUnit": "work/analysis/motif-tempo/20261003T193600Z/unit-record.json",
+  "guiAcceptance": "Current build GUI unexecuted; prior GUI results retained separately",
+  "motifTempoGuiUnit": "work/analysis/motif-tempo-gui/20261003T200300Z/unit-record.json",
+  "mixedTempoDiagnosticUnit": "work/analysis/mixed-tempo/20261003T200800Z/unit-record.json",
+  "mixedTempoStatus": "Runtime shared180 clock passed; source-prefix waveform template and spacing passed for three isolated phases; both-voices/full audio unverified, prior fixed-tone/envelope failures preserved",
+  "mixedTempoEvidence": [
+    "work/acceptance/audio-concurrent/20261003T201137367Z/runtime-clock-proof.json",
+    "work/acceptance/audio-concurrent/20261003T201137367Z/concurrent-audio-proof.json",
+    "work/acceptance/audio-concurrent/20261003T201137367Z/mixed-tempo-proof.json"
+  ],
+  "beforeMixedClock": {
+    "build": "work/build/product-snapshot/20261003T193013633Z/build-summary.json",
+    "gui": "work/acceptance/product-project-gui/20261003T194328473Z/tempo-gui-proof.json",
+    "audio": [
+      "work/acceptance/audio-loopback/20261003T193144680Z/motif-tempo-proof.json",
+      "work/analysis/motif-tempo/controls-20261003T193400Z/negative-tests.json",
+      "work/acceptance/product-project-gui/20261003T194328473Z/audio-20261003T195026704Z/gui-motif-tempo-proof.json",
+      "work/analysis/motif-tempo-gui/controls-20261003T200100Z/negative-tests.json"
+    ]
+  },
+  "mixedTempoUnit": "work/analysis/mixed-tempo/20261003T201400Z/unit-record.json",
+  "mixedSourceTemplateUnit": "work/analysis/mixed-tempo/20261003T202500Z/unit-record.json",
+  "mixedSourceTemplateEvidence": "work/acceptance/audio-concurrent/20261003T201137367Z/source-template-proof.json",
+  "beforeJazpSave": {
+    "build": "work/build/product-snapshot/20261003T200959993Z/build-summary.json",
+    "gui": null,
+    "audio": [
+      "work/acceptance/audio-concurrent/20261003T201137367Z/concurrent-audio-proof.json",
+      "work/acceptance/audio-concurrent/20261003T201137367Z/mixed-tempo-proof.json"
+    ]
+  },
+  "jazpSaveUnit": "work/analysis/jazp-save/20261003T203300Z/unit-record.json",
+  "jazpEvidence": "work/acceptance/jazp-save/20261003T223628020Z/jazp-save-proof.json",
+  "jazpStatus": "DLS new factory/native save/Framework restore/original Collection tree display passed; source GUI command unexecuted",
+  "beforeJazpEmpty": {
+    "build": "work/build/product-snapshot/20261003T202847899Z/build-summary.json",
+    "jazpEvidence": "work/acceptance/jazp-save/20261003T203042257Z/jazp-save-proof.json"
+  },
+  "jazpEmptyUnit": "work/analysis/jazp-empty/20261003T205500Z/unit-record.json",
+  "jazpOriginalReopen": "work/analysis/jazp-original/entries-20261003T210000Z/observation-proof.json",
+  "beforeJazpSegment": {
+    "build": "work/build/product-snapshot/20261003T204639275Z/build-summary.json",
+    "jazpEvidence": "work/acceptance/jazp-save/20261003T204825072Z/jazp-save-proof.json"
+  },
+  "jazpSegmentUnit": "work/analysis/jazp-segment/20261003T211513Z/unit-record.json",
+  "beforeJazpFolder": {
+    "build": "work/build/product-snapshot/20261003T210944411Z/build-summary.json",
+    "jazpEvidence": "work/acceptance/jazp-save/20261003T211217861Z/jazp-save-proof.json"
+  },
+  "currentGUIRestart": null,
+  "jazpFolderUnit": "work/analysis/jazp-folder/20261003T213626Z/unit-record.json",
+  "beforeJazpNonmodal": {
+    "build": "work/build/product-snapshot/20261003T211852898Z/build-summary.json",
+    "jazpEvidence": "work/acceptance/jazp-save/20261003T212028408Z/jazp-save-proof.json",
+    "GUI": "work/analysis/jazp-folder/gui-20261003T212100Z/gui-save-proof.json"
+  },
+  "currentGUIAcceptance": "Current024829130Z GUI unexecuted; older020531123Z root assignment and ProjectOpen proof retained",
+  "jazpNonmodalUnit": "work/analysis/jazp-nonmodal/20261003T214144Z/unit-record.json",
+  "beforeJazpStyle": {
+    "build": "work/build/product-snapshot/20261003T213746885Z/build-summary.json",
+    "GUI": "work/analysis/jazp-nonmodal/gui-20261003T214000Z/gui-module-provenance.json",
+    "nonmodalUnit": "work/analysis/jazp-nonmodal/20261003T214144Z/unit-record.json"
+  },
+  "jazpStyleUnit": "work/analysis/jazp-style/20261003T220101Z/unit-record.json",
+  "jazpStyleOriginal": "work/analysis/jazp-style-original/20261003T214600Z/original-style-proof.json",
+  "jazpStyleOriginalOpen": "work/analysis/jazp-style-original/20261003T214600Z/source-open/open-proof.json",
+  "beforeJazpBand": {
+    "build": "work/build/product-snapshot/20261003T215310011Z/build-summary.json",
+    "styleUnit": "work/analysis/jazp-style/20261003T220101Z/unit-record.json"
+  },
+  "jazpBandUnit": "work/analysis/jazp-band/20261003T221921Z/unit-record.json",
+  "jazpBandOriginal": "work/analysis/jazp-band-original/20261003T220300Z/original-band-proof.json",
+  "jazpBandOriginalOpen": "work/analysis/jazp-band-original/20261003T220300Z/source-open/open-proof.json",
+  "beforeJazpDls": {
+    "build": "work/build/product-snapshot/20261003T221222064Z/build-summary.json",
+    "bandUnit": "work/analysis/jazp-band/20261003T221921Z/unit-record.json"
+  },
+  "jazpDlsUnit": "work/analysis/jazp-dls/20261003T223220Z/unit-record.json",
+  "jazpDlsOriginal": "work/analysis/jazp-dls-original/20261003T222100Z/original-dls-proof.json",
+  "beforeDlsFactory": {
+    "build": "work/build/product-snapshot/20261003T222840303Z/build-summary.json",
+    "dlsUnit": "work/analysis/jazp-dls/20261003T223220Z/unit-record.json"
+  },
+  "dlsFactoryUnit": "work/analysis/dls-factory/20261003T224141Z/unit-record.json",
+  "dlsFactoryEvidence": "work/acceptance/jazp-save/20261003T223628020Z/dls-factory-proof.json",
+  "dlsFactoryOriginalOpen": "work/analysis/dls-factory-original/20261003T223700Z/open-proof.json",
+  "beforeDlsWave": {
+    "build": "work/build/product-snapshot/20261003T223457111Z/build-summary.json",
+    "dlsFactoryUnit": "work/analysis/dls-factory/20261003T224141Z/unit-record.json"
+  },
+  "dlsWaveUnit": "work/analysis/dls-wave-creation/20261003T231255Z/unit-record.json",
+  "dlsWaveEvidence": "work/acceptance/dls-wave-creation/20261003T233736437Z/wave-creation-proof.json",
+  "dlsWaveOriginalOpen": "work/analysis/dls-author-original/20261003T224300Z/source-open/open-proof.json",
+  "beforeDlsInstrument": {
+    "productBuild": "work/build/product-snapshot/20261003T230126799Z/build-summary.json",
+    "dlsWaveUnit": "work/analysis/dls-wave-creation/20261003T231255Z/unit-record.json"
+  },
+  "dlsInstrumentUnit": "work/analysis/dls-instrument-creation/20261003T235018Z/unit-record.json",
+  "dlsInstrumentEvidence": "work/acceptance/dls-instrument-creation/20261003T233735675Z/instrument-creation-proof.json",
+  "dlsInstrumentOriginal": "work/analysis/dls-instrument-original/20261003T231831Z/after-instrument.dlp",
+  "currentGuiProcessId": 15788,
+  "currentGuiClose": "work/analysis/envelope-gui-audio/20261004T061400Z/exit.json",
+  "beforeAuthoredDlsAudio": {
+    "productBuild": "work/build/product-snapshot/20261003T233543909Z/build-summary.json",
+    "currentGUIEvidence": "work/acceptance/dls-instrument-gui/20261003T233913Z/gui-proof.json",
+    "dlsInstrumentUnit": "work/analysis/dls-instrument-creation/20261003T235018Z/unit-record.json"
+  },
+  "authoredDlsAudioUnit": "work/analysis/authored-dls-audio/20261004T000742Z/unit-record.json",
+  "authoredDlsAudioEvidence": "work/acceptance/authored-dls-audio/20261004T000247960Z/lifecycle-audio-proof.json",
+  "authoredDlsProject": "work/acceptance/authored-dls-lifecycle/20261004T000229628Z/AuthoredDls/AuthoredDls.pro",
+  "latestGuiProgress": "work/analysis/envelope-gui-audio/20261004T061400Z/report.md",
+  "latestGuiAudio": "work/analysis/normal-style-gui-audio/20261004T035000Z/audio-20261004T035622082Z/normal-style-gui-audio-proof.json",
+  "latestGuiModules": "work/analysis/articulation-gui/20261004T042000Z/gui-module-provenance.json",
+  "latestGuiSaveComparison": "work/analysis/normal-style-gui/20261004T030000Z/normal-style-gui-proof.json",
+  "latestGuiExit": "work/analysis/normal-style-gui/20261004T030000Z/gui-exit.json",
+  "latestGuiExitScope": "Current024829130Z PID10044 normal exit0; no force termination",
+  "latestGuiReload": "work/analysis/normal-style-reload/20261004T033300Z/normal-style-gui-reload-proof.json",
+  "projectMetadataUnit": "work/analysis/project-metadata-save/20261004T010000Z/unit-record.json",
+  "projectMetadataEvidence": "work/analysis/project-metadata-save/20261004T010000Z/metadata-proof.json",
+  "previousProductState": "work/analysis/normal-style-reload/20261004T033300Z/previous-product-state.json",
+  "styleProjectGuiUnit": "work/analysis/style-project-gui/20261004T011500Z/unit-record.json",
+  "guiFinalStopUnit": "work/analysis/gui-audio-final-stop/20261004T015000Z/unit-record.json",
+  "latestGuiReloadScope": "Current024829130Z separate PID8628 from exited10044, Segment/DLS exact resave and restored tempo/Band/instrument/loop passed",
+  "styleRootDlsUnit": "work/analysis/style-root-dls/20261004T020600Z/unit-record.json",
+  "latestGuiAudioScope": "Linked passed GUI audio remains previous010357203Z; current024829130Z GUI attempt failed baseline, current CLI26-second audio passed separately",
+  "latestGuiModulesScope": "Current024829130Z PID8628 separate reload GUI104/address provenance passed/original40hash0; one snapshot",
+  "normalStyleDlsUnit": "work/analysis/normal-style-dls/20261004T023800Z/unit-record.json",
+  "beforeNormalStyleGui": {
+    "guiEvidence": "work/analysis/style-root-dls/20261004T020600Z/style-root-dls-gui-proof.json",
+    "latestGuiModules": "work/analysis/style-root-dls/20261004T020600Z/gui-module-provenance.json",
+    "latestGuiExit": "work/analysis/style-project-gui/20261004T011500Z/gui-exit.json",
+    "latestGuiProgress": "work/analysis/normal-style-dls/20261004T023800Z/report.md"
+  },
+  "normalStyleGuiUnit": "work/analysis/normal-style-gui/20261004T030000Z/unit-record.json",
+  "latestGuiAudioAttempt": "work/analysis/normal-style-gui/20261004T030000Z/audio-20261004T031715101Z/normal-style-gui-audio-proof.json",
+  "beforeNormalStyleReload": {
+    "latestGuiProgress": "work/analysis/normal-style-gui/20261004T030000Z/report.md",
+    "latestGuiReload": "work/analysis/style-project-gui/20261004T011500Z/style-project-gui-proof.json",
+    "latestGuiModules": "work/analysis/normal-style-gui/20261004T030000Z/audio-20261004T031715101Z/gui-module-provenance.json",
+    "currentGuiClose": "Current024829130Z PID10044 normal File Exit native handle exit0 at03:22:56Z; old GUI processes retained, latest live status unverified"
+  },
+  "normalStyleReloadUnit": "work/analysis/normal-style-reload/20261004T033300Z/unit-record.json",
+  "audioRecorderBuild": "work/build/audio-capture/20261004T032918787Z/build-summary.json",
+  "audioRecorderSha256": "6ead1abe3a4e5e5a03d0f57d57645d524d1c01854d5196154e2d18e249f20683",
+  "audioClockEvidence": [
+    "work/acceptance/audio-capture-clock/20261004T033129067Z/clock-proof.json",
+    "work/analysis/normal-style-reload/20261004T033300Z/audio-20261004T034521901Z/clock-proof.json"
+  ],
+  "audioClockScope": "6-second recorder and16-second stopped current GUI captured UTC/QPC/packet origin/quiet;4clock mutations rejected; no new GUI Play audio",
+  "latestGuiAudioControls": "work/analysis/normal-style-gui-audio/20261004T035000Z/controls-final/controls.json",
+  "latestArticulationUnit": "work/analysis/articulation-gui/20261004T042000Z/unit-record.json",
+  "latestArticulationProof": "work/acceptance/dls-articulation/20261004T042034399Z/articulation-proof.json",
+  "latestProgress": "work/analysis/transport-default/20261004T151000Z/report.md",
+  "previousCurrentGuiProcessId": 8628,
+  "currentGuiWindowId": 6754020,
+  "latestArticulationRegionUnit": "work/analysis/articulation-region-gui/20261004T043700Z/unit-record.json",
+  "latestArticulationReloadUnit": "work/analysis/articulation-reload-gui/20261004T045300Z/unit-record.json",
+  "latestArticulationUnitsUnit": "work/analysis/articulation-units-gui/20261004T051200Z/unit-record.json",
+  "latestEnvelopeUnit": "work/analysis/dls-envelope/20261004T052200Z/unit-record.json",
+  "latestEnvelopeSelectionUnit": "work/analysis/envelope-selection-gui/20261004T054200Z/unit-record.json",
+  "latestEnvelopeAudioUnit": "work/analysis/envelope-audio/20261004T061200Z/unit-record.json",
+  "latestEnvelopeGuiAudioUnit": "work/analysis/envelope-gui-audio/20261004T061400Z/unit-record.json",
+  "guiAudioAcceptance": "Current150511775Z actual GUI unexecuted; common default headless digital PCM passed",
+  "guiAudioFailedAttempt": "work/analysis/envelope-gui-audio/20261004T061400Z/audio-20261004T061639246Z/envelope-gui-audio-proof.json",
+  "latestNativeStyleDescriptionUnit": "work/analysis/style-project-description/20261004T064000Z/unit-record.json",
+  "latestStyleNameUnit": "work/analysis/style-document-name/20261004T064800Z/unit-record.json",
+  "currentGuiPending": "work/acceptance/product-project-gui/20261004T064029733Z/launch.json",
+  "currentGuiPendingObservation": "work/analysis/style-project-description-gui/20261004T064200Z/process-observation.json",
+  "latestProjectCopyUnit": "work/analysis/project-copy/20261004T065800Z/unit-record.json",
+  "latestCopiedProjectAudioUnit": "work/analysis/copied-project-audio/20261004T070800Z/unit-record.json",
+  "latestNestedProjectCopyUnit": "work/analysis/nested-project-copy/20261004T071400Z/unit-record.json",
+  "latestRuntimeExportUnit": "work/analysis/runtime-export/20261004T073000Z/unit-record.json",
+  "latestRuntimeExportAudioUnit": "work/analysis/runtime-export-audio/20261004T074800Z/unit-record.json",
+  "latestRuntimeAudioPathUnit": "work/analysis/runtime-audiopath/20261004T081400Z/unit-record.json",
+  "latestAudioPathDocumentUnit": "work/analysis/audiopath-document/20261004T084000Z/unit-record.json",
+  "latestAudioPathAssignmentUnit": "work/analysis/audiopath-assignment/20261004T085500Z/unit-record.json",
+  "latestSaveRegressionFailure": "work/acceptance/jazp-save/20261004T085818877Z/run.json",
+  "latestAudioPathRangeUnit": "work/analysis/audiopath-range/20261004T091800Z/unit-record.json",
+  "latestRuntimeSaveAsUnit": "work/analysis/runtime-save-as/20261004T093900Z/unit-record.json",
+  "latestRuntimeSettingsUnit": "work/analysis/runtime-settings/20261004T100300Z/unit-record.json",
+  "latestRuntimeUpdateUnit": "work/analysis/runtime-update/20261004T102000Z/unit-record.json",
+  "latestRuntimeDefaultsUnit": "work/analysis/runtime-defaults/20261004T104300Z/unit-record.json",
+  "latestRuntimeMultifolderUnit": "work/analysis/runtime-multifolder/20261004T105300Z/unit-record.json",
+  "latestRuntimeGuiUnit": "work/analysis/runtime-gui/20261004T112100Z/unit-record.json",
+  "guiLifecycle": "現行141957011Z保存75sources構成/build/install0。本体Motif再生画面で所有AudioPathを明示選択できるよう接続し、GetMotif再生を保持した私有設定carrierを実装。native28/Runtime11出力監査/元Source不在、同GUI呼出しCLI録音880Hz120BPM/Stop再開passed。実GUI PID15040でも所有AudioPathを選んだPlay/Stopと録音内再開/Stopを別々の校正済WASAPI録音で確認、無音RMS0/75・43onset/880Hz120BPM。派生反例各3拒否、範囲外PChannelはDownload/Play前拒否。別GUI PID2012で保存Style/Motif/AudioPath候補復元・取消し、両通常終了0/入力全bytes保持。GUI128/再読込105/CLI56/host24modules原版40hash一致0。全体共通AudioPath/原版動的比較/physical isolation/全core/全40/全八未完了。",
+  "guiModuleInventory": "work/acceptance/product-project-gui-preparation/20261004T142303294Z/gui-module-provenance.json",
+  "latestRuntimeRecoveryRecordUnit": "work/analysis/runtime-recovery-record/20261004T113000Z/unit-record.json",
+  "latestRuntimeRecoveryInspectUnit": "work/analysis/runtime-recovery-inspect/20261004T114300Z/unit-record.json",
+  "latestRuntimeRecoveryWriteUnit": "work/analysis/runtime-recovery-write/20261004T120000Z/unit-record.json",
+  "latestRuntimeRecoveryConfiguredUnit": "work/analysis/runtime-recovery-configured/20261004T120900Z/unit-record.json",
+  "latestRuntimeStyleAudioUnit": "work/analysis/runtime-style-audio/20261004T123400Z/unit-record.json",
+  "latestStyleGuiLifecycleUnit": "work/analysis/style-gui-lifecycle/20261004T125000Z/unit-record.json",
+  "latestAudioPathGuiLifecycleUnit": "work/analysis/audiopath-gui-lifecycle/20261004T131200Z/unit-record.json",
+  "latestRuntimeMotifUnit": "work/analysis/runtime-motif-audio/20261004T133000Z/unit-record.json",
+  "latestRuntimeRecoveryUiUnit": "work/analysis/runtime-recovery-ui/20261004T135100Z/unit-record.json",
+  "latestRuntimeRecoveryGuiUnit": "work/analysis/runtime-recovery-gui-lifecycle/20261004T141100Z/unit-record.json",
+  "latestOwnedMotifGuiUnit": "work/analysis/owned-motif-gui/20261004T144700Z/unit-record.json",
+  "latestTransportDefaultUnit": "work/analysis/transport-default/20261004T151000Z/unit-record.json"
+}

@@ -50,6 +50,8 @@ const logs = directories.map(directory => fs.readFileSync(path.join(directory, '
   .split(/\r?\n/).map(JSON.parse).filter(record => !omitted(record.operation)));
 const withPropertyPageConnection = logs.some(log => log.some(record => record.operation === 'begin_property_page_probe'));
 const withNativePage = logs.some(log => log.some(record => record.operation === 'begin_native_page_probe'));
+const withPageSelection = logs.some(log => log.some(record => record.operation === 'begin_page_selection_probe'));
+const pageSelectionCases = ['third','first','control_add_third','collapse_first','empty_second'];
 const withDrag = logs.some(log => log.some(record => record.operation === 'begin_drag_callback_probe'));
 if (withWindow && metadata[0].sources.some(s => s.path === 'tests/native/drag_probe.h') && !withDrag)
   throw new Error('Windowed drag coverage is missing');
@@ -108,6 +110,21 @@ if (withInsertion && !withTimeSignature) throw new Error('Insertion cases requir
 if (withNotificationChecks && !withTimeline) throw new Error('Notification registration checks require Timeline');
 const expectedCases = ['single_137', 'fractional_93_75', 'multiple_events', 'unsorted_events', 'duplicate_times', 'replace_with_single'];
 for (const log of logs) {
+  if(withPageSelection){
+    const display=log.filter(r=>r.operation==='page_selection_display');
+    const expected=pageSelectionCases.flatMap(name=>['down','up'].map(phase=>[name,phase]));
+    if(!withNativePage||JSON.stringify(display.map(r=>[r.case,r.phase]))!==JSON.stringify(expected)||
+      display.some(r=>!r.matches_selection)||!log.some(r=>r.operation==='end_page_selection_probe'&&r.passed&&r.saved_unchanged))
+      throw new Error('Property-page selection refresh coverage is incomplete');
+    for(const r of display){
+      const multiple=r.case==='control_add_third'||(r.case==='collapse_first'&&r.phase==='down');
+      const present=r.case!=='empty_second';
+      const measure=r.case==='third'?'3':present&&!multiple?'1':'';
+      const tempo=multiple?'Multiple Tempos Selected':present?'112.00':'None';
+      if(r.present!==present||r.multiple!==multiple||r.measure_text!==measure||r.tempo_text!==tempo)
+        throw new Error('Selection/page behavior is not the expected original contract');
+    }
+  }
   if(withCommands){
     if(!withWindow || JSON.stringify(log.filter(r=>r.operation==='end_command_case'&&r.passed).map(r=>r.case))!==JSON.stringify(commandCases))
       throw new Error('Command case coverage is incomplete');
@@ -227,7 +244,7 @@ for (const log of logs) {
         !log.some(record => record.operation === 'page_object_lifecycle' && record.first_refs === 1 && record.second_refs === 1 &&
             record.first_gets === 1 && record.second_gets === 2 && record.first_removals === 1 && record.second_removals === 1) ||
         !log.some(record => record.operation === 'page_sheet_lifecycle' && record.framework_refs === 0 && record.sheet_refs === 1 &&
-            record.set_calls === 4 && record.visible_calls === 5))
+            record.set_calls === (withPageSelection?10:4) && record.visible_calls === (withPageSelection?11:5)))
       throw new Error('Property-page connection/lifetime coverage is incomplete');
   }
   const ended = log.filter(record => record.operation === 'end_stream_case' && record.passed).map(record => record.case);
@@ -383,6 +400,7 @@ if (withMouse) files.push(...mouseCases.flatMap(name=>[`mouse-${name}-input.bin`
 if (withMouse) files.push(...['empty_beat','shift_from_empty'].flatMap(name=>[`mouse-${name}-edited.bin`,`mouse-${name}-reload.bin`]));
 if (withNativePage) files.push(...pageTrackCases.flatMap(name =>
   [`page-track-${name}-input.bin`,`page-track-${name}-output.bin`,`page-track-${name}-reload.bin`]));
+if(withPageSelection)files.push('page-selection-input.bin','page-selection-output.bin');
 if (withDrag) files.push(...dropCases.flatMap(name => ['source','target','output','reload'].map(suffix => `drop-${name}-${suffix}.bin`)));
 if (withDragStart) files.push(...dragStartCases.flatMap(name => ['input','returned','up','reload'].map(suffix => `drag-start-${name}-${suffix}.bin`)));
 if(withCommands)files.push(...commandCases.flatMap(name=>['input','output','reload'].map(suffix=>`command-${name}-${suffix}.bin`)));
@@ -440,7 +458,7 @@ const imageChecks = imageFiles.map(file => {
 });
 const report = {
   createdUtc: new Date().toISOString(), original: directories[0], candidate: directories[1], withTimeline, withTimeSignature, withBoundaries, withMeterChanges, withNotificationChecks, withInsertion,
-  withCopy, withPaste, withTempoNotification, withRangeSelection, withDrawing, withWindow, withMouse, withUndoLabels, withPropertyPageConnection, withNativePage, withCommands,
+  withCopy, withPaste, withTempoNotification, withRangeSelection, withDrawing, withWindow, withMouse, withUndoLabels, withPropertyPageConnection, withNativePage, withPageSelection, withCommands,
   passed: differences.length === 0 && byteChecks.every(check => check.same) && copyChecks.every(check => check.sameContent) && imageChecks.every(check => check.same && check.ghostPresent),
   comparedRecords: logs[0].length, differences, byteChecks, copyChecks, imageChecks,
   evidence: directories.map(directory => ({ directory, metadataSha256: hash(path.join(directory, 'run.json')), logSha256: hash(path.join(directory, 'probe.jsonl')) })),

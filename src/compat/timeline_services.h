@@ -4,6 +4,14 @@
 #include <oaidl.h>
 #include <objidl.h>
 namespace producer::timeline {
+inline HRESULT remove_page_object(IUnknown* timeline, IUnknown* object) {
+    using Call = HRESULT (STDMETHODCALLTYPE*)(IUnknown*, IUnknown*);
+    return reinterpret_cast<Call>((*reinterpret_cast<void***>(timeline))[19])(timeline, object);
+}
+inline HRESULT get_strip_manager(IUnknown* timeline, REFGUID type, DWORD groups, DWORD index, IUnknown** out) {
+    using Call = HRESULT (STDMETHODCALLTYPE*)(IUnknown*, REFGUID, DWORD, DWORD, IUnknown**);
+    return reinterpret_cast<Call>((*reinterpret_cast<void***>(timeline))[35])(timeline, type, groups, index, out);
+}
 inline HRESULT create_data_object(IUnknown* timeline, IUnknown** data) {
     using Call = HRESULT (STDMETHODCALLTYPE*)(IUnknown*, IUnknown**);
     return reinterpret_cast<Call>((*reinterpret_cast<void***>(timeline))[43])(timeline, data);

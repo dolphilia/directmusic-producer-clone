@@ -1238,6 +1238,10 @@ HRESULT TempoStrip::OnWMMessage(UINT message, WPARAM keys, LPARAM, LONG x, LONG)
             if(collapseSelectionOnRelease_ && hit<events.size() && events[hit].bpm!=0) {
                 clear();events[hit].selected=true;selectionAnchor_=events[hit].position;
                 manager_->track_.replace_events(std::move(events));manager_->invalidate();
+                // RVA 0xb10e..0xb11e: display the page, then refresh it after
+                // collapsing a multiple selection on release.
+                manager_->ShowProperties();
+                if(manager_->pageManager_.get())manager_->pageManager_->RefreshData();
             }
             collapseSelectionOnRelease_=false;dragPending_=false;reset_markers();return S_OK;
         }
@@ -1259,7 +1263,9 @@ HRESULT TempoStrip::OnWMMessage(UINT message, WPARAM keys, LPARAM, LONG x, LONG)
                     events=manager_->track_.events();events[hit].selected=!events[hit].selected;
                     manager_->track_.replace_events(std::move(events));
                 }
-                manager_->invalidate();manager_->ShowProperties();return dragged;
+                manager_->invalidate();manager_->ShowProperties();
+                if(manager_->pageManager_.get())manager_->pageManager_->RefreshData();
+                return dragged;
             }
             events[hit].selected=!events[hit].selected;selectionAnchor_=events[hit].position;
             dragPending_=events[hit].selected&&events[hit].bpm!=0;
@@ -1289,6 +1295,9 @@ HRESULT TempoStrip::OnWMMessage(UINT message, WPARAM keys, LPARAM, LONG x, LONG)
         }
         manager_->track_.replace_events(std::move(events));manager_->invalidate();
         manager_->ShowProperties();
+        // RVA 0xaed4..0xaee1. SetObject intentionally skips GetData when the
+        // object is unchanged; selection changes request a separate refresh.
+        if(manager_->pageManager_.get())manager_->pageManager_->RefreshData();
         return S_OK;
     } catch(const std::bad_alloc&) { return E_OUTOFMEMORY; }
     catch(...) { return E_FAIL; }

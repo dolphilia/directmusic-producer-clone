@@ -514,6 +514,49 @@ static bool probe_page_track_edits(HWND page, producer::PropPageManager* pages,
         ok=saved_bytes(host.persist,reloaded)&&write_case_file(name+L"-reload.bin",reloaded)&&reloaded==output&&ok;
         std::printf("{\"operation\":\"end_page_track_case\",\"case\":\"%s\",\"passed\":%s}\n",test.name,ok?"true":"false");
     }
+    // Do not explicitly refresh after clicking: the strip must refresh the page.
+    std::puts("{\"operation\":\"begin_page_selection_probe\"}");
+    std::vector<unsigned char> selectionInput(44,0);
+    std::memcpy(selectionInput.data(),"tetr",4);
+    const DWORD payload=36,recordSize=16; const LONG thirdTime=6144; const double bpm=112;
+    std::memcpy(selectionInput.data()+4,&payload,4);std::memcpy(selectionInput.data()+8,&recordSize,4);
+    std::memcpy(selectionInput.data()+20,&bpm,8);std::memcpy(selectionInput.data()+28,&thirdTime,4);std::memcpy(selectionInput.data()+36,&bpm,8);
+    std::wstring selectionName(host.initialPath);selectionName.resize(selectionName.find_last_of(L"/\\")+1);selectionName+=L"page-selection";
+    hr=load_bytes(host.persist,selectionInput);result("page_selection_load",hr);ok=hr==S_OK&&ok;
+    ok=write_case_file(selectionName+L"-input.bin",selectionInput)&&ok;
+    hr=pages->SetObject(properties);result("page_selection_set_object",hr);ok=hr==S_OK&&ok;
+    hr=host.timeline->set_zoom(0.0625);result("page_selection_zoom",hr);ok=hr==S_OK&&ok;
+    IUnknown* selectionStrip=nullptr;
+    hr=host.timeline->find_manager_strip(host.manager,&selectionStrip);result("page_selection_strip",hr);ok=hr==S_OK&&selectionStrip&&ok;
+    struct SelectionStep {const char* name;LONG time;WPARAM keys;};
+    if(selectionStrip)for(const auto& step:{SelectionStep{"third",6144,0},SelectionStep{"first",0,0},
+        SelectionStep{"control_add_third",6144,MK_CONTROL},SelectionStep{"collapse_first",0,0},SelectionStep{"empty_second",3072,0}}) {
+        LONG position=0;hr=host.timeline->clocks_to_position(step.time,&position);ok=hr==S_OK&&ok;
+        for(UINT message:{WM_LBUTTONDOWN,WM_LBUTTONUP}) {
+            using Message=HRESULT (STDMETHODCALLTYPE*)(IUnknown*,UINT,WPARAM,LPARAM,LONG,LONG);
+            hr=reinterpret_cast<Message>((*reinterpret_cast<void***>(selectionStrip))[6])(selectionStrip,message,step.keys,0,position+1,0);
+            result(message==WM_LBUTTONDOWN?"page_selection_down":"page_selection_up",hr);ok=hr==S_OK&&ok;
+            void* borrowed=nullptr;hr=properties->GetData(&borrowed);ok=hr==S_OK&&ok;
+            property_probe::PageData data{};if(borrowed)std::memcpy(&data,borrowed,0x22);
+            const bool multiple=borrowed&&(data.flags&2),single=borrowed&&!multiple;
+            char tempoText[256]{},measureText[32]{},beatText[32]{},tickText[32]{};
+            GetDlgItemTextA(page,223,tempoText,256);GetDlgItemTextA(page,224,measureText,32);
+            GetDlgItemTextA(page,225,beatText,32);GetDlgItemTextA(page,233,tickText,32);
+            char expectedTempo[64]{},expectedMeasure[32]{},expectedBeat[32]{},expectedTick[32]{};
+            if(single){sprintf_s(expectedTempo,"%.2f",data.tempo);sprintf_s(expectedMeasure,"%ld",data.measure+1);sprintf_s(expectedBeat,"%ld",data.beat+1);sprintf_s(expectedTick,"%ld",data.tick);}
+            else strcpy_s(expectedTempo,multiple?"Multiple Tempos Selected":"None");
+            bool matches=std::strcmp(tempoText,expectedTempo)==0&&std::strcmp(measureText,expectedMeasure)==0&&
+                std::strcmp(beatText,expectedBeat)==0&&std::strcmp(tickText,expectedTick)==0;
+            for(int id:{223,224,225,233})matches=(IsWindowEnabled(GetDlgItem(page,id))!=FALSE)==single&&matches;
+            std::printf("{\"operation\":\"page_selection_display\",\"case\":\"%s\",\"phase\":\"%s\",\"present\":%s,\"multiple\":%s,\"time\":%ld,\"measure\":%ld,\"tempo_text\":\"%s\",\"measure_text\":\"%s\",\"beat_text\":\"%s\",\"tick_text\":\"%s\",\"matches_selection\":%s}\n",
+                step.name,message==WM_LBUTTONDOWN?"down":"up",borrowed?"true":"false",multiple?"true":"false",data.time,data.measure,tempoText,measureText,beatText,tickText,matches?"true":"false");
+            ok=matches&&ok;
+        }
+    }
+    if(selectionStrip)selectionStrip->Release();
+    std::vector<unsigned char> selectionOutput;
+    ok=saved_bytes(host.persist,selectionOutput)&&write_case_file(selectionName+L"-output.bin",selectionOutput)&&selectionOutput==selectionInput&&ok;
+    std::printf("{\"operation\":\"end_page_selection_probe\",\"passed\":%s,\"saved_unchanged\":%s}\n",ok?"true":"false",selectionOutput==selectionInput?"true":"false");
     hr=pages->RemoveObject(properties);result("page_track_remove_object",hr);ok=hr==S_OK&&ok;
     edit->Release();return ok;
 }

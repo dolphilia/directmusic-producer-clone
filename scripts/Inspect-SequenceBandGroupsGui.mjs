@@ -1,0 +1,85 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const dir=path.resolve(process.argv[2]);
+const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const read=p=>fs.readFileSync(p);
+const json=p=>JSON.parse(read(p).toString().replace(/^\uFEFF/,''));
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const state=json(path.join(dir,'states.json')),run=json(state.run),build=json(state.build);
+assert.equal(build.passed,true);
+assert.equal(run.buildSummarySha256,hash(read(state.build)));
+const host=run.cases.find(c=>c.name==='host-smoke');
+assert.equal(host.passed,true);
+assert.equal(hash(read(state.executable)),host.sha256);
+assert(build.outputs.some(o=>path.resolve(path.dirname(state.build),o.path)===path.resolve(state.executable)&&o.sha256===host.sha256));
+for(const s of build.sources){assert.equal(hash(read(path.join(build.sourceRoot,s.path))),s.sha256);assert.equal(hash(read(path.join(repo,s.path))),s.sha256);}
+const nativeDir=path.join(path.dirname(state.run),'core/sequence-band-groups');
+const native=json(path.join(nativeDir,'sequence-band-group-proof.json'));
+assert.equal(native.passed,true);
+assert.equal(native.runSha256,hash(read(state.run)));
+assert.equal(native.buildSha256,hash(read(state.build)));
+assert.equal(native.workspaceSourcesMatched,true);
+const files=[];
+for(const [name,expected] of [['note-saved.sgp','note-edited.sgp'],['band-saved.sgp','band-moved.sgp'],['undo-saved.sgp','note-edited.sgp'],['redo-saved.sgp','band-moved.sgp'],['source.sgp','band-moved.sgp'],['resaved-after-restart.sgp','band-moved.sgp']]){
+ const bytes=read(path.join(dir,name)),reference=read(path.join(nativeDir,expected));
+ assert(bytes.equals(reference),name+' whole bytes');
+ assert.equal(hash(reference),native.files[expected].sha256);
+ files.push({name,sha256:hash(bytes),bytes:bytes.length,expected,exact:true});
+}
+for(const r of state.records)assert.equal(hash(read(path.join(dir,r.screenshot))),r.sha256);
+const record=name=>{const r=state.records.find(r=>r.name===name);assert(r,name);return r.tree;};
+record('selection-applied');
+record('undo-saved');record('redo-saved');
+assert.match(record('note-added'),/Notes: 2/);
+assert.match(record('band-moved-confirmed'),/Value: 384 \/ 360 ID: 805/);
+const context=record('document-context-restored');
+assert.match(context,/Applied groups: 2;/);
+assert.match(context,/Sequence track \(1-based\) Value: 2 ID: 904/);
+assert.match(context,/Band track \(1-based\) Value: 2 ID: 905/);
+assert.match(context,/Notes: 2/);
+assert.match(context,/Value: 384 \/ 360 ID: 805/);
+const other=record('untitled-selected');
+assert.match(other,/Applied groups: 1;/);
+assert.match(other,/Sequence track \(1-based\) Value: 1 ID: 904/);
+assert.match(other,/Band track \(1-based\) Value: 1 ID: 905/);
+const modules=json(path.join(dir,'gui-module-provenance.json'));
+assert.equal(modules.passed,true);assert.equal(modules.exeSha256,host.sha256);
+for(const name of ['project-saved','separate-launch','project-reloaded','reloaded-documents','document-resaved-after-restart','project-resaved-after-restart'])record(name);
+const defaults=record('reloaded-source-default-selection');
+assert.match(defaults,/Applied groups: 1;/);assert.match(defaults,/Notes: 1/);
+assert.match(defaults,/Sequence track \(1-based\) Value: 1 ID: 904/);
+assert.match(defaults,/Band track \(1-based\) Value: 1 ID: 905/);
+assert.match(defaults,/Value: 96 \/ 96 ID: 805/);
+const reload=record('reloaded-selection-stable');
+assert.match(reload,/Applied groups: 2;/);assert.match(reload,/Notes: 2/);
+assert.match(reload,/Sequence track \(1-based\) Value: 2 ID: 904/);
+assert.match(reload,/Band track \(1-based\) Value: 2 ID: 905/);
+assert.match(reload,/Value: 384 \/ 360 ID: 805/);
+const closes=['normal-close-first.json','normal-close-second.json'].map(name=>{
+ const c=json(path.join(dir,name));assert.equal(c.normalCloseObserved,true);
+ assert(!c.windows.some(w=>w.id===c.window.id));assert.equal(c.exitCode,null);
+ assert.equal(c.window.app.replaceAll('\\','/').toLowerCase(),('process:'+state.executable).replaceAll('\\','/').toLowerCase());
+ return {name,sha256:hash(read(path.join(dir,name))),window:c.window.id,normalCloseObserved:true,exitCode:null};
+});
+assert.notEqual(closes[0].window,closes[1].window);
+assert.equal(state.records.find(r=>r.name==='separate-launch').window.id,closes[1].window);
+function project(name,expected){
+ const bytes=read(path.join(dir,name));assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'DMPJ');assert.equal(bytes.readUInt32LE(4)+8,bytes.length);
+ const refs=[],chunks=[];
+ for(let p=12;p<bytes.length;){assert(p+8<=bytes.length);const id=bytes.toString('ascii',p,p+4),n=bytes.readUInt32LE(p+4),end=p+8+n;assert(end<=bytes.length);const data=bytes.subarray(p+8,end);chunks.push({id,data});if(id==='file'){assert.equal(n%2,0);refs.push(data.toString('utf16le').replace(/\0+$/,''));}p=end+(n&1);assert(p<=bytes.length);}
+ assert.deepEqual(refs,expected);const vers=chunks.find(c=>c.id==='vers');assert(vers);assert.equal(vers.data.length,4);assert.equal(vers.data.readUInt32LE(),1);
+ const references=refs.map(ref=>{const resolved=path.resolve(dir,ref),b=read(resolved);return {reference:ref,resolved,sha256:hash(b),bytes:b.length};});
+ return {name,sha256:hash(bytes),bytes:bytes.length,references,chunks};
+}
+const firstProject=project('project.dmpj',['empty.sgp','source.sgp']);
+const secondProject=project('resaved-project.dmpj',['empty.sgp','resaved-after-restart.sgp']);
+assert.deepEqual(firstProject.chunks.filter(c=>c.id!=='file'),secondProject.chunks.filter(c=>c.id!=='file'));
+for(const p of [firstProject,secondProject])assert.equal(p.references[1].sha256,native.files['band-moved.sgp'].sha256);
+const projects=[firstProject,secondProject].map(({chunks,...p})=>p);
+const output={schema:1,passed:true,createdUtc:new Date().toISOString(),build:state.build,buildSha256:hash(read(state.build)),run:state.run,runSha256:hash(read(state.run)),exeSha256:host.sha256,sourceCount:build.sources.length,records:state.records.length,statesSha256:hash(read(path.join(dir,'states.json'))),nativeProofSha256:hash(read(path.join(nativeDir,'sequence-band-group-proof.json'))),files,projects,closes,reloadResave:'passed for Sequence/Band indexed fixture',runtimeAudio:'unexecuted for this build',moduleCount:modules.moduleCount,scope:'GUI Sequence/Band group2/index2 selection, note addition, Band logical/physical move, exact saves, Band Undo/Redo, document context restoration, project save, normal close, separate launch, reload, selection reset/reapply, whole-byte resave and project reference retarget with metadata retained. GUI exit code not measured. Native independent RIFF audit bounds expected files. Screenshots inspected; UIA can lag. GUI module inventory is one point after first saves, before Undo/Redo.',pending:['GUI invalid-selection recovery','Group runtime/audio and original dynamic comparison','All40/all8 acceptance'],fullHostAcceptance:false,auditorSha256:hash(read(fileURLToPath(import.meta.url)))};
+fs.writeFileSync(path.join(dir,'sequence-band-group-gui-proof.json'),JSON.stringify(output,null,2)+'\n');
+fs.copyFileSync(fileURLToPath(import.meta.url),path.join(dir,'Inspect-SequenceBandGroupsGui.mjs'));
+console.log(JSON.stringify({passed:true,files:files.length,records:output.records,fullHostAcceptance:false}));

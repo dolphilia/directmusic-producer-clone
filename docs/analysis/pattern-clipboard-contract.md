@@ -1,0 +1,48 @@
+# 本体Patternの所有クリップボード
+
+更新2026-10-03。全40責務・全八受入は未完了。
+
+## 所有と形式
+
+StyleDocument::copy_patternは選択したLIST pttnと、そのPartRefが参照する全LIST partを一度ずつ同梱する。読み取り専用で履歴を作らない。Source製品用のRIFF SPC1とWindows登録名Producer.Source.Pattern.v1を使用し、元Styleの寿命やCOMに依存しない。
+
+paste_patternは単一Pattern・解決可能で重複しないPart GUID・全Partが参照されること・音符配列stride・Patternプロパティを変更前に検証する。貼り付け先/貼り付け元/同時生成GUIDと衝突しないGUIDを各Partへ割り当て、prthの132〜147byteと各prfcの先頭16byteだけを再対応させる。同じPartへの複数参照は共有のまま、異なるPartは独立する。貼り付け元のPatternとの共有は作らず、その後の音符編集は元文書へ伝播しない。PartをPatternより前へ追加しruntimeの読込順序を守る。
+
+Pattern名は明示引数で設定し、その他の拍子/長さ/embellishment、Part/header/referenceの未知tail、音符の可変stride/tail、未知チャンク・odd paddingを保持する。貼り付け先の既存全チャンク、Style identity/tempo/Bandは変更しない。Patternなし/複数Pattern、未解決/曖昧/孤立Part、未知のトップレベル形式、壊れたRIFF/音符配列は拒否する。参照なしの空Patternは許容する。名前1〜255/NULなし、既存の1000Pattern/Part上限を維持する。
+
+処理はコピーで完了してから一回adopt_editする。Undoは貼り付け先の全bytes/dirtyを戻し、Redoは同じGUIDを復元する。Framework::paste_style_patternは既存apply_style_editで依存Segmentの所有Style snapshotを原子的に更新し、Segment保存bytes/dirtyを変更しない。
+
+本体のCopy/Pasteを文書種別で振り分け、Styleでは選択Patternのコピーと新しいPatternとしての貼り付けを行う。SegmentのTempo形式は従来の登録名を保持する。Bandでは無効。貼り付け成功後は末尾Patternを選択する。GUIのWindows Clipboardを操作する実試験は今回未実行であり、コア試験と混同しない。
+
+Band/DLS/Chordmap等の外部資産を自動移入する契約は今回の実装にはない。別Styleでは貼り付け先のBandを使用する。未知の内部参照の意味まで保証しない。公開dmusicf.hのDMPTはPattern track用のstyhと単一Patternを持つ別形式であり、SPC1を原版のクリップボード形式と同一とは扱わない。原版のコピー/貼付け観測・相互運用と外部資産の移動は継続課題であり、Style全体の完成条件から除かない。
+
+## 生成物と実測
+
+最終製品 `work/build/product-snapshot/20261003T113326946Z/build-summary.json`：保存55sources/3targets。構成0、compile0、install0、warning/error0。EXE SHA256 `1db790ac91686ecc30e0870255827ea43157e37a802ed5f3228dfd95e4a3905d`、core EXE `b0c7f00838dae7158ffd166506ad2bead62089b8eaafb564ff0625bd32a805dc`。中間113104624Zはcompile成功だが未使用変数C4189が一件。native113243288Zの28件/独立全byte成功は中間版として残し、警告修正と複数Part/空Pattern試験追加後の最終版へ転用しない。
+
+最終native `work/acceptance/pattern-clipboard/20261003T113437815Z/run.json`：32件/exit0。コピー時履歴不変、同GUIDを持つ貼付先への新GUID、内部共有/別Partの再対応、元Patternからの編集分離、empty Styleへの貼付け、空Pattern、UndoRedo、不正名/形式/参照/stride/切断入力の拒否、Framework snapshotと保存別復元/全bytes再保存を確認。
+
+入力は111400850Zで自作されたselection.sgpとHeartlnd.stpをread-onlyで使用する。旧結果を新しい版へ移さず、同runのinputs/hashを基準とする。試験はprth/ptnh/prfcの未知tail、28byte音符stride、zzzzと非zero odd padding、同PartへのPChannel5/6の二参照を追加する。別ケースでは二つ目のPart/PChannel7も持つPatternをコピーする。
+
+`scripts/Inspect-PatternClipboard.mjs`はRIFFを独立読取/組立てし、加工元Style、SPC1全bytes、同Style/空Style/複数Partの貼付け、Frameworkで元Pattern削除した後の全bytes、別復元再保存、Segment不変を比較。`clipboard-proof.json`は合格。最終Style SHA `f2d9da38745e08756b31de6fa6ba8b11fc730a316b4a87a6f161a8c26869e0bb`。
+
+最終本体の実音声 `work/acceptance/audio-loopback/20261003T113453171Z`：貼付け/保存/別Framework復元済みPatternを新PIDで再生し、16秒/48kHz/2ch/float32録音。本体/録音exit0、12生成C4音のclock/duration/PChannel5/velocity96と録音のC4成分が合格。前後RMS0、再生RMS0.020422804214410856、peak0.09630561619997025、onset4.4秒。58moduleの原版40hash一致0。crud profileを同じ固定120 BPM/C4 strings入力に使い、任意音源の受入には流用しない。
+
+同録音の対照 `work/acceptance/audio-auditor-controls/20261003T113642533Z/negative-tests.json`：未変更コピーexit0、無音/中間誤音/背景音混入を各exit1で拒否。全ケースでnative12音の成功は保持。派生コピーの判定試験であり、本体の別録音ではない。
+
+現行host `work/acceptance/product-host/20261003T113550413Z`：host-smoke exit0、23modules原版40hash一致0。全core suite、現行GUI実操作、原版Clipboard相互運用、全音源/全40責務/全八受入は未完了。Windows DirectMusic/DirectSound/GM.DLSは宣言する依存として残る。Conductorは変更していないため旧版のテンポ/Stop試験を今回再実行せず、旧版の記録として保持する。
+
+## 再現と継続
+
+Build-ProductSnapshot.ps1で新規保存ビルドし、Test-PatternClipboard.ps1へそのBuildSummaryPathと上記Segment/Styleを指定する。Inspect-PatternClipboard.mjsに新runのrun.jsonを渡す。生成core/pattern-clipboard/selection.sgpと同じsummaryをTest-LoopbackAudio.ps1へ渡し、録音器102354462Zのsummary/EXE、Profile crud、Node実パスを指定する。hostはTest-ProductHostとInspect-ProductModulesのCaseName host-smokeで別に確認する。
+
+最終native runのunit-record.jsonに全保存ソース/生成物/入力/native保存物/独立解析器/実録音/生成音/module証拠/陰性対照/担当文書をハッシュで結合する。次は現行GUIのPattern新規・Copy/Paste・削除・UndoRedo・保存別起動を検証し、原版のコピー形式と同/別Styleの所有規則を観測する。その後variation/Motif、空Style Band作成、残る本体/文書/Timeline機能へ進める。
+
+
+## 2026-10-03 同版Pattern GUI・別プロセス復元
+
+製品113326946Z（EXE SHA256 1db790ac91686ecc30e0870255827ea43157e37a802ed5f3228dfd95e4a3905d）を変更せず使用。GUI run114156212Z/PID6848でWindows Clipboard Copy/Paste、新規Pattern、C4音符追加、各Undo/Redo、Style保存を実操作した。run114900427Z/PID15532で同じprojectを開き、貼付けPatternと新規Patternの名前・Part・音符を確認し再保存。両PIDの通常終了exit0、各45実ロードmoduleの原版40hash一致0。
+
+scripts/Inspect-PatternClipboardGui.mjsの独立RIFF組立ては、貼付け時の新GUID・既存全チャンク保持、新規Pattern/Partと音符の全bytes、Undoの元データ一致、RedoのGUID一致、別起動再保存の全bytes一致を確認した。project/Segmentは不変。最終Style SHA256 a2b5e8cf068d0e8f43ff66dee159044bac84c02671450dd7875fba782ada0709。証拠はwork/acceptance/product-project-gui/20261003T114156212Z/clipboard-gui-proof.json、両runのstates.json/画像/launch.json/module-provenance、保存checkpoint。途中UIAの遅延表示は画像観測と安定状態へ分けて記録し、値の根拠に転用していない。終了直後の旧window一覧は残し、別照会の不在とprocess exit0で確認した。
+
+構成・compile・installは既存113326946Zの結果を明記して再利用し、新ビルドとは扱わない。今回GUI保存Styleは3Patterns/3Partsで、既存113453171Zの1Pattern音声入力とは異なる。今回GUI Play/録音、GUI削除、原版Clipboard互換、variation/Motif/空Style Band、全core/40責務/全八受入は未確認。Windows DirectMusic/DirectSound/GM.DLS依存は残る。次は原版Clipboardの形式と同/別Style所有規則を観測し、必要な互換を実装する。GUI削除は操作時確認規則に従う。

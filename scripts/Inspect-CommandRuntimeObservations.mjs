@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const self=fileURLToPath(import.meta.url),repo=path.resolve(path.dirname(self),'..');
+const read=p=>fs.readFileSync(p),hash=b=>crypto.createHash('sha256').update(b).digest('hex'),json=p=>JSON.parse(read(p).toString().replace(/^\uFEFF/,''));
+const manifestPath=path.resolve(process.argv[2]),manifest=json(manifestPath);
+assert.equal(hash(read(path.join(repo,manifest.source))),manifest.sourceSha256);
+function command(b,start=0,end=b.length){for(let p=start;p<end;){const n=b.readUInt32LE(p+4),stop=p+8+n,id=b.toString('ascii',p,p+4);assert(stop+(n&1)<=end);if(id==='cmnd')return b.subarray(p+8,stop);if(id==='RIFF'||id==='LIST'){const c=command(b,p+12,stop);if(c)return c;}p=stop+(n&1);}}
+const variants=manifest.variants.map(v=>{const b=read(path.join(path.dirname(manifestPath),v.name+'.sgp')),c=command(b);assert.equal(hash(b),v.sha256);assert.equal(c.readUInt32LE(0),12);assert.deepEqual(Array.from({length:(c.length-4)/12},(_,i)=>c.subarray(4+i*12,16+i*12).toString('hex')),v.records);return {...v};});
+const runs=manifest.observationRuns.map(relative=>{const runPath=path.join(repo,relative),r=json(runPath),build=json(r.buildSummary),test=r.cases[0];assert(build.passed&&test.passed&&test.exitCode===0);assert.equal(hash(read(r.buildSummary)),r.buildSummarySha256);for(const s of build.sources)assert.equal(hash(read(path.join(build.sourceRoot,s.path))),s.sha256);assert.equal(hash(read(test.executable)),test.sha256);assert.equal(hash(read(r.runtimeDriverCopy)),r.runtimeDriverSha256);
+    const input=read(r.observationInput.path);assert.equal(hash(input),r.observationInput.sha256);const observationPath=path.join(path.dirname(runPath),'command-observe','observation.json'),o=json(observationPath);assert(o.captured&&o.started&&o.stopped&&o.snapshotExact);assert(input.equals(read(path.join(path.dirname(observationPath),'runtime.sgp'))));
+    const c=command(input),events=[];assert.equal(c.readUInt32LE(0),12);for(let at=4;at<c.length;at+=12)events.push({time:c.readInt32LE(at),type:c[at+7],groove:c[at+8],range:c[at+9],repeat:c[at+10]});
+    const comparisons=events.map(e=>{const s=o.samples.find(s=>s.parameter===2&&s.index===0&&s.queryTime===e.time);assert(s&&s.hresult===0);return {expected:e,actual:{time:s.queryTime+s.eventTime,type:s.type,groove:s.groove,range:s.range,repeat:s.repeat},relativeEventTime:s.eventTime};});
+    const matches=comparisons.every(c=>JSON.stringify(c.expected)===JSON.stringify(c.actual));const expectedMatches=path.basename(r.observationInput.path)!=='moved.sgp';assert.equal(matches,expectedMatches);
+    return {run:relative,runSha256:hash(read(runPath)),build:r.buildSummary,buildSha256:r.buildSummarySha256,producerSha256:test.sha256,input:r.observationInput,observationSha256:hash(read(observationPath)),samples:o.samples.length,eventBoundariesMatch:matches,comparisons};
+});
+const proof={schema:1,passed:true,createdUtc:new Date().toISOString(),manifestSha256:hash(read(manifestPath)),variants,runs,auditorSha256:hash(read(self)),scope:'Windows runtime observation; ascending late two-event mismatch retained. Param2 event time is relative to query. No original Producer equivalence, audio or full acceptance claimed.',fullAcceptance:false};
+fs.writeFileSync(path.join(path.dirname(manifestPath),'observation-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.copyFileSync(self,path.join(path.dirname(manifestPath),'observation-auditor.mjs'));console.log(JSON.stringify({passed:true,runs:runs.length,variants:variants.length}));

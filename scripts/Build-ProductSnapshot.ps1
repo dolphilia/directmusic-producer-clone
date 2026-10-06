@@ -5,7 +5,7 @@ $repo=Split-Path $PSScriptRoot -Parent
 $run=Join-Path $repo ('work/build/product-snapshot/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))
 $sourceRoot=Join-Path $run 'sources';$build=Join-Path $run 'build';$install=Join-Path $run 'install'
 New-Item -ItemType Directory -Path $sourceRoot|Out-Null
-$paths=@('CMakeLists.txt','CMakePresets.json','scripts/Build-ProductSnapshot.ps1','scripts/Test-ProductSnapshot.ps1')
+$paths=@('CMakeLists.txt','CMakePresets.json','scripts/Build-ProductSnapshot.ps1','scripts/Test-ProductSnapshot.ps1','scripts/SourceProductDeployment.ps1','scripts/Install-SourceProduct.ps1','scripts/Uninstall-SourceProduct.ps1','docs/source-product-deployment.md')
 foreach($directory in @('src','tests/producer')){
   $paths+=@(Get-ChildItem -LiteralPath (Join-Path $repo $directory) -File -Recurse|Sort-Object FullName|ForEach-Object {[IO.Path]::GetRelativePath($repo,$_.FullName).Replace('\','/')})
 }

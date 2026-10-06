@@ -1,5 +1,7 @@
 # 自作本体・文書経路の実装と引継ぎ
 
+> 2026-10-05レビュー：現行候補150511775Zの本体smokeは成功、通常coreは6件目で失敗。以下の旧版成功と区別する。現在の判断と実行順序は [計画書](../analysis-plan.md) と [再評価](plan-review-2026-10-05.md) を参照。
+
 更新：2026-10-03（日本時間）。全体目標は継続中。現行195748806Zは保存48sources/3targetsの構成・compile・install成功、警告なし、native345件とDLS再生API成功。DlsDocumentの楽器locale/Region範囲・wave cue/8・16bit PCM音量編集と全bytes履歴・保存・Framework所有/dirty/project reloadを接続。試験曲72..84が原版DLS Region72..111に入ることを独立監査。headless24/DLS55原版40hash一致0。DLS編集GUI未接続、実音声回答待ち、現行GUI/通常/Style再生と全八受入は未完了。
 
 ## 今回の変更
@@ -2186,3 +2188,25 @@ Region GUI単位追記：PID15788 main6754020 retained; Articulation and DLS edi
 ## 2026-10-05 Transport default
 
 現行150511775Z保存75sources構成/build/install0。Conductor共通default AudioPathを次のSegment/Motif要求へ適用し、埋込Segment優先・私有コピー/元文書保持を11checks/独立RIFF全bytes監査で確認。本体TransportメニューとMotif Transport defaultを接続、現行GUI未実行。新native Motif28/Runtime11出力・元Source不在、共通default経由GetMotifとWASAPI2回880Hz120BPM/Stop再開/3区間RMS0/3派生PCM拒否passed。再生56modules原版40hash一致0。再生中切替/未接続silent互換/GUI/全core/物理隔離/全40/全八未完了。 証拠：work/analysis/transport-default/20261004T151000Z/report.md。次：Validate current Transport menu and Motif default selection in actual GUI with calibrated WASAPI capture and normal exit/separate reload; verify real Segment embedded-path precedence using a conflicting default configuration. Then implement live AudioPath switching and original silent unconnected-PChannel behavior with multi-session ownership, without dropping document bytes. Continue retained per-file Runtime folder memory/native save/reopen and all40/all8; do not repeat frozen OS error5 failures without changed-condition evidence.
+
+
+現081405 Q1終了後native Project復元/Script接続成立、GUI録音RMS0失敗。最新単位：work/analysis/q1-post-script-host/20261006T090400Z/unit-record.json。全体未完了。
+
+
+### 20261006T081405935Z Q1 GM Band割当切分け（限定）
+
+[単位](../../work/analysis/q1-gm-band-binding/20261006T091500Z/unit-record.json)。製品EXE SHA256 `a9c093e15961075ea6aa601a4f915bc9f38f40eef7e322f6f5e8ccb221d3a71a`。194ソース一致・生成物変更なし。同本体でGM Band PChannel0/patch0/pan64/volume100作成保存→Segment時刻0埋込→native gui.pro参加保存。変更前入力保持。45s WASAPI capture0、Play後17..18s RMS .0207/.0132、他0。先行60s全RMS0失敗は保持。音高/tempo/earlyStop/再開受入と実ロードGM.DLS由来は未判定。作者PID13088通常終了exit0、新PID19572/window17763886起動済み・Project復元待ち。全40/8未完。
+
+
+### 20261006T081405935Z native Sequence終了後復元と録音（限定）
+
+[単位](../../work/analysis/q1-native-sequence-lifecycle/20261006T093500Z/unit-record.json)。製品EXE SHA256 `a9c093e15961075ea6aa601a4f915bc9f38f40eef7e322f6f5e8ccb221d3a71a`、ソース変更なし。同native gui.pro/Bandを本体復元後、テンポ0=20/3072=30と8音を編集、Undo7/Redo8保存、作者19572通常exit0→新6460でnativeProject8音/テンポ/Band復元。90s WASAPI capture0、初回8音高一致、3→2秒間隔最大差5ms。登録ライフサイクル判定exit1: StopがPlay+35.439sで8音後/rmsBeforeStop0、再開全8音が録音窓に収まらない。元の失敗・録音・入力hash/実入力スナップショットを保全、限定初回診断も全体passedfalse。実Segment30720clocksと判定器6144clocks8音窓を区別。次は--slow入力とtimer予約/300s録音、5形式/Transport・原版/Q2/全40/8は未完。
+
+## Q1 slow native lifecycle 20261006T095300Z
+
+同候補081405、194保存ソース不一致0。作者6460exit0、別5912 native gui.pro8音/Band/Script/5→7.5復元。300s PCM gate passed: 2音中Stop、quietRMS0、再開8音高と12→8秒一致、4負例拒否。旧90sタイミング失敗を保持。五形式/Transport/原版/Q2/全40/全8未完了。 [単位](../../work/analysis/q1-slow-lifecycle/20261006T095300Z/unit-record.json)。
+
+
+### 2026-10-06 Q1 DLS layout candidate101744
+
+Runtime Save/Propertiesをループ操作から左側独立行へ移動。194sources configure/build/install0、本体SHA 7a81052cd72563b82c71ed055ea63caac60cf80f92feaab2c900fe7b16752f44。native73=43合格30障害、driver102=20合格21障害61未実行。同installの実GUI中央Apply16000→12000/UndoRedo/Save DLS/native Project保存、別23104owned復元exit0→別19248再復元。作者12188exitcode nullは非合格。旧081405GM PCMは履歴、新候補PCM未実行。証拠/入力6hash/残責務/次DLS Band音声単位は work/analysis/q1-dls-layout/20261006T101300Z/unit-record.json。全40/全8false、Q2独立環境未用意。

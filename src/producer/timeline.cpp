@@ -4,6 +4,20 @@
 #include <stdexcept>
 
 namespace producer::app {
+Bytes encode_timeline_clipboard(const TimelineClipboard& value){
+    if(value.span<=0||!value.strips||(value.strips&~7u)||(!(value.strips&TimelineTempo)&&!value.tempo.empty())||(!(value.strips&TimelineSequence)&&!value.sequence.empty())||(!(value.strips&TimelineLyric)&&!value.lyric.empty()))throw std::runtime_error("Invalid Timeline clipboard");
+    Chunk root;root.id="RIFF";root.type="TRNG";Chunk header;header.id="rhdr";header.data.resize(12);put32(header.data,0,1);put32(header.data,4,value.span);put32(header.data,8,value.strips);root.children.push_back(header);
+    if(value.strips&TimelineTempo){Chunk c;c.id="temp";c.data=value.tempo;root.children.push_back(std::move(c));}
+    if(value.strips&TimelineSequence){Chunk c;c.id="seqc";c.data=value.sequence;root.children.push_back(std::move(c));}
+    if(value.strips&TimelineLyric){Chunk c;c.id="lyrc";c.data=value.lyric;root.children.push_back(std::move(c));}
+    return root.encode();
+}
+TimelineClipboard decode_timeline_clipboard(const Bytes& bytes){
+    if(bytes.size()>64*1024*1024)throw std::runtime_error("Timeline clipboard too large");const auto root=Chunk::parse(bytes);if(root.id!="RIFF"||root.type!="TRNG"||root.encode()!=bytes)throw std::runtime_error("Invalid Timeline clipboard envelope");
+    TimelineClipboard result;bool header=false,tempo=false,sequence=false,lyric=false;
+    for(const auto& c:root.children){if(c.id=="rhdr"&&!header&&c.data.size()==12&&read32(c.data,0)==1){header=true;result.span=static_cast<std::int32_t>(read32(c.data,4));result.strips=read32(c.data,8);}else if(c.id=="temp"&&!tempo){tempo=true;result.tempo=c.data;}else if(c.id=="seqc"&&!sequence){sequence=true;result.sequence=c.data;}else if(c.id=="lyrc"&&!lyric){lyric=true;result.lyric=c.data;}else throw std::runtime_error("Ambiguous or unsupported Timeline clipboard chunk");}
+    if(!header||result.span<=0||!result.strips||(result.strips&~7u)||tempo!=bool(result.strips&TimelineTempo)||sequence!=bool(result.strips&TimelineSequence)||lyric!=bool(result.strips&TimelineLyric))throw std::runtime_error("Invalid Timeline clipboard selection");return result;
+}
 namespace {
 struct MeterAt { std::int32_t time; unsigned beats, denominator; };
 std::vector<MeterAt> records(const meter::Map& map) {

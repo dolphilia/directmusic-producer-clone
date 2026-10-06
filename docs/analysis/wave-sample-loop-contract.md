@@ -1,0 +1,11 @@
+# Owned Wave default sample loop
+
+Scope: standalone RIFF WAVE/WVP WSMP default loops in WaveDocument, separate from event-specific waih loop endpoints and SMPL sampler loops. Original help wavetab.htm describes forward and loop-and-release default loops and track/region overrides. Existing DLS WSMP parsing establishes variable header and WLOOP record sizes, DWORD type/start/length and nonzero bounded length. The original Wave component cannot currently be opened; original editing, reciprocal loading and audible semantics remain blocked or unexecuted, and this is not full Wave compatibility.
+
+API accepts types 0 and 1, nonnegative DWORD start, nonzero DWORD length, with 64-bit start+length <= owned PCM frame count. Compressed formats refuse editing because decoded frame layout is not established. Multiple existing loops remain individually editable. Editing validates the entire replacement before mutation; one replacement creates one Undo transaction. No-op and invalid replacement preserve exact document bytes, dirty checkpoint and pending Redo.
+
+Retain WSMP header extensions, each retained record extension and trailing bytes. New records use the established 16-byte layout. Other chunks, PCM, GUID, cue metadata and independent SMPL are byte-preserved. SMPL has its own endpoint/type/cue/fraction/repeat fields and is not implicitly converted. Removing a loop removes its owned record; Disable clears the WSMP loop list. Sample start+length is displayed explicitly; no unknown waih enable bit or event endpoint is invented.
+
+Main Wave Documents edits the shared Framework-owned document. Save Wave precedes native Project save; separate-process restoration is required. Dedicated --wave-sample-loop exercises fresh outputs. Existing --wave-document WVP replacement Windows error 5 remains frozen and is not retried through the new mode. Runtime default inheritance/region overrides, actual PCM loop output and original dynamic comparison remain explicit residuals.
+
+Selected removal erases the exact variable-size record rather than assigning another loop into its old slot; all remaining record extensions retain their association. Replacement edits retain record extensions by ordinal slot.

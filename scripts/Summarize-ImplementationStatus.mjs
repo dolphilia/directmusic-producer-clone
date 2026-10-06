@@ -6,6 +6,21 @@ const peRoot=path.join(root,'work/analysis/pe');
 const registration=JSON.parse(fs.readFileSync(path.join(root,'docs/analysis/registration-capture.json'),'utf8'));
 const captureByName=new Map(registration.captures.map(m=>[m.module,m]));
 const product=JSON.parse(fs.readFileSync(path.join(root,'docs/analysis/product-state.json'),'utf8'));
+if(product.schema>=2&&product.current){
+  const c=product.current,acceptance=JSON.parse(fs.readFileSync(path.join(root,c.acceptanceStatus),'utf8'));
+  const manifest=JSON.parse(fs.readFileSync(path.join(root,c.regressionManifest),'utf8'));
+  const counts=items=>Object.entries(items.reduce((a,t)=>(a[t.status]=(a[t.status]??0)+1,a),{})).map(([s,n])=>`${s} ${n}`).join('、');
+  const stateText=v=>typeof v==='string'?v:JSON.stringify(v);
+  const currentCounts=items=>counts(items.map(t=>({status:t.lastResult?.candidate===c.candidate?t.lastResult.status:'未実行'})));
+  const text=['# 本体再構築の現在状態','',`候補 ${c.candidate}。全体未完了。正本は [product-state.json](product-state.json) の current。旧schema1フィールドと従来CSVは版別履歴として保持する。`,
+    '',`構成 ${stateText(c.configuration)}、compile ${stateText(c.compilation)}、install ${stateText(c.install)}、通常core ${stateText(c.core)}。現候補の専用native: ${currentCounts(manifest.tests)}。driver: ${currentCounts(manifest.drivers)}。`,
+    '',`最新単位: ${c.latestUnit}。build: ${c.build}。機能責務の入口 [feature-map.csv](feature-map.csv) は全40行を維持し、古い「未着手」を現在の未実装判定へ転用しない。`,
+    '', '| 全体受入 | 状態 | 残差 |','| --- | --- | --- |',...acceptance.criteria.map(a=>`| ${a.name} | ${a.status} | ${a.scope} |`),
+    '',`次の作業: ${c.nextAction}`,'','旧implementation-status.csvは現行の完成率やqueueへ使用しない。専用試験と全8受入の正本は [regression-manifest.json](regression-manifest.json)、[acceptance-status.json](acceptance-status.json)。',''];
+  fs.writeFileSync(path.join(root,'docs/analysis/implementation-status.md'),text.join('\n'));
+  console.log(JSON.stringify({candidate:c.candidate,legacyCsvPreserved:true,fullAcceptance:false}));
+  process.exit(0);
+}
 const productModules=new Set(['DMUSProd.exe','Timeline.dll','SegmentDesigner.ocx','Conductor.dll','SequenceStripMgr.dll','BandEditor.ocx','BandStripMgr.dll','StyleDesigner.ocx','StyleRefStripMgr.dll','DLSDesigner.ocx']);
 const quote=value=>'"'+String(value??'').replaceAll('"','""')+'"';
 const modules=fs.readdirSync(peRoot,{withFileTypes:true}).filter(f=>f.isDirectory()&&fs.existsSync(path.join(peRoot,f.name,'pe.json')))

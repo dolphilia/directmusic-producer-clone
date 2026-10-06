@@ -6,7 +6,24 @@
 #include "conductor.h"
 #include "dls_editor.h"
 #include "command_editor.h"
+#include "chord_editor.h"
+#include "signpost_editor.h"
+#include "marker_editor.h"
+#include "lyric_editor.h"
+#include "mute_editor.h"
+#include "param_control_editor.h"
+#include "style_reference_editor.h"
+#include "chordmap_reference_editor.h"
+#include "segment_trigger_editor.h"
+#include "script_track_editor.h"
+#include "wave_editor.h"
+#include "wave_document_editor.h"
+#include "script_editor.h"
+#include "tool_graph_editor.h"
+#include "container_editor.h"
+#include "timeline_editor.h"
 #include "audio_path_editor.h"
+#include "chordmap_editor.h"
 #include "runtime_settings_editor.h"
 #include "runtime_recovery_editor.h"
 #include "motif_editor.h"
@@ -26,11 +43,16 @@
 
 namespace {
 using namespace producer::app;
-enum : UINT { AudioPathEditor=1500,NewProject=100,NewSegment,Open,SaveSegment,SaveProject,Exit,NewPlaybackTest,NewStyle,NewBand,SaveDocumentAs,NewDls,Add=200,Change,Delete,Copy,Paste,Undo,Redo,Documents,Events,MeterSet=300,MeterDelete,Play=400,Stop,NoteAdd,GrooveBottom=500,GrooveTop,GrooveSet,PatternLayout=600,StylePartSelect=700,StyleNoteSelect,StyleNoteSet,StyleNoteInsert,StyleNoteDelete,StyleVariationSelect,StyleVariationSet };
+enum : UINT { AudioPathEditor=1500,ChordMapEditor,StyleReferenceEditor,SegmentTriggerEditor,ScriptTrackEditor,ChordMapReferenceEditor,NewProject=100,NewSegment,Open,SaveSegment,SaveProject,Exit,NewPlaybackTest,NewStyle,NewBand,SaveDocumentAs,NewDls,Add=200,Change,Delete,Copy,Paste,Undo,Redo,Documents,Events,MeterSet=300,MeterDelete,Play=400,Stop,NoteAdd,GrooveBottom=500,GrooveTop,GrooveSet,PatternLayout=600,StylePartSelect=700,StyleNoteSelect,StyleNoteSet,StyleNoteInsert,StyleNoteDelete,StyleVariationSelect,StyleVariationSet };
 Framework framework;
 Conductor conductor;
 HMENU transportMenu=nullptr;
 constexpr UINT TransportPath=2000;
+constexpr UINT StartFileOutput=3100,StopFileOutput=3101;
+constexpr UINT ImportMidi=3102,MessageWindowCommand=3103;
+HWND messageWindow=nullptr,messageText=nullptr;size_t lyricCursor=0,scriptMessageCursor=0,scriptDiagnosticCursor=0,scriptCallCursor=0;
+static_assert(StartFileOutput>=TransportPath+1000 && StopFileOutput>=TransportPath+1000,
+              "Recording commands must not overlap the dynamic AudioPath menu");
 PlaybackMonitor playbackMonitor;
 size_t active=0;
 size_t activeStyle=0,activeBand=0;bool styleMode=false,bandMode=false;
@@ -40,6 +62,18 @@ constexpr UINT GroupApply=900,GroupMask=901,GroupTempo=902,GroupMeter=903,GroupS
 HWND groupLabel,groupEdit,groupTempoLabel,groupTempoEdit,groupMeterLabel,groupMeterEdit,groupSequenceLabel,groupSequenceEdit,groupBandLabel,groupBandEdit;
 HWND pitchEdit,durationEdit,velocityEdit;
 constexpr UINT CommandEditor=920;
+constexpr UINT ChordEditor=921;
+constexpr UINT SignpostEditor=922;
+constexpr UINT MarkerEditor=923;
+constexpr UINT LyricEditor=924;
+constexpr UINT MuteEditor=925;
+constexpr UINT WaveEditor=926;
+constexpr UINT WaveDocuments=927;
+constexpr UINT ScriptDocuments=928;
+constexpr UINT ToolGraphDocuments=929;
+constexpr UINT ContainerDocuments=931;
+constexpr UINT TimelineRangeEditor=932;
+constexpr UINT ParamControlEditor=930;
 constexpr UINT PatternDuplicate=610,PatternUnshare=611,PatternNew=614,PatternDelete=615;
 constexpr UINT MotifNew=616;
 constexpr UINT MotifSettings=617;
@@ -58,6 +92,13 @@ HWND sequenceNoteSelect,sequenceNoteTime,sequenceNoteChannel,sequenceNoteLabel,s
 using NoteContext=std::tuple<size_t,std::uint32_t,size_t>;
 std::map<NoteContext,size_t> noteSelections;
 std::map<size_t,CommandEditorContext> commandSelections;
+std::map<size_t,CommandEditorContext> chordSelections;
+std::map<size_t,CommandEditorContext> signpostSelections;
+std::map<size_t,MarkerEditorContext> markerSelections;
+std::map<size_t,WaveEditorContext> waveSelections;
+std::map<size_t,LyricEditorContext> lyricSelections;
+std::map<size_t,MuteEditorContext> muteSelections;
+std::map<size_t,ParamControlEditorContext> paramSelections;
 HWND grooveBottomEdit,grooveTopEdit,grooveLabel;
 HWND patternBeats,patternDenominator,patternGrids,patternMeasures,patternLayoutLabel;
 HWND stylePartSelect,styleNoteSelect,stylePartLabel,styleNoteInfo;
@@ -215,7 +256,7 @@ void refresh(HWND window) {
         if(selected>=0) {const auto& e=d.tempos().at(static_cast<size_t>(selected));SetWindowTextW(timeEdit,std::to_wstring(e.time).c_str());SetWindowTextW(bpmEdit,std::to_wstring(e.bpm).c_str());}
         else {SetWindowTextW(timeEdit,L"0");SetWindowTextW(bpmEdit,L"120");}
     }
-    EnableWindow(GetDlgItem(window,CommandEditor),!styleMode&&!bandMode&&!framework.documents().empty());refresh_group_fields(window);refresh_pattern(window);refresh_sequence_note_fields(window);refresh_bands(window);refresh_status();InvalidateRect(window,nullptr,TRUE);
+    ShowWindow(GetDlgItem(window,SignpostEditor),!styleMode&&!bandMode?SW_SHOW:SW_HIDE);EnableWindow(GetDlgItem(window,SignpostEditor),!styleMode&&!bandMode&&!framework.documents().empty());ShowWindow(GetDlgItem(window,ChordEditor),!styleMode&&!bandMode?SW_SHOW:SW_HIDE);EnableWindow(GetDlgItem(window,ChordEditor),!styleMode&&!bandMode&&!framework.documents().empty());EnableWindow(GetDlgItem(window,CommandEditor),!styleMode&&!bandMode&&!framework.documents().empty());refresh_group_fields(window);refresh_bands(window);refresh_pattern(window);refresh_sequence_note_fields(window);refresh_status();InvalidateRect(window,nullptr,TRUE);
 }
 bool allow_discard(HWND window) {return !framework.dirty()||MessageBoxW(window,L"Discard unsaved documents?",L"Producer",MB_YESNO|MB_ICONQUESTION)==IDYES;}
 void clipboard_copy(HWND window) {
@@ -237,6 +278,36 @@ void clipboard_paste(HWND window) {
     if(styleMode){const auto name=L"Pasted Pattern "+std::to_wstring(framework.style_document(activeStyle).patterns().size()+1);if(!framework.paste_style_pattern(activeStyle,bytes,name))throw std::runtime_error("Pattern paste rejected");}
     else if(!document().paste(bytes,at))throw std::runtime_error("Paste rejected or unchanged");
 }
+void append_message_line(const std::wstring& text){const auto line=text+L"\r\n";SendMessageW(messageText,EM_SETSEL,static_cast<WPARAM>(-1),static_cast<LPARAM>(-1));SendMessageW(messageText,EM_REPLACESEL,FALSE,reinterpret_cast<LPARAM>(line.c_str()));}
+std::wstring script_error_line(const std::wstring& name,const ScriptResult& result){
+    const auto& error=result.error;std::wostringstream out;out<<L"Script "<<name<<L" error 0x"<<std::hex<<static_cast<unsigned long>(result.result)<<std::dec<<L"; line "<<error.line<<L", character "<<error.character<<L": ";
+    out.write(error.description,std::find(std::begin(error.description),std::end(error.description),wchar_t{})-std::begin(error.description));return out.str();
+}
+void collect_lyric_messages(){
+    if(!messageText)return;
+    const auto lyrics=conductor.observed_lyrics(),traces=conductor.observed_script_messages();
+    for(;lyricCursor<lyrics.size();++lyricCursor)if(lyrics[lyricCursor].visible)append_message_line(lyrics[lyricCursor].text);
+    for(;scriptMessageCursor<traces.size();++scriptMessageCursor)if(traces[scriptMessageCursor].visible)append_message_line(traces[scriptMessageCursor].text);
+    const auto diagnostics=conductor.script_diagnostics();
+    for(;scriptDiagnosticCursor<diagnostics.size();++scriptDiagnosticCursor){const auto& d=diagnostics[scriptDiagnosticCursor];append_message_line(script_error_line(d.operation+L" "+d.name,d.result));}
+    const auto calls=conductor.track_script_calls();
+    for(;scriptCallCursor<calls.size();++scriptCallCursor)if(calls[scriptCallCursor].messageVisible&&!calls[scriptCallCursor].result.passed())append_message_line(script_error_line(calls[scriptCallCursor].routine,calls[scriptCallCursor].result));
+    if(conductor.lyric_observation_failed()||conductor.script_message_observation_failed()||conductor.script_diagnostic_overflow()||conductor.track_script_observation_overflow())SetWindowTextW(messageWindow,L"Message Window — delivery observation incomplete");
+}
+LRESULT CALLBACK message_window_proc(HWND window,UINT message,WPARAM w,LPARAM l){
+    switch(message){
+    case WM_CREATE:messageText=CreateWindowW(L"EDIT",L"",WS_CHILD|WS_VISIBLE|WS_BORDER|WS_VSCROLL|ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL,8,8,600,300,window,nullptr,nullptr,nullptr);SendMessageW(messageText,EM_SETLIMITTEXT,1048576,0);CreateWindowW(L"BUTTON",L"Clear",WS_CHILD|WS_VISIBLE|WS_TABSTOP,8,316,90,28,window,reinterpret_cast<HMENU>(1),nullptr,nullptr);SetTimer(window,1,100,nullptr);return 0;
+    case WM_TIMER:try{collect_lyric_messages();}catch(...){SetWindowTextW(window,L"Message Window — delivery observation incomplete");}return 0;
+    case WM_SIZE:if(messageText){MoveWindow(messageText,8,8,LOWORD(l)-16,HIWORD(l)-52,TRUE);MoveWindow(GetDlgItem(window,1),8,HIWORD(l)-36,90,28,TRUE);}return 0;
+    case WM_COMMAND:if(LOWORD(w)==1){SetWindowTextW(messageText,L"");lyricCursor=conductor.observed_lyrics().size();scriptMessageCursor=conductor.observed_script_messages().size();scriptDiagnosticCursor=conductor.script_diagnostics().size();scriptCallCursor=conductor.track_script_calls().size();}return 0;
+    case WM_CLOSE:ShowWindow(window,SW_HIDE);return 0;
+    case WM_DESTROY:messageText=nullptr;messageWindow=nullptr;return 0;
+    }return DefWindowProcW(window,message,w,l);
+}
+void show_message_window(HWND owner){
+    if(!messageWindow){WNDCLASSW c{};c.lpfnWndProc=message_window_proc;c.hInstance=GetModuleHandleW(nullptr);c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerMessages";if(!RegisterClassW(&c)&&GetLastError()!=ERROR_CLASS_ALREADY_EXISTS)throw std::runtime_error("Message Window registration failed");messageWindow=CreateWindowW(c.lpszClassName,L"Message Window",WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,660,430,owner,nullptr,c.hInstance,nullptr);if(!messageWindow)throw std::runtime_error("Message Window creation failed");}
+    ShowWindow(messageWindow,SW_SHOW);collect_lyric_messages();SetForegroundWindow(messageWindow);
+}
 void command(HWND window,UINT id,UINT notification) {
     if(id>=TransportPath&&id<TransportPath+1000){
         const auto index=static_cast<size_t>(id-TransportPath);
@@ -245,21 +316,44 @@ void command(HWND window,UINT id,UINT notification) {
         return;
     }
     switch(id) {
+    case MessageWindowCommand:show_message_window(window);break;
+    case WaveDocuments:show_wave_documents(window,framework);break;
+    case ScriptDocuments:show_script_documents(window,framework,conductor);break;
+    case ToolGraphDocuments:show_tool_graph_documents(window,framework);break;
+    case ContainerDocuments:show_container_documents(window,framework);break;
+    case TimelineRangeEditor:if(!styleMode&&!bandMode&&!framework.documents().empty()){show_timeline_range(window,document());refresh(window);}else throw std::runtime_error("Select a Segment for Timeline range editing");break;
+    case ChordMapEditor:show_chordmap_editor(window,framework);break;
     case AudioPathEditor:show_audio_path_editor(window,framework);break;
-    case NewProject: if(allow_discard(window)){conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";framework.new_project();noteSelections.clear();commandSelections.clear();styleMode=false;bandMode=false;active=framework.new_segment();refresh_group_fields(window,true);}break;
+    case ScriptTrackEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_script_track_editor(window,framework,active);break;
+    case SegmentTriggerEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_segment_trigger_editor(window,framework,active);break;
+    case ChordMapReferenceEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_chordmap_reference_editor(window,framework,active);break;
+    case StyleReferenceEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_style_reference_editor(window,framework,active);break;
+    case NewProject: if(allow_discard(window)){conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";framework.new_project();noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();styleMode=false;bandMode=false;active=framework.new_segment();refresh_group_fields(window,true);}break;
     case NewSegment: styleMode=false;bandMode=false;active=framework.new_segment();refresh_group_fields(window,true);break;
+    case ImportMidi: {const auto path=choose(window,false,L"MIDI files\0*.mid;*.midi\0",L"mid");if(path.empty())return;
+        active=framework.import_midi_segment(path);styleMode=false;bandMode=false;refresh_group_fields(window,true);break;}
     case NewStyle: activeStyle=framework.new_style();styleMode=true;bandMode=false;break;
     case NewBand: activeBand=framework.new_band();bandMode=true;styleMode=false;break;
     case NewDls: {const auto collection=framework.new_collection();show_dls_editor(window,framework,collection);break;}
     case NewPlaybackTest: styleMode=false;bandMode=false;active=framework.new_segment();framework.document(active)=SegmentDocument::playback_test();refresh_group_fields(window,true);break;
     case Open: {
-        const auto path=choose(window,false,L"Producer documents\0*.sgp;*.sgt;*.stp;*.sty;*.bnp;*.bnd;*.dls;*.dlp;*.pro;*.dmpj\0All files\0*.*\0",L"sgp");if(path.empty())return;
-        auto ext=std::filesystem::path(path).extension().wstring();std::transform(ext.begin(),ext.end(),ext.begin(),[](wchar_t c){return static_cast<wchar_t>(std::towlower(c));});
-        if(ext==L".pro"||ext==L".dmpj") {if(!allow_discard(window))return;framework.open_project(path);noteSelections.clear();commandSelections.clear();active=0;activeStyle=0;activeBand=0;styleMode=framework.documents().empty()&&!framework.style_documents().empty();bandMode=framework.documents().empty()&&framework.style_documents().empty()&&!framework.band_documents().empty();}
-        else if(ext==L".stp"||ext==L".sty"){activeStyle=framework.open_style(path);styleMode=true;bandMode=false;}
-        else if(ext==L".bnp"||ext==L".bnd"){activeBand=framework.open_band(path);bandMode=true;styleMode=false;}
-        else if(ext==L".dls"||ext==L".dlp"){const auto collection=framework.open_collection(path);show_dls_editor(window,framework,collection);}
-        else {active=framework.open_segment(path);styleMode=false;bandMode=false;}refresh_group_fields(window,true);break;
+        const auto path=choose(window,false,L"Producer documents\0*.sgp;*.sgt;*.stp;*.sty;*.bnp;*.bnd;*.dls;*.dlp;*.aup;*.aud;*.cdp;*.cdm;*.wav;*.wvp;*.spp;*.spt;*.cop;*.con;*.tgp;*.tgr;*.pro;*.dmpj\0All files\0*.*\0",L"sgp");if(path.empty())return;
+        const auto kind=Framework::document_kind(path);
+        if(kind==DocumentKind::Project&&!allow_discard(window))return;
+        const auto opened=framework.open_document(path);
+        switch(opened.kind){
+        case DocumentKind::Project:{noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();active=0;activeStyle=0;activeBand=0;styleMode=framework.documents().empty()&&!framework.style_documents().empty();bandMode=framework.documents().empty()&&framework.style_documents().empty()&&!framework.band_documents().empty();}break;
+        case DocumentKind::Segment:active=opened.index;styleMode=false;bandMode=false;break;
+        case DocumentKind::Style:activeStyle=opened.index;styleMode=true;bandMode=false;break;
+        case DocumentKind::Band:activeBand=opened.index;bandMode=true;styleMode=false;break;
+        case DocumentKind::Collection:show_dls_editor(window,framework,opened.index);break;
+        case DocumentKind::AudioPath:show_audio_path_editor(window,framework,opened.index);break;
+        case DocumentKind::ChordMap:show_chordmap_editor(window,framework,opened.index);break;
+        case DocumentKind::Wave:show_wave_documents(window,framework,opened.index);break;
+        case DocumentKind::Script:show_script_documents(window,framework,conductor,opened.index);break;
+        case DocumentKind::Container:show_container_documents(window,framework,opened.index);break;
+        case DocumentKind::ToolGraph:show_tool_graph_documents(window,framework,opened.index);break;
+        }refresh_group_fields(window,true);break;
     }
     case SaveSegment: case SaveDocumentAs: {
         const bool saveAs=id==SaveDocumentAs;
@@ -270,7 +364,7 @@ void command(HWND window,UINT id,UINT notification) {
     case SaveProject: {const auto path=choose(window,true,L"Product project\0*.dmpj\0Native Producer project (name must match folder)\0*.pro\0",L"dmpj");if(!path.empty())framework.save_project(path);break;}
     case CopyProject: {if(framework.project_path().empty())throw std::runtime_error("Save Project before copying");const auto extension=std::filesystem::path(framework.project_path()).extension().wstring();const auto path=choose(window,true,L"Project copy (creates a new named folder)\0*.pro;*.dmpj\0",extension==L".pro"?L"pro":L"dmpj");if(!path.empty()){const auto requested=std::filesystem::path(path);framework.copy_project((requested.parent_path()/requested.stem()/requested.filename()).wstring());}break;}
     case RuntimeSettings:show_runtime_settings(window,framework,bandMode?RuntimeDocumentKind::Band:styleMode?RuntimeDocumentKind::Style:RuntimeDocumentKind::Segment,bandMode?activeBand:styleMode?activeStyle:active);break;
-    case RuntimeSaveAs: {const auto kind=bandMode?RuntimeDocumentKind::Band:styleMode?RuntimeDocumentKind::Style:RuntimeDocumentKind::Segment;const auto index=bandMode?activeBand:styleMode?activeStyle:active;const auto ext=bandMode?L"bnd":styleMode?L"sty":L"sgt";const auto filter=bandMode?L"Runtime Band\0*.bnd\0":styleMode?L"Runtime Style\0*.sty\0":L"Runtime Segment\0*.sgt\0";const auto path=choose(window,true,filter,ext);if(!path.empty())framework.save_runtime(kind,index,path);break;}
+    case RuntimeSaveAs: {const auto kind=bandMode?RuntimeDocumentKind::Band:styleMode?RuntimeDocumentKind::Style:RuntimeDocumentKind::Segment;const auto index=bandMode?activeBand:styleMode?activeStyle:active;const auto ext=bandMode?L"bnd":styleMode?L"sty":L"sgt";const auto filter=bandMode?L"Runtime Band\0*.bnd\0":styleMode?L"Runtime Style\0*.sty\0":L"Runtime Segment\0*.sgt\0";const auto path=choose(window,true,filter,ext);if(!path.empty())framework.save_runtime_as(kind,index,path);break;}
     case RuntimeSaveDefaults: {framework.export_runtime_defaults();break;}
     case RuntimeRecovery:show_runtime_recovery(window,framework);break;
     case RuntimeSaveAll: {const auto path=choose(window,true,L"Runtime output folder (new or existing)\0*.*\0",L"");if(!path.empty())framework.export_runtime(path);break;}
@@ -280,9 +374,16 @@ void command(HWND window,UINT id,UINT notification) {
     case Delete: document().delete_selected();break;
     case Copy: clipboard_copy(window);break;
     case Paste: clipboard_paste(window);if(styleMode){refresh(window);SendMessageW(events,LB_SETCURSEL,framework.style_document(activeStyle).patterns().size(),0);refresh_pattern(window);return;}break;
-    case Undo: if(bandMode)framework.undo_band(activeBand);else if(styleMode)framework.undo_style(activeStyle);else document().undo();break;
-    case Redo: if(bandMode)framework.redo_band(activeBand);else if(styleMode)framework.redo_style(activeStyle);else document().redo();break;
+    case Undo: if(bandMode)framework.undo_band(activeBand);else if(styleMode)framework.undo_style(activeStyle);else framework.undo_segment(active);break;
+    case Redo: if(bandMode)framework.redo_band(activeBand);else if(styleMode)framework.redo_style(activeStyle);else framework.redo_segment(active);break;
     case CommandEditor: show_command_editor(window,framework,active,commandSelections[active]);break;
+    case ChordEditor: show_chord_editor(window,framework,active,chordSelections[active]);break;
+    case SignpostEditor: show_signpost_editor(window,framework,active,signpostSelections[active]);break;
+    case MarkerEditor: if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_marker_editor(window,framework,active,markerSelections[active]);break;
+    case LyricEditor: if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_lyric_editor(window,framework,active,lyricSelections[active]);break;
+    case ParamControlEditor: if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_param_control_editor(window,framework,active,paramSelections[active]);break;
+    case MuteEditor: if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_mute_editor(window,framework,active,muteSelections[active]);break;
+    case WaveEditor: if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_wave_editor(window,framework,active,waveSelections[active]);break;
     case MotifBandAssign:{const auto i=SendMessageW(events,LB_GETCURSEL,0,0),b=SendMessageW(bandSelect,CB_GETCURSEL,0,0);if(!styleMode||i<=0||b<0||static_cast<size_t>(b)>=bandAssignments.size()||!framework.assign_style_motif_band(activeStyle,static_cast<size_t>(i)-1,bandAssignments[b].first))throw std::runtime_error("Select a Motif and Style Band; assignment rejected or unchanged");break;}
     case MotifBandEdit:{const auto i=SendMessageW(events,LB_GETCURSEL,0,0);if(!styleMode||i<=0)throw std::runtime_error("Select a Motif");show_motif_band_editor(window,framework,activeStyle,static_cast<size_t>(i)-1);break;}
     case MotifSettings:{const auto i=SendMessageW(events,LB_GETCURSEL,0,0);if(!styleMode||i<=0)throw std::runtime_error("Select a Motif");show_motif_editor(window,framework,activeStyle,static_cast<size_t>(i)-1);break;}
@@ -321,8 +422,10 @@ void command(HWND window,UINT id,UINT notification) {
         if(!changed)throw std::runtime_error("Select a Part note; duration positive,velocity1..127; unchanged or invalid edit rejected");break;
     }
     case MeterDelete: if(!document().delete_meter(static_cast<std::int32_t>(meter_input(measureEdit)-1)))throw std::runtime_error("Cannot remove the initial meter or edit a Style-backed document");break;
-    case Play: {const auto& path=framework.documents().at(active).path;conductor.play(document().save_bytes(),path.empty()?L"":std::filesystem::path(path).parent_path().wstring(),window,document().styles(),framework.playback_collections(active));playbackStatus=L"Playing document snapshot";SetTimer(window,1,100,nullptr);break;}
-    case Stop: conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";break;
+    case Play: {const auto& path=framework.documents().at(active).path;conductor.play(document().save_bytes(),path.empty()?L"":std::filesystem::path(path).parent_path().wstring(),window,document().styles(),framework.playback_collections(active),{},framework.playback_waves(active),framework.trigger_playback(active),framework.playback_chordmaps(active));playbackStatus=L"Playing document snapshot";SetTimer(window,1,100,nullptr);break;}
+    case StartFileOutput:{Bytes bytes=document().audio_path();if(bytes.empty())bytes=conductor.default_audio_path();if(bytes.empty())throw std::runtime_error("Select an AudioPath with FileOutput first");const auto output=choose(window,true,L"Buffer recording WAV\0*.wav\0",L"wav");if(!output.empty()){conductor.start_file_output(bytes,output,window);playbackStatus=L"Buffer recording started; Play and Stop leave recording active";}break;}
+    case StopFileOutput:conductor.stop_file_output();playbackStatus=L"Buffer recording stopped and WAV finalized";break;
+    case Stop: conductor.stop();collect_lyric_messages();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";break;
     case PlaybackSessions: show_playback_window(window,conductor);break;
     case StopCurrentPlayback: {const auto playbackId=conductor.current_playback_id();if(playbackId){conductor.stop(playbackId);playbackMonitor.forget(playbackId);}playbackStatus=conductor.current_playback_id()?L"Stopped selected playback; other playback retained":L"Stopped";if(!conductor.current_playback_id())KillTimer(window,1);break;}
     case NoteAdd: {const auto velocity=meter_input(velocityEdit);
@@ -345,6 +448,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     try {
         switch(message) {
         case WM_CREATE: {
+            conductor.enable_lyric_observation();conductor.enable_script_message_observation();
             docs=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,16,12,550,250,Documents);
             events=control(window,L"LISTBOX",L"",LBS_NOTIFY|WS_BORDER|WS_VSCROLL|WS_TABSTOP,16,50,550,180,Events);
             control(window,L"STATIC",L"Clocks",0,16,246,50,22);timeEdit=control(window,L"EDIT",L"0",WS_BORDER|WS_TABSTOP,70,242,110,25);
@@ -366,7 +470,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             control(window,L"BUTTON",L"Add Note (channel 1)",WS_TABSTOP,582,280,155,28,NoteAdd);
             sequenceNoteLabel=control(window,L"STATIC",L"Sequence note",0,582,312,174,22);sequenceNoteSelect=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,582,336,174,260,SequenceNoteSelect);
             sequenceTimeLabel=control(window,L"STATIC",L"Note clocks",0,582,370,174,22);sequenceNoteTime=control(window,L"EDIT",L"0",WS_BORDER|WS_TABSTOP,582,394,174,25,SequenceNoteTime);
-            sequenceChannelLabel=control(window,L"STATIC",L"Channel (1-16)",0,582,430,174,22);sequenceNoteChannel=control(window,L"EDIT",L"1",WS_BORDER|WS_TABSTOP,582,454,174,25,SequenceNoteChannel);
+            sequenceChannelLabel=control(window,L"STATIC",L"PChannel (1-4294967292)",0,582,430,174,22);sequenceNoteChannel=control(window,L"EDIT",L"1",WS_BORDER|WS_TABSTOP,582,454,174,25,SequenceNoteChannel);
             control(window,L"BUTTON",L"Change Note",WS_TABSTOP,582,490,174,28,SequenceNoteChange);control(window,L"BUTTON",L"Delete Sequence Note...",WS_TABSTOP,582,520,174,26,SequenceNoteDelete);
             stylePartLabel=control(window,L"STATIC",L"Pattern Part (shared)",0,582,312,165,22);stylePartSelect=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,582,336,155,260,StylePartSelect);styleNoteSelect=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,582,374,155,260,StyleNoteSelect);control(window,L"BUTTON",L"Change Part Note",WS_TABSTOP,582,412,155,28,StyleNoteSet);styleNoteInfo=control(window,L"STATIC",L"",0,582,444,170,65);
             control(window,L"BUTTON",L"Clone Note",WS_TABSTOP,582,444,74,28,StyleNoteInsert);control(window,L"BUTTON",L"Delete Note",WS_TABSTOP,666,444,74,28,StyleNoteDelete);MoveWindow(styleNoteInfo,582,480,170,65,FALSE);
@@ -380,6 +484,8 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             groupMeterLabel=control(window,L"STATIC",L"Time signature track",0,780,234,174,22);groupMeterEdit=control(window,L"EDIT",L"1",WS_BORDER|WS_TABSTOP,780,258,170,25,GroupMeter);groupSequenceLabel=control(window,L"STATIC",L"Sequence track (1-based)",0,780,294,174,22);groupSequenceEdit=control(window,L"EDIT",L"1",WS_BORDER|WS_TABSTOP,780,318,170,25,GroupSequence);
             groupBandLabel=control(window,L"STATIC",L"Band track (1-based)",0,780,354,174,22);groupBandEdit=control(window,L"EDIT",L"1",WS_BORDER|WS_TABSTOP,780,378,170,25,GroupBand);control(window,L"BUTTON",L"Apply Track Selection",WS_TABSTOP,780,414,174,28,GroupApply);
             control(window,L"BUTTON",L"Edit Commands...",WS_TABSTOP,780,458,174,28,CommandEditor);
+            control(window,L"BUTTON",L"Edit Chords...",WS_TABSTOP,780,492,174,28,ChordEditor);
+            control(window,L"BUTTON",L"Edit SignPosts...",WS_TABSTOP,780,526,174,28,SignpostEditor);
             patternNameLabel=control(window,L"STATIC",L"Pattern name / type",0,780,500,174,22);patternNameEdit=control(window,L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,780,524,174,25);SendMessageW(patternNameEdit,EM_SETLIMITTEXT,255,0);
             patternKindSelect=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,780,560,174,180);control(window,L"BUTTON",L"Set Pattern Properties",WS_TABSTOP,780,600,174,28,PatternProperties);
             status=control(window,L"EDIT",L"",ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL|WS_VSCROLL|WS_TABSTOP,16,650,940,65);
@@ -400,11 +506,25 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             if(!conductor.current_playback_id()){KillTimer(window,1);playbackMonitor.clear();}refresh_status();return 0;
         case WM_TIMER: {
             if(w==1){
+                collect_lyric_messages();
                 const auto ownedIds=conductor.playback_ids();
                 for(const auto& event:conductor.notifications()){
                     if(IsEqualGUID(event.type,producer::runtime::segmentNotification)&&(event.option==producer::runtime::segmentStarted||event.option==producer::runtime::segmentEnded)&&std::find(ownedIds.begin(),ownedIds.end(),event.playbackId)!=ownedIds.end())playbackMonitor.observed_start(event.playbackId);
                     if(event.currentSegment&&event.option<=1&&IsEqualGUID(event.type,producer::runtime::commandNotification)){
                         playbackStatus=event.option==0?L"Playing — Groove changed":L"Playing — embellishment changed";refresh_status();
+                    }
+                }
+                if(const auto activeId=conductor.current_playback_id()){
+                    const auto calls=conductor.track_script_calls(activeId);
+                    if(!calls.empty()){
+                        const auto& last=calls.back();
+                        auto status=last.result.passed()?L"Playing — Script routine: "+last.routine:L"Script routine failed: "+last.routine;
+                        if(!last.result.passed()){
+                            const auto& detail=last.result.error.description;
+                            size_t count=0;while(count<std::size(detail)&&detail[count])++count;
+                            if(count)status+=L" — "+std::wstring(detail,count);
+                        }
+                        if(playbackStatus!=status){playbackStatus=std::move(status);refresh_status();}
                     }
                 }
                 std::vector<PlaybackMonitorSample> samples;
@@ -428,7 +548,13 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         case WM_CLOSE:if(allow_discard(window))DestroyWindow(window);return 0;
         case WM_DESTROY:conductor.shutdown();framework.new_project();PostQuitMessage(0);return 0;
         }
-    } catch(const std::exception& e) {MessageBoxA(window,e.what(),"Producer operation failed",MB_OK|MB_ICONERROR);if(message==WM_CREATE)return -1;}
+    } catch(const std::exception& e) {
+        // MessageBox dispatches messages while modal. Suspend a failed monitor
+        // before reporting it so subsequent timer ticks cannot open nested
+        // error dialogs. Explicit Stop remains available for owned playback.
+        if(message==WM_TIMER){KillTimer(window,1);playbackMonitor.clear();playbackStatus=L"Playback monitor failed; Stop remains available";refresh_status();}
+        MessageBoxA(window,e.what(),"Producer operation failed",MB_OK|MB_ICONERROR);if(message==WM_CREATE)return -1;
+    }
     return DefWindowProcW(window,message,w,l);
 }
 std::string module_report() {
@@ -698,15 +824,15 @@ int motif_concurrent_observe(const std::wstring& directory,const std::wstring& i
     const auto report="{\"passed\":"+std::string(passed&&observerGood&&!notes.empty()?"true":"false")+",\"error\":\""+error+"\",\"primaryId\":"+std::to_string(a)+",\"secondaryId\":"+std::to_string(b)+",\"restartId\":"+std::to_string(c)+",\"observerGood\":"+(observerGood?"true":"false")+",\"secondaryStopPreservesPrimary\":"+(secondaryStopPreservesPrimary?"true":"false")+",\"primaryStopPreservesSecondary\":"+(primaryStopPreservesSecondary?"true":"false")+",\"finalEmpty\":"+(finalEmpty?"true":"false")+",\"noteCount\":"+std::to_string(notes.size())+",\"checkpoints\":["+checkpoints+"],\"notificationEvents\":["+notificationEvents+"],\"modulePathsUtf16Hex\":["+modules+"],\"fullAcceptance\":false}\n";
     write_file_atomic((base/L"concurrent.json").wstring(),Bytes(report.begin(),report.end()));return passed&&observerGood&&!notes.empty()?0:1;
 }
-int note_observe(const std::wstring& directory,const std::wstring& input,const std::optional<MotifSelection>& motif={},bool standalone=false,const PlaybackOptions& options={}) {
+int note_observe(const std::wstring& directory,const std::wstring& input,const std::optional<MotifSelection>& motif={},bool standalone=false,const PlaybackOptions& options={},unsigned observationMs=12000) {
     const auto base=std::filesystem::absolute(directory);std::filesystem::create_directories(base);
     Framework host;const auto index=standalone?host.open_style(input):host.open_segment(input);Conductor player;
-    player.enable_note_observation();std::string error,modules,noteEvents,calls;bool started=false,ended=false,overflow=false,forwardingFailed=false;LONG start=0;
+    player.enable_note_observation();std::string error,modules,noteEvents,calls,channelMappings;bool started=false,ended=false,overflow=false,forwardingFailed=false;LONG start=0;
     std::vector<PlaybackNote> notes;
     const auto inputBytes=standalone?host.style_document(index).save_bytes():host.document(index).save_bytes();write_file_atomic((base/(standalone?L"input.stp":L"input.sgp")).wstring(),inputBytes);
     try {
         if(standalone){if(!motif)throw std::runtime_error("Standalone playback requires an explicit Motif");player.play_motif(host.style_playback_snapshot(index),motif->name,GetDesktopWindow(),host.style_playback_collections(index),options);}
-        else player.play(inputBytes,std::filesystem::path(input).parent_path().wstring(),GetDesktopWindow(),host.document(index).styles(),host.playback_collections(index),motif);
+        else player.play(inputBytes,std::filesystem::path(input).parent_path().wstring(),GetDesktopWindow(),host.document(index).styles(),host.playback_collections(index),motif,host.playback_waves(index),host.trigger_playback(index),host.playback_chordmaps(index));
         modules=module_report();if(!standalone)write_file_atomic((base/L"runtime.sgp").wstring(),player.playback_bytes());else if(!player.playback_bytes().empty()||!host.documents().empty())throw std::runtime_error("Standalone Motif unexpectedly acquired a context Segment");
         const auto request=player.playback_request();const auto resolvedTempo=standalone&&!options.secondary?player.segment_tempo(0):0;const auto requestJson="{\"flags\":"+std::to_string(request.flags)+",\"submittedClocks\":"+std::to_string(request.submittedClocks)+",\"requestedClocks\":"+std::to_string(request.requestedClocks)+",\"delayClocks\":"+std::to_string(options.delayClocks)+",\"defaultResolution\":"+std::to_string(request.runtimeDefaultResolution)+",\"actualStart\":"+std::to_string(request.actualStart)+",\"standalonePrimaryTempo\":"+std::to_string(resolvedTempo)+"}\n";write_file_atomic((base/L"playback-request.json").wstring(),Bytes(requestJson.begin(),requestJson.end()));
         const auto sourceStyles=standalone?std::vector<StyleCatalogEntry>{host.style_playback_snapshot(index)}:std::vector<StyleCatalogEntry>{};
@@ -714,7 +840,11 @@ int note_observe(const std::wstring& directory,const std::wstring& input,const s
         if(sourceCollections.size()!=player.playback_collections().size())throw std::runtime_error("Collection evidence count mismatch");
         for(size_t i=0;i<sourceCollections.size();++i){write_file_atomic((base/(L"source-collection-"+std::to_wstring(i)+L".dls")).wstring(),sourceCollections[i].bytes);write_file_atomic((base/(L"runtime-collection-"+std::to_wstring(i)+L".dls")).wstring(),player.playback_collections()[i].bytes);}
         for(size_t i=0;i<player.playback_styles().size();++i){write_file_atomic((base/(L"source-style-"+std::to_wstring(i)+L".stp")).wstring(),standalone?sourceStyles.at(i).bytes:host.document(index).styles().at(i).bytes);write_file_atomic((base/(L"runtime-style-"+std::to_wstring(i)+L".stp")).wstring(),player.playback_styles()[i].bytes);}
-        for(unsigned i=0;i<120;++i){Sleep(100);const auto p=player.position();if(p.playing){started=true;start=p.start;}
+        std::vector<DWORD> sourceChannels;if(!standalone)for(const auto& n:host.document(index).notes())sourceChannels.push_back(n.channel);
+        for(const auto& snapshot:player.playback_styles()){StyleDocument source;source.load(snapshot.bytes);for(size_t i=0;i<source.patterns().size();++i)for(const auto& ref:source.part_references(i))if(ref.pchannel)sourceChannels.push_back(*ref.pchannel);}
+        std::sort(sourceChannels.begin(),sourceChannels.end());sourceChannels.erase(std::unique(sourceChannels.begin(),sourceChannels.end()),sourceChannels.end());
+        for(const auto local:sourceChannels){const auto mapped=player.performance_channel(local);if(!channelMappings.empty())channelMappings+=",";channelMappings+="{\"local\":"+std::to_string(local)+",\"performance\":"+(mapped?std::to_string(*mapped):"null")+"}";}
+        for(unsigned i=0;i<(observationMs+99)/100;++i){Sleep(100);const auto p=player.position();if(p.playing){started=true;start=p.start;}
             for(const auto& n:player.notifications()){if(!noteEvents.empty())noteEvents+=",";noteEvents+="{\"command\":"+std::string(IsEqualGUID(n.type,producer::runtime::commandNotification)?"true":"false")+",\"option\":"+std::to_string(n.option)+",\"clocks\":"+std::to_string(n.clocks)+",\"currentSegment\":"+(n.currentSegment?"true":"false")+"}";}
             if(started&&!p.playing){ended=true;break;}
         }
@@ -723,7 +853,7 @@ int note_observe(const std::wstring& directory,const std::wstring& input,const s
     std::string noteJson;for(const auto& n:notes){if(!noteJson.empty())noteJson+=",";noteJson+="{\"clocks\":"+std::to_string(n.clocks)+",\"duration\":"+std::to_string(n.duration)+",\"channel\":"+std::to_string(n.channel)+",\"group\":"+std::to_string(n.group)+",\"musicValue\":"+std::to_string(n.musicValue)+",\"midiValue\":"+std::to_string(n.midiValue)+",\"velocity\":"+std::to_string(n.velocity)+",\"flags\":"+std::to_string(n.flags)+",\"playMode\":"+std::to_string(n.playMode)+"}";}
     for(const auto& c:player.calls()){if(!calls.empty())calls+=",";calls+="{\"operation\":\""+c.operation+"\",\"hresult\":"+std::to_string(static_cast<unsigned long>(c.result))+"}";}
     const bool passed=error.empty()&&started&&ended&&!overflow&&!forwardingFailed&&!notes.empty();
-    const auto report="{\"scope\":\"Generated runtime note observation; Pattern attribution and audio require separate comparison\",\"passed\":"+std::string(passed?"true":"false")+",\"started\":"+(started?"true":"false")+",\"ended\":"+(ended?"true":"false")+",\"overflow\":"+(overflow?"true":"false")+",\"forwardingFailed\":"+(forwardingFailed?"true":"false")+",\"start\":"+std::to_string(start)+",\"error\":\""+error+"\",\"notes\":["+noteJson+"],\"noteEvents\":["+noteEvents+"],\"calls\":["+calls+"],\"modulePathsUtf16Hex\":["+modules+"]}\n";
+    const auto report="{\"scope\":\"Generated runtime note observation; Pattern attribution and audio require separate comparison\",\"passed\":"+std::string(passed?"true":"false")+",\"started\":"+(started?"true":"false")+",\"ended\":"+(ended?"true":"false")+",\"overflow\":"+(overflow?"true":"false")+",\"forwardingFailed\":"+(forwardingFailed?"true":"false")+",\"start\":"+std::to_string(start)+",\"error\":\""+error+"\",\"pchannelMappings\":["+channelMappings+"],\"notes\":["+noteJson+"],\"noteEvents\":["+noteEvents+"],\"calls\":["+calls+"],\"modulePathsUtf16Hex\":["+modules+"]}\n";
     write_file_atomic((base/L"notes.json").wstring(),Bytes(report.begin(),report.end()));return passed?0:1;
 }
 int audio_lifecycle(const std::wstring& directory,const std::wstring& input,const std::optional<MotifSelection>& motif={},unsigned playingMs=2000,bool ownedPath=false,bool transportDefault=false) {
@@ -747,7 +877,7 @@ int audio_lifecycle(const std::wstring& directory,const std::wstring& input,cons
     write_file_atomic((base/L"input.sgp").wstring(),song.save_bytes());
     try {
         const auto inputDirectory=std::filesystem::path(input).parent_path().wstring();
-        stamp("play-request");if(ownedPath)player.play_motif(sourceStyles.at(0),motif->name,GetDesktopWindow(),ownedCollections,{},transportDefault?Bytes{}:host.audio_path_document(0).save_bytes());else player.play(song.save_bytes(),inputDirectory,GetDesktopWindow(),song.styles(),host.playback_collections(index),motif);stamp("play-return");modules=module_report();
+        stamp("play-request");if(ownedPath)player.play_motif(sourceStyles.at(0),motif->name,GetDesktopWindow(),ownedCollections,{},transportDefault?Bytes{}:host.audio_path_document(0).save_bytes());else player.play(song.save_bytes(),inputDirectory,GetDesktopWindow(),song.styles(),host.playback_collections(index),motif,host.playback_waves(index),host.trigger_playback(index),host.playback_chordmaps(index));stamp("play-return");modules=module_report();
         write_file_atomic((base/L"runtime.sgp").wstring(),player.playback_bytes());
         if(ownedPath){write_file_atomic((base/L"source-style-0.stp").wstring(),sourceStyles.at(0).bytes);write_file_atomic((base/L"source.aud").wstring(),host.audio_path_document(0).save_bytes());}
         else for(size_t i=0;i<song.styles().size();++i)write_file_atomic((base/(L"source-style-"+std::to_wstring(i)+L".stp")).wstring(),song.styles()[i].bytes);
@@ -755,7 +885,7 @@ int audio_lifecycle(const std::wstring& directory,const std::wstring& input,cons
         if(ownedCollections.size()!=player.playback_collections().size())throw std::runtime_error("Lifecycle collection snapshot count differs");
         for(size_t i=0;i<ownedCollections.size();++i){write_file_atomic((base/(L"source-collection-"+std::to_wstring(i)+L".dls")).wstring(),ownedCollections[i].bytes);write_file_atomic((base/(L"runtime-collection-"+std::to_wstring(i)+L".dls")).wstring(),player.playback_collections()[i].bytes);}
         waitForStart();firstStart=player.position().start;stamp("play-ready");Sleep(playingMs);first=player.position().playing;stamp("stop-request");player.stop();stamp("stop-return");firstStopped=!player.position().playing;
-        Sleep(3000);firstCount=collect(1,firstStart,0);stamp("restart-request");if(ownedPath)player.play_motif(sourceStyles.at(0),motif->name,GetDesktopWindow(),ownedCollections,{},transportDefault?Bytes{}:host.audio_path_document(0).save_bytes());else player.play(song.save_bytes(),inputDirectory,GetDesktopWindow(),song.styles(),host.playback_collections(index),motif);stamp("restart-return");
+        Sleep(3000);firstCount=collect(1,firstStart,0);stamp("restart-request");if(ownedPath)player.play_motif(sourceStyles.at(0),motif->name,GetDesktopWindow(),ownedCollections,{},transportDefault?Bytes{}:host.audio_path_document(0).save_bytes());else player.play(song.save_bytes(),inputDirectory,GetDesktopWindow(),song.styles(),host.playback_collections(index),motif,host.playback_waves(index),host.trigger_playback(index),host.playback_chordmaps(index));stamp("restart-return");
         for(size_t i=0;i<player.playback_collections().size();++i)write_file_atomic((base/(L"restart-collection-"+std::to_wstring(i)+L".dls")).wstring(),player.playback_collections()[i].bytes);
         for(size_t i=0;i<player.playback_styles().size();++i)write_file_atomic((base/(L"restart-style-"+std::to_wstring(i)+L".stp")).wstring(),player.playback_styles()[i].bytes);
         waitForStart();restartStart=player.position().start;stamp("restart-ready");Sleep(playingMs);restarted=player.position().playing;stamp("final-stop-request");player.stop();stamp("final-stop-return");finalStopped=!player.position().playing;
@@ -787,7 +917,9 @@ int notification_smoke(const std::wstring& directory,const std::wstring& input) 
             write_file_atomic((base/(L"source-style-"+std::to_wstring(i)+L".stp")).wstring(),song.styles()[i].bytes);
             write_file_atomic((base/(L"runtime-style-"+std::to_wstring(i)+L".stp")).wstring(),player.playback_styles().at(i).bytes);
         }
-        for(unsigned i=0;i<60;++i){Sleep(100);drain(1);const auto p=player.position();started=started||p.playing;if(started&&!p.playing)break;}
+        // Startup preparation is outside the musical duration. Wait for the
+        // actual terminal notification before releasing this run's identity.
+        for(unsigned i=0;i<120;++i){Sleep(100);drain(1);const auto p=player.position();started=started||p.playing;if(started&&ends==1&&!p.playing)break;}
         drain(1);player.stop();stopped=!player.position().playing;
         player.play(song.save_bytes(),inputDirectory,GetDesktopWindow(),song.styles());
         for(unsigned i=0;i<10;++i){Sleep(100);drain(2);restarted=restarted||player.position().playing;}
@@ -993,6 +1125,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int show) {
     int argc=0;auto argv=CommandLineToArgvW(GetCommandLineW(),&argc);int result=1;
     try {
         if(!argv)throw std::runtime_error("Unable to parse arguments");
+auto number=[](const wchar_t* text,unsigned long maximum){const std::wstring value=text;if(value.empty()||!std::all_of(value.begin(),value.end(),[](wchar_t c){return c>=L'0'&&c<=L'9';}))throw std::runtime_error("Invalid playback option integer");size_t end=0;const auto n=std::stoul(value,&end);if(end!=value.size()||n>maximum)throw std::runtime_error("Playback option outside range");return n;};
         if(argc==3&&std::wstring(argv[1])==L"--smoke")result=smoke(argv[2]);
         else if(argc==5&&std::wstring(argv[1])==L"--inspect-runtime-recovery")result=runtime_recovery_inspect(argv[2],argv[3],argv[4]);
         else if(argc==6&&std::wstring(argv[1])==L"--recover-runtime-update"){const std::wstring root=argv[4];result=runtime_recovery_inspect(argv[2],argv[3],argv[5],&root);}
@@ -1000,7 +1133,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int show) {
         else if(argc==4&&std::wstring(argv[1])==L"--group-playback-smoke")result=group_playback_smoke(argv[2],argv[3]);
         else if(argc==4&&std::wstring(argv[1])==L"--command-observe")result=command_observe(argv[2],argv[3]);
         else if(argc==4&&std::wstring(argv[1])==L"--notification-smoke")result=notification_smoke(argv[2],argv[3]);
-        else if(argc==4&&std::wstring(argv[1])==L"--note-observe")result=note_observe(argv[2],argv[3]);
+        else if((argc==4||argc==5)&&std::wstring(argv[1])==L"--note-observe"){const auto observationMs=argc==5?number(argv[4],120000):12000;if(observationMs<1000)throw std::runtime_error("Note observation window must be1000..120000 ms");result=note_observe(argv[2],argv[3],{},false,{},observationMs);}
         else if(argc==5&&std::wstring(argv[1])==L"--motif-observe")result=note_observe(argv[2],argv[3],MotifSelection{0,argv[4]});
         else if(argc==3&&std::wstring(argv[1])==L"--short-playback-monitor")result=short_playback_monitor(argv[2]);
         else if(argc==6&&std::wstring(argv[1])==L"--boundary-runtime-observe")result=boundary_runtime_observe(argv[2],argv[3],argv[4],argv[5]);
@@ -1011,7 +1144,6 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int show) {
         else if(argc==5&&std::wstring(argv[1])==L"--motif-concurrent-observe")result=motif_concurrent_observe(argv[2],argv[3],argv[4]);
         else if(argc==5&&std::wstring(argv[1])==L"--style-motif-observe")result=note_observe(argv[2],argv[3],MotifSelection{0,argv[4]},true);
         else if(argc==9&&std::wstring(argv[1])==L"--style-motif-scheduled-observe"){
-            auto number=[](const wchar_t* text,unsigned long maximum){const std::wstring value=text;if(value.empty()||!std::all_of(value.begin(),value.end(),[](wchar_t c){return c>=L'0'&&c<=L'9';}))throw std::runtime_error("Invalid playback option integer");size_t end=0;const auto n=std::stoul(value,&end);if(end!=value.size()||n>maximum)throw std::runtime_error("Playback option outside range");return n;};
             PlaybackOptions options{static_cast<PlaybackBoundary>(number(argv[6],4)),number(argv[7],1)!=0,number(argv[8],1)!=0,static_cast<LONG>(number(argv[5],INT32_MAX))};result=note_observe(argv[2],argv[3],MotifSelection{0,argv[4]},true,options);
         }
         else if(argc==4&&std::wstring(argv[1])==L"--audio-lifecycle")result=audio_lifecycle(argv[2],argv[3]);
@@ -1046,10 +1178,27 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int show) {
             if(!RegisterClassW(&c))throw std::runtime_error("Window class registration failed");
             HMENU menu=CreateMenu(),file=CreatePopupMenu();
             transportMenu=CreatePopupMenu();AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(transportMenu),L"Transport AudioPath");
-            AppendMenuW(file,MF_STRING,NewProject,L"New Project");AppendMenuW(file,MF_STRING,NewSegment,L"New Segment");AppendMenuW(file,MF_STRING,Open,L"Open...");AppendMenuW(file,MF_STRING,SaveSegment,L"Save Document");AppendMenuW(file,MF_STRING,SaveDocumentAs,L"Save Document As...");AppendMenuW(file,MF_STRING,SaveProject,L"Save Project As...");AppendMenuW(file,MF_STRING,CopyProject,L"Copy Project...");AppendMenuW(file,MF_STRING,Exit,L"Exit");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(file),L"File");
+            AppendMenuW(file,MF_STRING,NewProject,L"New Project");AppendMenuW(file,MF_STRING,NewSegment,L"New Segment");AppendMenuW(file,MF_STRING,Open,L"Open...");AppendMenuW(file,MF_STRING,ImportMidi,L"Import MIDI as Segment...");AppendMenuW(file,MF_STRING,SaveSegment,L"Save Document");AppendMenuW(file,MF_STRING,SaveDocumentAs,L"Save Document As...");AppendMenuW(file,MF_STRING,SaveProject,L"Save Project As...");AppendMenuW(file,MF_STRING,CopyProject,L"Copy Project...");AppendMenuW(file,MF_STRING,Exit,L"Exit");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(file),L"File");
+            HMENU addInsMenu=CreatePopupMenu();AppendMenuW(addInsMenu,MF_STRING,MessageWindowCommand,L"Message Window");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(addInsMenu),L"Add-Ins");
+            HMENU recordingMenu=CreatePopupMenu();AppendMenuW(recordingMenu,MF_STRING,StartFileOutput,L"Start Buffer Recording...");AppendMenuW(recordingMenu,MF_STRING,StopFileOutput,L"Stop Buffer Recording");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(recordingMenu),L"Recording");
             HMENU patternMenu=CreatePopupMenu();AppendMenuW(patternMenu,MF_STRING,PatternNew,L"New Pattern");AppendMenuW(patternMenu,MF_STRING,MotifNew,L"New Motif");AppendMenuW(patternMenu,MF_STRING,MotifSettings,L"Motif Playback Settings...");AppendMenuW(patternMenu,MF_STRING,MotifPlay,L"Play Selected Motif");AppendMenuW(patternMenu,MF_STRING,StopCurrentPlayback,L"Stop Most Recent Playback");AppendMenuW(patternMenu,MF_STRING,PlaybackSessions,L"Playback Sessions...");AppendMenuW(patternMenu,MF_STRING,MotifBandAssign,L"Assign Selected Style Band to Motif");AppendMenuW(patternMenu,MF_STRING,MotifBandEdit,L"Edit Motif Band Instruments...");AppendMenuW(patternMenu,MF_STRING,PatternDelete,L"Delete Pattern...");AppendMenuW(patternMenu,MF_STRING,PatternDuplicate,L"Duplicate Pattern");AppendMenuW(patternMenu,MF_STRING,PatternUnshare,L"Make Selected Part Independent");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(patternMenu),L"Pattern");
             InsertMenuW(file,2,MF_BYPOSITION|MF_STRING,NewPlaybackTest,L"New Playback Test");
             AppendMenuW(file,MF_STRING,AudioPathEditor,L"AudioPath Documents...");
+            AppendMenuW(file,MF_STRING,StyleReferenceEditor,L"Segment Style References...");
+            AppendMenuW(file,MF_STRING,ChordMapReferenceEditor,L"Segment ChordMap References...");
+            AppendMenuW(file,MF_STRING,SegmentTriggerEditor,L"Segment Triggers...");
+            AppendMenuW(file,MF_STRING,ScriptTrackEditor,L"Script Track...");
+            AppendMenuW(file,MF_STRING,ChordMapEditor,L"Chordmap Documents...");
+            AppendMenuW(file,MF_STRING,MarkerEditor,L"Segment Markers / Enter SwitchPoints...");
+            AppendMenuW(file,MF_STRING,LyricEditor,L"Segment Lyrics...");
+            AppendMenuW(file,MF_STRING,MuteEditor,L"Segment Mute / PChannel Remap...");
+            AppendMenuW(file,MF_STRING,ParamControlEditor,L"Segment Parameter Control...");
+            AppendMenuW(file,MF_STRING,WaveEditor,L"Segment Wave Placement / Trim...");
+            AppendMenuW(file,MF_STRING,WaveDocuments,L"Wave Documents...");
+            AppendMenuW(file,MF_STRING,ScriptDocuments,L"Script Documents...");
+            AppendMenuW(file,MF_STRING,ToolGraphDocuments,L"ToolGraph Documents...");
+            AppendMenuW(file,MF_STRING,ContainerDocuments,L"Container Documents...");
+            AppendMenuW(file,MF_STRING,TimelineRangeEditor,L"Timeline Range...");
             AppendMenuW(file,MF_STRING,RuntimeSettings,L"Runtime Properties...");
             AppendMenuW(file,MF_STRING,RuntimeSaveAs,L"Runtime Save As...");
             AppendMenuW(file,MF_STRING,RuntimeSaveAll,L"Runtime Save All Files To Folder...");
@@ -1072,6 +1221,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,LPWSTR,int show) {
     }
     if(argv)LocalFree(argv);return result;
 }
+
 
 
 

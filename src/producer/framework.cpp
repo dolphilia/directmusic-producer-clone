@@ -1,11 +1,52 @@
 #include "framework.h"
+#include "chord_composition.h"
+#include "midi_import.h"
+#include "file_output_dmo.h"
 #include <filesystem>
 #include <stdexcept>
 #include <exception>
 #include <algorithm>
 #include <cwctype>
+#include <functional>
+#include "command.h"
 
 namespace producer::app {
+DocumentKind Framework::document_kind(const std::wstring& path){
+    auto ext=std::filesystem::path(path).extension().wstring();
+    std::transform(ext.begin(),ext.end(),ext.begin(),[](wchar_t c){return static_cast<wchar_t>(std::towlower(c));});
+    if(ext==L".pro"||ext==L".dmpj")return DocumentKind::Project;
+    ComponentCatalog catalog;
+    if(catalog.is_segment_path(path))return DocumentKind::Segment;
+    if(catalog.is_style_path(path))return DocumentKind::Style;
+    if(catalog.is_band_path(path))return DocumentKind::Band;
+    if(catalog.is_collection_path(path))return DocumentKind::Collection;
+    if(catalog.is_audio_path(path))return DocumentKind::AudioPath;
+    if(catalog.is_chordmap_path(path))return DocumentKind::ChordMap;
+    if(catalog.is_wave_path(path))return DocumentKind::Wave;
+    if(catalog.is_script_path(path))return DocumentKind::Script;
+    if(catalog.is_container_path(path))return DocumentKind::Container;
+    if(catalog.is_tool_graph_path(path))return DocumentKind::ToolGraph;
+    throw std::runtime_error("Unsupported Producer document extension; import requires its own command");
+}
+OpenedDocument Framework::open_document(const std::wstring& path){
+    const auto kind=document_kind(path);
+    switch(kind){
+    case DocumentKind::Project:open_project(path);return {kind,0};
+    case DocumentKind::Segment:return {kind,open_segment(path)};
+    case DocumentKind::Style:return {kind,open_style(path)};
+    case DocumentKind::Band:return {kind,open_band(path)};
+    case DocumentKind::Collection:return {kind,open_collection(path)};
+    case DocumentKind::AudioPath:return {kind,open_audio_path(path)};
+    case DocumentKind::ChordMap:return {kind,open_chordmap(path)};
+    case DocumentKind::Wave:return {kind,open_wave(path)};
+    case DocumentKind::Script:return {kind,open_script(path)};
+    case DocumentKind::Container:return {kind,open_container(path)};
+    case DocumentKind::ToolGraph:return {kind,open_tool_graph(path)};
+    }
+    throw std::runtime_error("Unsupported Producer document kind");
+}
+
+namespace {bool runtime_references(const std::wstring&);}
 Chunk runtime_update_recovery_record(const std::vector<RuntimeUpdateRecoveryFile>& files){
     Chunk journal;journal.id="RIFF";journal.type="RTUP";
     Chunk version;version.id="vers";version.data.resize(4);put32(version.data,0,2);journal.children.push_back(version);
@@ -81,7 +122,7 @@ std::vector<RuntimeRecoveryTarget> inspect_runtime_update_recovery(const Bytes& 
 }
 std::vector<RuntimeRecoveryTarget> Framework::inspect_runtime_recovery(const std::wstring& journalPath) const {
     if(projectPath_.empty())throw std::runtime_error("Open a saved Project before inspecting recovery");
-    std::vector<std::wstring> sources{projectPath_};const auto append=[&](const auto& list){for(const auto& entry:list)if(!entry.path.empty())sources.push_back(entry.path);};append(documents_);append(styles_);append(bands_);append(collections_);append(audioPaths_);
+    std::vector<std::wstring> sources{projectPath_};const auto append=[&](const auto& list){for(const auto& entry:list)if(!entry.path.empty())sources.push_back(entry.path);};append(documents_);append(styles_);append(bands_);append(collections_);append(audioPaths_);append(chordMaps_);append(waves_);
     return inspect_runtime_update_recovery(read_file(journalPath),sources);
 }
 bool Framework::assign_style_band(size_t segmentIndex,size_t styleIndex,size_t bandIndex,std::int32_t time){
@@ -95,6 +136,26 @@ bool Framework::assign_style_band(size_t segmentIndex,size_t styleIndex,size_t b
     }
     return document(segmentIndex).set_band(time,band.save_bytes());
 }
+bool Framework::assign_style_reference(size_t segmentIndex,size_t styleIndex,std::int32_t time,std::optional<size_t> event,size_t trackIndex){
+    if(segmentIndex>=documents_.size()||styleIndex>=styles_.size())return false;
+    const auto& segment=documents_[segmentIndex];const auto& style=styles_[styleIndex];if(segment.path.empty()||style.path.empty())throw std::runtime_error("Save Segment and Style before assigning a Style reference");
+    StyleReference ref{};ref.time=time;ref.groups=segment.document->selected_groups();ref.hasId=style.document->has_object_id();if(ref.hasId)ref.objectId=style.document->object_id();ref.name=style.document->name();
+    const auto directory=std::filesystem::path(segment.path).parent_path();const auto relative=std::filesystem::path(style.path).lexically_relative(directory);
+    if(!relative.empty()&&!relative.is_absolute()&&*relative.begin()!=L"..")ref.filename=relative.wstring();else if(!ref.hasId)throw std::runtime_error("Filename-only Style must be inside the Segment directory");
+    return event?segment.document->edit_style_reference(*event,ref,directory.wstring(),style_catalog(),trackIndex):segment.document->add_style_reference(ref,directory.wstring(),style_catalog(),trackIndex);
+}
+bool Framework::delete_style_reference(size_t segmentIndex,size_t event,size_t trackIndex){if(segmentIndex>=documents_.size())return false;const auto& owned=documents_[segmentIndex];return owned.document->delete_style_reference(event,std::filesystem::path(owned.path).parent_path().wstring(),style_catalog(),trackIndex);}
+std::vector<ResolvedChordMap> Framework::playback_chordmaps(size_t index) const{std::vector<ChordMapCatalogEntry> catalog;for(const auto& map:chordMaps_)catalog.push_back({map.path,map.document->save_bytes()});const auto& segment=documents_.at(index);return resolve_chordmaps(segment.document->chordmap_references(),std::filesystem::path(segment.path).parent_path().wstring(),catalog);}
+bool Framework::assign_chordmap_reference(size_t segmentIndex,size_t mapIndex,std::int32_t time,size_t trackIndex){
+    if(segmentIndex>=documents_.size()||mapIndex>=chordMaps_.size())return false;const auto& map=chordMaps_[mapIndex];if(!map.document->has_object_id())throw std::runtime_error("Owned ChordMap assignment needs identity");ChordMapReference ref;ref.time=time;ref.groups=documents_[segmentIndex].document->selected_groups();ref.hasId=true;ref.objectId=map.document->object_id();ref.name=map.document->name();const auto directory=std::filesystem::path(documents_[segmentIndex].path).parent_path();
+    if(!map.path.empty()&&!directory.empty()){const auto relative=std::filesystem::path(map.path).lexically_relative(directory);if(!relative.empty()&&!relative.is_absolute()&&*relative.begin()!=L"..")ref.filename=relative.wstring();}
+    auto next=*documents_[segmentIndex].document;if(!next.set_chordmap_reference(ref,trackIndex))return false;std::vector<ChordMapCatalogEntry> catalog;for(const auto& owned:chordMaps_)catalog.push_back({owned.path,owned.document->save_bytes()});(void)resolve_chordmaps(next.chordmap_references(),directory.wstring(),catalog);*documents_[segmentIndex].document=std::move(next);return true;
+}
+namespace {
+bool same_style_references(const SegmentDocument& a,const SegmentDocument& b){const auto x=a.style_references(),y=b.style_references();if(x.size()!=y.size())return false;for(size_t i=0;i<x.size();++i)if(x[i].time!=y[i].time||x[i].groups!=y[i].groups||x[i].hasId!=y[i].hasId||x[i].objectId!=y[i].objectId||x[i].filename!=y[i].filename||x[i].name!=y[i].name)return false;return true;}
+}
+bool Framework::undo_segment(size_t index){auto next=document(index);if(!next.undo())return false;if(!same_style_references(document(index),next))next.resolve_style_context(std::filesystem::path(documents_.at(index).path).parent_path().wstring(),style_catalog(),runtime_references(documents_.at(index).path));document(index)=std::move(next);return true;}
+bool Framework::redo_segment(size_t index){auto next=document(index);if(!next.redo())return false;if(!same_style_references(document(index),next))next.resolve_style_context(std::filesystem::path(documents_.at(index).path).parent_path().wstring(),style_catalog(),runtime_references(documents_.at(index).path));document(index)=std::move(next);return true;}
 bool Framework::assign_band(size_t segmentIndex,size_t bandIndex,std::int32_t time){
     auto band=band_document(bandIndex);const auto dependencies=band_collections(bandIndex);size_t dependency=0;const auto instruments=band.instruments();for(size_t i=0;i<instruments.size();++i)if(!instruments[i].collectionReference.empty()){
         const auto& owned=dependencies.at(dependency++);CollectionReference reference;reference.objectId=collection_identity(owned.bytes);
@@ -114,11 +175,13 @@ std::wstring relative_to(const std::filesystem::path& file,const std::filesystem
     if(relative.empty()||relative.is_absolute()||*relative.begin()==L"..")throw std::runtime_error("Project documents and references must be inside the project directory");return relative.wstring();
 }
 std::filesystem::path runtime_name(std::filesystem::path p){auto ext=p.extension().wstring();std::transform(ext.begin(),ext.end(),ext.begin(),[](wchar_t c){return static_cast<wchar_t>(towlower(c));});
-            if(ext==L".sgp"||ext==L".sgt")p.replace_extension(L".sgt");else if(ext==L".stp"||ext==L".sty")p.replace_extension(L".sty");else if(ext==L".bnp"||ext==L".bnd")p.replace_extension(L".bnd");else if(ext==L".dlp"||ext==L".dls")p.replace_extension(L".dls");else if(ext==L".aup"||ext==L".aud")p.replace_extension(L".aud");else throw std::runtime_error("Runtime export component is not implemented");return p;}
+            if(ext==L".sgp"||ext==L".sgt")p.replace_extension(L".sgt");else if(ext==L".stp"||ext==L".sty")p.replace_extension(L".sty");else if(ext==L".bnp"||ext==L".bnd")p.replace_extension(L".bnd");else if(ext==L".dlp"||ext==L".dls")p.replace_extension(L".dls");else if(ext==L".aup"||ext==L".aud")p.replace_extension(L".aud");else if(ext==L".cop"||ext==L".con")p.replace_extension(L".con");else throw std::runtime_error("Runtime export component is not implemented");return p;}
         void convert_runtime(Chunk& node) {
             // Authoring-only records observed in the bundled design/runtime
             // sample pairs. Unknown chunks retain their bytes and padding.
-            const auto design=[&](const Chunk& c){const auto& p=node.type;return (p=="DMSG"&&c.id=="LIST"&&c.type=="sgdl")||
+            const auto design=[&](const Chunk& c){const auto& p=node.type;
+                if(p=="fxls"&&c.id=="RIFF"&&c.type=="DSFX"){const auto h=c.find("fxhr");if(h&&h->data.size()>=20){GUID id{};std::memcpy(&id,h->data.data()+4,16);if(IsEqualGUID(id,fileOutputClass))return true;}}
+                return (p=="DMSG"&&c.id=="LIST"&&c.type=="sgdl")||
                 (p=="DMTK"&&(c.id=="ctdc"||c.id=="psrd"))||(p=="cord"&&c.id=="crdt")||
                 ((p=="strf"||p=="lbin")&&c.id=="jzfr")||(p=="DMRF"&&c.id=="date")||
                 (p=="DMST"&&c.id=="styu")||(p=="part"&&(c.id=="pptd"||c.id=="pogc"))||
@@ -174,6 +237,17 @@ void refresh_native_metadata(Chunk& entry,const std::filesystem::path& path){
         info->find("nnam")->data=utf16(display);
     }else if(document.type=="DMAP"){
         AudioPathDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name().empty()?path.stem().wstring():saved.name());
+    }else if(document.type=="DMPR"){
+        ChordMapDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name());
+    }else if(document.type=="DMSC"){
+        ScriptDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name());
+
+    }else if(document.type=="DMCN"){
+        ContainerDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name());
+    }else if(document.type=="DMTG"){
+        ToolGraphDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name());
+    }else if(document.type=="WAVE"){
+        WaveDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name());
     }
 }
 Chunk empty_native_project(){
@@ -192,8 +266,8 @@ Chunk empty_native_project(){
 }
 Chunk native_document_reference(const std::filesystem::path& path,const std::wstring& reference){
     const auto document=Chunk::parse(read_file(path.wstring()));
-    const bool style=document.type=="DMST",band=document.type=="DMBD",collection=document.type=="DLS ",audio=document.type=="DMAP";
-    if(document.type!="DMSG"&&!style&&!band&&!collection&&!audio)throw std::runtime_error("New native entries require Segment, Style, Band, DLS or AudioPath documents");
+    const bool container=document.type=="DMCN",toolGraph=document.type=="DMTG",script=document.type=="DMSC",style=document.type=="DMST",band=document.type=="DMBD",collection=document.type=="DLS ",audio=document.type=="DMAP",chordmap=document.type=="DMPR",wave=document.type=="WAVE";
+    if(document.type!="DMSG"&&!style&&!band&&!collection&&!audio&&!chordmap&&!wave&&!script&&!toolGraph&&!container)throw std::runtime_error("New native entries require Segment, Style, Band, DLS, AudioPath, Chordmap or Wave documents");
     const auto object=document.find(collection?"dlid":"guid");
     if(!object||object->data.size()!=16)throw std::runtime_error("Native reference requires a document GUID");
     WIN32_FILE_ATTRIBUTE_DATA attributes{};
@@ -211,8 +285,10 @@ Chunk native_document_reference(const std::filesystem::path& path,const std::wst
         const auto end=std::find(n->data.begin(),n->data.end(),0);const int length=static_cast<int>(end-n->data.begin());
         if(length){const auto bytes=reinterpret_cast<const char*>(n->data.data());const int count=MultiByteToWideChar(CP_ACP,0,bytes,length,nullptr,0);if(!count)throw std::runtime_error("Cannot decode DLS display name");display.resize(count);if(!MultiByteToWideChar(CP_ACP,0,bytes,length,display.data(),count))throw std::runtime_error("Cannot decode DLS display name");}
     }
+    if(wave){WaveDocument saved;saved.load(document.encode());if(!saved.name().empty())display=saved.name();}
+    if(chordmap){ChordMapDocument saved;saved.load(document.encode());display=saved.name();}
     Chunk info;info.id="LIST";info.type="UNFO";
-    auto runtime=std::filesystem::path(reference);runtime.replace_extension(style?L".sty":band?L".bnd":collection?L".dls":audio?L".aud":L".sgt");
+    auto runtime=std::filesystem::path(reference);runtime.replace_extension(style?L".sty":band?L".bnd":collection?L".dls":audio?L".aud":chordmap?L".cdm":wave?L".wav":script?L".spt":toolGraph?L".tgr":container?L".con":L".sgt");
     Chunk rnam;rnam.id="rnam";rnam.data=utf16(runtime.wstring());info.children.push_back(rnam);
     Chunk nnam;nnam.id="nnam";nnam.data=utf16(display);info.children.push_back(nnam);
     if(style){
@@ -241,9 +317,9 @@ std::vector<RuntimeRecoverySource> Framework::runtime_recovery_sources() const {
 std::filesystem::path Framework::runtime_recovery_target(const RuntimeRecoverySource& source,const std::wstring& outputRoot,bool configured) const {
     const auto relative=std::filesystem::path(relative_to(source.path,projectDirectory_));if(!configured)return (std::filesystem::path(outputRoot)/runtime_name(relative)).lexically_normal();
     const auto form=Chunk::parse(source.bytes).type;if(form!="DMSG"&&form!="DMST"&&form!="DMBD"&&form!="DLS "&&form!="DMAP")throw std::runtime_error("Recovery source form unsupported");const auto kind=form=="DMSG"?RuntimeDocumentKind::Segment:form=="DMST"?RuntimeDocumentKind::Style:form=="DMBD"?RuntimeDocumentKind::Band:form=="DLS "?RuntimeDocumentKind::Collection:RuntimeDocumentKind::AudioPath;
-    auto name=runtime_name(relative).wstring();bool found=false;const auto owner=[&](const auto& list){for(size_t i=0;i<list.size();++i)if(same_path(list[i].path,source.path)){if(found)throw std::runtime_error("Ambiguous recovery source owner");name=runtime_filename(kind,i);found=true;}};
+    auto name=runtime_name(relative).wstring();auto folder=runtime_component_folder(kind);bool found=false;const auto owner=[&](const auto& list){for(size_t i=0;i<list.size();++i)if(same_path(list[i].path,source.path)){if(found)throw std::runtime_error("Ambiguous recovery source owner");name=runtime_filename(kind,i);folder=runtime_file_folder(kind,i);found=true;}};
     switch(kind){case RuntimeDocumentKind::Segment:owner(documents_);break;case RuntimeDocumentKind::Style:owner(styles_);break;case RuntimeDocumentKind::Band:owner(bands_);break;case RuntimeDocumentKind::Collection:owner(collections_);break;case RuntimeDocumentKind::AudioPath:owner(audioPaths_);break;}
-    return std::filesystem::absolute(std::filesystem::path(projectDirectory_)/runtime_component_folder(kind)/name).lexically_normal();
+    return std::filesystem::absolute(std::filesystem::path(projectDirectory_)/folder/name).lexically_normal();
 }
 std::vector<RuntimeRecoveryTarget> Framework::validate_runtime_recovery(const std::wstring& journalPath,const std::wstring& expectedOutputRoot,bool configured) const {
     const auto bytes=read_file(journalPath);const auto origin=runtime_update_recovery_origin(bytes);const auto files=parse_runtime_update_recovery_record(bytes);const auto root=std::filesystem::absolute(expectedOutputRoot).lexically_normal().wstring();const auto sources=runtime_recovery_sources();
@@ -267,12 +343,20 @@ void Framework::recover_runtime_update(const std::wstring& journalPath,const std
     // not inferred from absence before a crash; no recursive cleanup here.
 }
 void Framework::new_project() {
-    documents_.clear();styles_.clear();bands_.clear();collections_.clear();audioPaths_.clear();warnings_.clear();name_=L"Untitled";projectPath_.clear();projectDirectory_.clear();projectDirty_=true;
+    documents_.clear();styles_.clear();bands_.clear();collections_.clear();audioPaths_.clear();chordMaps_.clear();waves_.clear();scripts_.clear();containers_.clear();toolGraphs_.clear();warnings_.clear();name_=L"Untitled";projectPath_.clear();projectDirectory_.clear();projectDirty_=true;
     projectRoot_={};projectRoot_.id="RIFF";projectRoot_.type="DMPJ";
     Chunk v;v.id="vers";v.data={1,0,0,0};projectRoot_.children.push_back(v);
     Chunk n;n.id="name";n.data=utf16(name_);projectRoot_.children.push_back(n);
 }
 size_t Framework::new_segment() {documents_.push_back({L"",components_.create_document("DMSG"),std::nullopt});projectDirty_=true;return documents_.size()-1;}
+size_t Framework::import_midi_segment(const std::wstring& path){
+    auto imported=import_midi(read_file(path));
+    auto warnings=warnings_;for(const auto& n:imported.notices)warnings.emplace_back(n.begin(),n.end());
+    auto document=std::make_unique<SegmentDocument>(std::move(imported.segment));
+    documents_.push_back({L"",std::move(document),std::nullopt});projectDirty_=true;
+    warnings_.swap(warnings);
+    return documents_.size()-1;
+}
 size_t Framework::open_segment(const std::wstring& path) {
     const auto full=std::filesystem::absolute(path).lexically_normal().wstring();
     for(size_t i=0;i<documents_.size();++i)if(documents_[i].path==full)return i;
@@ -352,6 +436,141 @@ bool Framework::assign_audio_path(size_t segmentIndex,size_t audioPathIndex){ret
 size_t Framework::new_audio_path(){audioPaths_.push_back({L"",components_.create_audio_path_document("DMAP"),std::nullopt});projectDirty_=true;return audioPaths_.size()-1;}
 size_t Framework::open_audio_path(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_audio_path(full))throw std::runtime_error("Open AudioPath as .aup or .aud");for(size_t i=0;i<audioPaths_.size();++i)if(same_path(audioPaths_[i].path,full))return i;auto document=components_.create_audio_path_document("DMAP");document->load(read_file(full));audioPaths_.push_back({full,std::move(document),std::nullopt});projectDirty_=true;return audioPaths_.size()-1;}
 void Framework::save_audio_path(size_t index,const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_audio_path(full))throw std::runtime_error("Save AudioPath as .aup or .aud");for(size_t i=0;i<audioPaths_.size();++i)if(i!=index&&same_path(audioPaths_[i].path,full))throw std::runtime_error("Another AudioPath owns destination");for(const auto& d:documents_)if(same_path(d.path,full))throw std::runtime_error("Segment owns destination");for(const auto& d:styles_)if(same_path(d.path,full))throw std::runtime_error("Style owns destination");for(const auto& d:bands_)if(same_path(d.path,full))throw std::runtime_error("Band owns destination");for(const auto& d:collections_)if(same_path(d.path,full))throw std::runtime_error("Collection owns destination");auto& owned=audioPaths_.at(index);auto next=*owned.document;auto project=after_document_save(projectRoot_,owned.projectReference);const bool metadataDirty=project.find("mupd")&&!project.find("mupd")->data.empty();next.save(full);*owned.document=std::move(next);projectRoot_=std::move(project);if(owned.path!=full||metadataDirty)projectDirty_=true;owned.path=full;}
+size_t Framework::new_chordmap(){chordMaps_.push_back({L"",components_.create_chordmap_document("DMPR"),std::nullopt});projectDirty_=true;return chordMaps_.size()-1;}
+size_t Framework::open_chordmap(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_chordmap_path(full))throw std::runtime_error("Open Chordmap as .cdp or .cdm");for(size_t i=0;i<chordMaps_.size();++i)if(same_path(chordMaps_[i].path,full))return i;auto document=components_.create_chordmap_document("DMPR");document->load(read_file(full));chordMaps_.push_back({full,std::move(document),std::nullopt});projectDirty_=true;return chordMaps_.size()-1;}
+void Framework::save_chordmap(size_t index,const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_chordmap_path(full))throw std::runtime_error("Save Chordmap as .cdp or .cdm");for(size_t i=0;i<chordMaps_.size();++i)if(i!=index&&same_path(chordMaps_[i].path,full))throw std::runtime_error("Another Chordmap owns destination");for(const auto& d:documents_)if(same_path(d.path,full))throw std::runtime_error("Segment owns destination");for(const auto& d:styles_)if(same_path(d.path,full))throw std::runtime_error("Style owns destination");for(const auto& d:bands_)if(same_path(d.path,full))throw std::runtime_error("Band owns destination");for(const auto& d:collections_)if(same_path(d.path,full))throw std::runtime_error("Collection owns destination");auto& owned=chordMaps_.at(index);auto next=*owned.document;auto project=after_document_save(projectRoot_,owned.projectReference);const bool metadataDirty=project.find("mupd")&&!project.find("mupd")->data.empty();next.save(full);*owned.document=std::move(next);projectRoot_=std::move(project);if(owned.path!=full||metadataDirty)projectDirty_=true;owned.path=full;}
+bool Framework::insert_segment_wave(size_t segment,size_t wave,size_t part,std::int64_t time,std::uint32_t variations,size_t* resultingIndex){
+    const auto& owner=documents_.at(segment);const auto& source=waves_.at(wave);const auto segmentPath=std::filesystem::path(owner.path),wavePath=std::filesystem::path(source.path);
+    if(owner.path.empty()||source.path.empty()||!same_path(segmentPath.parent_path().wstring(),wavePath.parent_path().wstring()))throw std::runtime_error("Save Segment and owned Wave in the same directory before insertion");
+    auto extension=wavePath.extension().wstring();std::transform(extension.begin(),extension.end(),extension.begin(),[](wchar_t c){return static_cast<wchar_t>(towlower(c));});if(extension!=L".wvp")throw std::runtime_error("Insert a Project .wvp Wave, not raw WAV or a DLS Wave");
+    const auto format=source.document->format();if(format.tag!=1||!format.frames||format.frames>static_cast<std::uint64_t>(INT64_MAX)/10000000u)throw std::runtime_error("Wave insertion requires bounded nonempty PCM");
+    const auto duration=static_cast<std::int64_t>((format.frames*10000000u+format.sampleRate-1)/format.sampleRate);if(!duration)throw std::runtime_error("Wave is shorter than reference-time resolution");
+    const auto identity=source.document->identity();if(identity){size_t matches=0;for(const auto& entry:waves_)if(entry.document->identity()==identity)++matches;if(matches!=1)throw std::runtime_error("Ambiguous owned Wave identity");}
+    return document(segment).insert_wave(part,{wavePath.filename().wstring(),identity},{time,0,duration,0,0},variations,0,resultingIndex);
+}
+std::vector<ResolvedWave> Framework::playback_waves(size_t index)const{const auto tree=Chunk::parse(documents_.at(index).document->save_bytes());const auto tracks=tree.find("LIST","trkl");std::vector<ResolvedWave> result;if(!tracks)return result;for(const auto& track:tracks->children){const auto header=track.find("trkh");const auto type=wave_track_identity();if(!header||header->data.size()<16||!std::equal(type.begin(),type.end(),header->data.begin()))continue;for(const auto& item:wave_items(track)){const OpenWave* owned=nullptr;if(item.objectId)for(const auto& wave:waves_)if(wave.document->identity()==item.objectId){if(owned)throw std::runtime_error("Ambiguous owned Wave identity");owned=&wave;}std::wstring path;if(owned)path=owned->path;else if(!item.filename.empty()){path=resolve(std::filesystem::path(documents_.at(index).path).parent_path(),item.filename).wstring();for(const auto& wave:waves_)if(same_path(wave.path,path)){if(owned)throw std::runtime_error("Ambiguous owned Wave filename");owned=&wave;}}else throw std::runtime_error("GUID-only Wave missing from owned catalog");WaveDocument loaded;const auto bytes=owned?owned->document->save_bytes():read_file(path);loaded.load(bytes);if(item.objectId&&loaded.identity()!=item.objectId)throw std::runtime_error("Wave reference identity mismatch");result.push_back({path,bytes,loaded.format()});}}return result;}
+size_t Framework::new_script(){scripts_.push_back({L"",components_.create_script_document("DMSC"),std::nullopt});projectDirty_=true;return scripts_.size()-1;}
+size_t Framework::new_container(){containers_.push_back({L"",components_.create_container_document("DMCN"),std::nullopt});projectDirty_=true;return containers_.size()-1;}
+size_t Framework::open_script(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_script_path(full))throw std::runtime_error("Open Script as .spp or .spt");for(size_t i=0;i<scripts_.size();++i)if(same_path(scripts_[i].path,full))return i;auto d=components_.create_script_document("DMSC");d->load(read_file(full));scripts_.push_back({full,std::move(d),std::nullopt});projectDirty_=true;return scripts_.size()-1;}
+size_t Framework::open_container(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_container_path(full))throw std::runtime_error("Open Container as .cop or .con");for(size_t i=0;i<containers_.size();++i)if(same_path(containers_[i].path,full))return i;auto d=components_.create_container_document("DMCN");d->load(read_file(full));containers_.push_back({full,std::move(d),std::nullopt});projectDirty_=true;return containers_.size()-1;}
+bool Framework::assign_segment_trigger(size_t owner,size_t target,bool motif,const std::wstring& motifName,std::int32_t logical,std::int32_t physical,std::uint32_t flags,std::optional<size_t> event,size_t track){
+    if(owner>=documents_.size()||(motif?target>=styles_.size():target>=documents_.size()))return false;
+    const auto& parent=documents_[owner];const auto path=motif?styles_[target].path:documents_[target].path;
+    if(parent.path.empty()||path.empty())throw std::runtime_error("Save owner and source before assigning a trigger");
+    if(!motif&&owner==target)throw std::runtime_error("Segment cannot trigger itself");
+    const auto bytes=motif?styles_[target].document->save_bytes():documents_[target].document->save_bytes();const auto root=Chunk::parse(bytes);const auto id=root.find("guid");if(!id||id->data.size()!=16)throw std::runtime_error("Trigger source needs its saved object identity");
+    if(motif){const auto patterns=styles_[target].document->patterns();size_t matches=0;for(const auto& p:patterns)if((p.embellishment&16)&&p.name==motifName)++matches;if(matches!=1)throw std::runtime_error("Select exactly one owned Style Motif");}
+    SegmentTrigger e;e.logical=logical;e.physical=physical;e.playFlags=flags;e.itemFlags=motif?1:0;e.motif=motifName;e.hasId=true;std::copy(id->data.begin(),id->data.end(),e.objectId.begin());
+    e.filename=std::filesystem::path(path).lexically_relative(std::filesystem::path(parent.path).parent_path()).wstring();if(e.filename.empty()||std::filesystem::path(e.filename).is_absolute())throw std::runtime_error("Trigger source relative path unavailable");
+    return event?parent.document->edit_trigger(*event,e,track):parent.document->add_trigger(e,track);
+}
+bool Framework::assign_script_call(size_t owner,size_t script,const std::wstring& routine,std::int32_t logical,std::int32_t physical,std::uint32_t timing,std::optional<size_t> event,size_t track){
+    if(owner>=documents_.size()||script>=scripts_.size())return false;
+    const auto& parent=documents_[owner];const auto& source=scripts_[script];
+    if(parent.path.empty()||source.path.empty())throw std::runtime_error("Save owner and Script before assigning a routine");
+    const auto root=Chunk::parse(source.document->save_bytes());const auto id=root.find("guid");if(!id||id->data.size()!=16)throw std::runtime_error("Script source needs its saved object identity");
+    ScriptEvent e;e.logical=logical;e.physical=physical;e.timing=timing;e.routine=routine;e.hasId=true;std::copy(id->data.begin(),id->data.end(),e.objectId.begin());
+    e.filename=std::filesystem::path(source.path).lexically_relative(std::filesystem::path(parent.path).parent_path()).wstring();if(e.filename.empty()||std::filesystem::path(e.filename).is_absolute())throw std::runtime_error("Script relative path unavailable");
+    return event?parent.document->edit_script_call(*event,e,track):parent.document->add_script_call(e,track);
+}
+SegmentTriggerPlayback Framework::trigger_playback(size_t owner) const{
+    SegmentTriggerPlayback out;out.source=documents_.at(owner).document->save_bytes();std::vector<size_t> stack,done;
+    const auto identity=[](const Bytes& b){const auto root=Chunk::parse(b);const auto id=root.find("guid");if(!id||id->data.size()!=16)throw std::runtime_error("Trigger snapshot needs an object GUID");std::array<std::uint8_t,16> value{};std::copy(id->data.begin(),id->data.end(),value.begin());if(std::all_of(value.begin(),value.end(),[](auto n){return n==0;}))throw std::runtime_error("Trigger snapshot has a zero GUID");return value;};
+    const auto rewrite=[](Chunk& ref,const std::array<std::uint8_t,16>& id){put32(ref.find("refh")->data,16,3);auto guid=ref.find("guid");if(!guid){Chunk c;c.id="guid";ref.children.push_back(c);guid=&ref.children.back();}guid->data.assign(id.begin(),id.end());};
+    std::function<Bytes(size_t)> visit=[&](size_t current){
+        if(std::find(stack.begin(),stack.end(),current)!=stack.end())throw std::runtime_error("Segment Trigger dependency cycle");
+        if(stack.size()>=64)throw std::runtime_error("Segment Trigger dependency depth exceeded");
+        stack.push_back(current);auto root=Chunk::parse(documents_[current].document->save_bytes());
+        if(auto tracks=root.find("LIST","trkl"))for(auto& track:tracks->children)if(track.find("LIST","segt")){
+            const auto events=segment_triggers(track);auto& list=*track.find("LIST","segt")->find("LIST","lsgl");size_t event=0;
+            for(auto& item:list.children)if(item.id=="LIST"&&item.type=="lseg"){
+                const auto& e=events.at(event++);auto ref=item.find("LIST","DMRF");if(!ref)continue;
+                if(e.itemFlags&~1u||e.playFlags&~0x0fffff80u)throw std::runtime_error("Trigger runtime timing or flag contract is not implemented");
+                const auto& source=documents_[current];const auto relative=e.filename.empty()?std::wstring{}:std::filesystem::absolute(std::filesystem::path(source.path).parent_path()/e.filename).lexically_normal().wstring();
+                if(e.itemFlags&1){
+                    size_t match=SIZE_MAX;for(size_t i=0;i<styles_.size();++i){const auto bytes=styles_[i].document->save_bytes();bool yes=e.hasId?identity(bytes)==e.objectId:(!relative.empty()?same_path(relative,styles_[i].path):styles_[i].document->name()==e.name);if(yes){if(match!=SIZE_MAX)throw std::runtime_error("Ambiguous trigger Style");match=i;}}
+                    if(match==SIZE_MAX)throw std::runtime_error("Trigger Style missing from owned Project catalog");
+                    if(!relative.empty()&&!same_path(relative,styles_[match].path))throw std::runtime_error("Trigger Style GUID and filename disagree");
+                    auto style=style_playback_snapshot(match);StyleDocument doc;doc.load(style.bytes);size_t matches=0;for(const auto& p:doc.patterns())if((p.embellishment&16)&&p.name==e.motif)++matches;if(matches!=1)throw std::runtime_error("Trigger Motif missing or ambiguous");
+                    const auto id=identity(style.bytes);rewrite(*ref,id);out.motifs.push_back({id,e.motif});
+                    StyleReference r{};r.groups=1;r.hasId=true;r.objectId=id;ResolvedStyle resolved{r,style.path,style.bytes,doc.meter()};
+                    auto prepared=prepare_collection_playback({resolved.bytes},style_playback_collections(match));resolved.bytes=prepared.documents[0];out.collections.insert(out.collections.end(),prepared.collections.begin(),prepared.collections.end());out.styles.push_back(std::move(resolved));
+                }else{
+                    size_t match=SIZE_MAX;for(size_t i=0;i<documents_.size();++i){const auto bytes=documents_[i].document->save_bytes();bool yes=e.hasId?identity(bytes)==e.objectId:(!relative.empty()?same_path(relative,documents_[i].path):std::filesystem::path(documents_[i].path).stem().wstring()==e.name);if(yes){if(match!=SIZE_MAX)throw std::runtime_error("Ambiguous triggered Segment");match=i;}}
+                    if(match==SIZE_MAX)throw std::runtime_error("Triggered Segment missing from owned Project catalog");
+                    if(!relative.empty()&&!same_path(relative,documents_[match].path))throw std::runtime_error("Triggered Segment GUID and filename disagree");
+                    const auto id=identity(documents_[match].document->save_bytes());rewrite(*ref,id);
+                    if(std::find(done.begin(),done.end(),match)==done.end()){
+                        auto bytes=visit(match);auto styled=prepare_style_playback(bytes,documents_[match].document->styles());std::vector<Bytes> docs{styled.segment};for(const auto& style:styled.styles)docs.push_back(style.bytes);
+                        auto collections=prepare_collection_playback(docs,playback_collections(match));styled.segment=collections.documents[0];for(size_t i=0;i<styled.styles.size();++i)styled.styles[i].bytes=collections.documents[i+1];
+                        auto waves=prepare_wave_playback(styled.segment,playback_waves(match));bytes=prepare_command_playback(waves.segment);
+                        out.collections.insert(out.collections.end(),collections.collections.begin(),collections.collections.end());out.styles.insert(out.styles.end(),styled.styles.begin(),styled.styles.end());out.waves.insert(out.waves.end(),waves.waves.begin(),waves.waves.end());
+                        out.segments.push_back({documents_[match].path,std::move(bytes),id});done.push_back(match);
+                    }
+                }
+            }
+        }
+        if(auto tracks=root.find("LIST","trkl"))for(auto& track:tracks->children)if(track.find("LIST","scrt")){
+            const auto events=script_events(track);auto& list=*track.find("LIST","scrt")->find("LIST","scrl");size_t event=0;
+            for(auto& item:list.children)if(item.id=="LIST"&&item.type=="scre"){
+                const auto& e=events.at(event++);auto ref=item.find("LIST","DMRF");if(!ref)continue;
+                if(e.logical<0||e.physical<0||(e.timing!=1&&e.timing!=2&&e.timing!=4)||e.routine.empty())throw std::runtime_error("Script Track runtime timing or routine contract unsupported");
+                const auto relative=e.filename.empty()?std::wstring{}:std::filesystem::absolute(std::filesystem::path(documents_[current].path).parent_path()/e.filename).lexically_normal().wstring();
+                size_t match=SIZE_MAX;for(size_t i=0;i<scripts_.size();++i){const auto bytes=scripts_[i].document->save_bytes();const bool yes=e.hasId?identity(bytes)==e.objectId:(!relative.empty()?same_path(relative,scripts_[i].path):scripts_[i].document->name()==e.name);if(yes){if(match!=SIZE_MAX)throw std::runtime_error("Ambiguous owned Script");match=i;}}
+                if(match==SIZE_MAX)throw std::runtime_error("Script Track source missing from owned Project catalog");
+                if(!relative.empty()&&!same_path(relative,scripts_[match].path))throw std::runtime_error("Script GUID and filename disagree");
+                if(!scripts_[match].document->source())throw std::runtime_error("Script Track external source text needs owned resolution");
+                if(!scripts_[match].document->container().objects().empty())throw std::runtime_error("Script Track contained dependencies need owned runtime routing");
+                const auto bytes=scripts_[match].document->save_bytes();const auto id=identity(bytes);rewrite(*ref,id);
+                auto found=std::find_if(out.scripts.begin(),out.scripts.end(),[&](const auto& x){return x.objectId==id;});
+                if(found==out.scripts.end()){out.scripts.push_back({scripts_[match].path,bytes,id,{e.routine}});}
+                else {if(found->bytes!=bytes)throw std::runtime_error("Conflicting Script snapshots share a GUID");if(std::find(found->routines.begin(),found->routines.end(),e.routine)==found->routines.end())found->routines.push_back(e.routine);}
+            }
+        }
+        stack.pop_back();return root.encode();
+    };out.parent=visit(owner);return out;
+}
+bool Framework::add_script_segment_reference(size_t script,size_t segment,const std::wstring& alias,bool keep){
+    auto& owner=scripts_.at(script);const auto& source=documents_.at(segment);
+    if(owner.path.empty()||source.path.empty()||source.document->dirty()||projectPath_.empty())return false;
+    const auto ownerPath=std::filesystem::path(owner.path),sourcePath=std::filesystem::path(source.path);
+    if(CompareStringOrdinal(ownerPath.extension().c_str(),-1,L".spp",-1,TRUE)!=CSTR_EQUAL||!same_path(ownerPath.parent_path().wstring(),sourcePath.parent_path().wstring()))return false;
+    const auto metadata=projectRoot_.find("orig");if(!metadata||read_file(source.path)!=source.document->save_bytes())return false;
+    const auto root=Chunk::parse(metadata->data),document=Chunk::parse(source.document->save_bytes());const auto guid=document.find("guid");if(!guid||guid->data.size()!=16)return false;
+    std::optional<std::array<std::uint8_t,16>> fileId;
+    for(const auto& entry:root.children)if(entry.id=="LIST"&&entry.type=="file"){
+        const auto name=entry.find("name"),header=entry.find("filh");if(!name||!header||header->data.size()<44)continue;
+        if(!same_path(resolve(projectDirectory_,decode_utf16(name->data)).wstring(),source.path))continue;
+        if(fileId||!std::equal(guid->data.begin(),guid->data.end(),header->data.begin()+28))return false;
+        std::array<std::uint8_t,16> id{};std::copy_n(header->data.begin(),16,id.begin());fileId=id;
+    }
+    if(!fileId)return false;std::array<std::uint8_t,16> objectId{};std::copy_n(guid->data.begin(),16,objectId.begin());
+    return owner.document->add_segment_reference(objectId,*fileId,sourcePath.filename().wstring(),alias,keep);
+}
+bool Framework::add_container_segment_reference(size_t container,size_t segment,const std::wstring& alias,bool keep){
+    auto& owner=containers_.at(container);const auto& source=documents_.at(segment);
+    if(owner.path.empty()||source.path.empty()||source.document->dirty()||projectPath_.empty())return false;
+    const auto ownerPath=std::filesystem::path(owner.path),sourcePath=std::filesystem::path(source.path);
+    if(CompareStringOrdinal(ownerPath.extension().c_str(),-1,L".cop",-1,TRUE)!=CSTR_EQUAL||!same_path(ownerPath.parent_path().wstring(),sourcePath.parent_path().wstring()))return false;
+    const auto metadata=projectRoot_.find("orig");if(!metadata||read_file(source.path)!=source.document->save_bytes())return false;
+    const auto root=Chunk::parse(metadata->data),document=Chunk::parse(source.document->save_bytes());const auto guid=document.find("guid");if(!guid||guid->data.size()!=16)return false;
+    std::optional<std::array<std::uint8_t,16>> fileId;
+    for(const auto& entry:root.children)if(entry.id=="LIST"&&entry.type=="file"){
+        const auto name=entry.find("name"),header=entry.find("filh");if(!name||!header||header->data.size()<44)continue;
+        if(!same_path(resolve(projectDirectory_,decode_utf16(name->data)).wstring(),source.path))continue;
+        if(fileId||!std::equal(guid->data.begin(),guid->data.end(),header->data.begin()+28))return false;
+        std::array<std::uint8_t,16> id{};std::copy_n(header->data.begin(),16,id.begin());fileId=id;
+    }
+    if(!fileId)return false;std::array<std::uint8_t,16> objectId{};std::copy_n(guid->data.begin(),16,objectId.begin());
+    return owner.document->add_segment_reference(objectId,*fileId,sourcePath.filename().wstring(),alias,keep);
+}
+void Framework::save_script(size_t index,const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_script_path(full))throw std::runtime_error("Save Script as .spp or .spt");for(size_t i=0;i<scripts_.size();++i)if(i!=index&&same_path(scripts_[i].path,full))throw std::runtime_error("Another Script owns destination");const auto collision=[&](const auto& entries){for(const auto& e:entries)if(same_path(e.path,full))throw std::runtime_error("Another document owns Script destination");};collision(documents_);collision(styles_);collision(bands_);collision(collections_);collision(audioPaths_);collision(chordMaps_);collision(waves_);collision(toolGraphs_);collision(containers_);auto& owned=scripts_.at(index);auto next=*owned.document;auto project=after_document_save(projectRoot_,owned.projectReference);const bool metadataDirty=project.find("mupd")&&!project.find("mupd")->data.empty();next.save(full);*owned.document=std::move(next);projectRoot_=std::move(project);if(owned.path!=full||metadataDirty)projectDirty_=true;owned.path=full;}
+void Framework::save_container(size_t index,const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_container_path(full))throw std::runtime_error("Save Container as .cop or .con");if(CompareStringOrdinal(std::filesystem::path(full).extension().c_str(),-1,L".con",-1,TRUE)==CSTR_EQUAL){const auto& source=containers_.at(index);bool design=CompareStringOrdinal(std::filesystem::path(source.path).extension().c_str(),-1,L".cop",-1,TRUE)==CSTR_EQUAL;for(const auto& o:source.document->graph().objects())design=design||o.projectAssociation.has_value();if(design){save_runtime(RuntimeDocumentKind::Container,index,full);return;}}for(size_t i=0;i<containers_.size();++i)if(i!=index&&same_path(containers_[i].path,full))throw std::runtime_error("Another Container owns destination");const auto collision=[&](const auto& entries){for(const auto& e:entries)if(same_path(e.path,full))throw std::runtime_error("Another document owns Container destination");};collision(documents_);collision(styles_);collision(bands_);collision(collections_);collision(audioPaths_);collision(chordMaps_);collision(waves_);collision(toolGraphs_);collision(scripts_);auto& owned=containers_.at(index);auto next=*owned.document;auto project=after_document_save(projectRoot_,owned.projectReference);const bool metadataDirty=project.find("mupd")&&!project.find("mupd")->data.empty();next.save(full);*owned.document=std::move(next);projectRoot_=std::move(project);if(owned.path!=full||metadataDirty)projectDirty_=true;owned.path=full;}
+size_t Framework::new_tool_graph(){toolGraphs_.push_back({L"",components_.create_tool_graph_document("DMTG"),std::nullopt});projectDirty_=true;return toolGraphs_.size()-1;}
+size_t Framework::open_tool_graph(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_tool_graph_path(full))throw std::runtime_error("Open ToolGraph as .tgp or .tgr");for(size_t i=0;i<toolGraphs_.size();++i)if(same_path(toolGraphs_[i].path,full))return i;auto d=components_.create_tool_graph_document("DMTG");d->load(read_file(full));toolGraphs_.push_back({full,std::move(d),std::nullopt});projectDirty_=true;return toolGraphs_.size()-1;}
+void Framework::save_tool_graph(size_t index,const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_tool_graph_path(full))throw std::runtime_error("Save ToolGraph as .tgp or .tgr");for(size_t i=0;i<toolGraphs_.size();++i)if(i!=index&&same_path(toolGraphs_[i].path,full))throw std::runtime_error("Another ToolGraph owns destination");const auto collision=[&](const auto& entries){for(const auto& e:entries)if(same_path(e.path,full))throw std::runtime_error("Another document owns ToolGraph destination");};collision(documents_);collision(styles_);collision(bands_);collision(collections_);collision(audioPaths_);collision(chordMaps_);collision(waves_);collision(scripts_);collision(containers_);auto& owned=toolGraphs_.at(index);auto next=*owned.document;auto project=after_document_save(projectRoot_,owned.projectReference);const bool metadataDirty=project.find("mupd")&&!project.find("mupd")->data.empty();next.save(full);*owned.document=std::move(next);projectRoot_=std::move(project);if(owned.path!=full||metadataDirty)projectDirty_=true;owned.path=full;}
+size_t Framework::open_wave(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_wave_path(full))throw std::runtime_error("Open Wave as .wvp or .wav");for(size_t i=0;i<waves_.size();++i)if(same_path(waves_[i].path,full))return i;auto doc=components_.create_wave_document("WAVE");doc->load(read_file(full));waves_.push_back({full,std::move(doc),std::nullopt});projectDirty_=true;return waves_.size()-1;}
+void Framework::save_wave(size_t index,const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_wave_path(full))throw std::runtime_error("Save Wave as .wvp or .wav");for(size_t i=0;i<waves_.size();++i)if(i!=index&&same_path(waves_[i].path,full))throw std::runtime_error("Another Wave owns destination");const auto collision=[&](const auto& entries){for(const auto& e:entries)if(same_path(e.path,full))throw std::runtime_error("Another document owns Wave destination");};collision(documents_);collision(styles_);collision(bands_);collision(collections_);collision(audioPaths_);collision(chordMaps_);auto& owned=waves_.at(index);auto next=*owned.document;auto project=after_document_save(projectRoot_,owned.projectReference);const bool metadataDirty=project.find("mupd")&&!project.find("mupd")->data.empty();next.save(full);*owned.document=std::move(next);projectRoot_=std::move(project);if(owned.path!=full||metadataDirty)projectDirty_=true;owned.path=full;}
 size_t Framework::new_band(){bands_.push_back({L"",components_.create_band_document("DMBD"),std::nullopt});projectDirty_=true;return bands_.size()-1;}
 size_t Framework::open_band(const std::wstring& path){const auto full=std::filesystem::absolute(path).lexically_normal().wstring();if(!components_.is_band_path(full))throw std::runtime_error("Open Band as .bnp or .bnd");for(size_t i=0;i<bands_.size();++i)if(CompareStringOrdinal(bands_[i].path.c_str(),-1,full.c_str(),-1,TRUE)==CSTR_EQUAL)return i;auto band=components_.create_band_document("DMBD");band->load(read_file(full));bands_.push_back({full,std::move(band),std::nullopt});projectDirty_=true;return bands_.size()-1;}
 void Framework::save_band(size_t index,const std::wstring& path){
@@ -452,7 +671,7 @@ void Framework::open_project(const std::wstring& path) {
             const auto name=c.find("name");if(!name)throw std::runtime_error("Original project file name missing");
             next.projectRoot_.children.push_back(file_reference(decode_utf16(name->data)));
         }
-        next.warnings_.push_back(L"Native JAZP metadata is retained. .pro saves existing file entries in the original directory; new Segment/Style/Band/DLS/AudioPath entries are supported; typed runtime folder/name settings and configured multi-folder saves are supported; per-file folder memory and crash recovery remain incomplete.");
+        next.warnings_.push_back(L"Native JAZP metadata is retained. .pro saves existing file entries in the original directory; new Segment/Style/Band/DLS/AudioPath/Chordmap entries are supported; typed runtime folder/name settings and configured multi-folder saves are supported; per-file folder memory and crash recovery remain incomplete.");
     } else throw std::runtime_error("Unsupported project form");
     if(std::count_if(next.projectRoot_.children.begin(),next.projectRoot_.children.end(),[](const Chunk& c){return c.id=="file";})>1000)throw std::runtime_error("Project document limit");
     // Load project-owned Styles first; GUID-only references must not depend on
@@ -470,6 +689,11 @@ void Framework::open_project(const std::wstring& path) {
         } else if(next.components_.is_band_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"Band file missing; reference retained: "+reference);continue;}const auto index=next.open_band(file.wstring());if(!next.bands_[index].projectReference)next.bands_[index].projectReference=i;else next.warnings_.push_back(L"Repeated Band reference retained: "+reference);}
         else if(next.components_.is_collection_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"Collection missing; reference retained: "+reference);continue;}const auto index=next.open_collection(file.wstring());if(!next.collections_[index].projectReference)next.collections_[index].projectReference=i;else next.warnings_.push_back(L"Repeated collection reference retained: "+reference);}
         else if(next.components_.is_audio_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"AudioPath missing; reference retained: "+reference);continue;}const auto index=next.open_audio_path(file.wstring());if(!next.audioPaths_[index].projectReference)next.audioPaths_[index].projectReference=i;else next.warnings_.push_back(L"Repeated AudioPath reference retained: "+reference);}
+        else if(next.components_.is_chordmap_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"Chordmap missing; reference retained: "+reference);continue;}const auto index=next.open_chordmap(file.wstring());if(!next.chordMaps_[index].projectReference)next.chordMaps_[index].projectReference=i;else next.warnings_.push_back(L"Repeated Chordmap reference retained: "+reference);}
+        else if(next.components_.is_wave_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"Wave missing; reference retained: "+reference);continue;}const auto index=next.open_wave(file.wstring());if(!next.waves_[index].projectReference)next.waves_[index].projectReference=i;else next.warnings_.push_back(L"Repeated Wave reference retained: "+reference);}
+        else if(next.components_.is_script_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"Script missing; reference retained: "+reference);continue;}const auto index=next.open_script(file.wstring());if(!next.scripts_[index].projectReference)next.scripts_[index].projectReference=i;else next.warnings_.push_back(L"Repeated Script reference retained: "+reference);}
+        else if(next.components_.is_container_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"Container missing; reference retained: "+reference);continue;}const auto index=next.open_container(file.wstring());if(!next.containers_[index].projectReference)next.containers_[index].projectReference=i;else next.warnings_.push_back(L"Repeated Container reference retained: "+reference);}
+        else if(next.components_.is_tool_graph_path(file.wstring())){if(!std::filesystem::exists(file)){next.warnings_.push_back(L"ToolGraph missing; reference retained: "+reference);continue;}const auto index=next.open_tool_graph(file.wstring());if(!next.toolGraphs_[index].projectReference)next.toolGraphs_[index].projectReference=i;else next.warnings_.push_back(L"Repeated ToolGraph reference retained: "+reference);}
         else if(!next.components_.is_style_path(file.wstring()))next.warnings_.push_back(L"Reference retained; editor not implemented: "+reference);
     }
     next.projectDirty_=false;*this=std::move(next);
@@ -482,6 +706,11 @@ void Framework::save_project(const std::wstring& path) {
         throw std::runtime_error("Native Producer project name must match its containing folder. Save FolderName.pro inside FolderName; use .dmpj for other filenames.");
     auto root=projectRoot_;auto nextReferences=std::vector<std::optional<size_t>>(documents_.size());
     auto nextStyleReferences=std::vector<std::optional<size_t>>(styles_.size());
+    auto nextScriptReferences=std::vector<std::optional<size_t>>(scripts_.size());
+    auto nextContainerReferences=std::vector<std::optional<size_t>>(containers_.size());
+    auto nextToolGraphReferences=std::vector<std::optional<size_t>>(toolGraphs_.size());
+    auto nextWaveReferences=std::vector<std::optional<size_t>>(waves_.size());
+    auto nextChordmapReferences=std::vector<std::optional<size_t>>(chordMaps_.size());
     auto nextAudioReferences=std::vector<std::optional<size_t>>(audioPaths_.size());
     auto nextBandReferences=std::vector<std::optional<size_t>>(bands_.size());
     auto nextCollectionReferences=std::vector<std::optional<size_t>>(collections_.size());
@@ -497,6 +726,11 @@ void Framework::save_project(const std::wstring& path) {
         for(const auto& band:bands_)if(band.projectReference==index){owned=true;break;}
         for(const auto& collection:collections_)if(collection.projectReference==index){owned=true;break;}
         for(const auto& audio:audioPaths_)if(audio.projectReference==index){owned=true;break;}
+        for(const auto& map:chordMaps_)if(map.projectReference==index){owned=true;break;}
+        for(const auto& wave:waves_)if(wave.projectReference==index){owned=true;break;}
+        for(const auto& script:scripts_)if(script.projectReference==index){owned=true;break;}
+        for(const auto& container:containers_)if(container.projectReference==index){owned=true;break;}
+        for(const auto& tool_graph:toolGraphs_)if(tool_graph.projectReference==index){owned=true;break;}
         if(owned)continue;
         if(projectDirectory_.empty())throw std::runtime_error("Project reference has no base directory");
         c.data=utf16(relative_to(resolve(projectDirectory_,decode_utf16(c.data)),full.parent_path()));
@@ -510,7 +744,12 @@ void Framework::save_project(const std::wstring& path) {
     }
     for(size_t i=0;i<bands_.size();++i){const auto& band=bands_[i];if(band.path.empty()||band.document->dirty())throw std::runtime_error("Save every Band before saving the project");const auto reference=relative_to(band.path,full.parent_path());if(band.projectReference){const auto index=*band.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("Band project ownership mismatch");root.children[index].data=utf16(reference);nextBandReferences[i]=index;}else{nextBandReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
     for(size_t i=0;i<audioPaths_.size();++i){const auto& audio=audioPaths_[i];if(audio.path.empty()||audio.document->dirty())throw std::runtime_error("Save every AudioPath before saving the project");const auto reference=relative_to(audio.path,full.parent_path());if(audio.projectReference){const auto index=*audio.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("AudioPath project ownership mismatch");root.children[index].data=utf16(reference);nextAudioReferences[i]=index;}else{nextAudioReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
+    for(size_t i=0;i<chordMaps_.size();++i){const auto& audio=chordMaps_[i];if(audio.path.empty()||audio.document->dirty())throw std::runtime_error("Save every Chordmap before saving the project");const auto reference=relative_to(audio.path,full.parent_path());if(audio.projectReference){const auto index=*audio.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("Chordmap project ownership mismatch");root.children[index].data=utf16(reference);nextChordmapReferences[i]=index;}else{nextChordmapReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
+    for(size_t i=0;i<waves_.size();++i){const auto& audio=waves_[i];if(audio.path.empty()||audio.document->dirty())throw std::runtime_error("Save every Wave before saving the project");const auto reference=relative_to(audio.path,full.parent_path());if(audio.projectReference){const auto index=*audio.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("Wave project ownership mismatch");root.children[index].data=utf16(reference);nextWaveReferences[i]=index;}else{nextWaveReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
     for(size_t i=0;i<collections_.size();++i){const auto& collection=collections_[i];if(collection.path.empty()||collection.document.dirty())throw std::runtime_error("Save every collection before saving project");const auto reference=relative_to(collection.path,full.parent_path());if(collection.projectReference){const auto index=*collection.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("Collection project ownership mismatch");root.children[index].data=utf16(reference);nextCollectionReferences[i]=index;}else{nextCollectionReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
+    for(size_t i=0;i<scripts_.size();++i){const auto& s=scripts_[i];if(s.path.empty()||s.document->dirty())throw std::runtime_error("Save every Script before saving project");const auto reference=relative_to(s.path,full.parent_path());if(s.projectReference){const auto index=*s.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("Script project ownership mismatch");root.children[index].data=utf16(reference);nextScriptReferences[i]=index;}else{nextScriptReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
+    for(size_t i=0;i<containers_.size();++i){const auto& s=containers_[i];if(s.path.empty()||s.document->dirty())throw std::runtime_error("Save every Container before saving project");const auto reference=relative_to(s.path,full.parent_path());if(s.projectReference){const auto index=*s.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("Container project ownership mismatch");root.children[index].data=utf16(reference);nextContainerReferences[i]=index;}else{nextContainerReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
+    for(size_t i=0;i<toolGraphs_.size();++i){const auto& s=toolGraphs_[i];if(s.path.empty()||s.document->dirty())throw std::runtime_error("Save every ToolGraph before saving project");const auto reference=relative_to(s.path,full.parent_path());if(s.projectReference){const auto index=*s.projectReference;if(index>=root.children.size()||root.children[index].id!="file")throw std::runtime_error("ToolGraph project ownership mismatch");root.children[index].data=utf16(reference);nextToolGraphReferences[i]=index;}else{nextToolGraphReferences[i]=root.children.size();root.children.push_back(file_reference(reference));}}
     auto output=root.encode();
     if(native){
         if(!root.find("orig")){
@@ -542,6 +781,11 @@ void Framework::save_project(const std::wstring& path) {
     for(size_t i=0;i<documents_.size();++i)documents_[i].projectReference=nextReferences[i];
     for(size_t i=0;i<styles_.size();++i)styles_[i].projectReference=nextStyleReferences[i];
     for(size_t i=0;i<audioPaths_.size();++i)audioPaths_[i].projectReference=nextAudioReferences[i];
+    for(size_t i=0;i<chordMaps_.size();++i)chordMaps_[i].projectReference=nextChordmapReferences[i];
+    for(size_t i=0;i<waves_.size();++i)waves_[i].projectReference=nextWaveReferences[i];
+    for(size_t i=0;i<scripts_.size();++i)scripts_[i].projectReference=nextScriptReferences[i];
+    for(size_t i=0;i<containers_.size();++i)containers_[i].projectReference=nextContainerReferences[i];
+    for(size_t i=0;i<toolGraphs_.size();++i)toolGraphs_[i].projectReference=nextToolGraphReferences[i];
     for(size_t i=0;i<bands_.size();++i)bands_[i].projectReference=nextBandReferences[i];
     for(size_t i=0;i<collections_.size();++i)collections_[i].projectReference=nextCollectionReferences[i];
 }
@@ -568,10 +812,16 @@ void Framework::copy_project(const std::wstring& destination) const {
     for(const auto& owned:documents_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved Segment changed externally");
     for(const auto& owned:bands_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved Band changed externally");
     for(const auto& owned:audioPaths_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved AudioPath changed externally");
+    for(const auto& owned:waves_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved Wave changed externally");
+    for(const auto& owned:scripts_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved Script changed externally");
+    for(const auto& owned:containers_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved Container changed externally");
+    for(const auto& owned:toolGraphs_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved ToolGraph changed externally");
+    for(const auto& owned:chordMaps_)if(read_file(owned.path)!=owned.document->save_bytes())throw std::runtime_error("Saved Chordmap changed externally");
     for(const auto& owned:collections_)if(read_file(owned.path)!=owned.document.save_bytes())throw std::runtime_error("Saved collection changed externally");
     // Include filename-only dependencies as well as project-owned GUID entries.
     for(size_t i=0;i<files.size();++i){const auto bytes=files[i].bytes;const auto owner=files[i].source.parent_path();if(bytes.size()<12||std::string(bytes.begin(),bytes.begin()+4)!="RIFF")continue;
         const auto root=Chunk::parse(bytes);if(root.type=="DMSG")for(const auto& ref:style_references(root))if(!ref.filename.empty())add(resolve(owner,ref.filename));
+        if(root.type=="DMSC"||root.type=="DMCN"){const auto refs=[&](auto&& self,const Chunk& c)->void{if(c.id=="LIST"&&c.type=="DMRF")if(auto file=c.find("file"))add(resolve(owner,decode_utf16(file->data)));for(const auto& child:c.children)if(child.container())self(self,child);};refs(refs,root);}
         if(root.type=="DMSG"||root.type=="DMST"||root.type=="DMBD")for(const auto& ref:document_collection_references(bytes))if(!ref.filename.empty())add(resolve(owner,ref.filename));
     }
     for(const auto& item:files)if(same_path((folder/item.relative).wstring(),target.wstring()))throw std::runtime_error("Copied document collides with Project filename");
@@ -590,8 +840,8 @@ void Framework::copy_project(const std::wstring& destination) const {
 }
 
 namespace {
-const wchar_t* runtime_filter(RuntimeDocumentKind kind){switch(kind){case RuntimeDocumentKind::Segment:return L".sgt;*.sgp";case RuntimeDocumentKind::Style:return L".sty;*.stp";case RuntimeDocumentKind::Band:return L".bnd;*.bnp";case RuntimeDocumentKind::Collection:return L".dls;*.dlp";case RuntimeDocumentKind::AudioPath:return L".aud;*.aup";default:throw std::runtime_error("Unknown runtime document kind");}}
-const wchar_t* runtime_extension(RuntimeDocumentKind kind){switch(kind){case RuntimeDocumentKind::Segment:return L".sgt";case RuntimeDocumentKind::Style:return L".sty";case RuntimeDocumentKind::Band:return L".bnd";case RuntimeDocumentKind::Collection:return L".dls";case RuntimeDocumentKind::AudioPath:return L".aud";default:throw std::runtime_error("Unknown runtime document kind");}}
+const wchar_t* runtime_filter(RuntimeDocumentKind kind){switch(kind){case RuntimeDocumentKind::Segment:return L".sgt;*.sgp";case RuntimeDocumentKind::Style:return L".sty;*.stp";case RuntimeDocumentKind::Band:return L".bnd;*.bnp";case RuntimeDocumentKind::Collection:return L".dls;*.dlp";case RuntimeDocumentKind::AudioPath:return L".aud;*.aup";case RuntimeDocumentKind::Container:return L".con;*.cop";default:throw std::runtime_error("Unknown runtime document kind");}}
+const wchar_t* runtime_extension(RuntimeDocumentKind kind){switch(kind){case RuntimeDocumentKind::Segment:return L".sgt";case RuntimeDocumentKind::Style:return L".sty";case RuntimeDocumentKind::Band:return L".bnd";case RuntimeDocumentKind::Collection:return L".dls";case RuntimeDocumentKind::AudioPath:return L".aud";case RuntimeDocumentKind::Container:return L".con";default:throw std::runtime_error("Unknown runtime document kind");}}
 const Chunk* runtime_unique(const Chunk& c,const char* id,const char* type=""){const Chunk* result=nullptr;for(const auto& x:c.children)if(x.id==id&&(!*type||x.type==type)){if(result)throw std::runtime_error("Ambiguous native runtime setting");result=&x;}return result;}
 Chunk* runtime_unique(Chunk& c,const char* id,const char* type=""){return const_cast<Chunk*>(runtime_unique(static_cast<const Chunk&>(c),id,type));}
 Chunk& runtime_child(Chunk& c,const char* id,const char* type=""){if(auto result=runtime_unique(c,id,type))return *result;Chunk next;next.id=id;next.type=type;c.children.push_back(next);return c.children.back();}
@@ -603,7 +853,7 @@ const Chunk* runtime_component(const Chunk& native,RuntimeDocumentKind kind){con
 Chunk* runtime_file(Chunk& native,const Chunk& catalog,size_t reference){if(reference>=catalog.children.size()||catalog.children[reference].id!="file")throw std::runtime_error("Runtime setting document ownership mismatch");size_t ordinal=0;for(size_t i=0;i<reference;++i)if(catalog.children[i].id=="file")++ordinal;for(auto& c:native.children)if(c.id=="LIST"&&c.type=="file"){if(!ordinal--)return &c;}throw std::runtime_error("Native runtime file metadata missing");}
 }
 std::pair<std::wstring,std::optional<size_t>> Framework::runtime_owner(RuntimeDocumentKind kind,size_t index) const {
-    switch(kind){case RuntimeDocumentKind::Segment:{const auto& o=documents_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Style:{const auto& o=styles_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Band:{const auto& o=bands_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Collection:{const auto& o=collections_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::AudioPath:{const auto& o=audioPaths_.at(index);return {o.path,o.projectReference};}default:throw std::runtime_error("Unknown runtime document kind");}
+    switch(kind){case RuntimeDocumentKind::Segment:{const auto& o=documents_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Style:{const auto& o=styles_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Band:{const auto& o=bands_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Collection:{const auto& o=collections_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::AudioPath:{const auto& o=audioPaths_.at(index);return {o.path,o.projectReference};}case RuntimeDocumentKind::Container:{const auto& o=containers_.at(index);return {o.path,o.projectReference};}default:throw std::runtime_error("Unknown runtime document kind");}
 }
 Chunk Framework::runtime_metadata() const {
     if(const auto original=projectRoot_.find("orig")){auto native=Chunk::parse(original->data);if(native.type!="JAZP")throw std::runtime_error("Native runtime metadata form mismatch");return native;}
@@ -612,22 +862,69 @@ Chunk Framework::runtime_metadata() const {
 bool Framework::adopt_runtime_metadata(const Chunk& native){const auto bytes=native.encode();if(const auto old=projectRoot_.find("orig"))if(old->data==bytes)return false;auto next=projectRoot_;if(!next.find("orig")){Chunk original;original.id="orig";next.children.push_back(original);}next.find("orig")->data=bytes;if(!next.find("obas")){Chunk basis;basis.id="obas";basis.data=utf16(projectDirectory_);next.children.push_back(basis);}projectRoot_=std::move(next);projectDirty_=true;return true;}
 std::wstring Framework::runtime_project_folder() const {if(!projectRoot_.find("orig"))return L"..\\RuntimeFiles\\";const auto native=runtime_metadata();const auto project=runtime_unique(native,"LIST","proj");const auto info=project?runtime_unique(*project,"LIST","UNFO"):nullptr;const auto folder=info?runtime_unique(*info,"rdir"):nullptr;return folder?decode_utf16(folder->data):L"..\\RuntimeFiles\\";}
 std::wstring Framework::runtime_component_folder(RuntimeDocumentKind kind) const {if(!projectRoot_.find("orig")){(void)runtime_filter(kind);return runtime_project_folder();}const auto native=runtime_metadata();if(const auto component=runtime_component(native,kind))return decode_utf16(runtime_unique(*component,"path")->data);return runtime_project_folder();}
+std::wstring Framework::runtime_file_folder(RuntimeDocumentKind kind,size_t index) const {const auto owner=runtime_owner(kind,index);if(owner.second&&projectRoot_.find("orig")){auto native=runtime_metadata();const auto entry=runtime_file(native,projectRoot_,*owner.second);if(const auto info=runtime_unique(*entry,"LIST","UNFO"))if(const auto folder=runtime_unique(*info,"rdir"))return decode_utf16(folder->data);}return runtime_component_folder(kind);}
 std::wstring Framework::runtime_filename(RuntimeDocumentKind kind,size_t index) const {const auto owner=runtime_owner(kind,index);if(owner.second&&projectRoot_.find("orig")){auto native=runtime_metadata();const auto entry=runtime_file(native,projectRoot_,*owner.second);if(const auto info=runtime_unique(*entry,"LIST","UNFO"))if(const auto name=runtime_unique(*info,"rnam"))return decode_utf16(name->data);}auto path=std::filesystem::path(owner.first).filename();if(path.empty())path=L"Untitled";path.replace_extension(runtime_extension(kind));return path.wstring();}
 bool Framework::set_runtime_project_folder(const std::wstring& folder){if(!runtime_folder_valid(folder))return false;const auto previous=runtime_project_folder();auto native=runtime_metadata();auto& project=runtime_child(native,"LIST","proj");auto& info=runtime_child(project,"LIST","UNFO");runtime_child(info,"rdir").data=utf16(folder);if(auto folders=runtime_unique(project,"LIST","rfld"))for(auto& item:folders->children)if(item.id=="LIST"&&item.type=="fldr")if(auto path=runtime_unique(item,"path"))if(decode_utf16(path->data)==previous)path->data=utf16(folder);return adopt_runtime_metadata(native);}
 bool Framework::set_runtime_component_folder(RuntimeDocumentKind kind,const std::wstring& folder){if(!runtime_folder_valid(folder))return false;auto native=runtime_metadata();auto component=const_cast<Chunk*>(runtime_component(native,kind));if(component)runtime_unique(*component,"path")->data=utf16(folder);else{auto& project=runtime_child(native,"LIST","proj");auto& folders=runtime_child(project,"LIST","rfld");Chunk item;item.id="LIST";item.type="fldr";runtime_child(item,"path").data=utf16(folder);runtime_child(item,"fltr").data=utf16(runtime_filter(kind));folders.children.push_back(std::move(item));}return adopt_runtime_metadata(native);}
+bool Framework::set_runtime_file_folder(RuntimeDocumentKind kind,size_t index,const std::wstring& folder){if(!folder.empty()&&!runtime_folder_valid(folder))return false;const auto owner=runtime_owner(kind,index);if(!owner.second)throw std::runtime_error("Save Project before editing a document runtime folder");auto native=runtime_metadata();auto& info=runtime_child(*runtime_file(native,projectRoot_,*owner.second),"LIST","UNFO");if(folder.empty()){if(!runtime_unique(info,"rdir"))return false;info.children.erase(std::remove_if(info.children.begin(),info.children.end(),[](const Chunk& c){return c.id=="rdir";}),info.children.end());}else runtime_child(info,"rdir").data=utf16(folder);return adopt_runtime_metadata(native);}
 bool Framework::set_runtime_filename(RuntimeDocumentKind kind,size_t index,const std::wstring& name){if(!runtime_name_valid(name,kind))return false;const auto owner=runtime_owner(kind,index);if(!owner.second)throw std::runtime_error("Save Project before editing a document runtime name");auto native=runtime_metadata();auto& info=runtime_child(*runtime_file(native,projectRoot_,*owner.second),"LIST","UNFO");runtime_child(info,"rnam").data=utf16(name);return adopt_runtime_metadata(native);}
-void Framework::save_runtime_default(RuntimeDocumentKind kind,size_t index) const {if(projectDirectory_.empty())throw std::runtime_error("Save Project before default runtime save");const auto folder=runtime_component_folder(kind),name=runtime_filename(kind,index);if(!runtime_folder_valid(folder)||!runtime_name_valid(name,kind))throw std::runtime_error("Invalid or unsupported native runtime destination");save_runtime(kind,index,(std::filesystem::path(projectDirectory_)/std::filesystem::path(folder)/std::filesystem::path(name)).lexically_normal().wstring());}
+void Framework::save_runtime_default(RuntimeDocumentKind kind,size_t index) const {if(projectDirectory_.empty())throw std::runtime_error("Save Project before default runtime save");const auto folder=runtime_file_folder(kind,index),name=runtime_filename(kind,index);if(!runtime_folder_valid(folder)||!runtime_name_valid(name,kind))throw std::runtime_error("Invalid or unsupported native runtime destination");save_runtime(kind,index,(std::filesystem::path(projectDirectory_)/std::filesystem::path(folder)/std::filesystem::path(name)).lexically_normal().wstring());}
+void Framework::save_runtime_as(RuntimeDocumentKind kind,size_t index,const std::wstring& destination) {
+    const auto owner=runtime_owner(kind,index);
+    // Standalone documents can export before joining a saved Project. Native
+    // per-file settings require a catalog owner; never attach one implicitly.
+    if(!owner.second){save_runtime(kind,index,destination);return;}
+    const auto target=std::filesystem::absolute(destination).lexically_normal();
+    auto folder=target.parent_path().lexically_relative(std::filesystem::absolute(projectDirectory_).lexically_normal());
+    if(folder.empty())folder=target.parent_path();
+    auto folderText=folder.wstring();if(folderText.back()!=L'\\')folderText+=L'\\';
+    const auto name=target.filename().wstring();
+    if(!runtime_folder_valid(folderText)||!runtime_name_valid(name,kind))throw std::runtime_error("Invalid remembered runtime destination");
+    auto native=runtime_metadata();auto& info=runtime_child(*runtime_file(native,projectRoot_,*owner.second),"LIST","UNFO");
+    runtime_child(info,"rdir").data=utf16(folderText);runtime_child(info,"rnam").data=utf16(name);
+    const auto encoded=native.encode();auto next=projectRoot_;
+    if(!next.find("orig")){Chunk original;original.id="orig";next.children.push_back(std::move(original));}
+    next.find("orig")->data=encoded;
+    if(!next.find("obas")){Chunk basis;basis.id="obas";basis.data=utf16(projectDirectory_);next.children.push_back(std::move(basis));}
+    const bool changed=projectRoot_.encode()!=next.encode();
+    // Prepare all metadata before publication. A refused export must retain
+    // the prior destination, Project dirty state and authoring history.
+    save_runtime(kind,index,destination);
+    if(changed){projectRoot_=std::move(next);projectDirty_=true;}
+}
 
 void Framework::save_runtime(RuntimeDocumentKind kind,size_t index,const std::wstring& destination) const {
     Bytes bytes;const wchar_t* extension=nullptr;
-    switch(kind){case RuntimeDocumentKind::Segment:bytes=documents_.at(index).document->save_bytes();extension=L".sgt";break;case RuntimeDocumentKind::Style:bytes=styles_.at(index).document->save_bytes();extension=L".sty";break;case RuntimeDocumentKind::Band:bytes=bands_.at(index).document->save_bytes();extension=L".bnd";break;case RuntimeDocumentKind::Collection:bytes=collections_.at(index).document.save_bytes();extension=L".dls";break;case RuntimeDocumentKind::AudioPath:bytes=audioPaths_.at(index).document->save_bytes();extension=L".aud";break;default:throw std::runtime_error("Unknown runtime document kind");}
+    switch(kind){case RuntimeDocumentKind::Segment:bytes=documents_.at(index).document->save_bytes();extension=L".sgt";break;case RuntimeDocumentKind::Style:bytes=styles_.at(index).document->save_bytes();extension=L".sty";break;case RuntimeDocumentKind::Band:bytes=bands_.at(index).document->save_bytes();extension=L".bnd";break;case RuntimeDocumentKind::Collection:bytes=collections_.at(index).document.save_bytes();extension=L".dls";break;case RuntimeDocumentKind::AudioPath:bytes=audioPaths_.at(index).document->save_bytes();extension=L".aud";break;case RuntimeDocumentKind::Container:bytes=containers_.at(index).document->save_bytes();extension=L".con";break;default:throw std::runtime_error("Unknown runtime document kind");}
     const auto target=std::filesystem::absolute(destination).lexically_normal();if(CompareStringOrdinal(target.extension().c_str(),-1,extension,-1,TRUE)!=CSTR_EQUAL)throw std::runtime_error("Choose the matching runtime file extension");
     const auto outputParent=std::filesystem::canonical(target.parent_path());
     const auto outputPath=outputParent/target.filename();
     const auto protected_path=[&](const std::wstring& source){if(source.empty())return;const auto path=std::filesystem::path(source);const auto physical=std::filesystem::canonical(path.parent_path())/path.filename();if(same_path(physical.wstring(),outputPath.wstring())||(std::filesystem::exists(source)&&std::filesystem::exists(target)&&std::filesystem::equivalent(source,target)))throw std::runtime_error("Runtime save cannot overwrite an owned source or Project");};
-    protected_path(projectPath_);for(const auto& d:documents_)protected_path(d.path);for(const auto& d:styles_)protected_path(d.path);for(const auto& d:bands_)protected_path(d.path);for(const auto& d:collections_)protected_path(d.path);for(const auto& d:audioPaths_)protected_path(d.path);
+    protected_path(projectPath_);for(const auto& d:containers_)protected_path(d.path);for(const auto& d:documents_)protected_path(d.path);for(const auto& d:styles_)protected_path(d.path);for(const auto& d:bands_)protected_path(d.path);for(const auto& d:collections_)protected_path(d.path);for(const auto& d:audioPaths_)protected_path(d.path);for(const auto& d:waves_)protected_path(d.path);for(const auto& d:scripts_)protected_path(d.path);for(const auto& d:toolGraphs_)protected_path(d.path);
     for(const auto& c:projectRoot_.children)if(c.id=="file"&&!projectDirectory_.empty())protected_path(resolve(projectDirectory_,decode_utf16(c.data)).wstring());
-    auto root=Chunk::parse(bytes);convert_runtime(root);const auto output=root.encode();write_file_atomic(target.wstring(),output);
+    auto root=Chunk::parse(bytes);
+    if(kind==RuntimeDocumentKind::Container){
+        const auto& owner=containers_.at(index);
+        root=Chunk::parse(ContainerGraph(bytes).runtime_bytes([&](const ContainedObject& object){
+            const std::array<std::uint8_t,16> segmentClass={0x82,0x28,0xac,0xd2,0x9b,0xb3,0xd1,0x11,0x87,0x04,0x00,0x60,0x08,0x93,0xb1,0xbd};
+            const std::array<std::uint8_t,16> segmentDocType={0x09,0x86,0xce,0xdf,0xfa,0xa6,0xd1,0x11,0x88,0x81,0x00,0xc0,0x4f,0xbf,0x8d,0x15};
+            if(object.classId!=segmentClass||!object.projectAssociation||owner.path.empty())throw std::runtime_error("Embedded runtime source ownership unsupported");
+            const auto file=object.payload.find("file"),guid=object.payload.find("guid");
+            if(!file||!guid||guid->data.size()!=16)throw std::runtime_error("Embedded runtime source identity missing");
+            const auto sourcePath=resolve(std::filesystem::path(owner.path).parent_path(),decode_utf16(file->data));
+            const OpenDocument* source=nullptr;for(const auto& d:documents_)if(same_path(d.path,sourcePath.wstring())){if(source)throw std::runtime_error("Ambiguous embedded source");source=&d;}
+            if(!source||source->document->dirty()||!source->projectReference||!projectRoot_.find("orig"))throw std::runtime_error("Save native Project and embedded Segment first");
+            auto sourceBytes=source->document->save_bytes();if(read_file(source->path)!=sourceBytes)throw std::runtime_error("Embedded source changed externally");
+            auto embedded=Chunk::parse(sourceBytes);const auto sourceId=embedded.find("guid");
+            auto metadata=runtime_metadata();const auto association=runtime_file(metadata,projectRoot_,*source->projectReference);const auto header=runtime_unique(*association,"filh");
+            if(embedded.type!="DMSG"||!sourceId||sourceId->data!=guid->data||!header||header->data.size()<44||
+               !std::equal(object.projectAssociation->begin(),object.projectAssociation->begin()+16,header->data.begin())||
+               !std::equal(segmentDocType.begin(),segmentDocType.end(),object.projectAssociation->begin()+16)||
+               !std::equal(guid->data.begin(),guid->data.end(),header->data.begin()+28))throw std::runtime_error("Embedded Project/object identity mismatch");
+            convert_runtime(embedded);return embedded;
+        }));
+    }
+    convert_runtime(root);const auto output=root.encode();write_file_atomic(target.wstring(),output);
 }
 void Framework::export_runtime(const std::wstring& directory) const {export_runtime_impl(directory,false);}
 void Framework::export_runtime_defaults() const {export_runtime_impl(projectDirectory_,true);}
@@ -669,10 +966,10 @@ void Framework::export_runtime_impl(const std::wstring& directory,bool configure
         for(auto& o:outputs)o.published=target/o.destination.lexically_relative(stage);
         if(configured){
             for(auto& o:outputs){const auto form=Chunk::parse(o.inputBytes).type;const auto kind=form=="DMSG"?RuntimeDocumentKind::Segment:form=="DMST"?RuntimeDocumentKind::Style:form=="DMBD"?RuntimeDocumentKind::Band:form=="DLS "?RuntimeDocumentKind::Collection:RuntimeDocumentKind::AudioPath;
-                auto name=runtime_name(o.input.lexically_relative(projectDirectory_)).wstring();bool found=false;
-                const auto owner=[&](const auto& list){for(size_t i=0;i<list.size();++i)if(same_path(list[i].path,o.input.wstring())){if(found)throw std::runtime_error("Ambiguous runtime owner");name=runtime_filename(kind,i);found=true;}};
+                auto name=runtime_name(o.input.lexically_relative(projectDirectory_)).wstring();auto folder=runtime_component_folder(kind);bool found=false;
+                const auto owner=[&](const auto& list){for(size_t i=0;i<list.size();++i)if(same_path(list[i].path,o.input.wstring())){if(found)throw std::runtime_error("Ambiguous runtime owner");name=runtime_filename(kind,i);folder=runtime_file_folder(kind,i);found=true;}};
                 switch(kind){case RuntimeDocumentKind::Segment:owner(documents_);break;case RuntimeDocumentKind::Style:owner(styles_);break;case RuntimeDocumentKind::Band:owner(bands_);break;case RuntimeDocumentKind::Collection:owner(collections_);break;case RuntimeDocumentKind::AudioPath:owner(audioPaths_);break;}
-                const auto folder=runtime_component_folder(kind);if(!runtime_folder_valid(folder)||!runtime_name_valid(name,kind))throw std::runtime_error("Invalid configured runtime destination");o.published=std::filesystem::absolute(std::filesystem::path(projectDirectory_)/folder/name).lexically_normal();
+                if(!runtime_folder_valid(folder)||!runtime_name_valid(name,kind))throw std::runtime_error("Invalid configured runtime destination");o.published=std::filesystem::absolute(std::filesystem::path(projectDirectory_)/folder/name).lexically_normal();
             }
             for(size_t i=0;i<outputs.size();++i)for(size_t k=0;k<i;++k)if(same_path(outputs[i].published.wstring(),outputs[k].published.wstring()))throw std::runtime_error("Configured runtime destinations collide");
             for(auto& o:outputs){auto root=Chunk::parse(o.inputBytes);const auto rewrite=[&](auto&& self,Chunk& c)->void{if(c.type=="DMRF")if(auto file=c.find("file")){const auto reference=decode_utf16(file->data);if(!reference.empty()){const auto source=(o.input.parent_path()/reference).lexically_normal();const Output* match=nullptr;for(const auto& dependency:outputs)if(same_path(source.wstring(),dependency.input.wstring())){if(match)throw std::runtime_error("Ambiguous runtime dependency");match=&dependency;}if(!match)throw std::runtime_error("Runtime filename dependency missing from source closure");const auto relative=match->published.lexically_relative(o.published.parent_path());if(relative.empty()||relative.is_absolute())throw std::runtime_error("Runtime dependency cannot be made relative across output volumes");file->data=utf16(relative.wstring());}}for(auto& child:c.children)if(child.container())self(self,child);};rewrite(rewrite,root);convert_runtime(root);o.bytes=root.encode();}
@@ -720,11 +1017,23 @@ void Framework::export_runtime_impl(const std::wstring& directory,bool configure
                     else if(!std::filesystem::remove(old.target))throw std::runtime_error("Cannot remove new runtime output");}
                 catch(const std::exception& e){if(!recoveryError.empty())recoveryError+="; ";recoveryError+=e.what();}}
             for(auto i=created.rbegin();i!=created.rend();++i){std::error_code error;std::filesystem::remove(*i,error);if(error){if(!recoveryError.empty())recoveryError+="; ";recoveryError+="Runtime output parent retained";}}
-            if(!recoveryError.empty()){retainStage=true;throw std::runtime_error("Runtime update rollback incomplete; recovery retained at "+recovery.u8string()+"; "+recoveryError);}
+            if(!recoveryError.empty()){
+                // Keep the publication/interruption cause as well as every
+                // rollback failure. Otherwise a later sharing refusal hides
+                // the failure that originally interrupted this transaction.
+                std::string originalError;
+                try{std::rethrow_exception(failure);}catch(const std::exception& e){originalError=e.what();}catch(...){originalError="non-standard exception";}
+                retainStage=true;throw std::runtime_error("Runtime update rollback incomplete; original failure: "+originalError+"; recovery retained at "+recovery.u8string()+"; rollback failures: "+recoveryError);
+            }
             std::rethrow_exception(failure);
         }
         std::error_code cleanupError;std::filesystem::remove_all(stage,cleanupError);
     }catch(...){if(!retainStage){std::error_code ignored;std::filesystem::remove_all(stage,ignored);}throw;}
 }
-bool Framework::dirty() const {if(projectDirty_)return true;for(const auto& audio:audioPaths_)if(audio.path.empty()||audio.document->dirty())return true;for(const auto& d:documents_)if(d.path.empty()||d.document->dirty())return true;for(const auto& style:styles_)if(style.path.empty()||style.document->dirty())return true;for(const auto& band:bands_)if(band.path.empty()||band.document->dirty())return true;for(const auto& collection:collections_)if(collection.document.dirty())return true;return false;}
+bool Framework::dirty() const {for(const auto& c:containers_)if(c.path.empty()||c.document->dirty())return true;for(const auto& graph:toolGraphs_)if(graph.path.empty()||graph.document->dirty())return true;for(const auto& script:scripts_)if(script.path.empty()||script.document->dirty())return true;for(const auto& wave:waves_)if(wave.path.empty()||wave.document->dirty())return true;for(const auto& map:chordMaps_)if(map.path.empty()||map.document->dirty())return true;if(projectDirty_)return true;for(const auto& audio:audioPaths_)if(audio.path.empty()||audio.document->dirty())return true;for(const auto& d:documents_)if(d.path.empty()||d.document->dirty())return true;for(const auto& style:styles_)if(style.path.empty()||style.document->dirty())return true;for(const auto& band:bands_)if(band.path.empty()||band.document->dirty())return true;for(const auto& collection:collections_)if(collection.document.dirty())return true;return false;}
+bool Framework::compose_chords(size_t index,unsigned activity){
+    auto next=document(index);const auto generated=compose_chord_track(next.save_bytes(),next.selected_groups(),next.styles(),playback_chordmaps(index),activity);
+    if(!next.replace_composed_chords(generated.chords))return false;document(index)=std::move(next);return true;
 }
+}
+

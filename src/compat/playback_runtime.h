@@ -85,7 +85,14 @@ struct ObjectDesc {
 };
 #pragma pack(pop)
 static_assert(sizeof(void*)==4 && sizeof(ObjectDesc)==848 && offsetof(ObjectDesc,memoryLength)==832 && offsetof(ObjectDesc,memory)==840);
-struct Band;struct ChordMap;
+inline constexpr GUID chordMapClass={0xd2ac288f,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+inline constexpr GUID chordMapId={0xd2ac28be,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+inline constexpr GUID chordMapParam={0xd2ac28ad,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+inline constexpr GUID chordMapTrackClass={0xd2ac2896,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+struct ChordMap: IUnknown {virtual HRESULT STDMETHODCALLTYPE GetScale(DWORD*)=0;};
+inline constexpr GUID composerClass={0xd2ac2890,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+inline constexpr GUID composerId={0xd2ac28bf,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+struct Band;
 struct StyleTimeSignature {LONG time;BYTE beats,denominator;WORD grids;};
 static_assert(sizeof(StyleTimeSignature)==8 && offsetof(StyleTimeSignature,grids)==6);
 struct Style: IUnknown {
@@ -102,6 +109,10 @@ struct Style: IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetTempo(double*)=0;
 };
 struct MusicObject;
+// Frozen dmusici.h IDirectMusicComposer: only the first method is needed.
+struct Composer: IUnknown {
+    virtual HRESULT STDMETHODCALLTYPE ComposeSegmentFromTemplate(Style*,Segment*,WORD,ChordMap*,Segment**)=0;
+};
 struct Loader: IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetObject(ObjectDesc*,REFIID,void**)=0;
     virtual HRESULT STDMETHODCALLTYPE SetObject(ObjectDesc*)=0;
@@ -196,5 +207,8 @@ struct Performance: IUnknown {
     virtual HRESULT STDMETHODCALLTYPE ClonePMsg(Message*,Message**)=0;
     // Public IDirectMusicPerformance8 slots, after ClonePMsg.
     virtual HRESULT STDMETHODCALLTYPE CreateAudioPath(IUnknown*,BOOL,AudioPath**)=0;
+    virtual HRESULT STDMETHODCALLTYPE CreateStandardAudioPath(DWORD,DWORD,BOOL,AudioPath**)=0;
+    virtual HRESULT STDMETHODCALLTYPE SetDefaultAudioPath(AudioPath*)=0;
+    virtual HRESULT STDMETHODCALLTYPE GetDefaultAudioPath(AudioPath**)=0;
 };
 }

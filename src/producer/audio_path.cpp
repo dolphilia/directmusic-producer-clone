@@ -1,10 +1,57 @@
 #include "document.h"
 #include "audio_path.h"
+#include "band.h"
+#include <functional>
+#include "tool_graph.h"
+#include "file_output_dmo.h"
 #include <windows.h>
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
 namespace producer::app {
+Bytes prepare_audio_path_band_downloads(const Bytes& document,const Bytes& audioPath){
+    if(document.empty()||audioPath.empty())return document;
+    AudioPathDocument config;config.load(audioPath);const auto ports=config.ports();
+    const auto connected=[&](std::uint32_t channel){
+        for(const auto& port:ports)for(const auto& route:port.routes)
+            if(channel>=port.base&&std::uint64_t(channel)<std::uint64_t(port.base)+port.count&&
+               channel>=route.base&&std::uint64_t(channel)<std::uint64_t(route.base)+route.count&&!route.buffers.empty())return true;
+        return false;
+    };
+    auto root=Chunk::parse(document);bool changed=false;std::size_t removedCount=0;
+    std::function<bool(Chunk&)> prepare=[&](Chunk& node){
+        const auto removedBefore=removedCount;
+        if(node.id=="RIFF"&&node.type=="DMBD"){
+            BandDocument validated;validated.load(node.encode());(void)validated.instruments();
+            bool removed=false;
+            if(auto list=node.find("LIST","lbil")){
+                auto& items=list->children;
+                items.erase(std::remove_if(items.begin(),items.end(),[&](const Chunk& item){
+                    if(item.id!="LIST"||item.type!="lbin")return false;
+                    const auto header=item.find("bins");
+                    if(!header||header->data.size()<34)throw std::runtime_error("Invalid Band download instrument");
+                    if(connected(read32(header->data,24)))return false;
+                    changed=true;removed=true;++removedCount;return true;
+                }),items.end());
+            }
+            // An empty Band event is not a loadable runtime Band on Windows.
+            // Omit that no-op event in the private playback copy only.
+            BandDocument prepared;prepared.load(node.encode());
+            return removed&&prepared.instruments().empty();
+        }
+        bool omitted=false;
+        auto& children=node.children;
+        children.erase(std::remove_if(children.begin(),children.end(),[&](Chunk& child){
+            if(!prepare(child))return false;omitted=true;return true;
+        }),children.end());
+        if(omitted&&node.id=="LIST"&&node.type=="lbnd")return true;
+        if(removedCount>removedBefore&&node.id=="RIFF"&&node.type=="DMTK")if(const auto bands=node.find("RIFF","DMBT"))
+            if(const auto events=bands->find("LIST","lbdl"))
+                if(std::none_of(events->children.begin(),events->children.end(),[](const Chunk& c){return c.id=="LIST"&&c.type=="lbnd";}))return true;
+        return false;
+    };
+    prepare(root);return changed?root.encode():document;
+}
 Bytes prepare_transport_audio_path(const Bytes& segment,const Bytes& audioPath){
     if(audioPath.empty())return segment;
     AudioPathDocument config;config.load(audioPath);
@@ -59,7 +106,7 @@ std::vector<AudioPathPort> AudioPathDocument::ports() const {
     }return result;
 }
 std::wstring AudioPathDocument::name() const {if(const auto info=unique(root_,"LIST","UNFO"))if(const auto n=unique(*info,"UNAM"))return decode_utf16(n->data);return L"";}
-void AudioPathDocument::load(const Bytes& bytes){auto next=Chunk::parse(bytes);if(next.id!="RIFF"||next.type!="DMAP")throw std::runtime_error("Expected DMAP AudioPath");AudioPathDocument check;check.root_=next;if(const auto id=unique(next,"guid"))if(id->data.size()!=16)throw std::runtime_error("AudioPath GUID size invalid");(void)check.ports();(void)check.name();root_=std::move(next);saved_=bytes;undo_.clear();redo_.clear();}
+void AudioPathDocument::load(const Bytes& bytes){auto next=Chunk::parse(bytes);if(next.id!="RIFF"||next.type!="DMAP")throw std::runtime_error("Expected DMAP AudioPath");AudioPathDocument check;check.root_=next;if(const auto id=unique(next,"guid"))if(id->data.size()!=16)throw std::runtime_error("AudioPath GUID size invalid");(void)check.ports();(void)check.effects();(void)check.name();(void)check.tool_graph();root_=std::move(next);saved_=bytes;undo_.clear();redo_.clear();}
 void AudioPathDocument::save(const std::wstring& path){const auto bytes=save_bytes();write_file_atomic(path,bytes);saved_=bytes;}
 bool AudioPathDocument::commit(Chunk next){const auto before=save_bytes();if(next.encode()==before)return false;undo_.push_back(before);if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next);return true;}
 bool AudioPathDocument::set_name(const std::wstring& name){if(name.empty()||name.size()>255||name.find(L'\0')!=std::wstring::npos)return false;auto next=root_;if(!next.find("LIST","UNFO"))next.children.push_back(list("UNFO",{}));auto info=next.find("LIST","UNFO");if(!info->find("UNAM"))info->children.push_back(leaf("UNAM",{}));info->find("UNAM")->data=utf16(name);return commit(std::move(next));}
@@ -81,6 +128,53 @@ bool AudioPathDocument::set_route_range(size_t port,size_t route,std::uint32_t b
     for(size_t i=0;i<p.routes.size();++i)if(i!=route&&static_cast<std::uint64_t>(base)<static_cast<std::uint64_t>(p.routes[i].base)+p.routes[i].count&&static_cast<std::uint64_t>(p.routes[i].base)<static_cast<std::uint64_t>(base)+count)return false;
     auto next=root_;size_t pi=0;for(auto& pc:next.find("LIST","pcsl")->children)if(pc.id=="LIST"&&pc.type=="pcfl"&&pi++==port){size_t ri=0;for(auto& r:pc.find("LIST","pchl")->children)if(r.id=="pchh"&&ri++==route){put32(r.data,0,base);put32(r.data,4,count);break;}break;}
     return commit(std::move(next));
+}
+Bytes AudioPathDocument::tool_graph() const {const auto graph=unique(root_,"RIFF","DMTG");if(!graph)return {};ToolGraphDocument check;check.load(graph->encode());return check.save_bytes();}
+bool AudioPathDocument::set_tool_graph(const Bytes& bytes){ToolGraphDocument check;check.load(bytes);auto next=root_;if(auto graph=next.find("RIFF","DMTG"))*graph=Chunk::parse(check.save_bytes());else next.children.push_back(Chunk::parse(check.save_bytes()));return commit(std::move(next));}
+bool AudioPathDocument::remove_tool_graph(){auto next=root_;next.children.erase(std::remove_if(next.children.begin(),next.children.end(),[](const Chunk& c){return c.id=="RIFF"&&c.type=="DMTG";}),next.children.end());return commit(std::move(next));}
+std::vector<AudioPathEffect> AudioPathDocument::effects() const {
+    (void)buffers();std::vector<AudioPathEffect> result;size_t buffer=0;
+    for(const auto& item:root_.children)if(item.id=="LIST"&&item.type=="dbfl"){
+        const auto descriptor=unique(item,"RIFF","DSBC");
+        if(descriptor)if(const auto effects=unique(*descriptor,"LIST","fxls")){size_t index=0;
+            for(const auto& effect:effects->children)if(effect.id=="RIFF"&&effect.type=="DSFX"){
+                const auto h=unique(effect,"fxhr");if(!h||h->data.size()<56)throw std::runtime_error("Truncated AudioPath effect header");
+                if(read32(h->data,52)||std::any_of(h->data.begin()+20,h->data.begin()+36,[](auto b){return b!=0;}))throw std::runtime_error("AudioPath effect reserved fields must be zero");
+                result.push_back({buffer,index++,identity(h->data,4),read32(h->data,0)});
+            }
+        }++buffer;
+    }return result;
+}
+bool AudioPathDocument::add_file_output(size_t buffer){
+    const auto available=buffers();if(buffer>=available.size())return false;
+    const auto classBytes=guid_bytes(fileOutputClass);const auto classId=identity(classBytes);
+    for(const auto& effect:effects())if(effect.buffer==buffer&&effect.classId==classId)return false;
+    auto next=root_;size_t current=0;
+    for(auto& item:next.children)if(item.id=="LIST"&&item.type=="dbfl"&&current++==buffer){
+        auto attributes=item.find("ddah");
+        if(read32(attributes->data,16)&2){
+            // A predefined descriptor is ignored by the runtime. Materialize an
+            // owned stereo buffer and rewrite every reference to this identity.
+            const GUID stereo={0x186cc545,0xdb29,0x11d3,{0x9b,0xd1,0,0x80,0xc7,0x15,0x0a,0x74}};
+            if(available[buffer]!=identity(guid_bytes(stereo))||item.find("RIFF","DSBC"))return false;
+            GUID fresh{};if(FAILED(CoCreateGuid(&fresh)))throw std::runtime_error("Cannot create recording buffer identity");
+            const auto replacement=guid_bytes(fresh);std::copy(replacement.begin(),replacement.end(),attributes->data.begin());put32(attributes->data,16,0);
+            if(auto ports=next.find("LIST","pcsl"))for(auto& port:ports->children)if(auto routes=port.find("LIST","pchl"))for(auto& route:routes->children)if(route.id=="pchh")
+                for(size_t i=0;i<read32(route.data,8);++i)if(identity(route.data,16+i*16)==available[buffer])std::copy(replacement.begin(),replacement.end(),route.data.begin()+16+i*16);
+            Chunk descriptor;descriptor.id="RIFF";descriptor.type="DSBC";
+            Bytes desc(20);put32(desc,0,0x000182c0);desc[4]=2;Bytes buses(8);put32(buses,4,1);
+            descriptor.children={leaf("guid",replacement),leaf("dsbd",desc),leaf("bsid",buses)};item.children.push_back(std::move(descriptor));
+        }
+        auto descriptor=item.find("RIFF","DSBC");if(!descriptor)return false;
+        const auto description=descriptor->find("dsbd");if(!description||description->data.size()<20)return false;
+        // Preserve existing effects/order. The tap is appended after them.
+        put32(description->data,0,read32(description->data,0)|0x200);
+        if(!descriptor->find("LIST","fxls"))descriptor->children.push_back(list("fxls",{}));
+        Bytes header(56);std::copy(classBytes.begin(),classBytes.end(),header.begin()+4);
+        Chunk effect;effect.id="RIFF";effect.type="DSFX";effect.children={leaf("fxhr",header)};
+        descriptor->find("LIST","fxls")->children.push_back(std::move(effect));break;
+    }
+    AudioPathDocument validated;validated.load(next.encode());return commit(std::move(next));
 }
 bool AudioPathDocument::undo(){if(undo_.empty())return false;redo_.push_back(save_bytes());root_=Chunk::parse(undo_.back());undo_.pop_back();return true;}
 bool AudioPathDocument::redo(){if(redo_.empty())return false;undo_.push_back(save_bytes());root_=Chunk::parse(redo_.back());redo_.pop_back();return true;}

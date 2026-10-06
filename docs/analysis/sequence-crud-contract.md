@@ -2,6 +2,8 @@
 
 全体は未完了。SDK固定ヘッダー `work/analysis/sources/dmusicf.h` の `DMUS_IO_SEQ_ITEM` を形式の根拠とする。Producer固有の編集動作との動的比較は未実行。
 
+現在のPChannel契約：`dwPChannel`はDWORDで、0〜`0xfffffffb`を文書の通常PChannelとして許可する。`dmusici.h:176`〜179のperformance/audio path/segment/groups broadcast予約4値はノート編集では拒否する。MIDI channelの0〜15と混同しない。低層insert/changeと文書add/editはこの値検証を行い、不正入力は保存bytes・cache・dirty・Undo/Redo・出力indexを変更しない。Q0候補`20261004T154732811Z`は通常core556、専用Sequence26、許可16/31/65536/最大許可値の保存復元と予約4値の不変性を確認。[現行単位](../../work/analysis/q0-regression/20261004T155400Z/report.md)。以下の旧0〜15の記述と旧「次」は版別履歴である。
+
 `SegmentDocument::edit_note/delete_note` は、選択group-maskとSequence型内indexのトラックを編集する。ノートindexはstatus上位nibbleが0x90かつvelocity非ゼロのレコードだけを数える。controller、note-off、velocity0 note-onは削除対象に数えない。変更はtime/duration/PChannel/pitch/velocityを扱う。現在のPChannel編集は既存追加と同じ0..15の限定範囲であり、全DWORD PChannel対応は未完了。
 
 表示timeはraw mtTime+signed nOffset。変更時はnOffsetを保持し、64bit計算で新raw timeを得る。raw timeが変わったレコードだけを既存追加と同じraw-clock順へ挿入し、他レコード間の順は保持する。timeが同じ変更は位置も保持する。status下位nibble・reserved/拡張bytes・curve・未知subchunks・padding・trkh・兄弟track・root metadataを保持する。raw time overflow、範囲外値、曖昧/不正payloadはcommit前に拒否し、文書bytes/cache/dirty/historyを変更しない。無変更・範囲外indexはfalse。削除は対象一recordとevtlサイズだけを変える。最後のnoteを消してもcontroller/note-offは残る。

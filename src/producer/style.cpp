@@ -346,6 +346,45 @@ std::vector<StyleReference> style_references(const Chunk& segment) {
     }
     std::stable_sort(result.begin(),result.end(),[](const StyleReference& a,const StyleReference& b){return a.time<b.time;});return result;
 }
+Chunk style_reference_track(std::uint32_t groups){
+    if(!groups)throw std::runtime_error("Style track needs groups");
+    Chunk track;track.id="RIFF";track.type="DMTK";
+    Chunk header;header.id="trkh";header.data.resize(32);std::copy(styleTrack.begin(),styleTrack.end(),header.data.begin());put32(header.data,20,groups);put32(header.data,28,0x72747473);
+    Chunk flags;flags.id="trkx";flags.data.resize(8);put32(flags.data,0,0x38);
+    Chunk refs;refs.id="LIST";refs.type="sttr";track.children={header,flags,refs};return track;
+}
+std::vector<StyleReference> style_track_references(const Chunk& track){
+    Chunk root;root.id="RIFF";root.type="DMSG";Chunk tracks;tracks.id="LIST";tracks.type="trkl";tracks.children.push_back(track);root.children.push_back(tracks);return style_references(root);
+}
+namespace {
+std::vector<size_t> reference_slots(const Chunk& track){
+    (void)style_track_references(track);const auto refs=track.find("LIST","sttr");if(!refs)throw std::runtime_error("Not a Style reference track");std::vector<size_t> slots;
+    for(size_t i=0;i<refs->children.size();++i)if(refs->children[i].id=="LIST"&&refs->children[i].type=="strf")slots.push_back(i);
+    std::stable_sort(slots.begin(),slots.end(),[&](size_t a,size_t b){return read32(refs->children[a].find("stmp")->data,0)<read32(refs->children[b].find("stmp")->data,0);});return slots;
+}
+bool valid_reference_edit(const StyleReference& r){
+    return r.time>=0&&(r.hasId||!r.filename.empty())&&r.filename.find(L'\0')==std::wstring::npos&&r.name.find(L'\0')==std::wstring::npos;
+}
+void write_reference(Chunk& ref,const StyleReference& r){
+    auto stamp=ref.find("stmp");if(!stamp){Chunk c;c.id="stmp";c.data.resize(4);ref.children.push_back(c);stamp=&ref.children.back();}put32(stamp->data,0,static_cast<std::uint32_t>(r.time));
+    auto descriptor=ref.find("LIST","DMRF");if(!descriptor){Chunk c;c.id="LIST";c.type="DMRF";ref.children.push_back(c);descriptor=&ref.children.back();}
+    auto h=descriptor->find("refh");if(!h){Chunk c;c.id="refh";c.data.resize(20);std::copy(styleClass.begin(),styleClass.end(),c.data.begin());descriptor->children.push_back(c);h=&descriptor->children.back();}
+    // Only the owned identity/name/file validity bits change. Inactive bytes,
+    // extensions, unrelated flags and original sibling order survive edits.
+    const auto valid=(read32(h->data,16)&~std::uint32_t(1|4|16|32))|2u|(r.hasId?1u:0u)|(!r.name.empty()?4u:0u)|(!r.filename.empty()?16u:0u);put32(h->data,16,valid);
+    const auto field=[&](const char* id,Bytes data){if(auto current=descriptor->find(id))current->data=std::move(data);else{Chunk fresh;fresh.id=id;fresh.data=std::move(data);descriptor->children.push_back(std::move(fresh));}};
+    if(r.hasId)field("guid",Bytes(r.objectId.begin(),r.objectId.end()));if(!r.filename.empty())field("file",utf16(r.filename));if(!r.name.empty())field("name",utf16(r.name));
+}
+}
+bool insert_style_reference(Chunk& track,const StyleReference& r){
+    if(!valid_reference_edit(r))return false;auto next=track;const auto events=style_track_references(next);if(events.size()>=1000||std::any_of(events.begin(),events.end(),[&](const auto& e){return e.time==r.time;}))return false;
+    Chunk ref;ref.id="LIST";ref.type="strf";write_reference(ref,r);auto refs=next.find("LIST","sttr");if(!refs)return false;refs->children.push_back(std::move(ref));(void)style_track_references(next);track=std::move(next);return true;
+}
+bool change_style_reference(Chunk& track,size_t index,const StyleReference& r){
+    if(!valid_reference_edit(r))return false;auto next=track;const auto slots=reference_slots(next);if(index>=slots.size())return false;const auto events=style_track_references(next);
+    for(size_t i=0;i<events.size();++i)if(i!=index&&events[i].time==r.time)return false;write_reference(next.find("LIST","sttr")->children[slots[index]],r);(void)style_track_references(next);if(next.encode()==track.encode())return false;track=std::move(next);return true;
+}
+bool delete_style_reference(Chunk& track,size_t index){auto next=track;const auto slots=reference_slots(next);if(index>=slots.size())return false;auto refs=next.find("LIST","sttr");refs->children.erase(refs->children.begin()+slots[index]);track=std::move(next);return true;}
 std::vector<ResolvedStyle> resolve_styles(const std::vector<StyleReference>& references,const std::wstring& directory,const std::vector<StyleCatalogEntry>& catalog,bool runtimeReferences) {
     if(references.empty())return {};if(directory.empty())throw std::runtime_error("Style references need a document directory");
     const auto base=std::filesystem::absolute(directory).lexically_normal();std::vector<ResolvedStyle> result;

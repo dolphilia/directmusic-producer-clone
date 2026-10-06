@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
+const write=(p,v)=>fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n');
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const unit='work/analysis/q1-integration/20261004T155700Z';
+const audio=unit+'/audio-20261004T161839420Z';
+const evidence=[unit+'/author-launch.json',unit+'/launch.json',unit+'/states.json',unit+'/actions.json',unit+'/reopen-modules.json',unit+'/Scenario/Scenario.pro',unit+'/Scenario/Song.sgp',audio+'/gui-sequence-audio-proof.json',unit+'/audio-controls/negative-tests.json'];
+const residuals=['Q1全5形式の同一native Project統合は未完了','短いSongのStop操作は自然終了後、再開は録音終了後。途中Stop/再開は不合格扱い','両GUI終了はウィンドウ消失を観測したがexit code nullで正常終了0未確認','Q2独立Windows環境未用意。WindowsSandbox.exe/Get-VMなし','Q3原版DMUSProd PID1216起動後、操作可能windowを取得できず動的Chord比較未実行','Q3和声・時間付きイベント・メディア・実行拡張・出力・配布責務と全体8受入が残る'];
+write(unit+'/unit-record.json',{schema:2,candidate:'20261004T154732811Z',target:'Q1 native Project creation/edit/history/save/separate-process reload and GUI audio',acceptanceGaps:['startup-shutdown','edit-save','separate-process-reload','play-stop-tempo-audio'],changes:['GUI録音driverを一般化','開始操作からのDirectMusic初期化遅延を有界に許容し、発音間隔でテンポを照合','欠落音/変更テンポ未適用の反例を拒否'],results:{nativeProjectCreated:true,tempoEditUndoRedoObserved:true,separateProcessReloadObserved:true,guiAudioPitchTempo:read(audio+'/gui-sequence-audio-proof.json').passed,stopResume:false,normalExitCodeVerified:false,fullAcceptance:false},evidence:evidence.map(path=>({path,sha256:hash(path)})),residuals,nextAction:'通知自然終了待機修正を新候補で検証後、長いSongを同一native Projectに保存し、別起動GUIで録音内途中Stop/再開を接続する。'});
+fs.writeFileSync(unit+'/report.md',`# Q1 native Project統合の部分証拠\n\n候補154732811Zで新規native Project、Songの120→137 BPM編集・Undo/Redo・保存・別GUIプロセス読込を観測。WASAPI録音2回の8音・音高・テンポ間隔が合格、欠落音とテンポ未適用の反例2件を拒否。証拠hashはunit-record.json。\n\n${residuals.join('。')}。全体未完了。\n\n通知試験はSongにCommandなしで失敗。Command入り現候補入力でも固定6秒待機が自然終了直前で切れ、再開後に旧終了通知を取得。失敗を保持し自然終了通知＋停止まで有界待機する修正を新候補で検証する。\n`);
+const s=read('docs/analysis/product-state.json');
+if(!fs.existsSync(unit+'/previous-product-state.json'))write(unit+'/previous-product-state.json',s);
+s.current.latestUnit=unit+'/unit-record.json';s.current.latestReport=unit+'/report.md';s.current.gui='154732811Z native Project新規/編集履歴/保存/別GUI再読込の部分観測。exit code未確認';s.current.audio='同候補GUI2full-play音高/120→137テンポ成功、途中Stop/再開未検証';s.current.residuals=residuals;s.current.nextAction=read(unit+'/unit-record.json').nextAction;write('docs/analysis/product-state.json',s);
+const a=read('docs/analysis/acceptance-status.json');a.updatedUtc=new Date().toISOString();a.residuals=residuals;
+for(const c of a.criteria){if(['startup-shutdown','edit-save','separate-process-reload'].includes(c.id))c.evidence.push(unit+'/unit-record.json');if(c.id==='play-stop-tempo-audio'){c.evidence.push(audio+'/gui-sequence-audio-proof.json',unit+'/audio-controls/negative-tests.json');c.remaining='GUI限定Songの音高/テンポのみ成功。途中Stop/再開と全対象音声未完了';}}write('docs/analysis/acceptance-status.json',a);
+console.log(JSON.stringify({unit,fullAcceptance:false}));

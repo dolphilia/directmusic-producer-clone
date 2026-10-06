@@ -1,12 +1,15 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$BuildSummaryPath,[Parameter(Mandatory)][string]$Segment)
+param([Parameter(Mandatory)][string]$BuildSummaryPath,
+  # Requires a short Segment with a Command track; note-only input cannot
+  # satisfy the Command notification assertion. Includes startup allowance.
+  [Parameter(Mandatory)][string]$Segment)
 $ErrorActionPreference='Stop'
 $repo=Split-Path $PSScriptRoot -Parent
 function Hash([string]$file){(Get-FileHash -LiteralPath $file).Hash.ToLowerInvariant()}
 $summaryPath=[IO.Path]::GetFullPath($BuildSummaryPath);$summary=Get-Content -LiteralPath $summaryPath -Raw|ConvertFrom-Json
 if(-not $summary.passed -or -not $summary.sourceSnapshotUnchanged){throw 'Verified successful build required'}
 foreach($s in $summary.sources){if((Hash (Join-Path $summary.sourceRoot $s.path)) -ne $s.sha256){throw 'Saved source identity mismatch'}}
-$inputPath=[IO.Path]::GetFullPath($Segment);if(-not (Test-Path -LiteralPath $inputPath -PathType Leaf)){throw 'Group input missing; no launch'}
+$inputPath=[IO.Path]::GetFullPath($Segment);if(-not (Test-Path -LiteralPath $inputPath -PathType Leaf)){throw 'Command notification input missing; no launch'}
 $identity=@($summary.outputs|Where-Object path -eq 'install/bin/Producer.exe');if($identity.Count -ne 1){throw 'Installed product identity missing'}
 $exe=Join-Path (Split-Path $summaryPath -Parent) $identity[0].path;if((Hash $exe) -ne $identity[0].sha256){throw 'Installed product identity mismatch'}
 $run=Join-Path $repo ('work/acceptance/product-notifications/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'));New-Item -ItemType Directory -Path $run|Out-Null

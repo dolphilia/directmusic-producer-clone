@@ -42,6 +42,10 @@ foreach($reported in $capture.paths){
     if($origin -eq 'unresolved'){
         $signed=Get-AuthenticodeSignature -LiteralPath $physical
         $signature=[ordered]@{status=[string]$signed.Status;subject=$signed.SignerCertificate.Subject;thumbprint=$signed.SignerCertificate.Thumbprint}
+        # AMSI may load the installed signed Defender x86 provider during Script initialization.
+        # Restrict classification to its installation tree, exact DLL, x86 and verified Microsoft signature.
+        $defenderRoot=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\Windows Defender\Platform\'
+        if($signed.Status -eq 'Valid' -and $signed.SignerCertificate.Subject -match 'O=Microsoft Corporation' -and $machine -eq 0x014c -and $version.CompanyName -eq 'Microsoft Corporation' -and $physical.StartsWith($defenderRoot,[StringComparison]::OrdinalIgnoreCase) -and $physical.Substring($defenderRoot.Length) -match '^\d+\.\d+\.\d+\.\d+-\d+\\X86\\MpOav\.dll$'){$origin='signed installed Microsoft Defender AMSI provider'}
         if($signed.Status -eq 'Valid' -and $signed.SignerCertificate.Subject -match 'O=Microsoft Corporation' -and ($physical -match '\\Common Files\\microsoft shared\\ink\\' -or $physical -match '\\Microsoft\\OneDrive\\[^\\]+\\i386\\FileSyncShell.dll$')){$origin='signed Microsoft ambient input or shell integration'}
     }
     if($physical -eq $reported -and [IO.Path]::GetFileName($reported) -like 'wow64*.dll'){$origin='installed Windows WOW64 host support'}

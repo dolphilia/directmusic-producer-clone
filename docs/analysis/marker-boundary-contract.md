@@ -1,0 +1,7 @@
+# Marker境界一括操作の限定契約
+
+原版helpのMark/Unmark AllとRange、Measures/Beats/Grids、種別分離を要件とする。単一Markerの原版動的保存契約は既存単位に保持。現原版で既知実文書を開いてもDesignerなしのため、今回のbulk原版比較は障害あり。
+
+ソース版は明示連続clock範囲[begin,end)、選択groupと同種track index、Marker/Enterいずれか一種を使う。選択Timelineの拍子切替から小節・拍・整数clockグリッド境界を生成する。Markは存在する同種同時刻イベントとその重複を保持して不足境界だけ追加する。Unmarkは一致境界の同種イベント全件を削除し、off-boundary・他種・兄弟trackを保持する。この重複・half-open方針は内部仕様で原版一致未確認。
+
+一操作一履歴。新規recordは既存strideにゼロ拡張し既存拡張bytes、未知chunk/padding、同内容二重MARKを保持する。無変更はbytes/dirty/Redo不変。異種・範囲外・曖昧/破損・非整数gridはcommit前に拒否。最大100万生成境界を明示的資源上限とし、それを超える文書は未対応として拒否する。原版Ctrl不連続division選択・Timeline描画/drag/外部OLE・meter変更時の既存Marker再配置・stop/cue/enter再生効果・全責務は残す。

@@ -1,8 +1,19 @@
+#include "producer/wave_playback.h"
+#include "producer/chord_composition.h"
+#include "producer/script_document.h"
+#include "producer/tool_graph.h"
 #include "producer/playback_monitor.h"
 #include "producer/conductor.h"
 #include "producer/articulation_units.h"
 #include "producer/envelope_parameters.h"
 #include "producer/framework.h"
+#include "producer/tool_graph_runtime.h"
+#include "producer/conductor.h"
+#include <dmerror.h>
+#include <medparam.h>
+#include <cmath>
+#include <cwchar>
+#include <mutex>
 #include "producer/timeline.h"
 #include <filesystem>
 #include <algorithm>
@@ -22,6 +33,45 @@ Bytes style_segment(const std::vector<Chunk>&);
 void require(bool value,const char* name) {++checks;if(traceChecks)std::cerr<<checks<<": "<<name<<" = "<<(value?"passed":"failed")<<std::endl;if(!value)throw std::runtime_error(name);}
 template<class F> void rejected(F action,const char* name) {bool failed=false;try{action();}catch(const std::exception&){failed=true;}require(failed,name);}
 #include "dls_articulation_tests.h"
+#include "wave_track_tests.h"
+#include "wave_document_tests.h"
+#include "script_document_tests.h"
+#include "tool_graph_tests.h"
+#include "param_control_tests.h"
+#include "tool_graph_runtime_tests.h"
+#include "param_control_runtime_tests.h"
+#include "script_runtime_tests.h"
+#include "timeline_range_tests.h"
+
+void common_open_tests(const std::filesystem::path& dir){
+    const auto base=dir/L"CommonOpen";std::filesystem::create_directories(base);
+    Framework seed;
+    seed.save_segment(seed.new_segment(),(base/L"Song.SGP").wstring());
+    seed.save_style(seed.new_style(),(base/L"Style.STP").wstring());
+    seed.save_band(seed.new_band(),(base/L"Band.BNP").wstring());
+    seed.save_collection(seed.new_collection(),(base/L"Collection.DLS").wstring());
+    seed.save_audio_path(seed.new_audio_path(),(base/L"First.AUP").wstring());
+    seed.save_audio_path(seed.new_audio_path(),(base/L"Second.aup").wstring());
+    seed.save_chordmap(seed.new_chordmap(),(base/L"Map.CDP").wstring());
+    seed.save_script(seed.new_script(),(base/L"Script.SPP").wstring());
+    seed.save_container(seed.new_container(),(base/L"Container.COP").wstring());
+    seed.save_tool_graph(seed.new_tool_graph(),(base/L"Graph.TGP").wstring());
+    Chunk wave;wave.id="RIFF";wave.type="WAVE";Chunk fmt;fmt.id="fmt ";fmt.data=Bytes(16);fmt.data[0]=1;fmt.data[2]=1;put32(fmt.data,4,8000);put32(fmt.data,8,16000);fmt.data[12]=2;fmt.data[14]=16;Chunk data;data.id="data";data.data=Bytes(160);Chunk guid;guid.id="guid";guid.data=Bytes(16);guid.data[0]=0x55;wave.children={fmt,data,guid};
+    write_file_atomic((base/L"Tone.WAV").wstring(),wave.encode());
+    const std::vector<std::pair<std::wstring,DocumentKind>> files={{L"Song.SGP",DocumentKind::Segment},{L"Style.STP",DocumentKind::Style},{L"Band.BNP",DocumentKind::Band},{L"Collection.DLS",DocumentKind::Collection},{L"First.AUP",DocumentKind::AudioPath},{L"Map.CDP",DocumentKind::ChordMap},{L"Script.SPP",DocumentKind::Script},{L"Container.COP",DocumentKind::Container},{L"Graph.TGP",DocumentKind::ToolGraph},{L"Tone.WAV",DocumentKind::Wave}};
+    Framework host;
+    for(const auto& entry:files){const auto path=(base/entry.first).wstring();const auto opened=host.open_document(path);require(opened.kind==entry.second&&opened.index==0,"Common Open routes actual input to correct catalog");const auto again=host.open_document(path);require(again.kind==opened.kind&&again.index==opened.index,"Common Open duplicate retains owned index");}
+    const auto second=host.open_document((base/L"Second.aup").wstring());require(second.kind==DocumentKind::AudioPath&&second.index==1&&host.audio_paths().size()==2,"Common Open returns requested second AudioPath index");
+    require(host.document(0).add_tempo(0,123),"Common Open document history seeded before malformed input");host.save_segment(0,(base/L"Song.SGP").wstring());
+    host.save_project((base/L"CommonOpen.pro").wstring());require(!host.dirty(),"Common Open native Project checkpoint");
+    const auto song=host.document(0).save_bytes(),pathBytes=host.audio_path_document(1).save_bytes();
+    for(const auto& entry:files){const auto malformed=(base/(L"Bad"+std::filesystem::path(entry.first).extension().wstring())).wstring();write_file_atomic(malformed,Bytes{'b','a','d'});rejected([&]{host.open_document(malformed);},"Common Open malformed typed input rejected");require(!host.dirty()&&host.document(0).save_bytes()==song&&host.audio_path_document(1).save_bytes()==pathBytes,"Failed Common Open retains existing bytes and project checkpoint");}
+    for(const auto& ext:{L".mid",L".txt",L""}){const auto unknown=(base/(std::wstring(L"Unknown")+ext)).wstring();write_file_atomic(unknown,song);rejected([&]{host.open_document(unknown);},"Common Open does not guess Segment from unknown extension");require(!host.dirty(),"Unknown extension does not mutate Project");}
+    require(host.documents().size()==1&&host.style_documents().size()==1&&host.band_documents().size()==1&&host.collections().size()==1&&host.audio_paths().size()==2&&host.chordmaps().size()==1&&host.scripts().size()==1&&host.containers().size()==1&&host.tool_graphs().size()==1&&host.waves().size()==1,"Malformed Open never inserts a partial catalog entry");
+    require(host.document(0).undo()&&host.document(0).save_bytes()!=song&&host.document(0).redo()&&host.document(0).save_bytes()==song,"Failed Common Open preserves existing Undo and Redo history");
+    Framework reload;const auto project=reload.open_document((base/L"CommonOpen.pro").wstring());require(project.kind==DocumentKind::Project&&!reload.dirty()&&reload.audio_paths().size()==2&&reload.waves().size()==1&&reload.scripts().size()==1&&reload.tool_graphs().size()==1,"Common Open native Project restores multiple document catalogs");
+    require(reload.open_document((base/L"Second.aup").wstring()).index==1&&reload.audio_path_document(1).save_bytes()==pathBytes,"Common Open selects restored second document without reload mutation");
+}
 
 void transport_audio_path_tests(const std::filesystem::path& dir){
     AudioPathDocument path;const auto config=path.save_bytes();SegmentDocument segment;
@@ -43,6 +93,31 @@ void transport_audio_path_tests(const std::filesystem::path& dir){
     require(prepare_transport_audio_path({},{}).empty(),"standard Motif requires no carrier");
     rejected([&]{prepare_transport_audio_path(source,source);},"invalid AudioPath refused without altering inputs");
     rejected([&]{prepare_transport_audio_path(config,different);},"non Segment playback context refused");
+    BandDocument band;require(band.add_gm_instrument(0,0,64,100)&&band.add_gm_instrument(0,16,64,90),"mixed download Band created");
+    auto bandRoot=Chunk::parse(band.save_bytes());Chunk marker;marker.id="xBnd";marker.data={7,8,9};bandRoot.children.push_back(marker);
+    AudioPathDocument routed;routed.set_port_range(0,16,16);const auto route=routed.save_bytes();
+    const auto bandSource=bandRoot.encode();const auto downloaded=prepare_audio_path_band_downloads(bandSource,route);BandDocument playable;playable.load(downloaded);
+    require(playable.instruments().size()==1&&playable.instruments()[0].pchannel==16,"private download retains connected instrument only");
+    auto expectedBand=bandRoot;expectedBand.find("LIST","lbil")->children.erase(expectedBand.find("LIST","lbil")->children.begin());
+    require(downloaded==expectedBand.encode(),"download changes only disconnected instrument entry, keeps metadata and unknown bytes");
+    require(bandRoot.encode()==bandSource&&band.instruments().size()==2,"source Band and its full instrument responsibilities retained");
+    SegmentDocument notes;require(notes.add_note({0,384,0,60,96})&&notes.add_note({0,384,16,65,96}),"mixed channel source Sequence created");
+    auto songRoot=Chunk::parse(notes.save_bytes());songRoot.children.push_back(bandRoot);const auto songSource=songRoot.encode();
+    const auto prepared=prepare_audio_path_band_downloads(songSource,route);auto expectedSong=songRoot;expectedSong.children.back()=expectedBand;
+    require(prepared==expectedSong.encode(),"private Segment retains every Sequence event and every other byte");
+    SegmentDocument restored;restored.load(prepared);require(restored.notes().size()==2&&restored.notes()[0].channel==0&&restored.notes()[1].channel==16,"silent note remains in runtime Sequence");
+    require(prepare_audio_path_band_downloads(songSource,{})==songSource,"standard path download leaves source exact");
+    rejected([&]{prepare_audio_path_band_downloads(songSource,songSource);},"malformed path still rejects private preparation");
+    require(songRoot.encode()==songSource,"failed download preparation retains complete source");
+    BandDocument disconnected;require(disconnected.add_gm_instrument(0,0,64,100),"unconnected Band fixture");
+    auto silentRoot=Chunk::parse(notes.save_bytes());auto silentTrack=make_band_track();
+    require(set_band_track_event(silentTrack,0,disconnected.save_bytes()),"unconnected Band event fixture");
+    silentRoot.find("LIST","trkl")->children.push_back(silentTrack);const auto silentSource=silentRoot.encode();
+    const auto silentRuntime=prepare_audio_path_band_downloads(silentSource,route);
+    require(silentRuntime==notes.save_bytes(),"private playback omits only empty Band track, retaining disconnected Sequence");
+    require(silentRoot.encode()==silentSource&&disconnected.instruments().size()==1,"silent preparation retains source Band event");
+    auto emptyRoot=Chunk::parse(notes.save_bytes());emptyRoot.find("LIST","trkl")->children.push_back(make_band_track());
+    require(prepare_audio_path_band_downloads(emptyRoot.encode(),route)==emptyRoot.encode(),"preexisting empty Band track unchanged");
 }
 
 void dls_wave_creation_tests(const std::filesystem::path& dir,const std::wstring& wavPath,const std::wstring& observedPath){
@@ -107,7 +182,13 @@ void style_band_creation_tests(const std::filesystem::path& dir){
     require(!style.add_band_gm_instrument(0,0,5,64,100)&&!style.add_band_gm_instrument(7,0,0,64,100)&&style.save_bytes()==first,"duplicate PChannel and invalid Band index atomic");require(style.undo()&&style.save_bytes()==original&&!style.undo(),"creation exactly one undo");require(style.redo()&&style.save_bytes()==first,"creation full redo");
     require(style.add_band_gm_instrument(0,0,0,64,100)&&style.bands().size()==1&&style.bands()[0].instruments().size()==2,"append instrument to existing Band");const auto added=style.save_bytes();write_file_atomic((base/L"added.stp").wstring(),added);require(style.undo()&&style.save_bytes()==first&&style.redo()&&style.save_bytes()==added,"instrument append full history");
     style.save((base/L"saved.stp").wstring());StyleDocument reload;reload.load(read_file((base/L"saved.stp").wstring()));require(reload.save_bytes()==added&&!reload.dirty(),"Band owned save reload exact");
-    write_file_atomic((base/L"owned.stp").wstring(),original);Framework host;const auto si=host.open_style((base/L"owned.stp").wstring());const auto documentCount=host.documents().size();require(host.add_style_band_gm_instrument(si,{},48,5,35,120),"Framework Style Band creation");require(host.style_document(si).save_bytes()==first&&host.style_playback_snapshot(si).bytes==first&&host.style_playback_collections(si).empty()&&host.documents().size()==documentCount,"owned playback snapshot without Segment");require(host.undo_style(si)&&host.style_document(si).save_bytes()==original&&host.redo_style(si)&&host.style_document(si).save_bytes()==first,"Framework one transaction history");host.save_style(si,(base/L"owned.stp").wstring());host.save_project((base/L"project.dmpj").wstring());Framework restored;restored.open_project((base/L"project.dmpj").wstring());require(restored.documents().empty()&&restored.style_documents().size()==1&&restored.style_document(0).save_bytes()==first&&!restored.dirty(),"Style-only project Band reload");
+    write_file_atomic((base/L"owned.stp").wstring(),original);Framework host;const auto si=host.open_style((base/L"owned.stp").wstring());const auto documentCount=host.documents().size();require(host.add_style_band_gm_instrument(si,{},48,5,35,120),"Framework Style Band creation");
+    const auto hostFirst=host.style_document(si).save_bytes();auto expectedHost=Chunk::parse(first);const auto hostTree=Chunk::parse(hostFirst);
+    const auto hostGuid=hostTree.find("RIFF","DMBD")->find("guid")->data;
+    require(hostGuid.size()==16&&hostGuid!=expectedHost.find("RIFF","DMBD")->find("guid")->data,"independent Band creations own distinct identities");
+    expectedHost.find("RIFF","DMBD")->find("guid")->data=hostGuid;
+    require(hostFirst==expectedHost.encode()&&host.style_playback_snapshot(si).bytes==hostFirst&&host.style_playback_collections(si).empty()&&host.documents().size()==documentCount,"owned playback snapshot without Segment; only generated Band identity differs");
+    require(host.undo_style(si)&&host.style_document(si).save_bytes()==original&&host.redo_style(si)&&host.style_document(si).save_bytes()==hostFirst,"Framework one transaction history");host.save_style(si,(base/L"owned.stp").wstring());host.save_project((base/L"project.dmpj").wstring());Framework restored;restored.open_project((base/L"project.dmpj").wstring());require(restored.documents().empty()&&restored.style_documents().size()==1&&restored.style_document(0).save_bytes()==hostFirst&&!restored.dirty(),"Style-only project Band reload");
 }
 void authored_style_band_tests(const std::filesystem::path& dir){
     std::filesystem::create_directories(dir);StyleDocument fresh;fresh.save((dir/L"Heartlnd.stp").wstring());const auto empty=fresh.save_bytes();Framework host;host.open_style((dir/L"Heartlnd.stp").wstring());
@@ -646,6 +727,24 @@ void reference_band_tests(const std::filesystem::path& dir,const std::wstring& i
     const auto instrument=bands[0].instruments().at(0);require(style.set_band_instrument(0,0,5,instrument.pchannel,64,100),"reference embedded Band edit");auto expected=Chunk::parse(bytes);for(auto& child:expected.children)if(child.id=="RIFF"&&child.type=="DMBD"){auto& b=child.find("LIST","lbil")->find("LIST","lbin")->find("bins")->data;put32(b,0,5);put32(b,28,instrument.flags|0x63u);b[32]=64;b[33]=100;break;}
     require(style.save_bytes()==expected.encode(),"reference only first Band bins fields and validity bits change, complete other bytes preserved");style.save((dir/L"reference-band.stp").wstring());StyleDocument reloaded;reloaded.load(read_file((dir/L"reference-band.stp").wstring()));const auto i=reloaded.bands()[0].instruments()[0];require(i.patch==5&&i.pan==64&&i.volume==100&&i.pchannel==instrument.pchannel,"reference Band saved fields restored");require(style.undo()&&style.save_bytes()==bytes&&style.redo()&&style.save_bytes()==expected.encode(),"reference Band whole-file Undo Redo");
 }
+void style_reference_authoring_tests(const std::filesystem::path& dir){
+    const auto unresolvedPath=dir/L"unresolved-style-history.sgp";write_file_atomic(unresolvedPath.wstring(),style_segment({style_reference(L"missing.stp",0)}));Framework unresolved;unresolved.open_segment(unresolvedPath.wstring());const auto unresolvedBytes=unresolved.document(0).save_bytes();require(unresolved.document(0).add_tempo(768,150)&&unresolved.undo_segment(0)&&unresolved.document(0).save_bytes()==unresolvedBytes&&unresolved.redo_segment(0),"unresolved Style permits unrelated tempo history without new disk resolution");
+    const auto base=dir/L"style-ref-author";std::filesystem::create_directories(base);Framework host;const auto di=host.new_segment(),si=host.new_style();const auto empty=host.document(di).save_bytes();
+    rejected([&]{host.assign_style_reference(di,si,0);},"unsaved Style ref rejected");require(host.document(di).save_bytes()==empty&&!host.document(di).undo(),"unsaved ref retains bytes/history");
+    host.save_segment(di,(base/L"Song.sgp").wstring());host.save_style(si,(base/L"Rhythm.stp").wstring());require(host.assign_style_reference(di,si,0),"new owned Style ref");const auto first=host.document(di).save_bytes();const auto refs=host.document(di).style_references(0);require(read32(Chunk::parse(first).find("LIST","trkl")->children.back().find("LIST","sttr")->children[0].find("LIST","DMRF")->find("refh")->data,16)==0x13,"SDK CLASS/OBJECT/FILENAME validity for newly authored reference");
+    require(refs.size()==1&&refs[0].filename==L"Rhythm.stp"&&refs[0].hasId&&refs[0].objectId==host.style_document(si).object_id()&&host.document(di).styles()[0].bytes==host.style_document(si).save_bytes(),"native reference and owned context agree");
+    require(!host.assign_style_reference(di,si,0)&&!host.assign_style_reference(di,si,-1)&&!host.assign_style_reference(di,si,host.document(di).length())&&host.document(di).save_bytes()==first,"duplicate/bounds atomic");
+    rejected([&]{host.assign_style_reference(di,si,768);},"midmeasure Style meter change rejected");require(host.document(di).save_bytes()==first&&host.document(di).styles().size()==1,"failed context retains bytes/snapshot");
+    require(host.assign_style_reference(di,si,3072),"later measure aligned Style ref");const auto two=host.document(di).save_bytes();require(host.undo_segment(di)&&host.document(di).save_bytes()==first&&host.document(di).styles().size()==1&&host.redo_segment(di)&&host.document(di).save_bytes()==two&&host.document(di).styles().size()==2,"Style ref UndoRedo context count");require(host.document(di).undo()&&host.document(di).styles().size()==1&&host.document(di).redo()&&host.document(di).styles().size()==2,"other Segment editor shared UndoRedo refreshes Style context");
+    rejected([&]{host.delete_style_reference(di,0);},"deleting first Style leaves unresolved initial meter rejected");require(host.document(di).save_bytes()==two,"delete rejection atomic");require(host.delete_style_reference(di,1)&&host.document(di).save_bytes()==first&&host.undo_segment(di)&&host.document(di).save_bytes()==two,"delete history restores reference");
+    require(host.assign_style_reference(di,si,6144,1)&&host.document(di).style_references(0)[1].time==6144&&host.undo_segment(di)&&host.document(di).save_bytes()==two,"reference move preserves context and history");
+    auto root=Chunk::parse(two);auto track=&root.find("LIST","trkl")->children.back();auto descriptor=track->find("LIST","sttr")->children[1].find("LIST","DMRF");descriptor->find("refh")->data.push_back(0xa7);descriptor->find("refh")->padding=0xbc;Chunk opaque;opaque.id="zzzz";opaque.data={4,2,1};opaque.padding=0xcf;descriptor->children.push_back(opaque);const auto extended=root.encode();host.document(di).load(extended);host.document(di).resolve_style_context(base.wstring(),{{(base/L"Rhythm.stp").wstring(),host.style_document(si).save_bytes()}});
+    require(host.assign_style_reference(di,si,6144,1),"extended reference edit");auto expected=root;put32(expected.find("LIST","trkl")->children.back().find("LIST","sttr")->children[1].find("stmp")->data,0,6144);require(host.document(di).save_bytes()==expected.encode(),"only stmp changes; unknown refh tail sibling padding exact");
+    require(host.undo_segment(di)&&host.document(di).save_bytes()==extended&&host.redo_segment(di)&&host.document(di).save_bytes()==expected.encode(),"extended ref UndoRedo");
+    host.document(di).select_track_group(2);require(host.assign_style_reference(di,si,0)&&host.document(di).style_references(0).size()==1,"independent group Style track");host.document(di).select_track_group(1);require(host.document(di).style_references(0).size()==2,"other group retained");
+    host.save_segment(di,(base/L"Song.sgp").wstring());host.save_project((base/L"project.dmpj").wstring());Framework reload;reload.open_project((base/L"project.dmpj").wstring());require(reload.document(0).save_bytes()==host.document(di).save_bytes()&&reload.document(0).styles().size()==3&&!reload.dirty(),"separate Project restores authored Style refs/context");
+}
+
 void style_tests(const std::filesystem::path& dir) {
     const auto tree=style_fixture(3,4,2,90);const auto bytes=tree.encode();StyleDocument style;style.load(bytes);
     require(style.meter().beats==3&&style.meter().denominator==4&&style.meter().grids==2&&style.tempo()==90,"legacy Style meter and tempo layout");require(style.save_bytes()==bytes,"Style full RIFF and padding retained");
@@ -811,14 +910,43 @@ void pattern_properties_tests(const std::filesystem::path& dir,const std::wstrin
     require(reload.style_document(0).save_bytes()==edited&&reload.document(0).styles()[0].bytes==edited&&!reload.style_document(0).dirty()&&reload.style_document(0).patterns()[3].name==L"Converted Fill 72","separate Framework restores properties and owned runtime bytes");
     reload.save_style(0,(base/L"resaved.stp").wstring());require(read_file((base/L"resaved.stp").wstring())==edited,"metadata separate Framework exact re-save");
 }
+void sequence_pchannel_boundaries() {
+    // DMUS_IO_SEQ_ITEM stores a DWORD performance channel, not a MIDI nibble.
+    for(const DWORD channel : {0u,15u,16u,31u,65536u,0xfffffffbu}) {
+        auto doc=SegmentDocument::playback_test();const auto before=doc.save_bytes();
+        require(doc.add_note({0,384,channel,60,96}),"DWORD PChannel insertion accepted");
+        const auto inserted=doc.save_bytes();SegmentDocument reload;reload.load(inserted);
+        const auto restored=reload.notes();require(restored.size()==9&&std::count_if(restored.begin(),restored.end(),[&](const Note& n){return n.channel==channel&&n.time==0&&n.pitch==60;})==(channel==0u?2:1)&&reload.save_bytes()==inserted,"DWORD PChannel lossless reload");
+        require(doc.undo()&&doc.save_bytes()==before&&doc.redo()&&doc.save_bytes()==inserted,"DWORD PChannel insert history");
+        require(doc.edit_note(0,{0,384,channel==16u?31u:16u,60,96}),"DWORD PChannel change accepted");
+        const auto changed=doc.save_bytes();require(doc.undo()&&doc.save_bytes()==inserted&&doc.redo()&&doc.save_bytes()==changed,"DWORD PChannel change history");
+    }
+    const Note invalid[]={{0,384,0xfffffffcu,60,96},{0,384,0xfffffffdu,60,96},{0,384,0xfffffffeu,60,96},{0,384,0xffffffffu,60,96},
+        {-1,384,0,60,96},{0,0,0,60,96},{6100,200,0,60,96},{0,384,0,128,96},{0,384,0,60,0},{0,384,0,60,128}};
+    for(const auto note:invalid) {
+        SegmentDocument doc;doc.load(SegmentDocument::playback_test().save_bytes());const auto clean=doc.save_bytes();
+        require(doc.add_note({100,100,16,62,80}),"invalid input history fixture");const auto edited=doc.save_bytes();
+        require(doc.undo()&&doc.save_bytes()==clean&&!doc.dirty(),"invalid input clean redo fixture");size_t result=SIZE_MAX;
+        require(!doc.add_note(note)&&!doc.edit_note(0,note,&result)&&result==SIZE_MAX&&doc.save_bytes()==clean&&!doc.dirty()&&doc.notes().size()==8&&doc.notes()[0].channel==0,"invalid note retains clean bytes cache dirty and output index");
+        require(!doc.undo()&&doc.redo()&&doc.save_bytes()==edited&&doc.dirty(),"invalid note retains redo history");
+        require(!doc.add_note(note)&&!doc.edit_note(0,note)&&doc.save_bytes()==edited&&doc.dirty(),"invalid note retains dirty document");
+        require(doc.undo()&&doc.save_bytes()==clean&&doc.redo()&&doc.save_bytes()==edited,"invalid note retains undo history");
+    }
+    const auto root=Chunk::parse(SegmentDocument::playback_test().save_bytes());const auto payload=root.find("LIST","trkl")->children.back().find("seqt")->data;
+    for(const auto channel:{0xfffffffcu,0xfffffffdu,0xfffffffeu,0xffffffffu}) {
+        rejected([&]{sequence_insert(payload,{0,384,channel,60,96});},"raw Sequence insert rejects broadcast PChannel");
+        rejected([&]{sequence_change(payload,0,{0,384,channel,60,96},nullptr);},"raw Sequence change rejects broadcast PChannel");
+    }
+}
 void run(const std::filesystem::path& dir) {
+    sequence_pchannel_boundaries();
     auto song=SegmentDocument::playback_test();const auto songBytes=song.save_bytes();const auto notes=song.notes();
     require(song.length()==6144&&notes.size()==8&&notes[0].time==0&&notes[0].pitch==60&&notes[7].time==5376&&notes[7].pitch==72,"known eight-note playback input");
     require(song.tempos().size()==2&&song.tempos()[0].bpm==120&&song.tempos()[1].time==3072&&song.tempos()[1].bpm==180,"playback input tempo change");
     SegmentDocument songReload;songReload.load(songBytes);require(songReload.save_bytes()==songBytes&&songReload.notes().size()==8,"Sequence and Band lossless document load");
     require(songReload.add_note({2304,384,0,0,96}),"pitch zero note insertion");const auto noteEdit=songReload.save_bytes();
     require(songReload.notes().size()==9&&songReload.undo()&&songReload.save_bytes()==songBytes&&songReload.redo()&&songReload.save_bytes()==noteEdit,"Sequence document Undo and Redo");
-    require(!songReload.add_note({6100,200,0,60,96})&&!songReload.add_note({0,384,16,60,96})&&!songReload.add_note({0,384,0,60,0})&&songReload.save_bytes()==noteEdit,"note boundaries retain document");
+    require(!songReload.add_note({6100,200,0,60,96})&&!songReload.add_note({0,384,0xfffffffcu,60,96})&&!songReload.add_note({0,384,0,60,0})&&songReload.save_bytes()==noteEdit,"note boundaries retain document");
     const auto parsedSong=Chunk::parse(songBytes);const auto& seq=parsedSong.find("LIST","trkl")->children.back();auto seqPayload=seq.find("seqt")->data;
     Chunk seqOpaque;seqOpaque.id="zzzz";seqOpaque.data={7};seqOpaque.padding=0xa5;const auto opaqueSequence=seqOpaque.encode();seqPayload.insert(seqPayload.end(),opaqueSequence.begin(),opaqueSequence.end());
     const auto withNote=sequence_insert(seqPayload,{0,100,0,65,100});require(std::equal(opaqueSequence.begin(),opaqueSequence.end(),withNote.end()-opaqueSequence.size()),"Sequence unknown payload and odd padding retained");
@@ -975,8 +1103,9 @@ void runtime_recovery_write_tests(const std::filesystem::path& dir,bool bothExis
     if(bothExisting)write_file_atomic((target/L"B.sgt").wstring(),{4,5,6});
     std::vector<HANDLE> locks;std::string error;
     try{host.export_runtime_observed(target.wstring(),[&](const std::wstring& path){const auto handle=CreateFileW(path.c_str(),GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);require(handle!=INVALID_HANDLE_VALUE,"own published output delete-share lock acquired");locks.push_back(handle);if(locks.size()==2)throw std::runtime_error("controlled interruption after two published outputs");});}catch(const std::exception& e){error=e.what();}
+    std::cerr<<"recovery-prepare publications: "<<locks.size()<<"; error: "<<error<<"\n";
     for(auto handle:locks)require(CloseHandle(handle)!=FALSE,"own output lock released before separate recovery");
-    require(locks.size()==2&&error.find("rollback incomplete")!=std::string::npos,"controlled refusal retains real incomplete rollback transaction");std::cout<<"controlled-recovery-error: "<<error<<"\n";
+    require(locks.size()==2&&error.find("rollback incomplete")!=std::string::npos&&error.find("original failure: controlled interruption after two published outputs")!=std::string::npos,"controlled refusal retains original interruption and real incomplete rollback transaction");std::cout<<"controlled-recovery-error: "<<error<<"\n";
     std::vector<std::filesystem::path> stages;for(const auto& entry:std::filesystem::directory_iterator(dir))if(entry.is_directory()&&entry.path().filename().wstring().rfind(L".dmrt-",0)==0)stages.push_back(entry.path());require(stages.size()==1,"exactly one actual unpublished recovery stage retained");const auto journal=stages[0]/L"recovery"/L"update.riff";const auto bytes=read_file(journal.wstring());const auto files=parse_runtime_update_recovery_record(bytes);const auto origin=runtime_update_recovery_origin(bytes);require(origin.sources.size()==2&&origin.projectPath==(source/L"Source.pro").wstring()&&origin.projectBytes==read_file(origin.projectPath),"version3 actual journal binds source Project and complete inputs");
     const auto states=host.inspect_runtime_recovery(journal.wstring());require(states.size()==2&&states[0].state==RuntimeRecoveryState::After&&states[1].state==RuntimeRecoveryState::After,"both rollback-refused real outputs remain published");
     const auto preview=host.validate_runtime_recovery(journal.wstring(),target.wstring());require(preview.size()==2&&preview[0].state==RuntimeRecoveryState::After&&preview[1].state==RuntimeRecoveryState::After,"source-bound read-only preview recognizes pending outputs");
@@ -1023,6 +1152,26 @@ void runtime_update_tests(const std::filesystem::path& dir,const std::wstring& i
     const auto alias=dir/L"Alias";std::filesystem::create_directory(alias);if(!CreateHardLinkW((alias/L"Sound.dls").c_str(),(source/L"Sound.dlp").c_str(),nullptr))throw std::runtime_error("Cannot create contained alias fixture");const auto sourceSound=read_file((source/L"Sound.dlp").wstring());rejected([&]{host.export_runtime(alias.wstring());},"existing source hard-link alias rejected before update");require(read_file((alias/L"Sound.dls").wstring())==sourceSound&&!std::filesystem::exists(alias/L"A.sgt"),"alias refusal preserves source and other destinations");
     const auto blocked=dir/L"Blocked";std::filesystem::create_directories(blocked/L"Path.aud");write_file_atomic((blocked/L"unrelated.bin").wstring(),{11,22});rejected([&]{host.export_runtime(blocked.wstring());},"directory colliding with runtime file rejected before commit");require(read_file((blocked/L"unrelated.bin").wstring())==Bytes({11,22})&&!std::filesystem::exists(blocked/L"A.sgt"),"collision preflight leaves output folder exact");bool residual=false;for(const auto& item:std::filesystem::directory_iterator(dir))if(item.path().filename().wstring().find(L".dmrt-")==0)residual=true;require(!residual,"successful and fully restored transactions clean their owned stages");
 }
+void runtime_file_folder_tests(const std::filesystem::path& dir,const std::wstring& input){
+    const auto fixture=dir/L"Input.pro";write_file_atomic(fixture.wstring(),read_file(input));write_file_atomic((dir/L"First.sgp").wstring(),read_file((std::filesystem::path(input).parent_path()/L"First.sgp").wstring()));
+    Framework host;host.open_project(fixture.wstring());
+    const auto kind=RuntimeDocumentKind::Segment;
+    require(host.runtime_file_folder(kind,0)==L"..\\FileOnly\\","original GUI saved file UNFO rdir is effective");
+    const auto sourceBytes=read_file(input);const auto model=host.document(0).save_bytes();
+    require(host.set_runtime_component_folder(kind,L"Component\\")&&host.runtime_file_folder(kind,0)==L"..\\FileOnly\\","component change retains explicit file override");
+    require(!host.set_runtime_file_folder(kind,0,L"Bad*")&&!host.set_runtime_file_folder(kind,0,std::wstring(L"A\0B",3)),"invalid document folder refused");
+    const auto output=dir/L"Own";std::filesystem::create_directories(output);
+    require(host.set_runtime_file_folder(kind,0,output.wstring())&&host.set_runtime_filename(kind,0,L"Own.sgt"),"file folder and name edited separately");
+    require(!host.set_runtime_file_folder(kind,0,output.wstring()),"unchanged file folder creates no edit");
+    host.save_runtime_default(kind,0);require(std::filesystem::exists(output/L"Own.sgt")&&!std::filesystem::exists(dir/L"Component"/L"Own.sgt"),"default save uses file override");
+    require(read_file(input)==sourceBytes&&host.document(0).save_bytes()==model&&host.dirty()&&!host.document(0).dirty(),"runtime output keeps source model and saved original Project");
+    const auto saved=dir/(dir.filename().wstring()+L".pro");host.save_project(saved.wstring());Framework reload;reload.open_project(saved.wstring());
+    require(reload.runtime_file_folder(kind,0)==output.wstring()&&reload.runtime_filename(kind,0)==L"Own.sgt","native separate reload restores per-file folder/name");
+    require(reload.set_runtime_file_folder(kind,0,L"")&&reload.runtime_file_folder(kind,0)==L"Component\\","reset removes override and inherits component");
+    require(!reload.set_runtime_file_folder(kind,0,L""),"already inherited folder reset makes no edit");
+    const auto beforeDirty=reload.dirty();rejected([&]{reload.set_runtime_file_folder(kind,99,L"Other\\");},"invalid document owner refused");require(reload.dirty()==beforeDirty,"invalid owner retains dirty state");
+    auto bad=Chunk::parse(sourceBytes);auto file=bad.find("LIST","file");auto info=file->find("LIST","UNFO");info->children.push_back(*info->find("rdir"));write_file_atomic((dir/L"Ambiguous.pro").wstring(),bad.encode());Framework ambiguous;ambiguous.open_project((dir/L"Ambiguous.pro").wstring());rejected([&]{ambiguous.runtime_file_folder(kind,0);},"duplicate per-file folder is ambiguous");rejected([&]{ambiguous.set_runtime_file_folder(kind,0,L"Other\\");},"duplicate per-file setter refuses adoption");require(!ambiguous.dirty(),"ambiguous folder retains Project state");
+}
 void runtime_settings_tests(const std::filesystem::path& dir,const std::wstring& input){
     const auto folder=dir/L"Source",runtime=folder/L"Runtime",audio=folder/L"Audio";std::filesystem::create_directories(runtime);std::filesystem::create_directories(audio);Framework seed;seed.new_segment();seed.new_style();seed.new_band();seed.new_collection();seed.open_audio_path(input);
     seed.save_segment(0,(folder/L"Song.sgp").wstring());seed.save_style(0,(folder/L"Style.stp").wstring());seed.save_band(0,(folder/L"Band.bnp").wstring());seed.save_collection(0,(folder/L"Sound.dlp").wstring());seed.save_audio_path(0,(folder/L"Path.aup").wstring());seed.save_project((folder/L"Source.pro").wstring());auto root=Chunk::parse(read_file((folder/L"Source.pro").wstring()));
@@ -1037,6 +1186,26 @@ void runtime_settings_tests(const std::filesystem::path& dir,const std::wstring&
     require(bridge.set_runtime_project_folder(L"Other\\")&&bridge.runtime_component_folder(RuntimeDocumentKind::Segment)==L"Other\\"&&bridge.runtime_component_folder(RuntimeDocumentKind::AudioPath)==L"Audio\\","later global folder change retains explicit different component override");bridge.save_project((folder/L"Source.pro").wstring());write_file_atomic((dir/L"Override.pro").wstring(),read_file((folder/L"Source.pro").wstring()));
     auto bad=root;auto rfld=bad.find("LIST","proj")->find("LIST","rfld");rfld->children.push_back(rfld->children.front());write_file_atomic((folder/L"Ambiguous.pro").wstring(),bad.encode());Framework ambiguous;ambiguous.open_project((folder/L"Ambiguous.pro").wstring());rejected([&]{ambiguous.set_runtime_component_folder(RuntimeDocumentKind::Band,L"Bad\\");},"ambiguous original filters reject instead of choosing a folder");require(!ambiguous.dirty()&&read_file((folder/L"Ambiguous.pro").wstring())==bad.encode(),"ambiguous metadata refusal leaves saved Project and dirty state exact");
     Framework fresh;fresh.new_segment();fresh.save_segment(0,(folder/L"Fresh.sgp").wstring());fresh.save_project((folder/L"Fresh.dmpj").wstring());require(fresh.set_runtime_component_folder(RuntimeDocumentKind::Segment,L"Runtime\\")&&fresh.set_runtime_filename(RuntimeDocumentKind::Segment,0,L"Renamed.sgt"),"saved product-only Project materializes standard native runtime settings");fresh.save_project((folder/L"Fresh.dmpj").wstring());Framework freshReload;freshReload.open_project((folder/L"Fresh.dmpj").wstring());require(freshReload.runtime_component_folder(RuntimeDocumentKind::Segment)==L"Runtime\\"&&freshReload.runtime_filename(RuntimeDocumentKind::Segment,0)==L"Renamed.sgt","product-only settings restore through bridge without original Producer dependency");
+}
+void runtime_saveas_memory_tests(const std::filesystem::path& dir){
+    const auto source=dir/L"Source",output=dir/L"Runtime";std::filesystem::create_directories(source);std::filesystem::create_directories(output);
+    Framework host;host.new_segment();host.new_style();host.new_band();host.new_collection();host.new_audio_path();host.new_container();
+    host.save_segment(0,(source/L"Song.sgp").wstring());host.save_style(0,(source/L"Style.stp").wstring());host.save_band(0,(source/L"Band.bnp").wstring());host.save_collection(0,(source/L"Sound.dlp").wstring());host.save_audio_path(0,(source/L"Path.aup").wstring());host.save_container(0,(source/L"Container.cop").wstring());host.save_project((source/L"Source.pro").wstring());
+    const auto project=read_file((source/L"Source.pro").wstring());const auto projectFolder=host.runtime_project_folder();
+    const std::vector<RuntimeDocumentKind> kinds={RuntimeDocumentKind::Segment,RuntimeDocumentKind::Style,RuntimeDocumentKind::Band,RuntimeDocumentKind::Collection,RuntimeDocumentKind::AudioPath,RuntimeDocumentKind::Container};
+    const std::vector<std::wstring> names={L"Remembered.sgt",L"Remembered.sty",L"Remembered.bnd",L"Remembered.dls",L"Remembered.aud",L"Remembered.con"};
+    const auto clean=host.document(0).save_bytes();host.document(0).add_tempo(768,177);const auto edited=host.document(0).save_bytes();
+    for(size_t i=0;i<kinds.size();++i){const auto component=host.runtime_component_folder(kinds[i]);host.save_runtime_as(kinds[i],0,(output/names[i]).wstring());require(std::filesystem::exists(output/names[i])&&host.runtime_filename(kinds[i],0)==names[i]&&host.runtime_file_folder(kinds[i],0)==L"..\\Runtime\\","successful Runtime Save As remembers owned name and relative folder");require(host.runtime_component_folder(kinds[i])==component&&host.runtime_project_folder()==projectFolder,"Save As preserves project and component defaults");}
+    require(host.dirty()&&read_file((source/L"Source.pro").wstring())==project,"remembered destinations dirty Project without silently saving it");
+    require(host.document(0).undo()&&host.document(0).save_bytes()==clean&&host.document(0).redo()&&host.document(0).save_bytes()==edited,"remembered Save As retains authoring Undo Redo history");
+    host.save_segment(0,(source/L"Song.sgp").wstring());host.save_project((source/L"Source.pro").wstring());const auto remembered=read_file((source/L"Source.pro").wstring());Framework reload;reload.open_project((source/L"Source.pro").wstring());
+    for(size_t i=0;i<kinds.size();++i)require(reload.runtime_filename(kinds[i],0)==names[i]&&reload.runtime_file_folder(kinds[i],0)==L"..\\Runtime\\","native Project reload restores all six destinations");
+    write_file_atomic((output/L"blocked").wstring(),{1,2,3});
+    rejected([&]{reload.save_runtime_as(kinds[0],0,(output/L"blocked"/L"Failed.sgt").wstring());},"failed runtime publication refused");
+    rejected([&]{reload.save_runtime_as(kinds[0],0,(output/L"Wrong.aud").wstring());},"wrong extension refused before publication");
+    rejected([&]{reload.save_runtime_as(kinds[0],99,(output/L"Invalid.sgt").wstring());},"invalid owner refused before publication");
+    require(!reload.dirty()&&reload.runtime_filename(kinds[0],0)==names[0]&&reload.runtime_file_folder(kinds[0],0)==L"..\\Runtime\\"&&read_file((source/L"Source.pro").wstring())==remembered&&reload.document(0).save_bytes()==edited,"failed saves retain metadata Project dirty state and document");
+    require(reload.set_runtime_file_folder(kinds[0],0,L"")&&reload.runtime_file_folder(kinds[0],0)==reload.runtime_component_folder(kinds[0]),"remembered folder can return to component inheritance");
 }
 void runtime_save_as_tests(const std::filesystem::path& dir,const std::wstring& input){
     const auto source=dir/L"Source",output=dir/L"Runtime";std::filesystem::create_directories(source);std::filesystem::create_directories(output);Framework host;host.new_segment();host.new_style();host.new_band();host.add_band_gm_instrument(0,0,0,64,100);host.new_collection();host.open_audio_path(input);
@@ -1149,7 +1318,12 @@ void jazp_save_tests(const std::filesystem::path& dir,const std::wstring& input)
         auto expectedSegment=Chunk::parse(segment);expectedSegment.find("LIST","trkl")->children.back().find("LIST","sttr")->children[0].find("LIST","DMRF")->find("file")->data=utf16(L"styles\\Nested.sty");require(read_file((runtime/L"Song.sgt").wstring())==expectedSegment.encode(),"runtime Segment changes only Style filename in minimal input");
         require(read_file((runtime/L"styles"/L"Nested.sty").wstring())==styleBytes&&read_file((runtime/L"styles"/L"samples"/L"tone.dls").wstring())==collection,"runtime Style DLS reference and PCM unchanged when already runtime named");
         require(!host.dirty()&&host.document(0).save_bytes()==segment&&read_file((folder/L"NestedCopySource.pro").wstring())==project,"runtime export retains source document and native Project exact");
-        rejected([&]{host.export_runtime(runtime.wstring());},"runtime export rejects existing folder without overwrite");
+        const auto runtimeSegment=read_file((runtime/L"Song.sgt").wstring());
+        const auto runtimeStyle=read_file((runtime/L"styles"/L"Nested.sty").wstring());
+        write_file_atomic((runtime/L"unrelated.bin").wstring(),Bytes{7,8,9});
+        host.export_runtime(runtime.wstring());
+        require(read_file((runtime/L"Song.sgt").wstring())==runtimeSegment&&read_file((runtime/L"styles"/L"Nested.sty").wstring())==runtimeStyle&&read_file((runtime/L"styles"/L"samples"/L"tone.dls").wstring())==collection&&read_file((runtime/L"unrelated.bin").wstring())==Bytes({7,8,9}),"runtime repeated export retains output bytes and unrelated files");
+        require(!host.dirty()&&host.document(0).save_bytes()==segment&&read_file((folder/L"NestedCopySource.pro").wstring())==project,"runtime repeated export preserves source Project and model");
         // A valid source directory can collide with the new Project filename.
         // This makes the final staging Project write fail after files are copied.
         const auto failure=dir/L"StageFailureSource";std::filesystem::create_directories(failure/L"StageFailure.pro");Framework fail;fail.new_segment();fail.save_segment(0,(failure/L"StageFailure.pro"/L"Song.sgp").wstring());fail.save_project((failure/L"StageFailureSource.pro").wstring());const auto before=read_file((failure/L"StageFailureSource.pro").wstring());
@@ -1345,10 +1519,49 @@ void playback_monitor_tests(){
     require(monitor.update({{6,true,300,100}},2000).empty(),"ignored unknown notification and removed short instance preserve peer");
     monitor.clear();monitor.observed_start(7);require(monitor.update({},3000).empty(),"late retired notification history pruned without completion");
 }
+#include "file_output_tests.h"
+#include "chord_tests.h"
+#include "signpost_tests.h"
+#include "chordmap_tests.h"
+#include "chordmap_palette_tests.h"
+#include "chordmap_reference_tests.h"
+#include "chord_composition_tests.h"
+#include "marker_tests.h"
+#include "lyric_tests.h"
+#include "lyric_runtime_tests.h"
+
+#include "mute_tests.h"
+#include "segment_trigger_tests.h"
+#include "script_track_tests.h"
+#include "script_message_tests.h"
+#include "container_document_tests.h"
+#include "container_embed_tests.h"
+#include "midi_import_tests.h"
 int wmain(int argc,wchar_t** argv) {
     try {
         const auto dir=argc>1?std::filesystem::absolute(argv[1]):std::filesystem::temp_directory_path()/(L"producer-core-"+std::to_wstring(GetCurrentProcessId()));
         std::filesystem::create_directories(dir);
+        if((argc==3||argc==4)&&std::wstring(argv[2])==L"--midi-import"){traceChecks=true;midi_import_tests(dir);if(argc==4)midi_import_reference_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--common-open"){traceChecks=true;common_open_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"typed Common Open catalogs native Project malformed input; GUI and original comparison separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--container-document"){traceChecks=true;container_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--container-embed"){traceChecks=true;container_embed_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--timeline-range"){traceChecks=true;timeline_range_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--script-track-document"){traceChecks=true;script_track_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&(std::wstring(argv[2])==L"--script-track-owned"||std::wstring(argv[2])==L"--script-track-runtime")){traceChecks=true;script_track_owned_tests(dir,std::wstring(argv[2])==L"--script-track-runtime");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&(std::wstring(argv[2])==L"--segment-trigger-owned"||std::wstring(argv[2])==L"--segment-trigger-runtime")){traceChecks=true;segment_trigger_owned_tests(dir,std::wstring(argv[2])==L"--segment-trigger-runtime");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned recursive Segment Trigger snapshots native Project and optional actual runtime; GUI PCM original separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--segment-trigger-document"){traceChecks=true;segment_trigger_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"SDK Segment Trigger owned model history native Project; main runtime audio original comparison unfinished\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--file-output-buffer"){traceChecks=true;file_output_buffer_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual source FileOutput DirectMusic buffer before Play and independent record Stop; PCM semantics GUI original comparison separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--file-output"){traceChecks=true;file_output_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source FileOutput writer DMO negotiation passthrough lifecycle AudioPath history; actual buffer GUI audio original separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--script-runtime"){traceChecks=true;script_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Script source routine number and error runtime; GUI/audio/original separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--tool-graph-runtime"){traceChecks=true;tool_graph_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source Tool generated-message routing; GUI/audio/original comparison unverified\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--tool-graph"){traceChecks=true;tool_graph_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"ToolGraph order channels native Project; main/runtime/original comparison separate\"}\n";return 0;}
+        if(argc==5&&std::wstring(argv[2])==L"--script-document"){traceChecks=true;script_document_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Script typed source properties history; main native Project runtime original dynamic separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--mute-document"){traceChecks=true;mute_document_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Mute DWORD channels clocks CRUD clipboard history original inputs native Project; GUI audio separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--script-sender-diagnostic"){traceChecks=true;script_sender_diagnostic_tests(dir);std::cout<<"{\"diagnosticsPassed\":true,\"checks\":"<<checks<<",\"traceAcceptance\":false,\"scope\":\"ASCII/Unicode sender observation and independent SDK diagnostic invariance; exact Trace acceptance remains separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--script-messages"){traceChecks=true;script_message_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual Script Trace type14 and SDK diagnostics; GUI/original/PCM separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--lyric-runtime"){traceChecks=true;lyric_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual OS Lyric delivery forward Unicode saved snapshot replay; Main and original timing comparison separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--lyric-document"){traceChecks=true;lyric_document_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Lyric Unicode clocks delivery CRUD clipboard history original inputs native Project; GUI tools playback separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--marker-document"){traceChecks=true;marker_document_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Marker CRUD clipboard history original inputs native Project; GUI alignment audio separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--runtime-recovery-record"){traceChecks=true;runtime_recovery_record_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--runtime-recovery-inspect"){traceChecks=true;runtime_recovery_inspect_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--runtime-recovery-write"){traceChecks=true;runtime_recovery_write_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
@@ -1359,6 +1572,8 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==3&&std::wstring(argv[2])==L"--runtime-recovery-configured-verify"){traceChecks=true;runtime_recovery_configured_verify_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--runtime-defaults"){traceChecks=true;runtime_defaults_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--runtime-update"){traceChecks=true;runtime_update_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"existing runtime updates validation source protection and rollback; GUI/audio separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--runtime-saveas-memory"){traceChecks=true;runtime_saveas_memory_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"six owned Save As destinations; GUI separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--runtime-file-folder"){traceChecks=true;runtime_file_folder_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"native per-file folder; GUI separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--runtime-settings"){traceChecks=true;runtime_settings_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"native runtime folder name defaults and bridge ownership; GUI/audio separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--runtime-save-as"){traceChecks=true;runtime_save_as_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"individual owned runtime save snapshots updates and source protection; GUI/audio separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--audiopath-range"){traceChecks=true;audiopath_range_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"AudioPath port route ranges ownership runtime; GUI/audio separate\"}\n";return 0;}
@@ -1372,6 +1587,8 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==4&&std::wstring(argv[2])==L"--normal-style-dls"){traceChecks=true;normal_style_dls_tests(dir,read_file(argv[3]));std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source normal Pattern root DLS fixture; runtime unverified\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--style-root-dls"){traceChecks=true;style_root_dls_tests(dir,read_file(argv[3]));std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"root Style DLS assignment/cache fixture; runtime unverified\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--motif-dls"){traceChecks=true;motif_dls_tests(dir,read_file(argv[3]));std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Motif DLS assignment/cache fixture; runtime unverified\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--param-control-runtime"){traceChecks=true;param_control_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"OS Parameter Control Track actual source Tool automation; GUI/audio separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--param-control"){traceChecks=true;param_control_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Parameter Control typed ownership history native restore; runtime GUI audio separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--transport-audiopath"){traceChecks=true;transport_audio_path_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--motif-band-edit"){traceChecks=true;motif_band_edit_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Motif Band edit/cache fixture; runtime unverified\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--authored-style-band"){traceChecks=true;authored_style_band_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"authored Style Band Motif/cache fixture; runtime unverified\"}\n";return 0;}
@@ -1383,14 +1600,32 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==5&&std::wstring(argv[2])==L"--pattern-crud"){traceChecks=true;pattern_crud_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"targeted Pattern CRUD core; no UI or audio acceptance\"}\n";return 0;}
         if(argc==5&&std::wstring(argv[2])==L"--pattern-ownership"){traceChecks=true;pattern_ownership_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"targeted Pattern ownership core; no UI or audio acceptance\"}\n";return 0;}
         if(argc>=3&&std::wstring(argv[2])==L"--command-track"){traceChecks=true;command_track_tests(dir,argc>3?argv[3]:L"");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"targeted Command track core; no UI or audio acceptance\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--chord-composition"){traceChecks=true;chord_composition_tests(dir,false);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--chord-composition-runtime"){traceChecks=true;chord_composition_tests(dir,true);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--chordmap-reference"){traceChecks=true;chordmap_reference_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"ChordMap typed reference edits, invalid invariance, owned resolution and native Project restore\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--chordmap-reference-runtime"){traceChecks=true;chordmap_reference_tests(dir,true);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"OS owned ChordMap binding; composer/audio/original dynamic separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--chordmap-palette"){traceChecks=true;chordmap_palette_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Chordmap palette original default, fixed roots, owned edits and native restore; Main/composition/original dynamic separate\"}\n";return 0;}
+        if((argc==4||argc==5)&&std::wstring(argv[2])==L"--chordmap-document"){traceChecks=true;chordmap_document_tests(dir,argv[3],argc==5?argv[4]:L"");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Chordmap graph history native Project and original file roundtrip; GUI composition dynamic comparison separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--signpost-track"){traceChecks=true;signpost_track_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned SignPost CRUD history native reload; GUI composition original comparison separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--chord-track"){traceChecks=true;chord_track_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Chord track CRUD history save reload; GUI audio original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--sequence-crud"){traceChecks=true;sequence_crud_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"targeted Sequence CRUD core; no UI or audio acceptance\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--playback-monitor"){traceChecks=true;playback_monitor_tests();std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"per-instance playback monitor core; no GUI/audio acceptance\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--wave-pcm"){traceChecks=true;wave_pcm_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"PCM frame edit and position metadata transactions; GUI audio original separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--wave-sample-loop"){traceChecks=true;wave_sample_loop_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"standalone Wave WSMP loops history and Project restore; runtime and original comparison separate\"}\n";return 0;}
+        if(argc==5&&std::wstring(argv[2])==L"--wave-document"){traceChecks=true;wave_document_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Wave document ownership and native Project; GUI audio and original dynamic comparison separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--wave-track"){traceChecks=true;wave_track_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Wave placement trim CRUD clipboard and history; GUI audio original dynamic comparison separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--style-reference-authoring"){traceChecks=true;style_reference_authoring_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Style reference CRUD/context/history/save restore; GUI/original separate\"}\n";return 0;}
         run(dir);atomic_save_lock_tests(dir);band_tests(dir);independent_band_tests(dir);band_track_tests(dir);collection_tests(dir);collection_playback_tests();group_selection_tests(dir);meter_batch_tests(dir);append_track_position_tests(dir);sequence_band_group_tests(dir);sequence_crud_tests(dir);command_track_tests(dir,L"");style_tests(dir);style_host_tests(dir);style_editor_tests(dir);pattern_layout_tests(dir);style_part_tests(dir);style_playback_mapping_tests();
         if(argc>3)reference_band_tests(dir,(std::filesystem::path(argv[3])/L"Heartlnd.stp").wstring());
         if(argc>4){const auto original=read_file(argv[4]);dls_editor_tests(dir,original);require(collection_identity(original).has_value(),"observed real DLS identity");const auto base=dir/L"observed-dls";std::filesystem::create_directories(base);write_file_atomic((base/L"sample.dls").wstring(),original);Framework host;const auto ci=host.open_collection((base/L"sample.dls").wstring()),bi=host.new_band();host.add_band_gm_instrument(bi,0,0,64,100);host.save_band(bi,(base/L"band.bnp").wstring());require(host.set_band_collection(bi,0,ci)&&host.band_collections(bi)[0].bytes==original,"real DLS source-owned assignment");host.save_band(bi,(base/L"band.bnp").wstring());host.save_project((base/L"project.dmpj").wstring());Framework reload;reload.open_project((base/L"project.dmpj").wstring());require(reload.band_collections(0)[0].bytes==original,"real DLS whole-file project reload");}
+        chord_track_tests(dir);signpost_track_tests(dir);chordmap_document_tests(dir);
+        marker_document_tests(dir);
+        lyric_document_tests(dir);
+        mute_document_tests(dir);
         // Optional reference input is read-only and never needed by core tests.
         if(argc>2) {SegmentDocument original;const auto bytes=read_file(argv[2]);original.load(bytes);require(original.save_bytes()==bytes,"reference segment lossless load save");if(argc>3){original.resolve_style_context(argv[3]);require(original.styles().size()==1,"QuickStart Style reference resolved");const auto& dependency=original.styles()[0];StyleDocument reference;reference.load(dependency.bytes);require(reference.meter().beats==4&&reference.meter().denominator==4&&reference.meter().grids==4&&reference.tempo()==112,"observed Heartland Style header matches source reader");require(original.timeline().clocks({2,1,20})==6932&&original.save_bytes()==bytes,"QuickStart Style coordinates and lossless segment");write_file_atomic((dir/L"reference-style.stp").wstring(),dependency.bytes);}require(original.add_tempo(768,137),"reference tempo edit");write_file_atomic((dir/L"reference-edited.sgp").wstring(),original.save_bytes());}
         std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"core; no UI or audio acceptance\"}\n";return 0;
     }catch(const std::exception& e){std::cerr<<"after "<<checks<<" checks: "<<e.what()<<'\n';return 1;}
 }
+
 

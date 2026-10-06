@@ -2,6 +2,7 @@
 #include "document.h"
 #include "components.h"
 #include "dls.h"
+#include "segment_trigger_playback.h"
 #include <memory>
 #include <optional>
 #include <windows.h>
@@ -13,7 +14,14 @@ struct OpenStyleDocument {std::wstring path;std::unique_ptr<StyleDocument> docum
 struct OpenBandDocument {std::wstring path;std::unique_ptr<BandDocument> document;std::optional<size_t> projectReference;};
 struct OpenCollection {std::wstring path;DlsDocument document;std::optional<size_t> projectReference;};
 struct OpenAudioPath {std::wstring path;std::unique_ptr<AudioPathDocument> document;std::optional<size_t> projectReference;};
-enum class RuntimeDocumentKind {Segment,Style,Band,Collection,AudioPath};
+struct OpenWave {std::wstring path;std::unique_ptr<WaveDocument> document;std::optional<size_t> projectReference;};
+struct OpenToolGraph {std::wstring path;std::unique_ptr<ToolGraphDocument> document;std::optional<size_t> projectReference;};
+struct OpenContainer {std::wstring path;std::unique_ptr<ContainerDocument> document;std::optional<size_t> projectReference;};
+struct OpenScript {std::wstring path;std::unique_ptr<ScriptDocument> document;std::optional<size_t> projectReference;};
+struct OpenChordMap {std::wstring path;std::unique_ptr<ChordMapDocument> document;std::optional<size_t> projectReference;};
+enum class DocumentKind {Project,Segment,Style,Band,Collection,AudioPath,ChordMap,Wave,Script,Container,ToolGraph};
+struct OpenedDocument {DocumentKind kind;size_t index;};
+enum class RuntimeDocumentKind {Segment,Style,Band,Collection,AudioPath,Container};
 // Durable before/after evidence for a later explicit recovery operation.
 // This is a manifest, not permission to overwrite a changed external file.
 struct RuntimeUpdateRecoveryFile {
@@ -38,6 +46,11 @@ class Framework {
     std::vector<OpenBandDocument> bands_;
     std::vector<OpenCollection> collections_;
     std::vector<OpenAudioPath> audioPaths_;
+    std::vector<OpenChordMap> chordMaps_;
+    std::vector<OpenWave> waves_;
+    std::vector<OpenScript> scripts_;
+    std::vector<OpenContainer> containers_;
+    std::vector<OpenToolGraph> toolGraphs_;
     std::vector<std::wstring> warnings_;
     ComponentCatalog components_;
     Chunk projectRoot_;
@@ -53,10 +66,13 @@ class Framework {
     std::pair<std::wstring,std::optional<size_t>> runtime_owner(RuntimeDocumentKind,size_t) const;
 public:
     Framework();
+    static DocumentKind document_kind(const std::wstring& path);
+    OpenedDocument open_document(const std::wstring& path);
     // Ownership is acyclic: Framework -> documents -> RIFF and track models.
     // UI stores indexes, never raw pointers across document creation/deletion.
     void new_project();
     size_t new_segment();
+    size_t import_midi_segment(const std::wstring& path);
     size_t open_segment(const std::wstring& path);
     size_t new_style();size_t open_style(const std::wstring& path);
     size_t new_band();size_t open_band(const std::wstring& path);
@@ -66,12 +82,45 @@ public:
     bool add_band_gm_instrument(size_t index,std::uint32_t patch,std::uint32_t pchannel,unsigned pan,unsigned volume);
     bool assign_band(size_t segmentIndex,size_t bandIndex,std::int32_t time);
     bool assign_style_band(size_t segmentIndex,size_t styleIndex,size_t bandIndex,std::int32_t time);
+    bool assign_style_reference(size_t segmentIndex,size_t styleIndex,std::int32_t time,std::optional<size_t> event={},size_t trackIndex=0);
+    bool delete_style_reference(size_t segmentIndex,size_t event,size_t trackIndex=0);
+    bool assign_chordmap_reference(size_t segmentIndex,size_t mapIndex,std::int32_t time=0,size_t trackIndex=0);
+    std::vector<ResolvedChordMap> playback_chordmaps(size_t segmentIndex) const;
+    bool compose_chords(size_t segmentIndex,unsigned activity=1);
+    bool undo_segment(size_t);bool redo_segment(size_t);
     bool assign_audio_path(size_t segmentIndex,size_t audioPathIndex);
     size_t new_audio_path();size_t open_audio_path(const std::wstring&);
     void save_audio_path(size_t,const std::wstring&);
     AudioPathDocument& audio_path_document(size_t i){return *audioPaths_.at(i).document;}
     const AudioPathDocument& audio_path_document(size_t i) const{return *audioPaths_.at(i).document;}
     const std::vector<OpenAudioPath>& audio_paths() const{return audioPaths_;}
+    size_t new_chordmap();size_t open_chordmap(const std::wstring&);void save_chordmap(size_t,const std::wstring&);
+    ChordMapDocument& chordmap_document(size_t i){return *chordMaps_.at(i).document;}
+    const ChordMapDocument& chordmap_document(size_t i) const{return *chordMaps_.at(i).document;}
+    const std::vector<OpenChordMap>& chordmaps() const{return chordMaps_;}
+    bool assign_segment_trigger(size_t owner,size_t target,bool motif,const std::wstring& motifName,std::int32_t logical,std::int32_t physical,std::uint32_t flags,std::optional<size_t> event={},size_t track=0);
+    bool assign_script_call(size_t owner,size_t script,const std::wstring& routine,std::int32_t logical,std::int32_t physical,std::uint32_t timing,std::optional<size_t> event={},size_t track=0);
+    SegmentTriggerPlayback trigger_playback(size_t owner) const;
+    bool insert_segment_wave(size_t segment,size_t wave,size_t part,std::int64_t time,std::uint32_t variations,size_t* resultingIndex=nullptr);
+    std::vector<ResolvedWave> playback_waves(size_t segment)const;
+    size_t open_wave(const std::wstring&);void save_wave(size_t,const std::wstring&);
+    const std::vector<OpenWave>& waves()const{return waves_;}
+    WaveDocument& wave_document(size_t i){return *waves_.at(i).document;}
+    const WaveDocument& wave_document(size_t i)const{return *waves_.at(i).document;}
+    size_t new_tool_graph();size_t open_tool_graph(const std::wstring&);void save_tool_graph(size_t,const std::wstring&);
+    const std::vector<OpenToolGraph>& tool_graphs()const{return toolGraphs_;}
+    ToolGraphDocument& tool_graph_document(size_t i){return *toolGraphs_.at(i).document;}
+    const ToolGraphDocument& tool_graph_document(size_t i)const{return *toolGraphs_.at(i).document;}
+    size_t new_container();size_t open_container(const std::wstring&);void save_container(size_t,const std::wstring&);
+    bool add_container_segment_reference(size_t,size_t,const std::wstring&,bool keep=false);
+    const std::vector<OpenContainer>& containers()const{return containers_;}
+    ContainerDocument& container_document(size_t i){return *containers_.at(i).document;}
+    const ContainerDocument& container_document(size_t i)const{return *containers_.at(i).document;}
+    size_t new_script();size_t open_script(const std::wstring&);void save_script(size_t,const std::wstring&);
+    bool add_script_segment_reference(size_t script,size_t segment,const std::wstring& alias,bool keep=false);
+    const std::vector<OpenScript>& scripts()const{return scripts_;}
+    ScriptDocument& script_document(size_t i){return *scripts_.at(i).document;}
+    const ScriptDocument& script_document(size_t i)const{return *scripts_.at(i).document;}
     size_t new_collection();size_t open_collection(const std::wstring& path);
     void save_collection(size_t index,const std::wstring& path);
     const std::vector<OpenCollection>& collections() const {return collections_;}
@@ -127,9 +176,12 @@ private:
     void export_runtime_impl(const std::wstring& directory,bool configured,const std::function<void(const std::wstring&)>& afterPublish={}) const;
 public:
     void save_runtime(RuntimeDocumentKind,size_t,const std::wstring& destination) const;
+    void save_runtime_as(RuntimeDocumentKind,size_t,const std::wstring& destination);
     std::wstring runtime_project_folder() const;
     std::wstring runtime_component_folder(RuntimeDocumentKind) const;
     std::wstring runtime_filename(RuntimeDocumentKind,size_t) const;
+    std::wstring runtime_file_folder(RuntimeDocumentKind,size_t) const;
+    bool set_runtime_file_folder(RuntimeDocumentKind,size_t,const std::wstring&);
     bool set_runtime_project_folder(const std::wstring&);
     bool set_runtime_component_folder(RuntimeDocumentKind,const std::wstring&);
     bool set_runtime_filename(RuntimeDocumentKind,size_t,const std::wstring&);

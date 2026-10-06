@@ -69,8 +69,10 @@ LRESULT CALLBACK proc(HWND w,UINT message,WPARAM wp,LPARAM lp){
         add(w,L"BUTTON",L"Duplicate Wave",WS_TABSTOP,480,448,230,30,DuplicateWave);
         add(w,L"BUTTON",L"Import PCM WAV",WS_TABSTOP,16,484,210,30,ImportPcm);add(w,L"BUTTON",L"Export PCM WAV",WS_TABSTOP,265,484,210,30,ExportPcm);
         add(w,L"BUTTON",L"Add PCM Wave...",WS_TABSTOP,480,308,230,26,AddPcm);
-        add(w,L"BUTTON",L"Save DLS As...",WS_TABSTOP,510,484,190,30,SaveAs);add(w,L"BUTTON",L"Runtime Save As...",WS_TABSTOP,715,484,220,30,RuntimeSave);
-        add(w,L"BUTTON",L"Save DLS",WS_TABSTOP,16,530,190,32,Save);add(w,L"BUTTON",L"Undo",WS_TABSTOP,265,530,190,32,Undo);add(w,L"BUTTON",L"Redo",WS_TABSTOP,510,530,190,32,Redo);add(w,L"BUTTON",L"Runtime Properties...",WS_TABSTOP,715,530,220,32,RuntimeSettings);add(w,L"STATIC",L"",0,16,572,710,50,Status);
+        add(w,L"BUTTON",L"Save DLS As...",WS_TABSTOP,510,484,190,30,SaveAs);
+        add(w,L"BUTTON",L"Save DLS",WS_TABSTOP,16,530,190,32,Save);add(w,L"BUTTON",L"Undo",WS_TABSTOP,265,530,190,32,Undo);add(w,L"BUTTON",L"Redo",WS_TABSTOP,510,530,190,32,Redo);
+        // Keep runtime actions in the left column, clear of both loop panels.
+        add(w,L"BUTTON",L"Runtime Save As...",WS_TABSTOP,16,574,220,32,RuntimeSave);add(w,L"BUTTON",L"Runtime Properties...",WS_TABSTOP,265,574,220,32,RuntimeSettings);add(w,L"STATIC",L"",0,16,614,710,50,Status);
         add_loop_panel(w,WaveLoop,12,L"Wave loops");add_loop_panel(w,RegionLoop,280,L"Region loops (apply creates an override)");add(w,L"STATIC",L"",0,760,526,310,20,SampleSource);add(w,L"BUTTON",L"Use Wave sample settings...",WS_TABSTOP,760,554,285,30,InheritSample);add(w,L"STATIC",L"Resets Region root, tuning, volume and loops.",0,760,590,310,32);refresh(w,*s);return 0;}
     case WM_COMMAND:{if(!s)return 0;const auto id=LOWORD(wp);const auto notification=HIWORD(wp);if(id==Instrument||id==Region||id==Wave||id==WaveLoop||id==RegionLoop){if(notification==CBN_SELCHANGE){if(id==Instrument)SendMessageW(GetDlgItem(w,Region),CB_SETCURSEL,0,0);refresh(w,*s);}return 0;}if(notification!=BN_CLICKED)return 0;bool changed=true;
         switch(id){case UseReplacement:EnableWindow(GetDlgItem(w,ReplacementCue),SendMessageW(GetDlgItem(w,UseReplacement),BM_GETCHECK,0,0)==BST_CHECKED);return 0;
@@ -96,7 +98,7 @@ LRESULT CALLBACK proc(HWND w,UINT message,WPARAM wp,LPARAM lp){
         case ExportPcm:{const auto bytes=s->doc().export_wave_pcm(selected(w,Wave));const auto path=pcm_path(w,true);if(path.empty())return 0;write_file_atomic(path,bytes);break;}
         case Save:{auto path=s->framework.collections().at(s->index).path;if(path.empty())path=dls_save_path(w);if(path.empty())return 0;s->framework.save_collection(s->index,path);break;}
         case RuntimeSettings:show_runtime_settings(w,s->framework,RuntimeDocumentKind::Collection,s->index);break;
-        case RuntimeSave:{const auto path=dls_save_path(w,true);if(path.empty())return 0;s->framework.save_runtime(RuntimeDocumentKind::Collection,s->index,path);break;}
+        case RuntimeSave:{const auto path=dls_save_path(w,true);if(path.empty())return 0;s->framework.save_runtime_as(RuntimeDocumentKind::Collection,s->index,path);break;}
         case SaveAs:{const auto path=dls_save_path(w);if(path.empty())return 0;s->framework.save_collection(s->index,path);s->savedAs=true;break;}
         case Undo:s->doc().undo();break;case Redo:s->doc().redo();break;default:return 0;}
         if(!changed)throw std::runtime_error("Edit unchanged or invalid; check ranges, unique MIDI locale and wave cue");refresh(w,*s);return 0;}
@@ -135,7 +137,7 @@ void show_dls_editor(HWND parent,Framework& framework,size_t index){
     static bool registered=false;const auto instance=GetModuleHandleW(nullptr);if(!registered){WNDCLASSW c{};c.hInstance=instance;c.lpfnWndProc=proc;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerDls";if(!RegisterClassW(&c))throw std::runtime_error("DLS window registration failed");registered=true;}
     // The editor is an independently targetable task window. The synchronous loop
     // and disabled main window still keep Framework document indices stable.
-    Session session{framework,index};const auto w=CreateWindowExW(WS_EX_APPWINDOW,L"SourceProducerDls",L"DLS",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,CW_USEDEFAULT,CW_USEDEFAULT,1100,656,nullptr,nullptr,instance,&session);if(!w)throw std::runtime_error("DLS editor window creation failed");const bool enabled=IsWindowEnabled(parent)!=FALSE;EnableWindow(parent,FALSE);ShowWindow(w,SW_SHOW);UpdateWindow(w);
+    Session session{framework,index};const auto w=CreateWindowExW(WS_EX_APPWINDOW,L"SourceProducerDls",L"DLS",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,CW_USEDEFAULT,CW_USEDEFAULT,1100,700,nullptr,nullptr,instance,&session);if(!w)throw std::runtime_error("DLS editor window creation failed");const bool enabled=IsWindowEnabled(parent)!=FALSE;EnableWindow(parent,FALSE);ShowWindow(w,SW_SHOW);UpdateWindow(w);
     MSG msg{};BOOL result=1;while(IsWindow(w)&&(result=GetMessageW(&msg,nullptr,0,0))>0){if(!IsDialogMessageW(w,&msg)){TranslateMessage(&msg);DispatchMessageW(&msg);}}
     if(IsWindow(w))DestroyWindow(w);EnableWindow(parent,enabled);SetActiveWindow(parent);if(result==0)PostQuitMessage(static_cast<int>(msg.wParam));if(result<0)throw std::runtime_error("DLS editor message loop failed");
 }

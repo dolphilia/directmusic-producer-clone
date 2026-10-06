@@ -85,6 +85,11 @@ public:
     bool undo();bool redo();
 };
 std::vector<StyleReference> style_references(const Chunk& segment);
+Chunk style_reference_track(std::uint32_t groups);
+std::vector<StyleReference> style_track_references(const Chunk& track);
+bool insert_style_reference(Chunk& track,const StyleReference&);
+bool change_style_reference(Chunk& track,size_t index,const StyleReference&);
+bool delete_style_reference(Chunk& track,size_t index);
 Bytes relocate_style_references(const Bytes&,const std::vector<ResolvedStyle>&,const std::wstring& directory);
 Bytes retarget_style_references(const Bytes&,const std::wstring& directory,const std::wstring& oldPath,const std::wstring& newPath,const Bytes& style);
 // Missing, ambiguous or identity-mismatched references fail atomically. No

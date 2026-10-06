@@ -45,6 +45,7 @@ std::vector<Note> sequence_notes(const Bytes& payload) {
     return notes;
 }
 Bytes sequence_insert(const Bytes& payload,Note note) {
+    if(note.time<0||note.duration<=0||note.pitch>127||!note.velocity||note.velocity>127||note.channel>=0xfffffffcu)throw std::runtime_error("Invalid Sequence note");
     auto p=parts(payload);auto& part=p.at(events_part(p));const auto size=stride(part);Bytes record(size);
     put32(record,0,note.time);put32(record,4,note.duration);put32(record,8,note.channel);record[14]=0x90;record[15]=note.pitch;record[16]=note.velocity;
     size_t insert=12;const auto end=8+read32(part.bytes,4);
@@ -67,6 +68,53 @@ Bytes sequence_change(const Bytes& payload,size_t index,Note note,size_t* result
 Bytes sequence_delete(const Bytes& payload,size_t index){
     auto p=parts(payload);auto& part=p.at(events_part(p));const auto size=stride(part);const auto at=note_record(part,size,index);
     part.bytes.erase(part.bytes.begin()+at,part.bytes.begin()+at+size);put32(part.bytes,4,read32(part.bytes,4)-size);return join(p);
+}
+namespace {
+bool timed(const Part& p){return p.id=="evtl"||p.id=="curl";}
+DWORD range_stride(const Part& p){
+    if(p.id=="evtl")return stride(p);
+    const auto count=read32(p.bytes,4);if(count<4)throw std::runtime_error("Curve record size missing");
+    const auto size=read32(p.bytes,8);if(size<28||size>4096||size%4||(count-4)%size)throw std::runtime_error("Unsupported Curve record size");return size;
+}
+std::int64_t effective_time(const Bytes& record,const std::string& id){
+    const size_t offset=id=="evtl"?12:16;
+    return std::int64_t(static_cast<std::int32_t>(read32(record,0)))+static_cast<short>(record[offset]|(record[offset+1]<<8));
+}
+void validate_range_parts(const std::vector<Part>& p,bool clipboard){
+    (void)events_part(p);bool curve=false;
+    for(const auto& item:p){if(clipboard&&!timed(item))throw std::runtime_error("Unknown range clipboard chunk");if(item.id=="curl"){if(curve)throw std::runtime_error("Ambiguous Curve data");curve=true;}if(timed(item))(void)range_stride(item);}
+}
+Part range_part(const Part& p,std::int32_t begin,std::int32_t end,bool keepInside,bool relative){
+    const auto size=range_stride(p);Part result{p.id,Bytes(p.bytes.begin(),p.bytes.begin()+12)};
+    for(size_t pos=12;pos<8+read32(p.bytes,4);pos+=size){Bytes record(p.bytes.begin()+pos,p.bytes.begin()+pos+size);const auto time=effective_time(record,p.id);
+        if((time>=begin&&time<end)!=keepInside)continue;
+        if(relative){const auto raw=std::int64_t(static_cast<std::int32_t>(read32(record,0)))-begin;if(raw<INT32_MIN||raw>INT32_MAX)throw std::runtime_error("Range timestamp overflow");put32(record,0,static_cast<std::uint32_t>(raw));}
+        result.bytes.insert(result.bytes.end(),record.begin(),record.end());
+    }put32(result.bytes,4,static_cast<std::uint32_t>(result.bytes.size()-8));return result;
+}
+void check_range(std::int32_t begin,std::int32_t end){if(begin<0||end<=begin)throw std::runtime_error("Invalid Sequence range");}
+}
+Bytes sequence_copy_range(const Bytes& payload,std::int32_t begin,std::int32_t end){
+    check_range(begin,end);const auto p=parts(payload);validate_range_parts(p,false);std::vector<Part> out;
+    for(const auto& item:p)if(timed(item))out.push_back(range_part(item,begin,end,true,true));return join(out);
+}
+Bytes sequence_delete_range(const Bytes& payload,std::int32_t begin,std::int32_t end){
+    check_range(begin,end);auto p=parts(payload);validate_range_parts(p,false);
+    for(auto& item:p)if(timed(item))item=range_part(item,begin,end,false,false);return join(p);
+}
+bool sequence_range_empty(const Bytes& bytes){const auto p=parts(bytes);validate_range_parts(p,true);return std::all_of(p.begin(),p.end(),[](const Part& item){return read32(item.bytes,4)==4;});}
+Bytes sequence_paste_range(const Bytes& destination,const Bytes& clipboard,std::int32_t at,std::int32_t span,bool overwrite,std::int32_t length){
+    if(at<0||span<=0||std::int64_t(at)+span>length)throw std::runtime_error("Invalid Sequence paste range");
+    auto p=parts(overwrite?sequence_delete_range(destination,at,at+span):destination);const auto incoming=parts(clipboard);validate_range_parts(p,false);validate_range_parts(incoming,true);
+    for(const auto& source:incoming){auto target=std::find_if(p.begin(),p.end(),[&](const Part& item){return item.id==source.id;});
+        if(read32(source.bytes,4)==4)continue;
+        if(target==p.end()){p.push_back({source.id,Bytes(source.bytes.begin(),source.bytes.begin()+12)});put32(p.back().bytes,4,4);target=p.end()-1;}
+        const auto size=range_stride(source);if(read32(target->bytes,4)==4)put32(target->bytes,8,size);if(size!=range_stride(*target))throw std::runtime_error("Range record sizes differ; extensions cannot be discarded");
+        std::vector<Bytes> records;for(size_t pos=12;pos<8+read32(target->bytes,4);pos+=size)records.emplace_back(target->bytes.begin()+pos,target->bytes.begin()+pos+size);
+        for(size_t pos=12;pos<8+read32(source.bytes,4);pos+=size){Bytes record(source.bytes.begin()+pos,source.bytes.begin()+pos+size);const auto relative=effective_time(record,source.id);if(relative<0||relative>=span)throw std::runtime_error("Clipboard record outside range");if(source.id=="curl"||((record[14]&0xf0)==0x90&&record[16])){const auto duration=static_cast<std::int32_t>(read32(record,4));if(duration<0||std::int64_t(at)+relative+duration>length)throw std::runtime_error("Pasted duration exceeds Segment");}const auto raw=std::int64_t(static_cast<std::int32_t>(read32(record,0)))+at;if(raw<INT32_MIN||raw>INT32_MAX)throw std::runtime_error("Paste timestamp overflow");put32(record,0,static_cast<std::uint32_t>(raw));records.push_back(std::move(record));}
+        std::stable_sort(records.begin(),records.end(),[](const Bytes& a,const Bytes& b){return static_cast<std::int32_t>(read32(a,0))<static_cast<std::int32_t>(read32(b,0));});
+        target->bytes.resize(12);for(const auto& record:records)target->bytes.insert(target->bytes.end(),record.begin(),record.end());put32(target->bytes,4,static_cast<std::uint32_t>(target->bytes.size()-8));
+    }return join(p);
 }
 Chunk sequence_track() {
     Bytes records(4);put32(records,0,20);auto sequence=leaf("evtl",records).encode();Bytes curves(4);put32(curves,0,32);const auto curve=leaf("curl",curves).encode();sequence.insert(sequence.end(),curve.begin(),curve.end());

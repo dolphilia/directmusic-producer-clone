@@ -1,0 +1,37 @@
+void container_embed_tests(const std::filesystem::path& dir){
+    const auto folder=dir/L"EmbedProject";std::filesystem::create_directories(folder);
+    Framework host;const auto song=host.new_segment(),other=host.new_segment(),container=host.new_container();
+    auto songRoot=Chunk::parse(host.document(song).save_bytes());put32(songRoot.find("segh")->data,4,30720);host.document(song).load(songRoot.encode());
+    for(int i=0;i<4;++i)require(host.document(song).add_note({i*7680,6000,0,60,96}),"Embed source four real notes");
+    require(host.document(song).add_tempo(15360,180),"Embed source changing tempo");
+    host.save_segment(song,(folder/L"Song.sgp").wstring());host.save_segment(other,(folder/L"Other.sgp").wstring());
+    host.save_container(container,(folder/L"Owned.cop").wstring());host.save_project((folder/L"EmbedProject.pro").wstring());
+    require(host.add_container_segment_reference(container,song,L"Song",true)&&host.add_container_segment_reference(container,other,L"Other"),"Both runtime groups start as design links");
+    auto& d=host.container_document(container);const auto linked=d.save_bytes();
+    require(d.graph().objects()[0].referenceRuntime&&d.set_reference_runtime(0,false),"Embed membership independent of linked design payload");
+    const auto embeddedDesign=d.save_bytes();require(d.graph().objects()[0].reference&&!d.graph().objects()[0].referenceRuntime&&d.graph().objects()[1].referenceRuntime,"Both groups retain design references");
+    require(d.undo()&&d.save_bytes()==linked&&d.redo()&&d.save_bytes()==embeddedDesign,"Membership one Undo Redo restores exact bytes");
+    require(!d.set_reference_runtime(99,false)&&!d.set_reference_runtime(0,false)&&d.save_bytes()==embeddedDesign,"Invalid and unchanged membership preserve bytes");
+    auto extended=Chunk::parse(embeddedDesign);auto& object=extended.find("LIST","cosl")->children[0];object.find("cobu")->data={0x80,0x93,0xaa};object.find("cobh")->data.push_back(0xa7);Chunk opaque;opaque.id="zzzz";opaque.data={9,8,7};opaque.padding=0xa5;object.children.push_back(opaque);d.load(extended.encode());
+    require(d.set_reference_runtime(0,true)&&d.set_reference_runtime(0,false),"Membership preserves unknown bits and extension");
+    auto restored=Chunk::parse(d.save_bytes());require(restored.find("LIST","cosl")->children[0].find("cobu")->data==Bytes({0x80,0x93,0xaa}),"Only cobu low bit changes");
+    host.save_container(container,(folder/L"Owned.cop").wstring());host.save_project((folder/L"EmbedProject.pro").wstring());
+    const auto savedDesign=d.save_bytes(),savedSong=host.document(song).save_bytes(),savedProject=read_file((folder/L"EmbedProject.pro").wstring());
+    const auto output=folder/L"Owned.con";host.save_runtime(RuntimeDocumentKind::Container,container,output.wstring());
+    const auto runtimeBytes=read_file(output.wstring());ContainerGraph runtime(runtimeBytes);const auto objects=runtime.objects();
+    require(objects.size()==2&&!objects[0].reference&&!objects[0].referenceRuntime&&objects[1].reference&&objects[1].referenceRuntime,"Runtime embeds selected object and keeps Reference group linked");
+    require(objects[0].alias==L"Song"&&objects[0].flags==1&&objects[0].payload.type=="DMSG","Embedded identity alias KEEP and form retained");
+    SegmentDocument actual;actual.load(objects[0].payload.encode());require(actual.notes().size()==4&&actual.tempos().size()==2&&actual.tempos()[1].time==15360&&actual.tempos()[1].bpm==180,"Embedded runtime contains source musical events");
+    auto expected=Chunk::parse(savedSong);expected.children.erase(std::remove_if(expected.children.begin(),expected.children.end(),[](const auto& c){return c.id=="LIST"&&c.type=="sgdl";}),expected.children.end());
+    require(objects[0].payload.encode()==expected.encode(),"Embedded payload equals source except independently listed authoring sgdl");
+    const auto runtimeTree=Chunk::parse(runtimeBytes);const auto& first=runtimeTree.find("LIST","cosl")->children[0];require(!first.find("cobu")&&!first.find("jzfr")&&first.find("cobh")->data.back()==0xa7&&first.find("zzzz")->encode()==opaque.encode(),"Runtime removes design membership/association only and preserves opaque object data");
+    require(decode_utf16(objects[1].payload.find("file")->data)==L"Other.sgt","Reference Runtime uses runtime filename");
+    require(d.save_bytes()==savedDesign&&!d.dirty()&&host.document(song).save_bytes()==savedSong&&!host.dirty()&&read_file((folder/L"EmbedProject.pro").wstring())==savedProject,"Export leaves source checkpoints and Project unchanged");
+    require(d.undo()&&d.graph().objects()[0].referenceRuntime&&d.redo()&&d.save_bytes()==savedDesign,"Export does not consume design history");
+    auto malformed=Chunk::parse(savedDesign);malformed.find("LIST","cosl")->children[0].find("cobu")->data.clear();rejected([&]{d.load(malformed.encode());},"Empty membership rejected");require(d.save_bytes()==savedDesign&&!d.dirty(),"Malformed load retains saved document");
+    require(host.document(song).add_tempo(768,137),"Dirty embedded source prepared");rejected([&]{host.save_runtime(RuntimeDocumentKind::Container,container,output.wstring());},"Dirty embedded source refused");require(read_file(output.wstring())==runtimeBytes&&d.save_bytes()==savedDesign,"Rejected export retains destination and Container");require(host.document(song).undo(),"Source restored without file replacement");
+    Framework reload;reload.open_project((folder/L"EmbedProject.pro").wstring());require(reload.containers().size()==1&&!reload.container_document(0).graph().objects()[0].referenceRuntime&&reload.container_document(0).graph().objects()[1].referenceRuntime,"Saved Project restores both design memberships");
+    reload.save_runtime(RuntimeDocumentKind::Container,0,(folder/L"Reload.con").wstring());require(read_file((folder/L"Reload.con").wstring())==runtimeBytes,"Restored design produces identical runtime bytes");
+    auto mismatch=Chunk::parse(savedDesign);mismatch.find("LIST","cosl")->children[0].find("jzfr")->data[0]^=1;reload.container_document(0).load(mismatch.encode());const auto mismatchBefore=reload.container_document(0).save_bytes();rejected([&]{reload.save_runtime(RuntimeDocumentKind::Container,0,output.wstring());},"Wrong Project association refused");require(read_file(output.wstring())==runtimeBytes&&reload.container_document(0).save_bytes()==mismatchBefore,"Association failure preserves output and input");
+    auto direct=runtime;require(!direct.set_reference_runtime(0,true)&&direct.save_bytes()==runtimeBytes,"Runtime embedded object cannot invent a design reference");
+}

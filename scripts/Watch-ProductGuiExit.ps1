@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$Executable,[Parameter(Mandatory)][ValidateRange(1,2147483647)][int]$ProcessId,[Parameter(Mandatory)][string]$OutputPath,[ValidateRange(5,900)][int]$TimeoutSeconds=120)
+param([Parameter(Mandatory)][string]$Executable,[Parameter(Mandatory)][ValidateRange(1,2147483647)][int]$ProcessId,[Parameter(Mandatory)][string]$OutputPath,[ValidateRange(0,900)][int]$TimeoutSeconds=120)
 $ErrorActionPreference='Stop'
 $exe=[IO.Path]::GetFullPath($Executable)
 $process=Get-Process -Id $ProcessId
@@ -27,8 +27,10 @@ try {
     if($name.ToString() -ine $exe){throw 'Native handle executable mismatch'}
     $record=[ordered]@{schema=1;processId=$ProcessId;executable=$exe;exeSha256=(Get-FileHash -LiteralPath $exe).Hash.ToLowerInvariant();startUtc=$process.StartTime.ToUniversalTime().ToString('o');readyUtc=[DateTime]::UtcNow.ToString('o');state='watching';exitUtc=$null;exitCode=$null;forcedTermination=$false;driverSha256=(Get-FileHash -LiteralPath $PSCommandPath).Hash.ToLowerInvariant()}
     $record|ConvertTo-Json|Set-Content -LiteralPath $OutputPath -Encoding utf8
-    $deadline=[DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
-    do {$status=[ProducerExitObserver]::WaitForSingleObject($handle,500);if($status -eq 0){break};if($status -ne 258){throw ('Process wait failed: '+$status)}} while([DateTime]::UtcNow -lt $deadline)
+    # Explicit zero supports long authoring scenarios. Rights and forced-close
+    # behavior remain unchanged; this observer never terminates the product.
+    $deadline=if($TimeoutSeconds -gt 0){[DateTime]::UtcNow.AddSeconds($TimeoutSeconds)}else{$null}
+    do {$status=[ProducerExitObserver]::WaitForSingleObject($handle,500);if($status -eq 0){break};if($status -ne 258){throw ('Process wait failed: '+$status)}} while($TimeoutSeconds -eq 0 -or [DateTime]::UtcNow -lt $deadline)
     if($status -eq 0){[uint32]$code=0;if(-not [ProducerExitObserver]::GetExitCodeProcess($handle,[ref]$code)){throw 'Native exit code query failed'};$record.state='exited';$record.exitCode=$code;$record.exitUtc=[DateTime]::UtcNow.ToString('o')}
     else {$record.state='timeout; process left running'}
     $record|ConvertTo-Json|Set-Content -LiteralPath $OutputPath -Encoding utf8

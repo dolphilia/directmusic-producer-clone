@@ -1,5 +1,6 @@
 #include "conductor.h"
 #include "source_script_host.h"
+#include "source_tools.h"
 #include "document.h"
 #include "audio_path.h"
 #include "file_output_dmo.h"
@@ -134,7 +135,7 @@ struct Conductor::State:PlaybackSession {
     std::vector<NativeScriptCall> scriptHistory;bool scriptHistoryOverflow=false;
     std::unique_ptr<FileOutputRegistration> fileOutputRegistration;
     runtime::AudioPath* recordingPath=nullptr;
-    FileOutputControl* recordingControl=nullptr;
+    std::vector<FileOutputControl*> recordingControls;
     Bytes recordingConfig;
     runtime::Performance* performance=nullptr;bool com=false,audio=false;
     bool observeNotes=false,observeLyrics=false,observeScriptMessages=false;runtime::Graph* graph=nullptr;NoteObserver* observer=nullptr;LyricObserver* lyricObserver=nullptr;LyricObserver* scriptMessageObserver=nullptr;
@@ -146,7 +147,7 @@ struct Conductor::State:PlaybackSession {
     std::vector<PlaybackNotification> pendingNotifications;
     PlaybackId nextId=1;
 };
-Conductor::Conductor():state_(std::make_unique<State>()){}
+Conductor::Conductor():state_(std::make_unique<State>()),toolFactories_(source_tool_factories()){}
 Conductor::~Conductor(){shutdown();}
 void Conductor::check(const char* operation,HRESULT result) {
     calls_.push_back({operation,result});if(FAILED(result)){std::ostringstream message;message<<operation<<" failed: 0x"<<std::hex<<static_cast<unsigned long>(result);throw std::runtime_error(message.str());}
@@ -287,24 +288,36 @@ void Conductor::set_default_audio_path(const Bytes& bytes){
     Bytes validated=bytes;if(!validated.empty()){AudioPathDocument config;config.load(validated);}
     defaultAudioPath_.swap(validated);
 }
-bool Conductor::file_output_active() const{return state_->recordingControl!=nullptr;}
+bool Conductor::file_output_active() const{return !state_->recordingControls.empty();}
 void Conductor::start_file_output(const Bytes& bytes,const std::wstring& filename,HWND owner){
     auto& s=*state_;if(s.recordingPath)throw std::runtime_error("FileOutput recording already active");
     if(!playback_ids().empty())throw std::runtime_error("Stop playback before starting buffer recording");
     AudioPathDocument path;path.load(bytes);validate_audio_effects(path);
     if(!path.tool_graph().empty())throw std::runtime_error("Recording AudioPath ToolGraph construction is not yet connected; implicit activation refused");
     const auto effects=path.effects();
-    const AudioPathEffect* selected=nullptr;
+    std::vector<size_t> selected;
     for(const auto& effect:effects){GUID id{};std::memcpy(&id,effect.classId.data(),16);if(IsEqualGUID(id,fileOutputClass)){
-        if(selected)throw std::runtime_error("Multi-buffer FileOutput recording is not yet connected");selected=&effect;
+        if(std::find(selected.begin(),selected.end(),effect.buffer)!=selected.end())throw std::runtime_error("Multiple FileOutput effects in one buffer are ambiguous");
+        selected.push_back(effect.buffer);
     }}
-    if(!selected)throw std::runtime_error("Add FileOutput to an AudioPath buffer before recording");
-    DWORD pchannel=0,bufferIndex=0;bool connected=false;const auto buffer=path.buffers().at(selected->buffer);
-    for(const auto& port:path.ports())for(const auto& route:port.routes)for(size_t i=0;i<route.buffers.size();++i)if(!connected&&route.buffers[i]==buffer){pchannel=route.base;bufferIndex=static_cast<DWORD>(i);connected=true;}
-    if(!connected)throw std::runtime_error("FileOutput buffer is not connected to a PChannel route");
+    if(selected.empty())throw std::runtime_error("Add FileOutput to an AudioPath buffer before recording");
+    struct Target {size_t buffer;DWORD pchannel,index;std::wstring filename;};
+    std::vector<Target> targets;const auto buffers=path.buffers();
+    // Number by mix-group traversal, not by physical buffer chunk order. A
+    // shared buffer is one recording even when several routes reference it.
+    for(const auto& port:path.ports())for(const auto& route:port.routes)for(size_t i=0;i<route.buffers.size();++i){
+        const auto found=std::find(buffers.begin(),buffers.end(),route.buffers[i]);const auto buffer=static_cast<size_t>(found-buffers.begin());
+        if(std::find(selected.begin(),selected.end(),buffer)!=selected.end()&&std::none_of(targets.begin(),targets.end(),[&](const auto& t){return t.buffer==buffer;}))targets.push_back({buffer,route.base,static_cast<DWORD>(i),{}});
+    }
+    if(targets.size()!=selected.size())throw std::runtime_error("FileOutput buffer is not connected to a PChannel route; Send recording remains unsupported");
+    if(filename.empty()||filename.find(L'\0')!=std::wstring::npos)throw std::runtime_error("Invalid FileOutput filename");
+    const auto output=std::filesystem::path(filename);if(output.filename().empty())throw std::runtime_error("Invalid FileOutput filename");
+    for(size_t i=0;i<targets.size();++i){targets[i].filename=(i?output.parent_path()/(output.stem().wstring()+std::to_wstring(i)+output.extension().wstring()):output).wstring();
+        if(std::filesystem::exists(targets[i].filename))throw std::runtime_error("FileOutput output already exists; no recording started");}
+    Bytes recordingConfig=bytes;std::vector<FileOutputControl*> controls;controls.reserve(targets.size());
     initialize_runtime(owner);
     runtime::Loader* loader=nullptr;runtime::Segment* carrier=nullptr;IUnknown* config=nullptr;
-    runtime::AudioPath* runtimePath=nullptr;FileOutputControl* control=nullptr;
+    runtime::AudioPath* runtimePath=nullptr;
     auto privatePath=Chunk::parse(bytes);prepare_source_effects(privatePath);
     const auto carrierBytes=prepare_transport_audio_path({},privatePath.encode());
     try{
@@ -315,17 +328,20 @@ void Conductor::start_file_output(const Bytes& bytes,const std::wstring& filenam
         check("Get FileOutput AudioPath config",carrier->GetAudioPathConfig(&config));if(!config)throw std::runtime_error("No FileOutput config");
         const auto created=s.performance->CreateAudioPath(config,TRUE,&runtimePath);check("Create FileOutput AudioPath",created);
         if(created!=S_OK||!runtimePath)throw std::runtime_error("Incomplete FileOutput buffer creation");
-        check("Get source buffer FileOutput control",runtimePath->GetObjectInPath(pchannel,0x6100,bufferIndex,fileOutputRuntimeClass,0,fileOutputControlId,reinterpret_cast<void**>(&control)));
-        if(!control)throw std::runtime_error("No source FileOutput control");
-        check("Set FileOutput filename",control->SetFilename(filename.c_str()));check("Start buffer FileOutput",control->Start());
-        // Copy before transferring COM ownership: allocation failure must stop
-        // and finalize the newly created output through the same error path.
-        s.recordingConfig=bytes;s.recordingPath=runtimePath;runtimePath=nullptr;s.recordingControl=control;control=nullptr;
+        for(const auto& target:targets){FileOutputControl* control=nullptr;
+            const auto result=runtimePath->GetObjectInPath(target.pchannel,0x6100,target.index,fileOutputRuntimeClass,0,fileOutputControlId,reinterpret_cast<void**>(&control));
+            // Preserve any returned reference even when lookup reports failure.
+            if(control)controls.push_back(control);check("Get source buffer FileOutput control",result);
+            if(!control)throw std::runtime_error("No source FileOutput control");
+            check("Set FileOutput filename",control->SetFilename(target.filename.c_str()));}
+        for(auto* control:controls)check("Start buffer FileOutput",control->Start());
+        s.recordingConfig.swap(recordingConfig);s.recordingPath=runtimePath;runtimePath=nullptr;s.recordingControls.swap(controls);
         release(config);release(carrier);release(loader);
-    }catch(...){if(control)control->Stop();release(control);release(runtimePath);release(config);release(carrier);release(loader);throw;}
+    }catch(...){for(auto*& control:controls){control->Stop();release(control);}release(runtimePath);release(config);release(carrier);release(loader);throw;}
 }
-void Conductor::stop_file_output(){auto& s=*state_;if(!s.recordingControl)return;
-    const auto result=s.recordingControl->Stop();release(s.recordingControl);release(s.recordingPath);s.recordingConfig.clear();check("Stop and finalize buffer FileOutput",result);
+void Conductor::stop_file_output(){auto& s=*state_;if(s.recordingControls.empty())return;
+    HRESULT result=S_OK;for(auto*& control:s.recordingControls){const auto stopped=control->Stop();if(FAILED(stopped)&&SUCCEEDED(result))result=stopped;release(control);}
+    s.recordingControls.clear();release(s.recordingPath);s.recordingConfig.clear();check("Stop and finalize buffer FileOutput",result);
 }
 void Conductor::set_tool_factories(std::vector<ToolFactory> factories){
     if(state_->performance)throw std::runtime_error("Declare Tool factories before initialization");
@@ -382,7 +398,10 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
             // Only the private loader snapshot omits tool classes. Populate the
             // AudioPath's own graph via explicit source factories after creation.
             path->children.erase(std::remove_if(path->children.begin(),path->children.end(),[](const Chunk& c){return c.id=="RIFF"&&c.type=="DMTG";}),path->children.end());}
+        const auto capabilities=discover_audio_path_tool_parameters(pathConfig);
+        if(const auto tracks=root.find("LIST","trkl"))for(const auto& track:tracks->children)if(track.find("LIST","prmt"))validate_source_parameter_controls(param_control_objects(track),capabilities);
         root.children.erase(std::remove_if(root.children.begin(),root.children.end(),[](const Chunk& c){return c.id=="RIFF"&&c.type=="DMTG";}),root.children.end());snapshot.segment=root.encode();}
+    if(state_->recordingPath&&pathConfig!=state_->recordingConfig)throw std::runtime_error("Playback AudioPath differs from active recording; stop recording before changing routes");
     std::vector<std::wstring> triggerServers;
     if(hasSegment){const auto root=Chunk::parse(snapshot.segment);if(const auto tracks=root.find("LIST","trkl"))for(const auto& track:tracks->children){const auto h=track.find("trkh");if(h&&h->data.size()>=16){GUID id{};std::memcpy(&id,h->data.data(),16);if(IsEqualGUID(id,runtime::chordMapTrackClass))triggerServers.push_back(os_server(id,L"dmcompos.dll"));}}}
     const GUID scriptTrackClass={0x4108fa85,0x3586,0x11d3,{0x8b,0xd7,0,0x60,8,0x93,0xb1,0xb6}};
@@ -749,7 +768,7 @@ void Conductor::shutdown() noexcept {
     };
     cleanup(s);for(auto& retained:s.retained)cleanup(*retained);s.retained.clear();
     s.script.reset();
-    if(s.recordingControl)log("Finalize FileOutput cleanup",s.recordingControl->Stop());release(s.recordingControl);release(s.recordingPath);s.recordingConfig.clear();
+    for(auto*& control:s.recordingControls){log("Finalize FileOutput cleanup",control->Stop());release(control);}s.recordingControls.clear();release(s.recordingPath);s.recordingConfig.clear();
     if(s.performance)log("CloseDown",s.performance->CloseDown());s.audio=false;release(s.performance);
     s.notificationIds.clear();s.pendingNotifications.clear();
     // CloseDown completes the realtime callbacks before releasing the observer.

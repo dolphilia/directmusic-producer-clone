@@ -144,14 +144,16 @@ bool SegmentDocument::undo() {
     auto next=*this; next.import(undo_.back());next.resolve_style_history(*this);next.redo_.push_back(save_bytes());next.undo_.pop_back();next.dirty_=next.save_bytes()!=saved_;*this=std::move(next);return true;
 }
 bool SegmentDocument::select_range(TimelineSelection value){
-    if(value.begin<0||value.end<=value.begin||value.end>length()||!value.strips||(value.strips&~7u))return false;try{if(value.strips&TimelineLyric)(void)lyrics(value.lyricTrack);}catch(const std::exception&){return false;}range_=value;return true;
+    if(value.begin<0||value.end<=value.begin||value.end>length()||!value.strips||(value.strips&~TimelineAll))return false;try{if(value.strips&TimelineLyric)(void)lyrics(value.lyricTrack);if(value.strips&TimelineMarker)(void)markers(value.markerTrack);if(value.strips&TimelineMute)(void)mutes(value.muteTrack);}catch(const std::exception&){return false;}range_=value;return true;
 }
 Bytes SegmentDocument::copy_range() const {
-    if(range_.begin<0||range_.end<=range_.begin||range_.end>length()||!range_.strips||(range_.strips&~7u))throw std::runtime_error("Select a Timeline range and strips first");
+    if(range_.begin<0||range_.end<=range_.begin||range_.end>length()||!range_.strips||(range_.strips&~TimelineAll))throw std::runtime_error("Select a Timeline range and strips first");
     TimelineClipboard value;value.span=range_.end-range_.begin;value.strips=range_.strips;
     if(value.strips&TimelineTempo){auto track=tempo_;auto events=track.events();for(auto& e:events)e.selected=e.time>=range_.begin&&e.time<range_.end&&e.bpm>0;track.replace_events(std::move(events));value.tempo=track.copy_selected(range_.begin);if(value.tempo.empty()){tempo::Track empty;empty.clear_selection();value.tempo=empty.copy_selected(0);}}
     if(value.strips&TimelineSequence){const auto fresh=sequence_track();const auto target=selected_track(root_,fresh.find("trkh")->data,selectedGroups_,sequenceIndex_);const auto data=target?target->find("seqt"):fresh.find("seqt");if(!data|| (target&&std::count_if(target->children.begin(),target->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1))throw std::runtime_error("Sequence payload missing or ambiguous");value.sequence=sequence_copy_range(data->data,range_.begin,range_.end);}
     if(value.strips&TimelineLyric){const auto fresh=lyric_track();const auto target=selected_track(root_,fresh.find("trkh")->data,selectedGroups_,range_.lyricTrack);value.lyric=copy_lyric_range(target?*target:fresh,range_.begin,range_.end);}
+    if(value.strips&TimelineMarker){const auto fresh=marker_track();const auto target=selected_track(root_,fresh.find("trkh")->data,selectedGroups_,range_.markerTrack);value.marker=copy_marker_range(target?*target:fresh,range_.begin,range_.end);}
+    if(value.strips&TimelineMute){const auto fresh=mute_track();const auto target=selected_track(root_,fresh.find("trkh")->data,selectedGroups_,range_.muteTrack);value.mute=copy_mute_range(target?*target:fresh,range_.begin,range_.end);}
     return encode_timeline_clipboard(value);
 }
 bool SegmentDocument::delete_range(){
@@ -159,6 +161,8 @@ bool SegmentDocument::delete_range(){
         if(range_.strips&TimelineTempo){auto events=next.tempo_.events();events.erase(std::remove_if(events.begin(),events.end(),[&](const tempo::Event& e){return e.time>=range_.begin&&e.time<range_.end;}),events.end());next.tempo_.replace_events(std::move(events));if(next.hasTempo_)next.commit_tempo(before);}
         if(range_.strips&TimelineSequence){const auto fresh=sequence_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,sequenceIndex_);if(target)target->find("seqt")->data=sequence_delete_range(target->find("seqt")->data,range_.begin,range_.end);}
         if(range_.strips&TimelineLyric){const auto fresh=lyric_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,range_.lyricTrack);if(target)delete_lyric_range(*target,range_.begin,range_.end);}
+        if(range_.strips&TimelineMarker){const auto fresh=marker_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,range_.markerTrack);if(target)delete_marker_range(*target,range_.begin,range_.end);}
+        if(range_.strips&TimelineMute){const auto fresh=mute_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,range_.muteTrack);if(target)delete_mute_range(*target,range_.begin,range_.end);}
         if(next.save_bytes()==before)return false;next.undo_=undo_;next.redo_=redo_;next.record_edit(before);*this=std::move(next);return true;
     }catch(const std::exception&){return false;}
 }
@@ -170,7 +174,14 @@ bool SegmentDocument::paste_range(const Bytes& bytes,std::int32_t at,bool overwr
         if(value.strips&TimelineTempo){if(overwrite)next.tempo_.erase_range(at,at+value.span-1);next.tempo_.clear_selection();for(const auto& e:events)next.tempo_.replace_event(e);if(next.hasTempo_||!events.empty())next.commit_tempo(before);}
         if((value.strips&TimelineSequence)&&(!sequence_range_empty(value.sequence)||(overwrite&&selected_track(next.root_,sequence_track().find("trkh")->data,selectedGroups_,sequenceIndex_)))){auto tracks=next.root_.find("LIST","trkl");if(!tracks){next.root_.children.push_back(list("LIST","trkl",{}));tracks=&next.root_.children.back();}auto fresh=sequence_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,sequenceIndex_);if(!target){put32(fresh.find("trkh")->data,20,selectedGroups_);append_position(fresh,*tracks);tracks->children.push_back(std::move(fresh));target=&tracks->children.back();}auto data=target->find("seqt");if(!data||std::count_if(target->children.begin(),target->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1)return false;data->data=sequence_paste_range(data->data,value.sequence,at,value.span,overwrite,length());}
         if(value.strips&TimelineLyric){auto fresh=lyric_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,range_.lyricTrack);if(target)paste_lyric_range(*target,value.lyric,at,value.span,overwrite,length());else if(!lyric_range_empty(value.lyric,at,value.span,length())){auto tracks=next.root_.find("LIST","trkl");if(!tracks){next.root_.children.push_back(list("LIST","trkl",{}));tracks=&next.root_.children.back();}put32(fresh.find("trkh")->data,20,selectedGroups_);paste_lyric_range(fresh,value.lyric,at,value.span,overwrite,length());append_position(fresh,*tracks);tracks->children.push_back(std::move(fresh));}}
-        if(next.save_bytes()==before)return false;next.undo_=undo_;next.redo_=redo_;next.range_={at,at+value.span,value.strips,range_.lyricTrack};next.record_edit(before);*this=std::move(next);return true;
+        const auto pasteTyped=[&](Chunk fresh,size_t index,const Bytes& payload,const auto& empty,const auto& paste){
+            auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,index);
+            if(target)paste(*target,payload,at,value.span,overwrite,length());
+            else if(!empty(payload,at,value.span,length())){auto tracks=next.root_.find("LIST","trkl");if(!tracks){next.root_.children.push_back(list("LIST","trkl",{}));tracks=&next.root_.children.back();}put32(fresh.find("trkh")->data,20,selectedGroups_);paste(fresh,payload,at,value.span,overwrite,length());append_position(fresh,*tracks);tracks->children.push_back(std::move(fresh));}
+        };
+        if(value.strips&TimelineMarker)pasteTyped(marker_track(),range_.markerTrack,value.marker,marker_range_empty,paste_marker_range);
+        if(value.strips&TimelineMute)pasteTyped(mute_track(),range_.muteTrack,value.mute,mute_range_empty,paste_mute_range);
+        if(next.save_bytes()==before)return false;next.undo_=undo_;next.redo_=redo_;next.range_={at,at+value.span,value.strips,range_.lyricTrack,range_.markerTrack,range_.muteTrack};next.record_edit(before);*this=std::move(next);return true;
     }catch(const std::exception&){return false;}
 }
 bool SegmentDocument::move_range(std::int32_t at) {

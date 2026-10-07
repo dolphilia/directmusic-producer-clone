@@ -1,0 +1,39 @@
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import assert from 'node:assert/strict';
+const [dirArg,buildArg,inputArg]=process.argv.slice(2);assert(buildArg,'Usage: Inspect-FileOutputMultiPcm.mjs RECORD_DIRECTORY BUILD_SUMMARY [INPUT_DIRECTORY]');
+const dir=path.resolve(dirArg),buildPath=path.resolve(buildArg),read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,'')),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const build=read(buildPath);assert(build.passed&&build.sourceSnapshotUnchanged);
+for(const s of build.sources)assert.equal(hash(path.join(build.sourceRoot,s.path)),s.sha256);
+for(const o of build.outputs)assert.equal(hash(path.join(path.dirname(buildPath),o.path)),o.sha256);
+function chunks(b,a=0,z=b.length){const cs=[];for(let p=a;p<z;){assert(p+8<=z);const id=b.toString('ascii',p,p+4),n=b.readUInt32LE(p+4),e=p+8+n;assert(e+(n&1)<=z);cs.push({id,data:b.subarray(p+8,e)});p=e+(n&1);}return cs;}
+const one=(cs,id)=>{const f=cs.filter(c=>c.id===id);assert.equal(f.length,1);return f[0].data;};
+function tree(b,a=0,z=b.length){const cs=[];for(let p=a;p<z;){assert(p+8<=z);const id=b.toString('ascii',p,p+4),n=b.readUInt32LE(p+4),e=p+8+n;assert(e+(n&1)<=z);const c={id,data:b.subarray(p+8,e)};if(id==='RIFF'||id==='LIST'||id==='seqt'){const offset=id==='seqt'?0:4;assert(n>=offset);if(offset)c.type=b.toString('ascii',p+8,p+12);c.children=tree(b,p+8+offset,e);}cs.push(c);p=e+(n&1);}return cs;}
+const only=(cs,id,type)=>{const f=cs.filter(c=>c.id===id&&(!type||c.type===type));assert.equal(f.length,1);return f[0];},flat=cs=>cs.flatMap(c=>[c,...flat(c.children??[])]);
+const sourceFolder=path.resolve(inputArg??dir),native=fs.existsSync(sourceFolder+'/runtime-input.sgp'),songPath=sourceFolder+(native?'/runtime-input.sgp':'/RouteSong.sgp'),pathPath=sourceFolder+(native?'/runtime-input.aup':'/RoutePath.aup'),collectionPath=sourceFolder+(native?'/MultiCapture/RouteSource.dls':'/RouteSource.dls'),bandPath=sourceFolder+(native?'/MultiCapture/RouteBand.bnp':'/RouteBand.bnp');
+const inputs=[songPath,pathPath,collectionPath,bandPath].map(p=>({path:p,sha256:hash(p)}));
+const ap=only(tree(fs.readFileSync(pathPath)),'RIFF','DMAP'),buffers=ap.children.filter(c=>c.id==='LIST'&&c.type==='dbfl');assert.equal(buffers.length,2);
+const routes=only(only(ap.children,'LIST','pcsl').children,'LIST','pcfl'),headers=only(routes.children,'LIST','pchl').children.filter(c=>c.id==='pchh');assert.equal(headers.length,2);
+assert.deepEqual(headers.map(c=>[c.data.readUInt32LE(0),c.data.readUInt32LE(4),c.data.readUInt32LE(8)]),[[0,8,1],[8,8,1]]);
+assert(headers[0].data.subarray(16,32).equals(only(buffers[1].children,'ddah').data.subarray(0,16)));assert(headers[1].data.subarray(16,32).equals(only(buffers[0].children,'ddah').data.subarray(0,16)));
+for(const b of buffers){const fx=only(only(b.children,'RIFF','DSBC').children,'LIST','fxls');assert.equal(fx.children.length,1);assert.equal(only(fx.children[0].children,'fxhr').data.subarray(4,20).toString('hex'),'11146d2dd7dce745addeacac85a2425d');}
+const song=only(tree(fs.readFileSync(songPath)),'RIFF','DMSG'),embedded=only(song.children,'RIFF','DMAP');assert(embedded.data.equals(ap.data));
+const events=only(flat(song.children),'evtl').data,stride=events.readUInt32LE(0),notes=[];assert(stride>=20);for(let p=4;p<events.length;p+=stride)if((events[p+14]&0xf0)===0x90&&events[p+16])notes.push({clocks:events.readInt32LE(p),duration:events.readInt32LE(p+4),channel:events.readUInt32LE(p+8),midi:events[p+15],velocity:events[p+16]});assert.deepEqual(notes,[{clocks:0,duration:3072,channel:0,midi:69,velocity:96},{clocks:0,duration:3072,channel:8,midi:60,velocity:96}]);
+const collection=only(tree(fs.readFileSync(collectionPath)),'RIFF','DLS '),wave=only(only(collection.children,'LIST','wvpl').children,'LIST','wave'),sample=only(wave.children,'wsmp').data;assert.equal(sample.readUInt16LE(4),60);assert.equal(sample.readUInt32LE(16),1);assert.equal(only(wave.children,'data').data.length,32000);
+const recordings=[];
+for(const [name,midi,other] of [['Record.wav',69,60],['Record1.wav',60,69]]){
+ const file=path.join(dir,name),b=fs.readFileSync(file);assert.equal(b.toString('ascii',0,4),'RIFF');assert.equal(b.toString('ascii',8,12),'WAVE');assert.equal(b.readUInt32LE(4)+8,b.length);
+ const cs=chunks(b,12),fmt=one(cs,'fmt '),data=one(cs,'data'),tag=fmt.readUInt16LE(0),channels=fmt.readUInt16LE(2),rate=fmt.readUInt32LE(4),align=fmt.readUInt16LE(12),bits=fmt.readUInt16LE(14);
+ assert(channels>=1&&channels<=32&&rate>=8000&&rate<=192000);assert(tag===1||tag===3);assert([8,16,24,32].includes(bits));assert.equal(align,channels*bits/8);assert.equal(data.length%align,0);const frames=data.length/align,seconds=frames/rate;assert(seconds>3&&seconds<=300);
+ if(tag===3){assert.equal(bits,32);assert.equal(one(cs,'fact').readUInt32LE(0),frames);}
+ const mono=new Float64Array(frames);let peak=0;for(let i=0;i<frames;i++)for(let c=0;c<channels;c++){const p=i*align+c*bits/8;const x=tag===3?data.readFloatLE(p):bits===8?(data[p]-128)/128:bits===16?data.readInt16LE(p)/32768:bits===24?data.readIntLE(p,3)/8388608:data.readInt32LE(p)/2147483648;assert(Number.isFinite(x));mono[i]+=x/channels;peak=Math.max(peak,Math.abs(x));}assert(peak>.002&&peak<.99);
+ const rms=(a,z)=>{assert(a>=0&&z<=seconds&&z>a);let sum=0,n=0;for(let i=Math.round(a*rate);i<Math.round(z*rate);i++){sum+=mono[i]**2;n++;}return Math.sqrt(sum/n);};
+ function tone(a,z,note){const step=4,frequency=440*2**((note-69)/12),coefficient=2*Math.cos(2*Math.PI*frequency/(rate/step));let s1=0,s2=0,n=0;for(let i=Math.round(a*rate);i<Math.round(z*rate);i+=step){const w=.5-.5*Math.cos(2*Math.PI*(i/rate-a)/(z-a)),s=mono[i]*w+coefficient*s1-s2;s2=s1;s1=s;n++;}return Math.sqrt(Math.max(0,s1*s1+s2*s2-coefficient*s1*s2))/n;}
+ const onsets=[];let quietSince=0,active=false;
+ for(let t=.01;t+.01<=seconds;t+=.01){const level=rms(t,t+.01);if(level<.0001){if(active){quietSince=t;active=false;}}else if(level>.003&&!active){if(t-quietSince>.1)onsets.push(t);active=true;}}
+ assert.equal(onsets.length,2,'Both musical starts must reach each output once');assert(onsets[0]>.3);const sound=onsets.map(time=>{assert(time+.45<seconds);const own=tone(time+.15,time+.45,midi),cross=tone(time+.15,time+.45,other),lower=tone(time+.15,time+.45,midi-1),upper=tone(time+.15,time+.45,midi+1),sustain=rms(time+.15,time+.45);assert(sustain>.002&&own>.0001&&own>cross*10&&own>lower*1.3&&own>upper*1.3,'Numbered output must contain its routed pitch without other mix group');return {time,midi,own,cross,lower,upper,sustain};});
+ assert(rms(.05,Math.min(.3,onsets[0]-.1))<.0001);recordings.push({name,path:file,sha256:hash(file),tag,channels,rate,bits,frames,seconds,peak,onsets,sound});
+}
+assert(Math.abs(recordings[0].seconds-recordings[1].seconds)<.05,'All buffer controls share one recording lifecycle');
+for(let i=0;i<2;i++)assert(Math.abs(recordings[0].onsets[i]-recordings[1].onsets[i])<.05,'Both independently routed buffers receive each simultaneous musical start');
+assert(!fs.existsSync(path.join(dir,'Record2.wav')),'A shared or repeated route must not invent another recording');
+const proof={schema:1,passed:true,candidate:path.basename(path.dirname(buildPath)),scope:'Independent two numbered FileOutput WAVs: route0 note69 then route8 note60, two musical starts, exclusive pitches, simultaneous lifecycle and valid PCM/RIFF; GUI/original and stop timing require separate evidence',buildSummary:buildPath,buildSummarySha256:hash(buildPath),sourceFolder,inputs,notes,recordings,auditorSha256:hash(process.argv[1]),fullAcceptance:false};
+fs.writeFileSync(dir+'/file-output-multi-pcm-proof.json',JSON.stringify(proof,null,2)+'\n');fs.copyFileSync(process.argv[1],dir+'/file-output-multi-pcm-auditor.mjs');console.log(JSON.stringify(proof));

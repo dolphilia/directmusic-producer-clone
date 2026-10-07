@@ -57,6 +57,10 @@ std::vector<DlsLoop> sample_loops(const Chunk& owner){
 void loop_bounds(const Chunk& owner,size_t frames){
     if(owner.find("wsmp")){
         const auto& b=unique(owner,"wsmp").data;if(b.size()<20)throw std::runtime_error("DLS sample header truncated");
+        // WSMPL::usUnityNote is a MIDI playback note, including for one-shot
+        // samples. Validate before adopting defaults or publishing playback;
+        // lossless load/save of an invalid source remains possible.
+        if(word(b,4)>127)throw std::runtime_error("DLS sample unity note outside MIDI range");
         size_t at=read32(b,0);const auto n=read32(b,16);if(at<20||at>b.size()||n>(b.size()-at)/16)throw std::runtime_error("DLS loop layout invalid");
         for(size_t i=0;i<n;++i){if(b.size()-at<16)throw std::runtime_error("DLS loop truncated");const auto size=read32(b,at),type=read32(b,at+4),start=read32(b,at+8),length=read32(b,at+12);
             if(size<16||size>b.size()-at||type>1||!length||static_cast<std::uint64_t>(start)+length>frames)throw std::runtime_error("PCM resize would invalidate DLS loop");at+=size;}
@@ -143,6 +147,19 @@ void DlsDocument::validate_playback_samples() const{
     const auto& list=unique(root_,"LIST","lins");
     for(size_t i=0;i<instrumentViews.size();++i){const auto& regions=unique(item(list,i,"ins "),"LIST","lrgn");
         for(size_t j=0;j<instrumentViews[i].regions.size();++j)loop_bounds(item(regions,j,"rgn "),waveViews.at(mapping.at(instrumentViews[i].regions[j].tableIndex)).frames);}
+}
+Bytes DlsDocument::playback_sample_bytes() const{
+    validate_playback_samples();
+    auto next=root_;const auto mapping=cues(root_);const auto values=instruments();
+    const auto& pool=unique(root_,"LIST","wvpl");auto& list=unique(next,"LIST","lins");
+    for(size_t i=0;i<values.size();++i){auto& regions=unique(item(list,i,"ins "),"LIST","lrgn");
+        for(size_t j=0;j<values[i].regions.size();++j){auto& region=item(regions,j,"rgn ");
+            if(region.find("wsmp"))continue; // Explicit zero loops is one shot.
+            const auto& wave=item(pool,mapping.at(values[i].regions[j].tableIndex),"wave");
+            if(wave.find("wsmp"))region.children.push_back(unique(wave,"wsmp"));
+        }
+    }
+    return next.encode();
 }
 std::vector<DlsLoop> DlsDocument::wave_loops(size_t wave) const{const auto values=waves();if(wave>=values.size())throw std::runtime_error("Wave index out of range");return sample_loops(item(unique(root_,"LIST","wvpl"),wave,"wave"));}
 std::vector<DlsLoop> DlsDocument::region_loops(size_t instrument,size_t region) const{const auto values=instruments();if(instrument>=values.size()||region>=values[instrument].regions.size())throw std::runtime_error("Region index out of range");return sample_loops(item(unique(item(unique(root_,"LIST","lins"),instrument,"ins "),"LIST","lrgn"),region,"rgn "));}

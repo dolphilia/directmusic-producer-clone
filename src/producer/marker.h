@@ -12,5 +12,9 @@ bool delete_marker_event(Chunk&,size_t);
 bool mark_marker_boundaries(Chunk&,MarkerKind,const std::vector<std::int32_t>&,bool mark);
 Bytes copy_marker_event(const Chunk&,size_t);
 bool paste_marker_event(Chunk&,const Bytes&,std::int32_t,size_t* resultingIndex=nullptr);
+Bytes copy_marker_range(const Chunk&,std::int32_t begin,std::int32_t end);
+bool delete_marker_range(Chunk&,std::int32_t begin,std::int32_t end);
+bool marker_range_empty(const Bytes&,std::int32_t at,std::int32_t span,std::int32_t length);
+bool paste_marker_range(Chunk&,const Bytes&,std::int32_t at,std::int32_t span,bool overwrite,std::int32_t length);
 Chunk marker_track();
 }

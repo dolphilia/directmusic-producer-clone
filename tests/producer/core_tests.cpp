@@ -8,6 +8,7 @@
 #include "producer/envelope_parameters.h"
 #include "producer/framework.h"
 #include "producer/tool_graph_runtime.h"
+#include "producer/source_tools.h"
 #include "producer/conductor.h"
 #include <dmerror.h>
 #include <medparam.h>
@@ -33,6 +34,7 @@ Bytes style_segment(const std::vector<Chunk>&);
 void require(bool value,const char* name) {++checks;if(traceChecks)std::cerr<<checks<<": "<<name<<" = "<<(value?"passed":"failed")<<std::endl;if(!value)throw std::runtime_error(name);}
 template<class F> void rejected(F action,const char* name) {bool failed=false;try{action();}catch(const std::exception&){failed=true;}require(failed,name);}
 #include "dls_articulation_tests.h"
+#include "dls_sample_policy_tests.h"
 #include "wave_track_tests.h"
 #include "wave_document_tests.h"
 #include "script_document_tests.h"
@@ -40,6 +42,7 @@ template<class F> void rejected(F action,const char* name) {bool failed=false;tr
 #include "param_control_tests.h"
 #include "tool_graph_runtime_tests.h"
 #include "param_control_runtime_tests.h"
+#include "source_tool_tests.h"
 #include "script_runtime_tests.h"
 #include "timeline_range_tests.h"
 
@@ -1520,6 +1523,7 @@ void playback_monitor_tests(){
     monitor.clear();monitor.observed_start(7);require(monitor.update({},3000).empty(),"late retired notification history pruned without completion");
 }
 #include "file_output_tests.h"
+#include "file_output_multi_tests.h"
 #include "chord_tests.h"
 #include "signpost_tests.h"
 #include "chordmap_tests.h"
@@ -1550,6 +1554,7 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==3&&(std::wstring(argv[2])==L"--script-track-owned"||std::wstring(argv[2])==L"--script-track-runtime")){traceChecks=true;script_track_owned_tests(dir,std::wstring(argv[2])==L"--script-track-runtime");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&(std::wstring(argv[2])==L"--segment-trigger-owned"||std::wstring(argv[2])==L"--segment-trigger-runtime")){traceChecks=true;segment_trigger_owned_tests(dir,std::wstring(argv[2])==L"--segment-trigger-runtime");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned recursive Segment Trigger snapshots native Project and optional actual runtime; GUI PCM original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--segment-trigger-document"){traceChecks=true;segment_trigger_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"SDK Segment Trigger owned model history native Project; main runtime audio original comparison unfinished\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--file-output-multi"){traceChecks=true;file_output_multi_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"two directly routed FileOutput buffers order lifecycle native source; pitch GUI original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--file-output-buffer"){traceChecks=true;file_output_buffer_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual source FileOutput DirectMusic buffer before Play and independent record Stop; PCM semantics GUI original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--file-output"){traceChecks=true;file_output_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source FileOutput writer DMO negotiation passthrough lifecycle AudioPath history; actual buffer GUI audio original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--script-runtime"){traceChecks=true;script_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Script source routine number and error runtime; GUI/audio/original separate\"}\n";return 0;}
@@ -1580,6 +1585,7 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==4&&std::wstring(argv[2])==L"--audiopath-assignment"){traceChecks=true;audiopath_assignment_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned AudioPath assignment native save history and runtime; GUI/audio separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--audiopath-document"){traceChecks=true;audiopath_document_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"typed AudioPath ownership routing history and native Project; GUI/audio separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--audiopath-export"){traceChecks=true;audiopath_export_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"embedded and standalone AudioPath runtime bytes; DirectMusic and GUI separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--dls-sample-policy"){traceChecks=true;dls_sample_policy_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"DLS effective sample inheritance and invalid preflight invariance; main PCM original separate\"}\n";return 0;}
         if(argc==5&&std::wstring(argv[2])==L"--dls-articulation"){traceChecks=true;dls_articulation_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"articulation document ownership history native reload; GUI runtime unverified\"}\n";return 0;}
         if(argc==5&&std::wstring(argv[2])==L"--dls-create-instrument"){traceChecks=true;dls_instrument_creation_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Instrument creation/history/native reload/Band dependency; GUI/audio/original defaults unexecuted\"}\n";return 0;}
         if(argc==5&&std::wstring(argv[2])==L"--dls-add-wave"){traceChecks=true;dls_wave_creation_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"PCM Wave append/history/native Project core; GUI/audio/full acceptance unexecuted\"}\n";return 0;}
@@ -1587,8 +1593,8 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==4&&std::wstring(argv[2])==L"--normal-style-dls"){traceChecks=true;normal_style_dls_tests(dir,read_file(argv[3]));std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source normal Pattern root DLS fixture; runtime unverified\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--style-root-dls"){traceChecks=true;style_root_dls_tests(dir,read_file(argv[3]));std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"root Style DLS assignment/cache fixture; runtime unverified\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--motif-dls"){traceChecks=true;motif_dls_tests(dir,read_file(argv[3]));std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Motif DLS assignment/cache fixture; runtime unverified\"}\n";return 0;}
-        if(argc==3&&std::wstring(argv[2])==L"--param-control-runtime"){traceChecks=true;param_control_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"OS Parameter Control Track actual source Tool automation; GUI/audio separate\"}\n";return 0;}
-        if(argc==3&&std::wstring(argv[2])==L"--param-control"){traceChecks=true;param_control_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Parameter Control typed ownership history native restore; runtime GUI audio separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--param-control-runtime"){traceChecks=true;param_control_runtime_tests(dir);source_tool_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"OS Parameter Control Track actual source Tool automation; GUI/audio separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--param-control"){traceChecks=true;param_control_tests(dir);source_tool_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Parameter Control typed ownership history native restore; runtime GUI audio separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--transport-audiopath"){traceChecks=true;transport_audio_path_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--motif-band-edit"){traceChecks=true;motif_band_edit_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Motif Band edit/cache fixture; runtime unverified\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--authored-style-band"){traceChecks=true;authored_style_band_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"authored Style Band Motif/cache fixture; runtime unverified\"}\n";return 0;}

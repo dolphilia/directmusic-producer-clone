@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$GuiRun,[string]$RecorderBuildSummaryPath='work/build/audio-capture/20261004T032918787Z/build-summary.json',[ValidateRange(16,300)][int]$DurationSeconds=32,[string[]]$AdditionalInputs=@())
+param([Parameter(Mandatory)][string]$GuiRun,[string]$RecorderBuildSummaryPath='work/build/audio-capture/20261004T032918787Z/build-summary.json',[ValidateRange(16,300)][int]$DurationSeconds=32,[string[]]$AdditionalInputs=@(),[switch]$SilentKeepAlive)
 $ErrorActionPreference='Stop'
 function Hash([string]$p){(Get-FileHash -LiteralPath $p).Hash.ToLowerInvariant()}
 $gui=[IO.Path]::GetFullPath($GuiRun);$launch=Get-Content -LiteralPath (Join-Path $gui 'launch.json') -Raw|ConvertFrom-Json
@@ -17,7 +17,11 @@ $inputs=@($AdditionalInputs|ForEach-Object {$p=[IO.Path]::GetFullPath($_);[order
 $record=[ordered]@{schema=1;guiRun=$gui;processId=$launch.processId;executable=$launch.executable;exeSha256=$launch.exeSha256;buildSummary=$launch.buildSummary;buildSummarySha256=$launch.buildSummarySha256;recorder=$recorder.executable;recorderSha256=$recorder.sha256;recorderBuildSummary=$recorderSummary;recorderBuildSummarySha256=Hash $recorderSummary;inputs=$inputs;driverSha256=Hash $PSCommandPath;state='recording';readyUtc=$null;captureExitCode=$null;scope='Capture current GUI Play only; GUI actions and PCM acceptance separate';fullAcceptance=$false}
 function SaveRecord{$record|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $dir 'run.json') -Encoding UTF8}
 $record['durationSeconds']=$DurationSeconds
-$capture=Start-Process -FilePath $recorder.executable -ArgumentList @(('"'+$dir+'"'),[string]$DurationSeconds) -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $dir 'capture.stdout.txt') -RedirectStandardError (Join-Path $dir 'capture.stderr.txt')
+$record['silentKeepAlive']=[bool]$SilentKeepAlive
+$captureArguments=@(('"'+$dir+'"'),[string]$DurationSeconds)
+if($SilentKeepAlive){$captureArguments+='--silent-keepalive'}
+$record['recorderArguments']=$captureArguments
+$capture=Start-Process -FilePath $recorder.executable -ArgumentList $captureArguments -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $dir 'capture.stdout.txt') -RedirectStandardError (Join-Path $dir 'capture.stderr.txt')
 SaveRecord;Write-Output ('Evidence: '+$dir)
 $limit=[DateTime]::UtcNow.AddSeconds(5)
 while(-not (Test-Path -LiteralPath (Join-Path $dir 'ready.json')) -and [DateTime]::UtcNow -lt $limit -and -not $capture.HasExited){Start-Sleep -Milliseconds 50}

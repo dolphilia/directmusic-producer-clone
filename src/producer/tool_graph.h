@@ -14,6 +14,7 @@ public:
     std::wstring name()const;bool set_name(const std::wstring&);
     std::vector<GraphTool> tools()const;
     bool set_channels(size_t,const std::vector<std::uint32_t>&);
+    bool set_tool_payload(size_t,const Chunk&);
     bool add_tool(const std::array<std::uint8_t,16>&,const std::vector<std::uint32_t>&);
     bool remove_tool(size_t);bool move_tool(size_t,size_t);
     bool undo();bool redo();

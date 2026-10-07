@@ -16,6 +16,7 @@ target_sources(producer_core PRIVATE src/producer/mute.cpp src/producer/param_co
 target_sources(producer_core PRIVATE src/producer/wave_track.cpp src/producer/wave_document.cpp src/producer/wave_pcm.cpp src/producer/wave_playback.cpp)
 target_sources(producer_core PRIVATE src/producer/script_document.cpp src/producer/container_graph.cpp src/producer/tool_graph.cpp)
 target_sources(producer_core PRIVATE src/producer/tool_graph_runtime.cpp src/producer/script_runtime.cpp src/producer/file_output_writer.cpp src/producer/file_output_dmo.cpp)
+target_sources(producer_core PRIVATE src/producer/source_tools.cpp)
 target_sources(producer_core PRIVATE src/producer/script_automation.cpp src/producer/source_script_host.cpp)
 target_link_libraries(producer_core PUBLIC oleaut32 uuid)
 target_sources(producer_core PRIVATE src/producer/segment_trigger.cpp src/producer/script_track.cpp src/producer/native_script_track.cpp)

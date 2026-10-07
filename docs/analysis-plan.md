@@ -14,15 +14,15 @@ Producer本体と必要なProducer固有機能をソースからビルドし、�
 
 | 項目 | 確認済みの範囲 | 未完了・現在の判定 |
 | --- | --- | --- |
-| 候補 | 20261006T185539543Z、195保存ソース、configure/build/install各exit0 | 全体未完了 |
-| 通常・関連 | Timeline44/PCM21/WSMP22/WaveTrack68/Sequence26合格。DWORD許可/予約/拒否時不変を維持 | 通常core既知保存error5凍結 |
-| 専用一巡 | native77=47合格/30障害、driver107=20合格/21障害/66未実行 | 障害・未実行を合格に含めない |
-| GUI | 現候補Timeline移動に加えFresh新規native五形式編集/UndoRedo/保存、作者22360 exit0、別PID13748復元exit0 | 全strip未完。再収録用22768はComputer Use対象取得障害 |
-| 音声 | 現候補Style10発/音程/2秒間隔/無音合格。Transport対照無音/発音中Stop/無音確認 | 全8音符再開の後半混入でpitch/tempo/sustain失敗。serial再収録未完、旧候補成功を転用しない |
-| 原版依存 | 宣言したOS依存を維持 | 原版Wave designer不在、Q2独立Windows未用意、全機能依存解消未証明 |
-| 全体対象・全8 | 40責務保持、6作業中/2障害、fullAcceptance=false | 同じ最終構成で全対象合格なし |
+| 候補 | 20261007T004920093Z、200保存ソース、configure/build/install各exit0 | 全体未完了 |
+| 通常・関連 | DWORD許可/予約/拒否時不変の修正を維持。Sequence26、DLS sample policy28、FileOutput multi34現候補合格 | 通常core既知保存error5凍結・現候補未実行 |
+| 専用一巡 | native79=48合格/31障害。driver111原始21合格/21障害/69未実行、同候補4判定器補足後25/21/65 | Script Reference.spp Windows5を別記録。障害・未実行を合格に含めない |
+| GUI | 新規native Project10所有文書・6形式、五形式履歴/保存、作者15852通常exit0→別8424復元/exit0。全12最終入力不変・所有GUID一意 | Q1代表経路限定成立。全strip/clipboard/ABI・原版互換不足 |
+| 音声 | 同じProject/PIDのStyle10発2秒間隔、Transport既定無音/embedded優先/発音中Stop/無音/全8音再開/5→7.5BPM/DLS持続。Style6/Transport11対照合格。FileOutput二出力証拠も保持 | FileOutput再生中録音Stop・全責務・原版動的比較は未完 |
+| 原版依存 | 宣言したOS依存を維持 | 原版対象designer不在、Q2独立Windows未用意、全機能依存解消未証明 |
+| 全体対象・全8 | 40責務保持、6作業中/2障害/0合格、fullAcceptance=false | 同じ最終構成で全対象合格なし |
 
-基準build：[build-summary](../work/build/product-snapshot/20261006T185539543Z/build-summary.json)。最新単位：[Q1 current integration](../work/analysis/q1-current-integration/20261006T192000Z/unit-record.json)。product-state.currentが現行判定。
+基準build：[build-summary](../work/build/product-snapshot/20261007T004920093Z/build-summary.json)。最新単位：[Q1最終候補代表経路](../work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json)、[要約と再現手順](analysis/q1-final-candidate-2026-10-07.md)。[Q3F FileOutput二バッファ](../work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json)を同候補の限定証拠として保持。product-state.currentが現行判定。
 
 ## 記録の入口と更新規則
 
@@ -30,13 +30,13 @@ Producer本体と必要なProducer固有機能をソースからビルドし、�
 2. `docs/analysis/product-state.json` schema2の`current`が現在の候補と最新単位への入口。旧schema1フィールドと移行前JSONを履歴として保持。現行判定には必ず候補ID・対象機能・証拠・実行時点を添える。
 3. `feature-map.csv` は40 PEの責務の入口として保持し、Q0で機能単位の状態・対応先・未完了を整理する。`implementation-status.*` は派生表示とし、固定文言による古い状態への上書きを防ぐ。
 4. `product-host.md` と `work/analysis/<unit>/` は版別履歴。開始時に全履歴を読み直さず、状態から参照された最新単位と今回の機能契約だけを読む。内容が矛盾したらソース・保存生成物・一次runを照合する。
-5. `docs/analysis/acceptance-status.json` と `regression-manifest.json` を正本として受入8項目、専用77モード、107driverの実行・未実行と残差を管理する。判定器変更も版と証拠を保持。schema2集計は旧CSVを上書きしない。
+5. `docs/analysis/acceptance-status.json` と `regression-manifest.json` を正本として受入8項目、専用79モード、111driverの実行・未実行と残差を管理する。判定器変更も版と証拠を保持。schema2集計は旧CSVを上書きしない。
 
 受入状態は「未着手・作業中・検証待ち・合格・失敗・障害あり」を使い、部分合格には対象を必須とする。最低限、候補/生成物hash、機能ID、入力/依存hash、コマンド、環境、結果、証拠パス、残差を記録する。古い成功は履歴として保持し、新候補の実行済み結果へ転用しない。
 
 ## 次に実施する作業と終了条件
 
-現185539543Zは195保存sources configure/build/install0、native77=47合格30障害、driver107=20合格21障害66未実行。Q1 Fresh新規native五形式の編集/UndoRedo/保存/作者22360 exit0/別PID13748復元exit0とStyle10発音声は限定成立。Transport再開音声はnative再生回帰を並行実行した収録で混入し不合格。次は再生回帰と録音を直列化して同候補を再収録する。再起動22768のGUIは支持APIで対象取得できず障害、迂回しない。独立したQ3Cの既存Lyric/Marker/Muteと共通Timeline不足を進める。Q2独立Windows、全40全8、原版動的比較をqueueに維持する。
+現20261007T004920093Zは200保存sources configure/build/install0、native79=48合格31障害、driver111は4判定器補足後25合格21障害65未実行。同候補Q1で新規native Project、五形式履歴/保存、二つの通常終了、別復元、発音中Stop・無音・全8音再開・テンポ変更を接続した。Control fixtureはroot identity16bytesだけを分離し、その他byteと全所有GUIDを監査した。Q1代表経路の限定成立で全40全8を縮小しない。次はQ3G StylePlayerの原版UI/同梱txt契約を観測し、既存Style/ChordMap/Band/Conductorを保って不足composition/audition/motif責務へ進む。FileOutput再生中録音Stop、Send/未接続group/多重session/legacy ABI、WaveTrack loop/end、継承DLS runtime export、Timeline/OLE/clipboard、原版動的比較/Q2/全40全8をqueueに保持する。OS拒否の同条件再試行を行わない。
 
 | 順序 | 作業 | この単位の終了条件 |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ Producer本体と必要なProducer固有機能をソースからビルドし、�
 | Q3 | 未着手責務を順に本体へ実装し、原版互換を確認 | 下記群を機能単位に分け、原版観測→契約→実装→本体保存/再起動→比較を完結させる。1群の限定成立を全対象完成とせず、残責務を保持。各群の節目で固定候補の回帰・統合を行う |
 | Q4 | 全範囲の残差解消・配布・最終受入 | 40 PEの全責務が実装/代替/宣言依存へ対応し、未解決の機能不足・原版依存を解消。全登録試験と全体8受入を最終候補の同じ構成で一巡し、再現手順と証拠を提示 |
 
-Q0 DWORD許可値/予約値/不正入力文書不変の修正を維持。Sequence26現候補合格、通常coreは既知保存拒否で障害。Q1五形式保存復元とStyle音声は限定成立、Transport全再開の混入なし録音は未完。判定器の無音対照/異常対照配置を修正し7対照を旧録音コピーで検証したが、製品の音声合格へ転用しない。原版比較/Q2/全40/全8未完を維持する。
+Q0 DWORD許可値/予約値/不正入力文書不変の修正を維持。Sequence26現候補合格、通常coreは既知保存拒否で障害。旧202431545ZのQ1代表経路とStyle6/Transport11対照合格は履歴の最新単位を参照。旧185539 Transport混入失敗・対象取得障害、旧Q1初期録音とScript所有不足失敗を保持し、別候補成功を転用しない。原版比較/Q2/全40/全8未完を維持する。
 
 Q2は独立Windows環境未用意で障害。原版の起動警告・window未取得の旧障害は履歴として保持する。現在はProject操作可能だがScript種別なし/Add-Ins空で対象比較障害。未解消OS拒否の同条件再試行や迂回を行わない。原版観測の代わりにSDK・RIFF監査・録音だけで互換合格にしない。
 

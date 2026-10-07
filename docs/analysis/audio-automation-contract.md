@@ -1,12 +1,13 @@
 # 無人音声確認の契約と実測
 
-更新：2026-10-03。全体未完了。ユーザーから音の確認を無人化する依頼があり、実測後に計画へ採用した。
+更新：2026-10-07。全体未完了。ユーザーから音の確認を無人化する依頼があり、実測後に計画へ採用した。
 
 Windowsの再生出力をWASAPI shared-mode loopbackで直接録音する。Stereo Mixの設定変更・マイク・追加インストールを要求しない。根拠はMicrosoftの[Loopback Recording](https://learn.microsoft.com/en-us/windows/win32/coreaudio/loopback-recording)。全アプリの出力が混合されるため、静かな試験環境を使い、基準区間の雑音は不合格にする。PID隔離が必要な場合の正式な拡張は[Application loopback audio capture](https://learn.microsoft.com/en-us/samples/microsoft/windows-classic-samples/applicationloopbackaudio-sample/)（build20348以降）だが、今回は実装・試験していない。
 
 ## 実装
 
 - `tests/audio/loopback.cpp`：既定render/eConsole endpointのIDを保存。実mix formatのWAV、QPC基準packet位置/flags/device position、固定録音時間を保存する。無packet/欠落区間はゼロで保持し、解析器がtimestamp error、初回以外のdiscontinuity、2msを超すpacket間gapを拒否する。初回discontinuityは初期化として許容。OS設定を変更しない。
+- 明示オプション `--silent-keepalive` は同じshared render endpointへ無音バッファを供給してidle時のpacket欠落を防ぐ。defaultを保持し、packet/gap判定を変更しない。GUI captureの `-SilentKeepAlive` と録音器build/hashをrunへ記録する。[現候補Q1の無音対照・Style・Transport証拠](q1-fixed-integration-2026-10-07.md) を参照。旧録音の失敗を修復した扱いにはしない。
 - `scripts/Build-AudioCapture.ps1`：2ソースを新規ディレクトリへ保存し、Win32/MSVCで構成とコンパイルを分離記録する。録音ツールは製品/原版比較DLLと独立。
 - `scripts/Test-LoopbackAudio.ps1`：製品・録音器の保存ソース/EXE照合、ready後2秒の基準区間、現行本体`--note-observe`起動、16秒録音、解析、57ロードmodule由来監査を無人実行する。`-SilenceControl`は本体を起動しない。
 - `scripts/Inspect-LoopbackAudio.mjs`：IEEE float32 WAVを解析。固定した6秒の120 BPM strings入力（C4×4、C5×4、C4×4）専用。前無音RMS<0.0001、終了後12〜15.5秒RMS<0.0001、再生区間RMS>0.001、発音開始2〜4秒、peak<0.99、12生成音の独立した固定期待値、録音のC4/C5成分と各区間を照合する。外側はC4/C5比>0.25、中間は<0.15、対象成分>0.00005。任意楽曲や別音源をこの閾値で受け入れない。

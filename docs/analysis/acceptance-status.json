@@ -1,26 +1,28 @@
 {
   "schema": 1,
-  "updatedUtc": "2026-10-06T20:13:12.072Z",
-  "candidate": "20261006T185539543Z",
-  "build": "work/build/product-snapshot/20261006T185539543Z/build-summary.json",
+  "updatedUtc": "2026-10-07T02:26:01.427Z",
+  "candidate": "20261007T004920093Z",
+  "build": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
   "configuration": {
+    "candidate": "20261007T004920093Z",
     "status": "合格",
-    "candidate": "20261006T185539543Z",
     "exitCode": 0,
-    "evidence": "work/build/product-snapshot/20261006T185539543Z/build-summary.json",
-    "scope": "Win32 Release reference tools OFF,195 saved sources"
+    "evidence": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+    "scope": "200 saved sources Win32 Release reference OFF; all40/Q2 separate"
   },
   "compilation": {
+    "candidate": "20261007T004920093Z",
     "status": "合格",
-    "candidate": "20261006T185539543Z",
     "exitCode": 0,
-    "evidence": "work/build/product-snapshot/20261006T185539543Z/build-summary.json"
+    "evidence": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+    "scope": "200 saved sources Win32 Release reference OFF; all40/Q2 separate"
   },
   "install": {
+    "candidate": "20261007T004920093Z",
     "status": "合格",
-    "candidate": "20261006T185539543Z",
     "exitCode": 0,
-    "evidence": "work/build/product-snapshot/20261006T185539543Z/build-summary.json"
+    "evidence": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+    "scope": "200 saved sources Win32 Release reference OFF; all40/Q2 separate"
   },
   "fullAcceptance": false,
   "criteria": [
@@ -28,11 +30,11 @@
       "id": "clean-build",
       "name": "クリーンビルド",
       "status": "作業中",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "全40実装/宣言依存と独立Q2再現不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "200保存ソースconfigure/build/install0。全40実装・Q2独立環境未完。",
+      "remaining": "代表経路の合格のみ。全40責務・原版互換・同じ最終構成の全8受入は未完。",
       "historicalEvidence": [
         "work/build/product-snapshot/20261004T154732811Z/build-summary.json",
         "work/build/product-snapshot/20261004T163608301Z/build-summary.json",
@@ -218,7 +220,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "195ソースbuild/install0。全40責務の実装と独立Q2環境での再現不足。",
+      "currentScope": "200保存ソースconfigure/build/install0。全40実装・Q2独立環境未完。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": []
@@ -227,11 +229,11 @@
       "id": "startup-shutdown",
       "name": "起動と終了",
       "status": "作業中",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "同候補五形式/全画面と全責務終了経路不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "新規native Project作者15852、最終別再読込8424が通常exit0。全編集画面・全責務不足。",
+      "remaining": "代表経路の合格のみ。全40責務・原版互換・同じ最終構成の全8受入は未完。",
       "historicalEvidence": [
         "work/analysis/q1-integration/20261004T155700Z/unit-record.json",
         "work/analysis/q1-slow-integration/20261004T170400Z/unit-record.json",
@@ -454,7 +456,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "Fresh新規native Project/作者22360 exit0/別読込13748 exit0は限定成立。全編集画面と全40不足。",
+      "currentScope": "新規native Project作者15852、最終別再読込8424が通常exit0。全編集画面・全責務不足。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": [
@@ -476,11 +478,11 @@
       "id": "original-data-load",
       "name": "原版データの読込",
       "status": "作業中",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "全形式原版サンプル/最小文書と意味/動的比較不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "同じ候補の専用形式試験とQ1 source fixture読込。全形式の原版最小文書・意味比較は未完。",
+      "remaining": "代表経路の合格のみ。全40責務・原版互換・同じ最終構成の全8受入は未完。",
       "historicalEvidence": [
         "work/analysis/q3-chord/20261004T180000Z/unit-record.json",
         "work/analysis/q0-recovery-diagnostic/20261004T184000Z/unit-record.json",
@@ -676,7 +678,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "Timeline fixture読込のみ。全形式の原版最小文書/意味比較不足。",
+      "currentScope": "同じ候補の専用形式試験とQ1 source fixture読込。全形式の原版最小文書・意味比較は未完。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": []
@@ -685,11 +687,11 @@
       "id": "edit-save",
       "name": "編集と保存",
       "status": "作業中",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "五形式代表編集/UndoRedo/保存および全対象CRUD/selection/clipboard/drag互換不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "五形式の変更・UndoRedo・native保存、最終6形式10文書所有と一意GUIDが限定成立。全strip・clipboard・ABI不足。",
+      "remaining": "代表経路の合格のみ。全40責務・原版互換・同じ最終構成の全8受入は未完。",
       "historicalEvidence": [
         "work/analysis/q1-integration/20261004T155700Z/unit-record.json",
         "work/analysis/q1-slow-integration/20261004T170400Z/unit-record.json",
@@ -913,7 +915,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "Fresh五形式変更/UndoRedo/native保存成立。全strip CRUD/clipboard/ABI等不足。",
+      "currentScope": "五形式の変更・UndoRedo・native保存、最終6形式10文書所有と一意GUIDが限定成立。全strip・clipboard・ABI不足。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": [
@@ -935,11 +937,11 @@
       "id": "separate-process-reload",
       "name": "終了後の再読込",
       "status": "作業中",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "同候補Style/DLS/AudioPathを含む五形式と全対象復元不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "最終Project10文書と全12入力byte不変、別PID8424で五形式保存値とScriptを復元exit0。全責務保存復元不足。",
+      "remaining": "代表経路の合格のみ。全40責務・原版互換・同じ最終構成の全8受入は未完。",
       "historicalEvidence": [
         "work/analysis/q1-integration/20261004T155700Z/unit-record.json",
         "work/analysis/q1-slow-integration/20261004T170400Z/unit-record.json",
@@ -1163,7 +1165,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "Fresh五形式最終値を作者終了後の別PID13748で復元exit0。全責務の保存復元不足。",
+      "currentScope": "最終Project10文書と全12入力byte不変、別PID8424で五形式保存値とScriptを復元exit0。全責務保存復元不足。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": [
@@ -1185,11 +1187,11 @@
       "id": "play-stop-tempo-audio",
       "name": "再生と停止",
       "status": "作業中",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Current candidate audio未実行; old Wave/Fresh audio retained only as history",
-      "remaining": "Wave memory PCM bounded pass; current complete Q1 activeStop/tempo and full component/original comparisons unexecuted. Final Wave Stop outside recording excluded.",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "同じ最終Project/PIDでStyle109設定・Segment120BPMで10発2秒間隔とTransport既定無音/embedded優先/発音中Stop/無音/8音再開/5→7.5BPM/DLS持続合格。全再生責務・原版動的比較不足。",
+      "remaining": "代表経路の合格のみ。全40責務・原版互換・同じ最終構成の全8受入は未完。",
       "historicalEvidence": [
         "work/analysis/q1-integration/20261004T155700Z/audio-20261004T161839420Z/gui-sequence-audio-proof.json",
         "work/analysis/q1-integration/20261004T155700Z/audio-controls/negative-tests.json",
@@ -1439,7 +1441,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "Style10発/音程/2秒間隔/無音合格。Transport全8再開は混入で失敗、serial再録GUI対象取得障害。全再生責務未完。",
+      "currentScope": "同じ最終Project/PIDでStyle109設定・Segment120BPMで10発2秒間隔とTransport既定無音/embedded優先/発音中Stop/無音/8音再開/5→7.5BPM/DLS持続合格。全再生責務・原版動的比較不足。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": [
@@ -1461,11 +1463,11 @@
       "id": "repeat-invalid-input",
       "name": "繰り返しと異常入力",
       "status": "障害あり",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "102driver raw20合格20障害1失敗61未実行、補足lifecycle auditor合格。全責務異常入力/GUI Recovery不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "DWORD許可/予約値・Timeline等境界拒否不変は限定成立。通常core既知保存拒否と全対象異常入力・反復不足。",
+      "remaining": "DWORD許可/予約値・Timeline等境界拒否不変は限定成立。通常core既知保存拒否と全対象異常入力・反復不足。",
       "historicalEvidence": [
         "work/acceptance/product/20261004T154920458Z/run.json",
         "work/acceptance/regression/20261004T154937460Z/run.json",
@@ -1661,7 +1663,7 @@
           "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
         }
       ],
-      "currentScope": "Timeline境界拒否不変成立。既知Windows5保存拒否と全対象の異常入力/反復不足。",
+      "currentScope": "DWORD許可/予約値・Timeline等境界拒否不変は限定成立。通常core既知保存拒否と全対象異常入力・反復不足。",
       "fullAcceptance": false,
       "remainingProvenance": "Accumulated prior obligations retained. Current scoped result resolves VBScript Trace and listed Container regression only; old next-actions are not instructions.",
       "boundedEvidence": []
@@ -1670,11 +1672,11 @@
       "id": "original-independence",
       "name": "原版依存の解消",
       "status": "障害あり",
-      "candidate": "20261006T185539543Z",
-      "productSha256": "a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26",
-      "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
-      "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
-      "remaining": "原版なし独立Windows、全機能COM/遅延探索/ロード元由来不足。",
+      "candidate": "20261007T004920093Z",
+      "productSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scope": "Q2独立Windows未用意。全機能の原版依存解消未証明。",
+      "remaining": "Q2独立Windows未用意。全機能の原版依存解消未証明。",
       "historicalEvidence": [
         "work/analysis/q3-chord/20261004T180000Z/unit-record.json",
         "work/analysis/q0-recovery-diagnostic/20261004T184000Z/unit-record.json",
@@ -1877,10 +1879,12 @@
     }
   ],
   "residuals": [
-    "Q1 clean current-candidate Transport full8 pitch/tempo/DLS sustain/Stop/resume recording and negative controls",
-    "Q2 independent original-free Windows build/install/Q1",
-    "Q3 all40 remaining functionality, common time-event graphical Timeline and original reciprocal/dynamic comparison",
-    "Q4 all8 same final configuration; ordinary core Windows5 publication blocked"
+    "Q1 representative five-form/native Project/audio chain closed on this candidate only; all40 responsibilities and all8 final acceptance remain incomplete",
+    "Original dynamic/reciprocal comparison remains unobserved for Lyric/Marker bulk, Wave designer and other listed responsibilities; independent RIFF and PCM checks are not a substitute",
+    "Common Timeline Marker/Mute and all remaining strips, snap, graphical selection/cycling, OLE/COM clipboard and meter reanchor remain incomplete",
+    "Q2 independent Windows without original binaries, COM registration and lookup paths is unavailable; current source build and local load observations do not close original independence",
+    "Current ordinary core is unexecuted/blocked by the frozen historical Windows5 publication condition; dedicated blocked modes and driver unexecuted entries are excluded from passes",
+    "Producer ABI, runtime/export/cache/reference repair, media/generation/live/output/deployment residuals retained in feature responsibilities and prior units"
   ],
   "history": [
     {
@@ -17175,29 +17179,134 @@
     {
       "candidate": "20261006T182656003Z",
       "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-acceptance-status.json"
+    },
+    {
+      "candidate": "20261006T185539543Z",
+      "latestUnit": "work/analysis/q1-current-integration/20261006T192000Z/unit-record.json",
+      "archive": "work/analysis/q3-lyric-range/20261006T202000Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261006T202431545Z",
+      "unit": "work/analysis/q3-lyric-range/20261006T202000Z/unit-record.json",
+      "archive": "work/analysis/q1-fixed-integration/20261006T205000Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261006T202431545Z",
+      "latestUnit": "work/analysis/q1-fixed-integration/20261006T205000Z/unit-record.json",
+      "archive": "work/analysis/q3-marker-mute-range/20261006T213500Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261006T213433891Z",
+      "latestUnit": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
+      "archive": "work/analysis/q3-tool-factory/20261006T215905Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261006T222153066Z",
+      "unit": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+      "archive": "work/analysis/q1-current-integration/20261006T225403Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261006T222153066Z",
+      "unit": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+      "archive": "work/analysis/q3-sample-inheritance/20261006T233800Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261007T001647816Z",
+      "unit": "work/analysis/q3-sample-inheritance/20261006T233800Z/unit-record.json",
+      "archive": "work/analysis/q3-file-output-multi/20261007T003852Z/acceptance-status.json.before-promotion"
+    },
+    {
+      "candidate": "20261007T004920093Z",
+      "unit": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+      "archive": "work/analysis/q1-final-candidate/20261007T014258Z/acceptance-status.json.before-promotion"
     }
   ],
   "regression": {
-    "manifest": "docs/analysis/regression-manifest.json",
-    "nativeTotal": 77,
-    "driverTotal": 107
+    "candidate": "20261007T004920093Z",
+    "run": "work/acceptance/regression/20261007T005546448Z/run.json",
+    "counts": {
+      "障害あり": 31,
+      "合格": 48
+    },
+    "total": 79,
+    "fullAcceptance": false
   },
   "regressionRound": {
-    "candidate": "20261006T185539543Z",
-    "run": "work/acceptance/regression/20261006T200238028Z/run.json",
+    "candidate": "20261007T004920093Z",
+    "run": "work/acceptance/regression/20261007T005546448Z/run.json",
     "counts": {
-      "合格": 47,
-      "障害あり": 30
-    }
+      "障害あり": 31,
+      "合格": 48
+    },
+    "total": 79
   },
   "driverRound": {
-    "candidate": "20261006T185539543Z",
-    "run": "work/acceptance/registered-drivers/20261006T200205506Z/run.json",
-    "counts": {
-      "合格": 20,
+    "candidate": "20261007T004920093Z",
+    "run": "work/acceptance/registered-drivers/20261007T013632971Z/run.json",
+    "rawCounts": {
+      "未実行": 69,
       "障害あり": 21,
-      "未実行": 66
-    }
+      "合格": 21
+    },
+    "counts": {
+      "未実行": 65,
+      "障害あり": 21,
+      "合格": 25
+    },
+    "supplements": [
+      {
+        "candidate": "20261007T004920093Z",
+        "id": "Test-FileOutputMultiPcmAuditor",
+        "status": "合格",
+        "runner": "scripts/Test-FileOutputMultiPcmAuditor.mjs",
+        "runnerSha256": "266dccae0fc78799b3101f6dd5144f80a8b5d0bc5af870764294646bbdafe7d5",
+        "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/native-pcm-controls/negative-tests.json",
+        "evidenceSha256": "9671b4cbc9314dbb1fafdb3cb12e734a5e23dede80f44fd2ce3e65a1f0b3db79",
+        "scope": "Current two independent numbered WAVs, correct route ordering/pitches and six rejecting PCM controls",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T004920093Z",
+        "id": "Test-FileOutputMultiGuiAudioAuditor",
+        "status": "合格",
+        "runner": "scripts/Test-FileOutputMultiGuiAudioAuditor.mjs",
+        "runnerSha256": "bb2162d9d4e7db77f67cf0d737d2af7b760e6cec24db85ee9fa0f32f866559d0",
+        "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/gui-audio-controls/negative-tests.json",
+        "evidenceSha256": "a766a2766ceba72edb01e0edcefa318d40a56d218bab7c2e321d4f68f4577a74",
+        "scope": "Current main saved/reopened two-output PCM/WASAPI and seven rejecting controls; active GUI interruption and tempo change unverified",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T004920093Z",
+        "id": "Test-ProductGuiProjectStyleDlsAuditor",
+        "runner": "scripts/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+        "runnerSha256": "de2077a0b839c6d984cd9318f7e347f5de1c4baa54558d86b76d88b20510780a",
+        "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+        "status": "合格",
+        "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/style-negative-controls-v2/negative-tests.json",
+        "evidenceSha256": "98777aaa28dfc315c88aee79ad3ed8f7206978e5d4400ae7d2b36d781d219c44",
+        "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z",
+        "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z/gui-project-style-dls-audio-proof.json",
+        "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T004920093Z",
+        "id": "Test-ProductGuiTransportDlsPriorityAuditor",
+        "runner": "scripts/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+        "runnerSha256": "d33e37bef86cd3717ae375334a455e458ddbbba8675d42fa8af6df57c8b2bd87",
+        "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+        "status": "合格",
+        "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/transport-negative-controls-v2/negative-tests.json",
+        "evidenceSha256": "301f78ff88edc00de7710e449b938f5a3c7e5805feb9d5ad81ec36e81ccf6030",
+        "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z",
+        "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z/gui-transport-dls-priority-proof.json",
+        "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+        "fullAcceptance": false
+      }
+    ],
+    "total": 111,
+    "fullAcceptance": false
   },
-  "latestUnit": "work/analysis/q1-current-integration/20261006T192000Z/unit-record.json"
+  "latestUnit": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json"
 }

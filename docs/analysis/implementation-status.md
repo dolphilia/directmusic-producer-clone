@@ -1,22 +1,13 @@
 # 本体再構築の現在状態
 
-候補 20261006T185539543Z。全体未完了。正本は [product-state.json](product-state.json) の current。旧schema1フィールドと従来CSVは版別履歴として保持する。
+候補 `20261007T004920093Z`、200保存ソース。正本は [product-state.json](product-state.json) のcurrent。最新単位 [FileOutput直接接続2バッファ](../../work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json)、[変更・検証・再現手順](q3-file-output-multi-2026-10-07.md)。全40/全8未完。
 
-構成 {"status":"合格","candidate":"20261006T185539543Z","exitCode":0,"evidence":"work/build/product-snapshot/20261006T185539543Z/build-summary.json","scope":"Win32 Release reference tools OFF,195 saved sources"}、compile {"status":"合格","candidate":"20261006T185539543Z","exitCode":0,"evidence":"work/build/product-snapshot/20261006T185539543Z/build-summary.json"}、install {"status":"合格","candidate":"20261006T185539543Z","exitCode":0,"evidence":"work/build/product-snapshot/20261006T185539543Z/build-summary.json"}、通常core {"status":"障害あり","reason":"Known Windows5 publication condition frozen; not rerun or included as pass","candidate":"20261006T185539543Z","evidence":"work/acceptance/regression/20261006T190050749Z/run.json","scope":"Frozen dedicated ordinary core Windows5 publication rejection. DWORD PChannel contract/Sequence26 current pass; no rejected retry."}。現候補の専用native: 障害あり 30、合格 47。driver: 未実行 66、障害あり 21、合格 20。
+configure/build/install各exit0。専用native79=48合格31障害。driver111原始一巡21合格21障害69未実行、同候補2音声判定器補足後23合格21障害67未実行。通常coreは既知Windows5条件で未実行・障害。Script Reference.spp保存error5凍結。Sequence26/DLS sample policy28/FileOutput multi34合格。
 
-最新単位: work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json。build: work/build/product-snapshot/20261006T185539543Z/build-summary.json。機能責務の入口 [feature-map.csv](feature-map.csv) は全40行を維持し、古い「未着手」を現在の未実装判定へ転用しない。
+既存DLS継承とwriter/DMOを保持し、複数直接接続bufferの録音control/番号順/事前検証/全Stop確定を接続した。本体作者15392で二effects追加/UndoRedo/保存/正常exit0、別13892でnative四文書復元/録音/正常exit0、5保存入力不変。Record.wav MIDI69・Record1.wav MIDI60が各二発、Stop後録音継続・録音Stopで両hash固定。WASAPI二回Play両音高と無音RMS0、正例7反例合格。GUI能動Stop・再生中録音Stop・テンポ変更は未確認。旧DLS差分音声は履歴、原版比較を代替しない。
 
-| 全体受入 | 状態 | 残差 |
-| --- | --- | --- |
-| クリーンビルド | 作業中 | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
-| 起動と終了 | 作業中 | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
-| 原版データの読込 | 作業中 | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
-| 編集と保存 | 作業中 | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
-| 終了後の再読込 | 作業中 | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
-| 再生と停止 | 作業中 | Current candidate audio未実行; old Wave/Fresh audio retained only as history |
-| 繰り返しと異常入力 | 障害あり | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
-| 原版依存の解消 | 障害あり | Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted |
+旧222153066Z Q1五形式統合は履歴。現候補の新規native Projectから五形式/テンポ変更までのQ1全経路は未実行。Q2原版なし独立Windows未用意・原版対象designer不足は障害。
 
-次の作業: Q1: fixed185539543Z new native Project five forms → edit Undo/Redo save exit0 → distinct reload → WASAPI active Stop/replay/tempo, Style and embedded Segment versus Transport priority; no old audio transfer
+次は固定004920093ZのQ1五形式本体統合。長い/遅い音符で能動Stop・無音・再開・テンポ変更まで同一シナリオに結合する。その後Q3G StylePlayerの原版UI/同梱txt契約とsource auditionを進める。Send/未接続group/多重session/ABI、WaveTrack loop/end、DLS継承runtime export、GUID-only曖昧fixture解決をqueueに維持する。
 
-旧implementation-status.csvは現行の完成率やqueueへ使用しない。専用試験と全8受入の正本は [regression-manifest.json](regression-manifest.json)、[acceptance-status.json](acceptance-status.json)。
+責務入口 [feature-map.csv](feature-map.csv)、[全体8状態表](acceptance-status.md) は6作業中/2障害/0合格。既存履歴と残責務を保持。

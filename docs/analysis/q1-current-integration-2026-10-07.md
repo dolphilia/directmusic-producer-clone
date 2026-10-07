@@ -1,15 +1,24 @@
-# Q1 同一候補の五形式統合
+# 現候補のQ1代表統合
 
-候補20261006T185539543Z、195保存ソース、Win32 Release / reference tools OFF。全体未完了。build SHA256 dd54cc967afe8a39480071c36e805fb1c98bde2b985b99cbd18b51478632383f、install EXE a89961826e90c01e4a163a6c0fd8d518d7f8ca35bcae9e847a0e34bc1062ef26。
+候補 **20261006T222153066Z**、198保存ソース。configure/build/install各exit0。Producer.exe SHA256 `1229c2ba21b29c73223d929e03f785aaf5025d4a9f4a53ca8c4fabe6fb5a81b3`、build-summary `9cdb5e73ba8b99afe7b4b833f3caa6f0c9829513c377704e336ed1259e5f21b5`。製品ソースは変更せず、今回の本体操作と録音を同じ生成物へ接続した。[最新単位](../../work/analysis/q1-current-integration/20261006T225403Z/unit-record.json)、[統合監査](../../work/analysis/q1-current-integration/20261006T225403Z/scenario-proof.json)。全40責務・全8受入は未完、`fullAcceptance=false`。
 
-新規native Fresh.proに10文書を登録。本体でSegment/Style/Band/DLS/AudioPathの読込・変更・Undo/Redo・保存を行い、作者22360の通常exit0後、別PID13748で五形式の最終値を復元して通常exit0を取得。Initialの1音符、Sequence5→7.5BPM、Style109BPM、Band volume101、DLS Region lowkey1/loop320+11987、AudioPath名Q1 Conflictを保存。195ソース・12入力・EXEのhash同一性を監査した。
+作者PID12768で新規native Projectを作成し、初回保存から6形式10所有文書を含めた。InitialのNote追加、Sequenceの5→6→Undo/Redo→最終5、Style108→109、Band100→101、DLS Key low0→1、AudioPath名変更の履歴と保存を本体で確認。作者は正常exit0。15分の監視期限超過記録は障害として保持し、その後の実際の正常終了を別の読取専用監視で記録した。期限超過を合格へ変更していない。
 
-Style WASAPIは10発・2秒間隔・MIDI60・無音・packet integrity合格、6異常対照も期待通り。Transport録音は対照無音、発音中Stop、停止後無音を確認したが、全曲再開後半に余分な音が混入しpitch/tempo/sustainは不合格。録音中にnative runtime回帰を並行実行したため混入を疑う。合格へ緩和せずraw録音・失敗を保持。再収録用PID22768は起動したがComputer Use一覧に現れず、kernel再初期化後も対象未取得。ハンドル推測・迂回・強制終了はしていない。
+別PID6232が同じ最終Projectと全12入力を読み込み、Note1、テンポ5/7.5、Style109、Band101、DLS Key low1/Region loop320+11987、Conflictの1..15、Routeの0..16、VBScript言語とUnicode本文を復元。最後に正常exit0。作者保存コピーと全12入力はbyte一致。Project SHA256 `dbb2bb3dc99c6ecca03bd39e5d130fc912c267a3b6d0eaa1e63e9d3dd6829c42`。
 
-判定器はStyle期待tempoを明示可能にし、Sequenceの無音対照を完奏から除外し、停止後音の異常対照をStop interruptedへ配置した。旧154607録音の別コピーで7対照を検証したが、これは判定器の回帰素材であり現製品音声の合格へ転用しない。最初の対照生成失敗も保持。
+| 同じ再読込PIDの録音 | 結果 |
+| --- | --- |
+| Style参照Segment | Style設定109、Segment120 BPM。MIDI60の10発、2秒間隔、前後無音RMS0、パケット整合合格。6対照合格 |
+| Transport優先・停止再開 | 未接続Conflict defaultは無音。埋込Routeで2発を発音中Stop、保持無音RMS0、先頭から全8音再開。間隔12/12/12/12/8/8/8秒、5→7.5 BPM、DLS持続と音高合格。11対照合格 |
 
-一巡はnative77=47合格/30障害、driver107=20合格/21障害/66未実行。通常core既知Windows5は凍結、Sequence26のDWORD契約は現候補合格を維持。全8受入は6作業中/2障害。原版動的比較・Q2独立Windows・全40責務を未完として保持。
+録音器は保存ソース版 `20261006T211007927Z`、SHA256 `9e53dacd2b5793935b459fd04233330065d35edc7cbbbfff019fbeede0ec94d2`。StyleとTransportは直列、endpoint/QPC時刻・操作UTC・入力/依存hash・全packet/WAV・判定器を各captureに保存。人の聴取待ちは用いていない。
 
-証拠入口: [最新単位](../../work/analysis/q1-current-integration/20261006T192000Z/unit-record.json)。各観測、入力hash、終了監視、WASAPI PCM、判定器版、失敗記録をそこから参照する。再現はTest-ProductProjectGui.ps1で同buildのFresh.proを開き、Capture-ProductGuiAudio.ps1へ12入力と300秒を渡す。GUIでConflict default/Control無音/SourceSequence中断/無音保持/全曲再開を記録。録音中はnative/audio回帰を実行しない。Inspect-ProductGuiTransportDlsPriorityAudio.mjs --slow --require-lifecycleと異常対照を実行する。Styleは --style-tempo 109。
+監査の不整合も修正した。Segment内Bandは元100の私有コピーで、所有Band101とは異なる。Style判定器は今回の入力台帳でhash固定した元Bandの全非参照byteと直下GUIDを照合し、所有Bandとの差を記録する。所有Band101の音声反映は合格としていない。Transport判定器は正常終了で書き直されるlaunchの代わりに録音時の固定snapshotを読む。初回失敗と旧判定器を単位に保持した。
 
-次の具体策は、支持APIで22768の対象ウィンドウを取得して混入なしTransportを再収録すること。GUI障害継続時はQ3Cの既存Lyric/Marker/Muteを照合し、共通Timelineへの不足を実装する。既存CRUDやMessage Windowを作り直さない。
+SourceSequenceとControlのfixtureコピーには同じGUIDが残る。選択文書での対照再生は検証したが、曖昧なGUID-only参照解決を合格に含めない。次のfixture整備責務としてqueueに残す。原版動的比較、原版なし独立Windows/Q2、全Producer ABI/全Timeline/全40責務は別の不足である。
+
+固定候補の登録回帰はnative77=47合格30障害。driver107の原始一巡20合格21障害66未実行に、今回の同候補の音声対照2件を補足し22合格21障害64未実行。通常coreは既知Windows5条件で未実行・障害。未実行/障害は合格に含めない。全8受入は6作業中・2障害、合格0。
+
+再現は `Build-ProductSnapshot.ps1` のWin32 Release/reference tools OFFで保存ソースをbuild/installし、同summaryで `Test-RegressionManifest.ps1` と `Test-RegisteredNativeDrivers.ps1`。`Test-ProductProjectGui.ps1` から作業コピーを起動し上記操作・保存・終了、同じProjectを別起動する。`Capture-ProductGuiAudio.ps1 -SilentKeepAlive` のready後にPlay/Stopを記録し、`Inspect-ProductGuiProjectStyleDlsAudio.mjs --style-tempo 109` と `Inspect-ProductGuiTransportDlsPriorityAudio.mjs --slow --require-lifecycle`、各対照試験を実行する。今回の全パス・入力hash・操作state・再監査コマンドはunit配下。新生成物へ今回の成功を転用しない。
+
+次はQ3DのWave default loop inheritanceとtrack/Region override。既存WSMP/PCM/DLSモデルを保持し、契約とruntime接続の不足を調べ、本体履歴・保存・別復元・PCMへ閉じる。Q2と原版比較の障害、既知OS拒否を保持し、同条件再試行は行わない。

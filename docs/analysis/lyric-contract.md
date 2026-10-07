@@ -1,6 +1,6 @@
 # Lyric document contract
 
-Bounded scope: owned timed Unicode text, separate physical/logical clocks, delivery setting, group/nth track, CRUD, clipboard and whole-document history. Timeline bulk selection/drag, meter reanchoring, negative pickup positions, tool notification/Message Window delivery and playback behavior remain acceptance work. This contract does not establish full LyricStripMgr compatibility.
+Bounded scope: owned timed Unicode text, separate physical/logical clocks, delivery setting, group/nth track, CRUD, source shared range/clipboard/relocation and whole-document history. OS Lyric PMSG delivery to the source Tool and Unicode Message Window is implemented and has dedicated runtime evidence; original timing parity is incomplete. Original bulk selection/drag, meter reanchoring, negative pickup positions and full playback behavior remain acceptance work. This contract does not establish full LyricStripMgr compatibility.
 
 Primary sources: local `work/analysis/sources/dmusicf.h` (DMUS_IO_LYRICSTRACK_EVENT_HEADER and Lyric hierarchy), `dmusici.h` (DMUS_PMSGF_TOOL constants), and extracted Producer help `work/analysis/help/htm/lyricproperties.htm`. Dynamic original observations and immutable inputs are in `work/analysis/q3-lyric/20261004T212600Z`.
 

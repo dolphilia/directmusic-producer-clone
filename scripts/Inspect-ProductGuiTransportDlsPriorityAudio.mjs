@@ -7,7 +7,7 @@ const inputs=Array.isArray(run.inputs)?run.inputs:run.inputs?[run.inputs]:[];
 for(const [p,h] of [[run.executable,run.exeSha256],[run.buildSummary,run.buildSummarySha256],[run.recorder,run.recorderSha256],[run.recorderBuildSummary,run.recorderBuildSummarySha256],...inputs.map(i=>[i.path,i.sha256])])assert.equal(hash(p),h);
 for(const s of build.sources)assert.equal(hash(path.join(build.sourceRoot,s.path)),s.sha256);
 
-const priorLaunch=json(run.guiRun+'/launch.json');for(const i of priorLaunch.inputs)assert.equal(hash(i.path),i.sha256);
+const priorLaunch=json(dir+'/gui-launch-at-capture.json');for(const i of priorLaunch.inputs)assert.equal(hash(i.path),i.sha256);
 function riffTree(b,a=0,z=b.length){const cs=[];for(let p=a;p<z;){assert(p+8<=z);const id=b.toString('ascii',p,p+4),n=b.readUInt32LE(p+4),e=p+8+n;assert(e+(n&1)<=z);const c={id,data:b.subarray(p+8,e),raw:b.subarray(p,e+(n&1))};if(id==='RIFF'||id==='LIST'){assert(n>=4);c.type=b.toString('ascii',p+8,p+12);c.children=riffTree(b,p+12,e);}cs.push(c);p=e+(n&1);}return cs;}
 const one=(cs,id,type)=>{const found=cs.filter(c=>c.id===id&&(!type||c.type===type));assert.equal(found.length,1);return found[0];};
 const launchFile=n=>{const i=priorLaunch.inputs.find(i=>path.basename(i.path)===n);assert(i);return fs.readFileSync(i.path);};
@@ -42,7 +42,7 @@ const plays=actions.filter(a=>a.action.startsWith('Play')&&a.action!=='Play cont
 const stops=actions.filter(a=>a.action.startsWith('Stop')).map(a=>{const t=time(a),p=plays.filter(p=>p.time<t).at(-1);return {action:a.action,time:t,priorPlay:p?.time??null,beforeNaturalEnd:!!p&&t-p.time<seconds(6144),inCapture:t>=0&&t<capture.seconds};});
 const stop = stops.find(s=>s.action==='Stop interrupted'), interrupted=plays.find(p=>p.action==='Play interrupted'), resumed=plays.find(p=>p.action==='Play resumed');
 const quietStart=stop?.time+2, quietEnd=resumed?.time-.2; const quietRms=quietStart>=0&&quietEnd>quietStart&&quietEnd<capture.seconds?rms(quietStart,quietEnd):null;
-const launch=json(run.guiRun+'/launch.json'); assert.equal(launch.processId,run.processId); assert.equal(launch.exeSha256,run.exeSha256); assert(actions.every(a=>a.window===launch.windowId&&Date.parse(a.afterUtc)>=Date.parse(a.beforeUtc)&&Date.parse(a.afterUtc)-Date.parse(a.beforeUtc)<500));
+const launch=priorLaunch; assert.equal(launch.processId,run.processId); assert.equal(launch.exeSha256,run.exeSha256); assert(actions.every(a=>a.window===launch.windowId&&Date.parse(a.afterUtc)>=Date.parse(a.beforeUtc)&&Date.parse(a.afterUtc)-Date.parse(a.beforeUtc)<500));
 const interruptedOnsets=interrupted&&stop?onsets.filter(p=>p.time>=interrupted.time&&p.time<stop.time):[];
 const interruptionPitchPassed=interruptedOnsets.length>0&&interruptedOnsets.every((p,i)=>{const correct=tone(p.time+.04,p.time+.14,notes[i].midi);return correct>.00005&&correct>tone(p.time+.04,p.time+.14,notes[i].midi-1)*1.3&&correct>tone(p.time+.04,p.time+.14,notes[i].midi+1)*1.3;});
 const rmsBeforeStop=stop?.time>.3?rms(stop.time-.3,stop.time-.05):null;

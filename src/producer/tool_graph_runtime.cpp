@@ -12,7 +12,7 @@ void release_graph(runtime::Graph* g){if(g)g->Release();}
 void check(HRESULT hr){if(FAILED(hr))throw std::runtime_error("Runtime ToolGraph construction failed");}
 }
 void validate_tool_factories(const Bytes& bytes,const std::vector<ToolFactory>& factories){
-    ToolGraphDocument graph;graph.load(bytes);for(const auto& t:graph.tools())(void)factory(t,factories);
+    ToolGraphDocument graph;graph.load(bytes);for(const auto& t:graph.tools()){const auto& f=factory(t,factories);if(f.validate)f.validate(t);}
 }
 OwnedRuntimeGraph create_tool_graph(const Bytes& bytes,const std::vector<ToolFactory>& factories){
     validate_tool_factories(bytes,factories);

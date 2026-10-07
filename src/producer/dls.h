@@ -34,6 +34,9 @@ public:
     // Playback preflight is read-only; validate all Wave/Region loop bounds
     // against the linked sample before replacing a live performance.
     void validate_playback_samples() const;
+    // Resolve inherited Wave WSMP into each missing Region WSMP in a private
+    // runtime copy. Keep the editor's absent override and history unchanged.
+    Bytes playback_sample_bytes() const;
     // WSMP start/length use sample frames, with an exclusive end. Region
     // queries expose only explicit overrides, never manufacture defaults.
     std::vector<DlsLoop> wave_loops(size_t wave) const;

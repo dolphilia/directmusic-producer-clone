@@ -20,7 +20,9 @@ static unsigned long long utc_filetime() {
   return (static_cast<unsigned long long>(time.dwHighDateTime)<<32)|time.dwLowDateTime;
 }
 int wmain(int argc,wchar_t** argv) {
-  if(argc!=3) return 2;
+  if(argc!=3 && argc!=4) return 2;
+  const bool keepAlive=argc==4 && std::wstring(argv[3])==L"--silent-keepalive";
+  if(argc==4 && !keepAlive) return 2;
   WAVEFORMATEX* fmt=nullptr;
   bool com=false;
   try {
@@ -40,6 +42,22 @@ int wmain(int argc,wchar_t** argv) {
     check(client->GetMixFormat(&fmt));
     check(client->Initialize(AUDCLNT_SHAREMODE_SHARED,AUDCLNT_STREAMFLAGS_LOOPBACK,10000000,0,fmt,nullptr));
     ComPtr<IAudioCaptureClient> capture; check(client->GetService(IID_PPV_ARGS(&capture)));
+    // An idle endpoint may produce no loopback packets until the first sound,
+    // including a startup discontinuity. Keep the shared engine active with
+    // explicit silent render packets; never rewrite capture flags or gaps.
+    ComPtr<IAudioClient> silentClient;
+    ComPtr<IAudioRenderClient> silentRender;
+    UINT32 silentCapacity=0;
+    if(keepAlive) {
+      check(endpoint->Activate(__uuidof(IAudioClient),CLSCTX_ALL,nullptr,reinterpret_cast<void**>(silentClient.GetAddressOf())));
+      check(silentClient->Initialize(AUDCLNT_SHAREMODE_SHARED,0,10000000,0,fmt,nullptr));
+      check(silentClient->GetBufferSize(&silentCapacity));
+      check(silentClient->GetService(IID_PPV_ARGS(&silentRender)));
+      BYTE* silence=nullptr; check(silentRender->GetBuffer(silentCapacity,&silence));
+      check(silentRender->ReleaseBuffer(silentCapacity,AUDCLNT_BUFFERFLAGS_SILENT));
+      check(silentClient->Start());
+      Sleep(250);
+    }
     const unsigned long fmtSize=sizeof(WAVEFORMATEX)+fmt->cbSize;
     const size_t frameCount=static_cast<size_t>(seconds)*fmt->nSamplesPerSec;
     std::vector<unsigned char> data(frameCount*fmt->nBlockAlign,0);
@@ -51,6 +69,7 @@ int wmain(int argc,wchar_t** argv) {
     check(client->Start());
     { std::ofstream ready(dir/L"ready.json"); ready<<std::setprecision(17)
       <<"{\"schema\":2,\"sampleRate\":"<<fmt->nSamplesPerSec<<",\"channels\":"<<fmt->nChannels<<",\"seconds\":"<<seconds
+      <<",\"silentKeepAlive\":"<<(keepAlive?"true":"false")
       <<",\"startQpcTicks\":\""<<start.QuadPart<<"\",\"qpcFrequency\":\""<<frequency.QuadPart
       <<"\",\"startQpc100ns\":"<<start100ns<<",\"utcBeforeFileTime\":\""<<utcBefore
       <<"\",\"utcAfterFileTime\":\""<<utcAfter<<"\"}"; }
@@ -58,6 +77,15 @@ int wmain(int argc,wchar_t** argv) {
     unsigned packetsCount=0, discontinuities=0, timestampErrors=0; size_t endFrame=0;
     const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(seconds);
     while(std::chrono::steady_clock::now()<deadline) {
+      if(keepAlive) {
+        UINT32 padding=0; check(silentClient->GetCurrentPadding(&padding));
+        if(padding>silentCapacity) throw std::runtime_error("Invalid silent render padding");
+        const UINT32 frames=silentCapacity-padding;
+        if(frames) {
+          BYTE* silence=nullptr; check(silentRender->GetBuffer(frames,&silence));
+          check(silentRender->ReleaseBuffer(frames,AUDCLNT_BUFFERFLAGS_SILENT));
+        }
+      }
       UINT32 available=0; check(capture->GetNextPacketSize(&available));
       while(available) {
         BYTE* bytes=nullptr; UINT32 frames=0; DWORD flags=0; UINT64 position=0,qpc=0;
@@ -78,6 +106,7 @@ int wmain(int argc,wchar_t** argv) {
       Sleep(5);
     }
     check(client->Stop());
+    if(keepAlive) check(silentClient->Stop());
     LARGE_INTEGER endQpc;
     const auto endUtcBefore=utc_filetime();
     check(QueryPerformanceCounter(&endQpc)?S_OK:E_FAIL);
@@ -86,6 +115,7 @@ int wmain(int argc,wchar_t** argv) {
     wav.write("RIFF",4); u32(wav,20+fmtSize+static_cast<unsigned long>(data.size())); wav.write("WAVEfmt ",8); u32(wav,fmtSize);
     wav.write(reinterpret_cast<const char*>(fmt),fmtSize); wav.write("data",4);u32(wav,static_cast<unsigned long>(data.size()));wav.write(reinterpret_cast<const char*>(data.data()),static_cast<std::streamsize>(data.size())); wav.close();
     std::ofstream meta(dir/L"capture.json"); meta<<"{\"schema\":2,\"passed\":true,\"mode\":\"default-render-endpoint-loopback\",\"seconds\":"<<seconds<<",\"sampleRate\":"<<fmt->nSamplesPerSec<<",\"channels\":"<<fmt->nChannels<<",\"bits\":"<<fmt->wBitsPerSample<<",\"packets\":"<<packetsCount<<",\"discontinuities\":"<<discontinuities<<",\"timestampErrors\":"<<timestampErrors<<",\"lastNonSilentPacketEndFrame\":"<<endFrame<<",\"endQpcTicks\":\""<<endQpc.QuadPart<<"\",\"endUtcBeforeFileTime\":\""<<endUtcBefore<<"\",\"endUtcAfterFileTime\":\""<<endUtcAfter<<"\",\"physicalSpeakerVerified\":false}";
+    { std::ofstream mode(dir/L"render-mode.json"); mode<<"{\"silentKeepAlive\":"<<(keepAlive?"true":"false")<<",\"silentBufferFrames\":"<<silentCapacity<<",\"audibleRenderFrames\":0}"; }
     CoTaskMemFree(fmt); CoUninitialize(); return 0;
   } catch(const std::exception& e) { if(fmt) CoTaskMemFree(fmt); if(com) CoUninitialize(); std::cerr<<e.what(); return 1; }
 }

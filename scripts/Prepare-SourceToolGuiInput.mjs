@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const regression=path.resolve(process.argv[2]),unit=path.resolve(process.argv[3]);
+const run=read(regression+'/run.json');
+for(const id of ['param-control','param-control-runtime','tool-graph-runtime','timeline-range'])assert.equal(run.results.find(r=>r.id===id)?.status,'合格');
+assert.equal(hash(run.buildSummary),run.buildSummarySha256);assert.equal(hash(run.executable),run.exeSha256);
+const source=regression+'/param-control/core/SourceToolProject',dest=unit+'/SourceToolProject';
+assert(!fs.existsSync(dest),'Preserve existing GUI inputs; use a new unit');
+const original=fs.readdirSync(source).sort().map(name=>({name,sha256:hash(source+'/'+name)}));
+fs.cpSync(source,dest,{recursive:true,errorOnExist:true,force:false});
+const authored=fs.readFileSync(dest+'/Authoring.sgp');assert.equal(authored.toString('ascii',0,4),'RIFF');assert.equal(authored.toString('ascii',8,12),'DMSG');assert.equal(authored.readUInt32LE(4)+8,authored.length);
+const children=[];let removed=0,identity=0;const controlGuid=crypto.randomBytes(16);
+for(let p=12;p<authored.length;){const size=authored.readUInt32LE(p+4),end=p+8+size+(size&1);assert(end<=authored.length);if(authored.toString('ascii',p,p+4)==='RIFF'&&authored.toString('ascii',p+8,p+12)==='DMAP')removed++;else {const chunk=Buffer.from(authored.subarray(p,end));if(chunk.toString('ascii',0,4)==='guid'){assert.equal(size,16);controlGuid.copy(chunk,8);identity++;}children.push(chunk);}p=end;}
+assert.equal(removed,1);assert.equal(identity,1);const control=Buffer.concat([Buffer.from(authored.subarray(0,12)),...children]);control.writeUInt32LE(control.length-8,4);fs.writeFileSync(dest+'/Control.sgp',control,{flag:'wx'});
+const files=fs.readdirSync(dest).sort().map(name=>({path:path.join(dest,name),sha256:hash(dest+'/'+name)}));
+fs.writeFileSync(unit+'/gui-inputs-before.json',JSON.stringify({schema:1,createdUtc:new Date().toISOString(),candidate:run.candidate,regression,regressionSha256:hash(regression+'/run.json'),buildSummary:run.buildSummary,buildSummarySha256:run.buildSummarySha256,executable:run.executable,exeSha256:run.exeSha256,source,sourceFiles:original,files,controlGuid:controlGuid.toString('hex'),controlDerivation:'Remove exactly one top-level embedded AudioPath, give the control a distinct object GUID and update root size. Preserve all musical notes, tempos and other chunk bytes.',driverSha256:hash(process.argv[1]),fullAcceptance:false},null,2)+'\n',{flag:'wx'});
+fs.copyFileSync(process.argv[1],unit+'/prepare-gui-inputs.mjs');console.log(JSON.stringify({candidate:run.candidate,directory:dest,files}));

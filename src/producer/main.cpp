@@ -20,6 +20,7 @@
 #include "wave_document_editor.h"
 #include "script_editor.h"
 #include "tool_graph_editor.h"
+#include "source_tools.h"
 #include "container_editor.h"
 #include "timeline_editor.h"
 #include "audio_path_editor.h"
@@ -448,6 +449,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     try {
         switch(message) {
         case WM_CREATE: {
+            conductor.set_tool_factories(source_tool_factories());
             conductor.enable_lyric_observation();conductor.enable_script_message_observation();
             docs=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,16,12,550,250,Documents);
             events=control(window,L"LISTBOX",L"",LBS_NOTIFY|WS_BORDER|WS_VSCROLL|WS_TABSTOP,16,50,550,180,Events);

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
+#include <set>
 namespace producer::app {
 namespace {
 template<class C> auto payload(C& t)->decltype(t.find("mute")) {decltype(t.find("mute")) found=nullptr;for(auto& c:t.children)if(c.id=="mute"){if(found)throw std::runtime_error("Ambiguous Mute payload");found=&c;}return found;}
@@ -15,6 +16,35 @@ size_t stride(const Chunk& t){auto p=payload(t);return p?read32(p->data,0):12;}
 bool commit(Chunk& t,std::vector<Record> r,size_t* selected){std::stable_sort(r.begin(),r.end(),[](const Record& a,const Record& b){return a.event.channel!=b.event.channel?a.event.channel<b.event.channel:a.event.time<b.event.time;});auto next=t;auto p=payload(next);if(!p){Chunk c;c.id="mute";c.data=Bytes(4);put32(c.data,0,12);next.children.push_back(c);p=&next.children.back();}const auto n=read32(p->data,0);Bytes b(4);put32(b,0,n);size_t picked=0;for(size_t i=0;i<r.size();++i){if(r[i].selected)picked=i;auto v=r[i].bytes;v.resize(n);encode(v,r[i].event);b.insert(b.end(),v.begin(),v.end());}p->data=std::move(b);if(next.encode()==t.encode())return false;t=std::move(next);if(selected)*selected=picked;return true;}
 }
 bool valid_mute(const MuteEvent& e){return e.time>=0&&e.channel<0xfffffffcu&&(e.map<0xfffffffcu||e.map==mute_channel_silent);}
+namespace {
+std::vector<Record> range_records(const Bytes& bytes,std::int32_t at,std::int32_t span,std::int32_t length){
+    if(at<0||span<=0||std::int64_t(at)+span>length)throw std::runtime_error("Mute range outside Segment");
+    const auto clip=Chunk::parse_list(bytes);if(clip.type!="MUTC"||clip.encode()!=bytes||clip.children.size()>1||(!clip.children.empty()&&clip.children[0].id!="mute"))throw std::runtime_error("Invalid Mute range clipboard");
+    auto incoming=records(clip);std::set<std::pair<std::uint32_t,std::int32_t>> keys;for(const auto& r:incoming)if(r.event.time>=span||!keys.emplace(r.event.channel,r.event.time).second)throw std::runtime_error("Mute range clock or duplicate key");
+    for(auto& r:incoming){r.event.time+=at;encode(r.bytes,r.event);}return incoming;
+}
+}
+Bytes copy_mute_range(const Chunk& track,std::int32_t begin,std::int32_t end){
+    if(begin<0||end<=begin)throw std::runtime_error("Invalid Mute range");const auto all=records(track);Chunk clip;clip.id="LIST";clip.type="MUTC";
+    if(const auto source=payload(track)){Chunk c;c.id="mute";c.data=Bytes(4);put32(c.data,0,stride(track));for(const auto& r:all)if(r.event.time>=begin&&r.event.time<end){auto b=r.bytes;put32(b,0,r.event.time-begin);c.data.insert(c.data.end(),b.begin(),b.end());}clip.children.push_back(std::move(c));}
+    return clip.encode();
+}
+bool delete_mute_range(Chunk& track,std::int32_t begin,std::int32_t end){
+    if(begin<0||end<=begin)throw std::runtime_error("Invalid Mute range");auto r=records(track);const auto count=r.size();r.erase(std::remove_if(r.begin(),r.end(),[&](const Record& v){return v.event.time>=begin&&v.event.time<end;}),r.end());return r.size()!=count&&commit(track,std::move(r),nullptr);
+}
+bool mute_range_empty(const Bytes& bytes,std::int32_t at,std::int32_t span,std::int32_t length){return range_records(bytes,at,span,length).empty();}
+bool paste_mute_range(Chunk& track,const Bytes& bytes,std::int32_t at,std::int32_t span,bool overwrite,std::int32_t length){
+    auto incoming=range_records(bytes,at,span,length);auto existing=records(track);auto next=track;
+    if(!incoming.empty()){
+        const auto n=incoming[0].bytes.size();if(!existing.empty()&&stride(track)!=n)throw std::runtime_error("Incompatible Mute range stride");
+        if(existing.empty()){auto p=payload(next);if(!p){Chunk c;c.id="mute";next.children.push_back(std::move(c));p=&next.children.back();}p->data=Bytes(4);put32(p->data,0,n);}
+    }
+    const auto count=existing.size();if(overwrite)existing.erase(std::remove_if(existing.begin(),existing.end(),[&](const Record& r){return r.event.time>=at&&r.event.time<std::int64_t(at)+span;}),existing.end());
+    if(incoming.empty()&&existing.size()==count)return false;
+    std::set<std::pair<std::uint32_t,std::int32_t>> keys;for(const auto& r:existing)keys.emplace(r.event.channel,r.event.time);
+    for(const auto& r:incoming){if(!keys.emplace(r.event.channel,r.event.time).second)throw std::runtime_error("Mute range collides with destination PChannel/time");existing.push_back(r);}
+    if(!commit(next,std::move(existing),nullptr)||next.encode()==track.encode())return false;track=std::move(next);return true;
+}
 std::vector<MuteEvent> mute_events(const Chunk& t){std::vector<MuteEvent> out;for(const auto& r:records(t))out.push_back(r.event);return out;}
 bool add_mute_event(Chunk& t,MuteEvent e,size_t* selected){if(!valid_mute(e))return false;auto r=records(t);if(collision(r,e))return false;Bytes b(stride(t));encode(b,e);r.push_back({b,e,true});return commit(t,std::move(r),selected);}
 bool change_mute_event(Chunk& t,size_t i,MuteEvent e,size_t* selected){if(!valid_mute(e))return false;auto r=records(t);if(i>=r.size()||same(r[i].event,e)||collision(r,e,i))return false;r[i].event=e;r[i].selected=true;return commit(t,std::move(r),selected);}

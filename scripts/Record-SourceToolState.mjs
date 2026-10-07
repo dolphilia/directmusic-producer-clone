@@ -1,0 +1,70 @@
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+const unit=process.argv[2];assert(unit,'Usage: Record-SourceToolState UNIT');
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,'')),write=(p,v)=>fs.writeFileSync(p,JSON.stringify(v,null,2)+'\n');
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const proof=read(unit+'/unit-proof.json'),candidate=proof.candidate,buildPath=proof.build.path,build=read(buildPath),now=new Date().toISOString();
+assert(proof.passed&&!proof.fullAcceptance);assert(!fs.existsSync(unit+'/unit-record.json'),'Already promoted');
+for(const s of build.sources)assert.equal(hash(s.path),s.sha256);
+const files=['product-state.json','acceptance-status.json','regression-manifest.json','acceptance-status.md','implementation-status.md','feature-map.csv'];
+const recovering=process.argv.includes('--recover-partial');
+if(recovering){assert.equal(read('docs/analysis/product-state.json').current.latestUnit,unit+'/unit-record.json');for(const n of files)fs.copyFileSync(unit+'/'+n+'.before-promotion','docs/analysis/'+n);}
+for(const n of files){if(!recovering){assert(!fs.existsSync(unit+'/'+n+'.before-promotion'));fs.copyFileSync('docs/analysis/'+n,unit+'/'+n+'.before-promotion');}}
+if(!recovering)fs.copyFileSync('docs/analysis-plan.md',unit+'/analysis-plan.md.before-promotion');
+const scope='Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete';
+const nextAction='Q1 current222153066Z: create a fresh native Project in main, connect Segment/Style/Band/DLS/AudioPath plus existing Script to one owned catalog, edit/UndoRedo/save/normal close/distinct reload and serial Style/Transport default-versus-embedded/activeStop/quiet/replay/tempo PCM. Preserve older successful scenarios as history; then return to independent Q3D Wave loop inheritance/track-region override responsibility. Q2 environment remains blocked.';
+const residuals=[
+ 'Q1 fresh native Project/five formats/all current GUI stages/activeStop/replay/Transport precedence not yet executed on222153066Z; old202431545Z evidence is historical only',
+ 'Original New dialog offers Project only; reciprocal ToolGraph/Parameter dynamic comparison unavailable. Independent RIFF and PCM do not establish original parity',
+ 'Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain',
+ 'Q2 independent original-free Windows with no original files/COM registrations/search paths unavailable',
+ 'Ordinary core and documented unchanged Windows5 publication/recovery workflows remain gated; native47pass30blocked, drivers20pass21blocked66unexecuted exclude unavailable cases',
+ 'All other generation/media/Script/reference/output/deployment/ABI responsibilities retained; all40/all8 final configuration incomplete'
+];
+const entry={schema:2,createdUtc:now,phase:'Q3E',candidate,featureIds:['ToolGraphDesigner.ocx','ParamStripMgr.dll','Conductor.dll','DMUSProd.exe','AudioPathDesigner.ocx'],targetGap:read(unit+'/unit-start.json').targetGap,endCondition:read(unit+'/unit-start.json').endCondition,status:'限定成立・原版動的比較未完',scope,changes:read(unit+'/changed-sources.json').changes,build:{...proof.build,configureExitCode:build.configureExitCode,buildExitCode:build.buildExitCode,installExitCode:build.installExitCode,outputs:build.outputs},related:proof.related,native:proof.native,drivers:proof.drivers,gui:{candidate,status:'限定合格',passed:true,...proof.gui,project:proof.project,evidence:unit+'/unit-proof.json',scope},audio:{candidate,status:'限定合格',passed:true,...proof.audio,scope:'Control/authored8 pitches and120→180BPM gain effect on PID7004; earlyStop/restart and original parity unexecuted',fullAcceptance:false},original:{status:'障害あり',reason:residuals[1],evidence:unit+'/original-new-types.json'},failuresRetained:[unit+'/first-compile-failure.json',unit+'/first-related-results.json',unit+'/runtime-diagnosis.json',unit+'/audio-audit-first/diagnosis.json',unit+'/reload-close-prompt.json'],priorityReview:{reason:'Bounded product factory/discovery gap closed after OS768PPQ correction; further same-group details will not reduce current Q1/other40 gaps. Current candidate now fixed, perform Q1 then independent media duties.',nextGroup:'Q1 then D'},evidence:[unit+'/unit-proof.json',unit+'/changed-sources.json',unit+'/source-tool-factory-contract.md',proof.native.run,proof.drivers.run].filter(p=>fs.existsSync(p)).map(p=>({path:p,sha256:hash(p)})),residuals,nextAction,fullAcceptance:false};
+const manifest=read('docs/analysis/regression-manifest.json');
+for(const [field,p]of [['tests',proof.native.run],['drivers',proof.drivers.run]])for(const r of read(p).results){const t=manifest[field].find(t=>t.id===r.id);assert(t,r.id);if(t.lastResult){t.resultHistory??=[];t.resultHistory.push(t.lastResult);}if(t.latest){t.history??=[];t.history.push(t.latest);}t.lastResult={candidate,run:p,...r};t.latest=t.lastResult;t.status=r.status;}
+manifest.latestNativeRound={candidate,run:proof.native.run,counts:proof.native.counts};manifest.latestDriverRound={candidate,run:proof.drivers.run,counts:proof.drivers.counts};manifest.updatedUtc=now;
+manifest.helperAuditors??=[];for(const script of ['scripts/Inspect-SourceToolUnit.mjs','scripts/Inspect-SourceToolGuiAudio.mjs','scripts/Test-SourceToolAudioAuditControls.mjs'])manifest.helperAuditors.push({unit,candidate,script,sha256:hash(script),evidence:script.includes('Controls')?proof.audio.controls:script.includes('GuiAudio')?proof.audio.directory+'/source-tool-gui-audio-proof.json':unit+'/unit-proof.json',status:'限定合格',scope:'Unit evidence auditor, separate from77 native and107 driver inventory',fullAcceptance:false});
+write('docs/analysis/regression-manifest.json',manifest);
+const state=read('docs/analysis/product-state.json'),c=state.current;
+c.unitHistory??=[];c.unitHistory.push({candidate:c.candidate,unit:c.latestUnit,archive:unit+'/product-state.json.before-promotion'});
+const oldGui=c.gui,oldAudio=c.audio,oldQ1=c.q1CurrentIntegration;
+Object.assign(c,{candidate,build:buildPath,latestUnit:unit+'/unit-record.json',latestReport:'docs/analysis/q3-source-tool-factory-2026-10-07.md',updatedUtc:now,residuals,nextAction,nextIndependentUnit:nextAction,fullAcceptance:false});
+for(const [field,code]of [['configuration',build.configureExitCode],['compilation',build.buildExitCode],['install',build.installExitCode]])c[field]={candidate,status:code===0?'合格':'失敗',exitCode:code,evidence:buildPath,scope:'198 saved source Win32 Release reference tools OFF; all40 and Q2 separate'};
+c.core={candidate,status:'障害あり',evidence:proof.native.run,reason:'20261005T051458521Z Chordmap Project atomic replace Windows5 after690; unchanged condition frozen',scope:'Current ordinary core unexecuted, not a pass'};
+c.nativeDedicated={...manifest.latestNativeRound,sequenceChecks:26,paramControlChecks:53,paramRuntimeChecks:15,fullAcceptance:false};c.driverRound=manifest.latestDriverRound;c.registeredDrivers={...manifest.latestDriverRound,fullAcceptance:false};c.drivers=manifest.latestDriverRound;
+c.smoke={candidate,status:read(proof.drivers.run).results.find(r=>r.id==='Test-ProductHost').status,evidence:proof.drivers.run,scope:'Bounded host smoke'};
+c.gui={...entry.gui,historical:oldGui};c.audio={...entry.audio,historical:oldAudio};c.q1CurrentIntegration={candidate,status:'未実行',historical:oldQ1,historicalUnit:'work/analysis/q1-fixed-integration/20261006T205000Z/unit-record.json',scope:'Fresh five-format native lifecycle and activeStop/restart/precedence remain; SourceTool bounded lifecycle/audio passed separately',fullAcceptance:false};c.q1Integration=c.q1CurrentIntegration;c.q1FiveDocumentScenario=c.q1CurrentIntegration;c.integrationProgress={candidate,status:'作業中',scope};
+c.inProgressUnit=null;
+c.responsibilityIdCorrections??=[];
+if(c.featureResponsibilities['AudioPathDesigner.dll']&&!c.featureResponsibilities['AudioPathDesigner.ocx']){c.responsibilityIdCorrections.push({oldId:'AudioPathDesigner.dll',correctId:'AudioPathDesigner.ocx',evidence:'docs/analysis/feature-map.csv',previous:c.featureResponsibilities['AudioPathDesigner.dll'],correctedUtc:now});c.featureResponsibilities['AudioPathDesigner.ocx']=c.featureResponsibilities['AudioPathDesigner.dll'];delete c.featureResponsibilities['AudioPathDesigner.dll'];}
+for(const id of entry.featureIds){const f=c.featureResponsibilities[id];assert(f,id);f.history??=[];f.history.push({candidate:f.candidate,evidence:f.evidence,scope:f.scope,remaining:f.remaining});
+ const remaining=id==='ToolGraphDesigner.ocx'||id==='ParamStripMgr.dll'?[residuals[1],residuals[2],residuals[0],residuals[3],residuals[5]]:[...(Array.isArray(f.remaining)?f.remaining:[f.remaining].filter(Boolean)),residuals[2]];
+ Object.assign(f,{candidate,status:'作業中',scope,evidence:unit+'/unit-record.json',remaining,sourceToolFactory:{candidate,status:'限定合格',scope,evidence:unit+'/unit-record.json'}});
+}
+write('docs/analysis/product-state.json',state);
+const acceptance=read('docs/analysis/acceptance-status.json');acceptance.history??=[];acceptance.history.push({candidate:acceptance.candidate,latestUnit:acceptance.latestUnit,archive:unit+'/acceptance-status.json.before-promotion'});
+Object.assign(acceptance,{candidate,build:buildPath,latestUnit:unit+'/unit-record.json',updatedUtc:now,fullAcceptance:false,residuals,regressionRound:manifest.latestNativeRound,driverRound:manifest.latestDriverRound});for(const f of ['configuration','compilation','install'])acceptance[f]=c[f];
+const scopes={
+ 'clean-build':['198保存ソースのconfigure/build/install各exit0、13変更を生成物hashへ接続','全40責務・独立環境のbuild/install未完'],
+ 'startup-shutdown':['作者14124・別復元7004、正常exit0・必要Tool/Parameter画面操作','現候補の新規native Projectを含むQ1全経路未実行'],
+ 'original-data-load':['native ToolGraph/AudioPath/Segmentを読み、既存opaque/元2Tool/既存trackを保持','原版各形式の動的比較・全機能読込は未完'],
+ 'edit-save':['Source Tool追加/gain適用・UndoRedo、object/parameter/2曲線追加・UndoRedo、native保存','残Tool/Parameter/他40責務・原版clipboard/ABI等未完'],
+ 'separate-process-reload':['別PIDで3Tool/2曲線復元、所有5文書byte一致、Project差分はfilh更新時刻のみ','全形式・全責務の復元と現候補Q1未完'],
+ 'play-stop-tempo-audio':['同一別復元PIDの対照/適用各8音・120→180BPM・相対gain効果、反例6拒否','発音中Stop/再開/Transport優先/Q1全音声・原版動的比較未実行'],
+ 'repeat-invalid-input':['Source factory/property/curve拒否時不変、Sequence26のDWORD許可/予約/不変を現候補で検証','通常core・既知Windows5条件は凍結、47合格30障害/20合格21障害66未実行'],
+ 'original-independence':['ソースfactoryは明示した製品GUID、構成は原版ファイル不要、OS依存は維持','原版なし独立Windows未用意、全機能依存解消未証明']
+};
+for(const a of acceptance.criteria){const [s,r]=scopes[a.id];assert(s);Object.assign(a,{candidate,evidence:unit+'/unit-record.json',status:['repeat-invalid-input','original-independence'].includes(a.id)?'障害あり':'作業中',scope:s,currentScope:s,remaining:r});}
+write('docs/analysis/acceptance-status.json',acceptance);
+fs.writeFileSync('docs/analysis/acceptance-status.md',`# 全体8受入の現在状態\n\n候補 \`${candidate}\`。最新単位 [Source Tool供給](../../${unit}/unit-record.json)。全体未完了、\`fullAcceptance=false\`。\n\n|受入|状態|現候補の証拠|残差|\n|---|---|---|---|\n${acceptance.criteria.map(a=>`|${a.name}|${a.status}|${a.scope}|${a.remaining}|`).join('\n')}\n\nnative77=47合格/30障害、driver107=20合格/21障害/66未実行。判定器3種の限定証拠は別枠。障害・未実行を合格に含めない。\n`);
+fs.writeFileSync('docs/analysis/implementation-status.md',`# 本体再構築の現在状態\n\n候補 \`${candidate}\`、198保存ソース。正本は [product-state.json](product-state.json) のcurrent。最新単位 [Source Tool供給](../../${unit}/unit-record.json)。全40/全8未完。\n\nconfigure/build/install各exit0。専用native77=47合格30障害、driver107=20合格21障害66未実行。通常coreは既知Windows5条件凍結。関連Timeline93/ToolGraph27/Parameter53/OS Parameter15、Sequence26合格。\n\n明示的Source Velocity factoryと本体palette/properties/IMediaParamInfo能力列挙を接続。作者14124→別復元7004、3Tool/2曲線、所有5文書再保存byte一致、両exit0。対照/適用各8音・テンポ120→180・gain効果・反例6拒否。発音中Stop/再開・原版比較はこの単位で未検証。\n\n次: ${nextAction}\n\n責務入口 [feature-map.csv](feature-map.csv)、[全体8状態表](acceptance-status.md) は6作業中/2障害。既存履歴と残責務を保持。\n`);
+function csv(text){const rows=[];let row=[],field='',quote=false;for(let i=0;i<text.length;i++){const x=text[i];if(x==='"'){if(quote&&text[i+1]==='"'){field+='"';i++;}else quote=!quote;}else if(!quote&&(x===','||x==='\n')){row.push(field.replace(/\r$/,''));field='';if(x==='\n'){rows.push(row);row=[];}}else field+=x;}if(field||row.length){row.push(field);rows.push(row);}assert(!quote);return rows;}
+const rows=csv(fs.readFileSync('docs/analysis/feature-map.csv','utf8')),head=rows[0];assert.equal(rows.length,41);
+for(const id of entry.featureIds){const row=rows.find(r=>r[0]===id);assert(row,id);for(const [key,value]of Object.entries({implementation:scope,unitComparison:'Current222153066Z Parameter53/runtime15/ToolGraph27; full native47pass30blocked; original dynamic unavailable',hostAcceptance:'Current222153066Z main14124→reload7004 exits0; native5 owned resave exact; 3Tool/2curves; WASAPI8+8pitches/tempo/gain effect; earlyStop/restart unexecuted',originalDependency:residuals[1]+'; '+residuals[3],nextAction,evidence:unit+'/unit-record.json'})){const i=head.indexOf(key);assert(i>=0);row[i]=['implementation','evidence'].includes(key)?row[i]+'; '+value:value;}}
+fs.writeFileSync('docs/analysis/feature-map.csv',rows.map(r=>r.map(x=>'"'+x.replaceAll('"','""')+'"').join(',')).join('\r\n')+'\r\n');
+write(unit+'/unit-record.json',entry);fs.copyFileSync(process.argv[1],unit+'/state-recorder.mjs');
+const progress=read(unit+'/progress.json');Object.assign(progress,{updatedUtc:now,status:'限定単位完了・全体未完',gui:'Author14124/reload7004 normal exits0; 3Tools/2curves restored; five owned docs exact',audio:'合格: control/authored8 pitches/tempo/gain effect;6 controls rejected; activeStop/restart unexecuted',unitRecord:unit+'/unit-record.json',nextAction});write(unit+'/progress.json',progress);
+console.log(JSON.stringify({candidate,latestUnit:unit+'/unit-record.json',criteria:acceptance.criteria.map(a=>({id:a.id,status:a.status})),fullAcceptance:false}));

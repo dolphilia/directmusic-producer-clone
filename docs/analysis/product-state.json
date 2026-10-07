@@ -1231,112 +1231,262 @@
   "latestOwnedMotifGuiUnit": "work/analysis/owned-motif-gui/20261004T144700Z/unit-record.json",
   "latestTransportDefaultUnit": "work/analysis/transport-default/20261004T151000Z/unit-record.json",
   "current": {
-    "candidate": "20261006T185539543Z",
-    "build": "work/build/product-snapshot/20261006T185539543Z/build-summary.json",
-    "latestUnit": "work/analysis/q1-current-integration/20261006T192000Z/unit-record.json",
-    "latestReport": "docs/analysis/q1-current-integration-2026-10-07.md",
+    "candidate": "20261007T004920093Z",
+    "build": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+    "latestUnit": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+    "latestReport": "docs/analysis/q1-final-candidate-2026-10-07.md",
     "regressionManifest": "docs/analysis/regression-manifest.json",
     "acceptanceStatus": "docs/analysis/acceptance-status.json",
     "configuration": {
+      "candidate": "20261007T004920093Z",
       "status": "合格",
-      "candidate": "20261006T185539543Z",
       "exitCode": 0,
-      "evidence": "work/build/product-snapshot/20261006T185539543Z/build-summary.json",
-      "scope": "Win32 Release reference tools OFF,195 saved sources"
+      "evidence": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+      "scope": "200 saved sources Win32 Release reference OFF; all40/Q2 separate"
     },
     "compilation": {
+      "candidate": "20261007T004920093Z",
       "status": "合格",
-      "candidate": "20261006T185539543Z",
       "exitCode": 0,
-      "evidence": "work/build/product-snapshot/20261006T185539543Z/build-summary.json"
+      "evidence": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+      "scope": "200 saved sources Win32 Release reference OFF; all40/Q2 separate"
     },
     "install": {
+      "candidate": "20261007T004920093Z",
       "status": "合格",
-      "candidate": "20261006T185539543Z",
       "exitCode": 0,
-      "evidence": "work/build/product-snapshot/20261006T185539543Z/build-summary.json"
+      "evidence": "work/build/product-snapshot/20261007T004920093Z/build-summary.json",
+      "scope": "200 saved sources Win32 Release reference OFF; all40/Q2 separate"
     },
     "core": {
+      "candidate": "20261007T004920093Z",
       "status": "障害あり",
-      "reason": "Known Windows5 publication condition frozen; not rerun or included as pass",
-      "candidate": "20261006T185539543Z",
-      "evidence": "work/acceptance/regression/20261006T190050749Z/run.json",
-      "scope": "Frozen dedicated ordinary core Windows5 publication rejection. DWORD PChannel contract/Sequence26 current pass; no rejected retry."
+      "executed": false,
+      "reason": "Current ordinary core is blocked/unexecuted under frozen historical atomic Chordmap Project Windows5 after690; Script Reference.spp Windows5 after84 is separately frozen. No OS bypass or unchanged retry.",
+      "evidence": "work/acceptance/regression/20261007T005546448Z/run.json"
     },
     "nativeDedicated": {
-      "candidate": "20261006T185539543Z",
-      "run": "work/acceptance/regression/20261006T200238028Z/run.json",
+      "candidate": "20261007T004920093Z",
+      "run": "work/acceptance/regression/20261007T005546448Z/run.json",
       "counts": {
-        "障害あり": 30,
-        "合格": 47
+        "障害あり": 31,
+        "合格": 48
       },
-      "timelineRangeChecks": 44,
-      "sequenceChecks": 26,
+      "total": 79,
       "fullAcceptance": false
     },
     "gui": {
-      "candidate": "20261006T185539543Z",
-      "status": "限定合格",
-      "scope": "Fresh native10 entries; five-form edit/UndoRedo/save; author22360 exit0 and separate reload13748 restore all five exit0; full40 incomplete",
-      "evidence": "work/analysis/q1-current-integration/20261006T192000Z/unit-record.json",
-      "authorExitCode": 0,
-      "reloadExitCode": 0
+      "candidate": "20261007T004920093Z",
+      "passed": true,
+      "scenarioProof": "work/analysis/q1-final-candidate/20261007T014258Z/scenario-proof.json",
+      "projectSha256": "615a2218c3442111e0990c63cf8b42fbad4c239b8f453aa5a6b5f0e733bb8179",
+      "processes": [
+        {
+          "processId": 15852,
+          "exeSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+          "exitCode": 0,
+          "forcedTermination": false
+        },
+        {
+          "processId": 8424,
+          "exeSha256": "27b5a6eee6911c1d50a73c9a0f57a5c419e40ce17e70fb24b9dd7006c1fbd95e",
+          "exitCode": 0,
+          "forcedTermination": false
+        }
+      ],
+      "historyObservations": [
+        {
+          "label": "New Project settled",
+          "utc": "2026-10-07T01:44:13.941Z",
+          "window": 89587858
+        },
+        {
+          "label": "Initial Undo settled",
+          "utc": "2026-10-07T01:44:44.364Z",
+          "window": 89587858
+        },
+        {
+          "label": "Initial Redo settled",
+          "utc": "2026-10-07T01:47:47.093Z",
+          "window": 89587858
+        },
+        {
+          "label": "Sequence Change6 settled",
+          "utc": "2026-10-07T01:59:59.278Z",
+          "window": 89587858
+        },
+        {
+          "label": "Sequence Undo5 settled",
+          "utc": "2026-10-07T02:00:09.165Z",
+          "window": 89587858
+        },
+        {
+          "label": "Sequence Redo6 settled",
+          "utc": "2026-10-07T02:00:17.688Z",
+          "window": 89587858
+        },
+        {
+          "label": "Style Change109 settled",
+          "utc": "2026-10-07T01:50:26.147Z",
+          "window": 89587858
+        },
+        {
+          "label": "Style Undo108 settled",
+          "utc": "2026-10-07T01:50:35.734Z",
+          "window": 89587858
+        },
+        {
+          "label": "Style Redo109 settled; Save menu",
+          "utc": "2026-10-07T01:50:49.523Z",
+          "window": 89587858
+        },
+        {
+          "label": "Band Change101 settled",
+          "utc": "2026-10-07T01:52:03.270Z",
+          "window": 89587858
+        },
+        {
+          "label": "Band Undo100 settled",
+          "utc": "2026-10-07T01:52:10.763Z",
+          "window": 89587858
+        },
+        {
+          "label": "Band Redo101 settled; Save menu",
+          "utc": "2026-10-07T01:52:18.537Z",
+          "window": 89587858
+        },
+        {
+          "label": "DLS Change1 settled",
+          "utc": "2026-10-07T01:53:31.062Z",
+          "window": 4788722
+        },
+        {
+          "label": "DLS Undo0 settled",
+          "utc": "2026-10-07T01:53:44.637Z",
+          "window": 4788722
+        },
+        {
+          "label": "DLS Redo1 settled",
+          "utc": "2026-10-07T01:53:54.491Z",
+          "window": 4788722
+        },
+        {
+          "label": "AudioPath name change settled",
+          "utc": "2026-10-07T01:55:01.575Z",
+          "window": 10489814
+        },
+        {
+          "label": "AudioPath Undo Conflict settled",
+          "utc": "2026-10-07T01:55:11.308Z",
+          "window": 10489814
+        },
+        {
+          "label": "AudioPath Redo Current settled",
+          "utc": "2026-10-07T01:55:22.362Z",
+          "window": 10489814
+        },
+        {
+          "label": "Separate process restored Fresh native Project",
+          "utc": "2026-10-07T02:08:12.375Z",
+          "window": 42343046
+        },
+        {
+          "label": "source-sequence-final-restored",
+          "utc": "2026-10-07T02:08:45.573Z",
+          "window": 42343046
+        },
+        {
+          "label": "final-style-reloaded",
+          "utc": "2026-10-07T02:09:23.773Z",
+          "window": 42343046
+        },
+        {
+          "label": "final-band-reloaded",
+          "utc": "2026-10-07T02:09:46.983Z",
+          "window": 42343046
+        },
+        {
+          "label": "final-dls-reloaded",
+          "utc": "2026-10-07T02:10:10.965Z",
+          "window": 15470090
+        },
+        {
+          "label": "final-audiopath-reloaded",
+          "utc": "2026-10-07T02:10:33.641Z",
+          "window": 16846346
+        },
+        {
+          "label": "final-route-reloaded",
+          "utc": "2026-10-07T02:10:56.221Z",
+          "window": 16846346
+        },
+        {
+          "label": "final-script-reloaded",
+          "utc": "2026-10-07T02:11:24.532Z",
+          "window": 41818230
+        },
+        {
+          "label": "Reload final stopped before normal exit",
+          "utc": "2026-10-07T02:23:39.771Z",
+          "window": 42343046
+        }
+      ],
+      "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+      "fullAcceptance": false
     },
     "audio": {
-      "candidate": "20261006T185539543Z",
-      "status": "部分合格・Transport失敗",
+      "candidate": "20261007T004920093Z",
+      "status": "限定合格",
+      "passed": true,
       "style": {
-        "status": "限定合格",
-        "proof": "work/acceptance/product-project-gui/20261006T194650625Z/audio-20261006T195515867Z/gui-project-style-dls-audio-proof.json",
-        "controls": "work/analysis/q1-current-integration/20261006T192000Z/StyleNegativeControls/negative-tests.json",
-        "onsets": 10,
-        "intervalSeconds": 2,
-        "fullAcceptance": false
+        "capture": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z",
+        "proof": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z/gui-project-style-dls-audio-proof.json",
+        "proofSha256": "e6d1322ddc908b7f2a26c953b03a2f7650016ee0d0714e12e450d76d046ba310",
+        "controls": "work/analysis/q1-final-candidate/20261007T014258Z/style-negative-controls-v2/negative-tests.json",
+        "controlsSha256": "98777aaa28dfc315c88aee79ad3ed8f7206978e5d4400ae7d2b36d781d219c44",
+        "recorderSha256": "9e53dacd2b5793935b459fd04233330065d35edc7cbbbfff019fbeede0ec94d2"
       },
       "transport": {
-        "status": "失敗",
-        "proof": "work/acceptance/product-project-gui/20261006T194650625Z/audio-20261006T195958654Z/gui-transport-dls-priority-proof.json",
-        "sequenceProof": "work/acceptance/product-project-gui/20261006T194650625Z/audio-20261006T195958654Z/gui-sequence-audio-proof.json",
-        "classification": "work/analysis/q1-current-integration/20261006T192000Z/transport-contamination.json",
-        "controlQuiet": true,
-        "soundingStop": true,
-        "quietRms": 0,
-        "restartPitchTempo": false,
-        "sustainPassed": false,
-        "fullAcceptance": false
+        "capture": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z",
+        "proof": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z/gui-transport-dls-priority-proof.json",
+        "proofSha256": "1c7a03becb84980af380952485de7021cbfd15016c264deb088c297126eaed10",
+        "controls": "work/analysis/q1-final-candidate/20261007T014258Z/transport-negative-controls-v2/negative-tests.json",
+        "controlsSha256": "301f78ff88edc00de7710e449b938f5a3c7e5805feb9d5ad81ec36e81ccf6030",
+        "recorderSha256": "9e53dacd2b5793935b459fd04233330065d35edc7cbbbfff019fbeede0ec94d2"
       },
-      "scope": "Style10 attacks current pass; full8 restart contaminated/failed; serial retry UI unavailable",
+      "serial": true,
+      "stopResumePassed": true,
+      "sustainPassed": true,
+      "controlQuiet": true,
+      "intervals": [
+        12,
+        11.99499999999999,
+        12,
+        12.000000000000014,
+        8,
+        8,
+        8
+      ],
+      "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
       "fullAcceptance": false
     },
     "fullAcceptance": false,
-    "nextAction": "Restore targetable22768 candidate window through supported Computer Use; serial 300-second Transport recording with no native/audio tests concurrently. If GUI remains unavailable, Q3C Lyric/Marker/Mute common Timeline responsibility from existing implementations; do not rebuild existing CRUD/Message Window.",
+    "nextAction": "Q3G StylePlayer: observe the existing original auxiliary app and bundled text contract, preserve the existing Style/ChordMap/Band/Conductor implementations, then connect missing composition, audition and motif responsibilities in the source product. Retain Q2/original-designer blocks and all40/all8 scope; no unchanged Windows5 retry.",
     "residuals": [
-      "Q1 clean current-candidate Transport full8 pitch/tempo/DLS sustain/Stop/resume recording and negative controls",
-      "Q2 independent original-free Windows build/install/Q1",
-      "Q3 all40 remaining functionality, common time-event graphical Timeline and original reciprocal/dynamic comparison",
-      "Q4 all8 same final configuration; ordinary core Windows5 publication blocked",
-      "Original bulk dynamic selection/boundary/duplicate comparison blocked by unavailable designer",
-      "Common graphical selection/cycling/drag/OLE and meter reanchor of all time-event classes",
-      "Marker stop/cue/enter alignment actual playback",
-      "Wave event loop unknown exact encoding",
-      "SMPL authoring/Snap to Zero/Clone Loop/cross-format conversion and original coordinate compatibility",
-      "Wave/DLS runtime default override behavior and original reciprocal comparison",
-      "Q1/Q2/all40/all8 incomplete",
-      "Full original dynamic comparison/component availability",
-      "Independent original-free WindowsQ2 unavailable",
-      "Normalcore Windows5 blocked, native per-file/runtime/recovery and all40 residuals maintained",
-      "Q3A native Project per-file Runtime folder/name保持・復元; crash recovery/relocation/full40残責務",
-      "Original Runtime Save As menu disabled: dynamic comparison not complete; property rdir/rnam contract observed in prior unit",
-      "Standalone unsaved-document memory; dialog initial folder/name and exact absolute/cross-drive/symlink encoding unverified",
-      "Six kinds native persistence tested; actual GUI Save As only Segment in this unit",
-      "Q2 independent original-free Windows unavailable",
-      "All40 responsibility residuals and all8 remain; core/Motif and other documented Windows5 refusals frozen"
+      "Q1 representative five-form/native Project/audio chain closed on this candidate only; all40 responsibilities and all8 final acceptance remain incomplete",
+      "Original dynamic/reciprocal comparison remains unobserved for Lyric/Marker bulk, Wave designer and other listed responsibilities; independent RIFF and PCM checks are not a substitute",
+      "Common Timeline Marker/Mute and all remaining strips, snap, graphical selection/cycling, OLE/COM clipboard and meter reanchor remain incomplete",
+      "Q2 independent Windows without original binaries, COM registration and lookup paths is unavailable; current source build and local load observations do not close original independence",
+      "Current ordinary core is unexecuted/blocked by the frozen historical Windows5 publication condition; dedicated blocked modes and driver unexecuted entries are excluded from passes",
+      "Producer ABI, runtime/export/cache/reference repair, media/generation/live/output/deployment residuals retained in feature responsibilities and prior units"
     ],
     "q1FiveDocumentScenario": {
-      "candidate": "20261006T044122103Z",
-      "status": "部分確認",
-      "evidence": "work/analysis/q1-message-candidate/20261006T045700Z/unit-record.json",
-      "remaining": "exit0/Transport default conflict/embedded priority/DLS Band binding/Style audition"
+      "candidate": "20261007T004920093Z",
+      "status": "代表経路限定合格・全体未完",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scenarioProof": "work/analysis/q1-final-candidate/20261007T014258Z/scenario-proof.json",
+      "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+      "fullAcceptance": false
     },
     "featureResponsibilities": {
       "ChordStripMgr.dll": {
@@ -1363,36 +1513,80 @@
       "MarkerStripMgr.dll": {
         "status": "作業中",
         "implementation": "marker.cpp / marker_editor.cpp / SegmentDocument",
-        "scope": "Marker70 passed; full bulk range/all observations preserved; supplemental author18924 Saved12→14 Undo12/Redo14 save native Project exit0, distinct final reload21880 Saved14 exit0. Original dynamic bulk and playback effects unverified.",
+        "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
         "remaining": [
           "Original bulk dynamic selection/boundary/duplicate comparison blocked by unavailable designer",
           "Common graphical selection/cycling/drag/OLE and meter reanchor of all time-event classes",
           "Marker stop/cue/enter alignment actual playback",
-          "Current Q1 whole scenario/audio, Q2 isolated Windows, all40/all8"
+          "Current Q1 whole scenario/audio, Q2 isolated Windows, all40/all8",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
         ],
-        "evidence": "work/analysis/q3-marker-boundaries/20261006T143436Z/unit-record.json",
+        "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
         "history": [
           {
             "evidence": "work/analysis/q3-marker/20261004T210500Z/unit-record.json",
             "scope": "owned Marker and Enter CRUD clipboard history implemented; bounded validation, full feature incomplete",
             "remaining": "Marker bulk Mark/Unmark measures/beats/grids, timeline drawing/cycling/drag, meter change behavior and playback stop/cue/enter alignment are not complete. Current candidate basic Marker GUI add/Undo/Redo/native Project save/separate-process reload and original reciprocal editing passed. GUI clipboard/change/delete remain unexecuted; normal UI close observed but exit code unavailable. Single Q1 audio scenario incomplete."
+          },
+          {
+            "candidate": "20261006T144036268Z",
+            "evidence": "work/analysis/q3-marker-boundaries/20261006T143436Z/unit-record.json",
+            "scope": "Marker70 passed; full bulk range/all observations preserved; supplemental author18924 Saved12→14 Undo12/Redo14 save native Project exit0, distinct final reload21880 Saved14 exit0. Original dynamic bulk and playback effects unverified.",
+            "remaining": [
+              "Original bulk dynamic selection/boundary/duplicate comparison blocked by unavailable designer",
+              "Common graphical selection/cycling/drag/OLE and meter reanchor of all time-event classes",
+              "Marker stop/cue/enter alignment actual playback",
+              "Current Q1 whole scenario/audio, Q2 isolated Windows, all40/all8"
+            ]
           }
         ],
-        "candidate": "20261006T144036268Z"
+        "candidate": "20261006T213433891Z"
       },
       "LyricStripMgr.dll": {
         "status": "作業中",
         "implementation": "lyric.cpp / lyric_editor.cpp / SegmentDocument",
-        "scope": "bounded owned Unicode lyric document and main editor complete; full responsibility incomplete",
-        "remaining": "Lyric playback Tool delivery/Message Window, timeline multiselection/drag/meter changes, negative pickup clock behavior and equal-time original oracle remain incomplete. Unicode text ownership is implemented, not merely unknown chunk retention.",
-        "evidence": "work/analysis/q3-lyric/20261004T212600Z/unit-record.json"
+        "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
+        "remaining": [
+          "Original Lyric bulk selection/duplicate/overlap/meter reanchor dynamic comparison remains unobserved; independent byte checks are not an original oracle",
+          "All Timeline strip types, snap, OLE/COM clipboard, selection cycling and original drag semantics remain incomplete",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
+        ],
+        "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
+        "history": [
+          {
+            "evidence": "work/analysis/q3-lyric/20261004T212600Z/unit-record.json",
+            "scope": "bounded owned Unicode lyric document and main editor complete; full responsibility incomplete",
+            "remaining": "Lyric playback Tool delivery/Message Window, timeline multiselection/drag/meter changes, negative pickup clock behavior and equal-time original oracle remain incomplete. Unicode text ownership is implemented, not merely unknown chunk retention."
+          },
+          {
+            "candidate": "20261006T202431545Z",
+            "evidence": "work/analysis/q3-lyric-range/20261006T202000Z/unit-record.json",
+            "scope": "Selected-group/nth Lyric joins Tempo/Sequence source Timeline range; full original bulk/Timeline/40 responsibilities incomplete",
+            "remaining": [
+              "Original Lyric bulk selection/duplicate/overlap/meter reanchor dynamic comparison remains unobserved; independent byte checks are not an original oracle",
+              "All Timeline strip types, snap, OLE/COM clipboard, selection cycling and original drag semantics remain incomplete"
+            ]
+          }
+        ],
+        "candidate": "20261006T213433891Z"
       },
       "MuteStripMgr.dll": {
         "status": "作業中",
         "implementation": "mute.cpp / mute_editor.cpp / SegmentDocument",
-        "scope": "Owned CRUD/clipboard/history/main save/separate-process reload/original reciprocal editing and same-input Sequence mute PCM comparison",
-        "remaining": "Wave/Style/Band mute effects and live remap not yet dynamically compared; Common Timeline drawing/selection/drag/meter behavior; Extended-stride clipboard compatibility when destination is empty",
-        "evidence": "work/analysis/q3-mute/20261004T222600Z/unit-record.json"
+        "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
+        "remaining": [
+          "Wave/Style/Band mute effects and live remap not yet dynamically compared; Common Timeline drawing/selection/drag/meter behavior; Original extended-stride reciprocal clipboard interoperability",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
+        ],
+        "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
+        "history": [
+          {
+            "evidence": "work/analysis/q3-mute/20261004T222600Z/unit-record.json",
+            "scope": "Owned CRUD/clipboard/history/main save/separate-process reload/original reciprocal editing and same-input Sequence mute PCM comparison",
+            "remaining": "Wave/Style/Band mute effects and live remap not yet dynamically compared; Common Timeline drawing/selection/drag/meter behavior; Extended-stride clipboard compatibility when destination is empty"
+          }
+        ],
+        "candidate": "20261006T213433891Z"
       },
       "WaveStripMgr.dll": {
         "status": "作業中",
@@ -1462,7 +1656,14 @@
             "evidence": "work/analysis/q3-wave-sample-loop/20261006T153219Z/unit-record.json"
           }
         ],
-        "candidate": "20261006T182656003Z"
+        "candidate": "20261006T182656003Z",
+        "sampleInheritanceScope": {
+          "candidate": "20261007T001647816Z",
+          "status": "WaveTrack部分は未実行",
+          "evidence": "work/analysis/q3-sample-inheritance/20261006T233800Z/unit-record.json",
+          "scope": "DLS Wave defaults resolved; WaveTrack overrides/loop-enable/end semantics remain queued",
+          "fullAcceptance": false
+        }
       },
       "ScriptDesigner.ocx": {
         "status": "作業中",
@@ -1557,37 +1758,56 @@
       "ToolGraphDesigner.ocx": {
         "status": "作業中",
         "implementation": "AudioPathDocument / ToolGraph editor / source ToolFactory / Conductor AudioPath graph",
-        "scope": "Bounded typed AudioPath graph and actual runtime27; main edit/save/separate reload exits0; current PCM 3x8 endpoint pitches; full responsibility incomplete",
-        "remaining": "Parameter typed/editor/source Tool automation now bounded; main provisioning/DMO/discovery remain. Tool palette/Producer ABI/property pages and main GUI factory provisioning remain; explicit source C++ factories only. Original reciprocal AudioPath graph edits and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart with no usable window. Live AudioPath switch, unmapped channel silent behavior, broader Conductor/FileOutput responsibility remain. Current PCM proves 3x8 endpoint pitches with last embedded AudioPath graph; early Stop/resume/independent tempo fitting and Q1 same final five-format scenario remain. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete.",
-        "evidence": "work/analysis/q3-audiopath-graph/20261005T060000Z/unit-record.json"
-      },
-      "AudioPathDesigner.dll": {
-        "status": "作業中",
-        "implementation": "AudioPathDocument / audio_path Band preparation / typed graph",
-        "scope": "Unconnected Segment PChannel silent behavior bounded native/main/save/reload/PCM verified; complete responsibility remains incomplete",
+        "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
         "remaining": [
-          "Original same-input dynamic/reciprocal comparison blocked by retained DLS warning/process loss; SDK/RIFF/PCM are independent evidence only.",
-          "Q2 independent Windows environment without original Producer files/registration/search paths unavailable.",
-          "Style all-unmapped PCM, live AudioPath switching, concurrent sessions, all-component audition and FileOutput remain.",
-          "Wave event CRUD/clipboard/trim and other all40 responsibilities remain; timeline/ABI/Parameter provisioning/DMO/discovery also remain."
+          "Original New dialog offers Project only; reciprocal ToolGraph/Parameter dynamic comparison unavailable. Independent RIFF and PCM do not establish original parity",
+          "Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain",
+          "Q1 fresh native Project/five formats/all current GUI stages/activeStop/replay/Transport precedence not yet executed on222153066Z; old202431545Z evidence is historical only",
+          "Q2 independent original-free Windows with no original files/COM registrations/search paths unavailable",
+          "All other generation/media/Script/reference/output/deployment/ABI responsibilities retained; all40/all8 final configuration incomplete"
         ],
-        "evidence": "work/analysis/q3-unconnected-audiopath/20261005T093800Z/unit-record.json",
+        "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
         "history": [
           {
-            "status": "作業中",
-            "implementation": "AudioPathDocument / ToolGraph editor / source ToolFactory / Conductor AudioPath graph",
+            "evidence": "work/analysis/q3-audiopath-graph/20261005T060000Z/unit-record.json",
             "scope": "Bounded typed AudioPath graph and actual runtime27; main edit/save/separate reload exits0; current PCM 3x8 endpoint pitches; full responsibility incomplete",
-            "remaining": "Parameter typed/editor/source Tool automation now bounded; main provisioning/DMO/discovery remain. Tool palette/Producer ABI/property pages and main GUI factory provisioning remain; explicit source C++ factories only. Original reciprocal AudioPath graph edits and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart with no usable window. Live AudioPath switch, unmapped channel silent behavior, broader Conductor/FileOutput responsibility remain. Current PCM proves 3x8 endpoint pitches with last embedded AudioPath graph; early Stop/resume/independent tempo fitting and Q1 same final five-format scenario remain. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete.",
-            "evidence": "work/analysis/q3-audiopath-graph/20261005T060000Z/unit-record.json"
+            "remaining": "Parameter typed/editor/source Tool automation now bounded; main provisioning/DMO/discovery remain. Tool palette/Producer ABI/property pages and main GUI factory provisioning remain; explicit source C++ factories only. Original reciprocal AudioPath graph edits and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart with no usable window. Live AudioPath switch, unmapped channel silent behavior, broader Conductor/FileOutput responsibility remain. Current PCM proves 3x8 endpoint pitches with last embedded AudioPath graph; early Stop/resume/independent tempo fitting and Q1 same final five-format scenario remain. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete."
           }
-        ]
+        ],
+        "candidate": "20261006T222153066Z",
+        "sourceToolFactory": {
+          "candidate": "20261006T222153066Z",
+          "status": "限定合格",
+          "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+          "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json"
+        }
       },
       "ParamStripMgr.dll": {
         "status": "作業中",
         "implementation": "param_control.cpp / param_control_editor.cpp / SegmentDocument",
-        "scope": "Typed owned editing28, actual OS source Tool automation7, main history/save/separate reload/normal exits0; one native8pitch PCM",
-        "remaining": "Parameter object discovery/add/palette and IMediaParamInfo capability/range-aware authoring; main source factory provisioning remains absent; source test Tool94 is not a product built-in. Reference-time clocks, DMO/buffer automation, other shapes/START_CURRENT/reset/Stop/replay and shared Timeline remain unverified. GUI clipboard bounds and full object/parameter CRUD validation remain; native validation/history does not prove all GUI operations. Original reciprocal Parameter editing and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart without usable window. Q1 same final native Project five-format lifecycle/early Stop/replay/tempo/Transport precedence remains incomplete. Current PCM proves one native8-pitch play; no GUI playback or acoustic gain-ratio/independent tempo claim. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete.",
-        "evidence": "work/analysis/q3-param-control/20261005T062000Z/unit-record.json"
+        "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+        "remaining": [
+          "Original New dialog offers Project only; reciprocal ToolGraph/Parameter dynamic comparison unavailable. Independent RIFF and PCM do not establish original parity",
+          "Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain",
+          "Q1 fresh native Project/five formats/all current GUI stages/activeStop/replay/Transport precedence not yet executed on222153066Z; old202431545Z evidence is historical only",
+          "Q2 independent original-free Windows with no original files/COM registrations/search paths unavailable",
+          "All other generation/media/Script/reference/output/deployment/ABI responsibilities retained; all40/all8 final configuration incomplete"
+        ],
+        "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+        "history": [
+          {
+            "evidence": "work/analysis/q3-param-control/20261005T062000Z/unit-record.json",
+            "scope": "Typed owned editing28, actual OS source Tool automation7, main history/save/separate reload/normal exits0; one native8pitch PCM",
+            "remaining": "Parameter object discovery/add/palette and IMediaParamInfo capability/range-aware authoring; main source factory provisioning remains absent; source test Tool94 is not a product built-in. Reference-time clocks, DMO/buffer automation, other shapes/START_CURRENT/reset/Stop/replay and shared Timeline remain unverified. GUI clipboard bounds and full object/parameter CRUD validation remain; native validation/history does not prove all GUI operations. Original reciprocal Parameter editing and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart without usable window. Q1 same final native Project five-format lifecycle/early Stop/replay/tempo/Transport precedence remains incomplete. Current PCM proves one native8-pitch play; no GUI playback or acoustic gain-ratio/independent tempo claim. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete."
+          }
+        ],
+        "candidate": "20261006T222153066Z",
+        "sourceToolFactory": {
+          "candidate": "20261006T222153066Z",
+          "status": "限定合格",
+          "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+          "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json"
+        }
       },
       "StyleRefStripMgr.dll": {
         "status": "作業中",
@@ -1599,7 +1819,7 @@
       "Conductor.dll": {
         "status": "作業中",
         "implementation": "SegmentTrigger / Framework owned catalog / main editor / Conductor session-owned graph",
-        "scope": "Current CLI resolved Map/Trigger/Wave first+replay, generated10 notes/public PChannel mapping; full responsibility incomplete. Main/PCM only historical022037.",
+        "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
         "remaining": [
           "original dynamic comparison/Q2 independent Windows",
           "Timeline/clipboard/drag and broader ABI",
@@ -1611,9 +1831,10 @@
           "Windows publication/recovery refusals including new SignPost driver error5; raw failure retained and identical retry frozen",
           "Style all-unmapped PCM, live AudioPath switching, concurrent sessions and all-component audition remain",
           "FileOutput multibuffer/Send/concurrency and complete ABI remain; bounded capture success is historical evidence",
-          "Runtime parameter provisioning, DMO/discovery and broader serialized factories remain"
+          "Runtime parameter provisioning, DMO/discovery and broader serialized factories remain",
+          "Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain"
         ],
-        "evidence": "work/analysis/q3-playback-snapshots/20261006T031600Z/unit-record.json",
+        "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
         "history": [
           {
             "evidence": "work/analysis/q3-unconnected-audiopath/20261005T093800Z/unit-record.json",
@@ -1629,9 +1850,27 @@
             "candidate": "20261005T164335683Z",
             "evidence": "work/analysis/q3-segment-trigger-main/20261005T161300Z/unit-record.json",
             "scope": "document43/owned21/runtime32; main Trigger CRUD each UndoRedo/save/separate PID restore; one child constant120BPM WASAPI activeStop/replay/pitch/timing bounded"
+          },
+          {
+            "candidate": "20261006T033036803Z",
+            "evidence": "work/analysis/q3-playback-snapshots/20261006T031600Z/unit-record.json",
+            "scope": "Current CLI resolved Map/Trigger/Wave first+replay, generated10 notes/public PChannel mapping; full responsibility incomplete. Main/PCM only historical022037.",
+            "remaining": [
+              "original dynamic comparison/Q2 independent Windows",
+              "Timeline/clipboard/drag and broader ABI",
+              "all40/all8 final candidate",
+              "child embedded AudioPath/ToolGraph factories; cross-directory Save As/rename/delete retarget and original jzfr design binding",
+              "Motif pitch/timing/control tempo/boundary audio/original reciprocal comparison",
+              "Motif/Primary/Control main author/PCM, boundary flags and arbitrary recursive dependency graphs incomplete; runtime covers bounded native roles only",
+              "Q1 same final candidate fresh native Project/five forms/all author images/tempo integration remains",
+              "Windows publication/recovery refusals including new SignPost driver error5; raw failure retained and identical retry frozen",
+              "Style all-unmapped PCM, live AudioPath switching, concurrent sessions and all-component audition remain",
+              "FileOutput multibuffer/Send/concurrency and complete ABI remain; bounded capture success is historical evidence",
+              "Runtime parameter provisioning, DMO/discovery and broader serialized factories remain"
+            ]
           }
         ],
-        "candidate": "20261006T033036803Z",
+        "candidate": "20261006T222153066Z",
         "sourceScriptHost": {
           "candidate": "20261006T081405935Z",
           "status": "作業中",
@@ -1644,6 +1883,28 @@
             "Qualified Performance object, exact HRESULT argument/delegated method contract, arbitrary alias spelling, other Container automation after lazy load and graph-free Trace remain explicit coverage queue; no allScript completion",
             "Current081405: Main Script source Apply/UndoRedo/save/exact init+routine Trace/fault line9char1 and independent PID14108 restore3→4. Author15764 additionally Sequence note add/Undo0/Redo1/save and native gui.pro with two owned documents saved, then normal Alt+F4 disappeared without discard; exit observer returned null, no exit0 credit. New post-exit Main window4591642 launched; Project Open cancelled at initial empty-document discard, empty ReloadInitial.sgp preserved. Native Project restoration and fiveforms/PCM not yet performed."
           ]
+        },
+        "sourceToolFactory": {
+          "candidate": "20261006T222153066Z",
+          "status": "限定合格",
+          "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+          "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json"
+        },
+        "sampleInheritanceHistory": [],
+        "sampleInheritance": {
+          "candidate": "20261007T001647816Z",
+          "status": "限定合格",
+          "evidence": "work/analysis/q3-sample-inheritance/20261006T233800Z/unit-record.json",
+          "scope": "DLS Wave sample inheritance and explicit one-shot, private runtime WSMP resolution, native three-document author/save/normal exit/distinct reload and same-PID differential PCM; original dynamic parity and all40/all8 remain separate",
+          "fullAcceptance": false
+        },
+        "fileOutputMultiHistory": [],
+        "fileOutputMulti": {
+          "candidate": "20261007T004920093Z",
+          "status": "限定合格",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+          "scope": "Two directly routed FileOutput buffers, native route ordering and atomic recording lifecycle, main add/UndoRedo/save/normal exit/distinct restore, independent numbered PCM and same-PID WASAPI. Original dynamics, active GUI interruption, tempo change, Sends and all40/all8 remain.",
+          "fullAcceptance": false
         }
       },
       "Uninst.dll": {
@@ -1724,11 +1985,11 @@
       },
       "Timeline.dll": {
         "status": "作業中",
-        "candidate": "20261006T185539543Z",
+        "candidate": "20261006T213433891Z",
         "implementation": "timeline.* / timeline_editor.* / sequence.* / SegmentDocument / Main",
-        "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
+        "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
         "remaining": [
-          "All other Strip classes and multiple same-class vertical mapping",
+          "Strip classes other than the verified five and multiple same-class vertical mapping",
           "Original OLE drag/system MIDI clipboard/external Producer ABI and Ctrl+V routing",
           "Original dynamic comparison: exact clock boundaries/blank-anchor/duplicate Tempo remain unobserved under retained original startup/window block",
           "Q2 independent original-free Windows unavailable",
@@ -1740,25 +2001,46 @@
           "Original dynamic overlapping move/Tempo collision policy",
           "Q1 current five-form integration, active Stop/replay/tempo audio",
           "Q2 independent original-free Windows unavailable",
-          "All40 and all8 incomplete"
+          "All40 and all8 incomplete",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
         ],
-        "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
+        "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
         "history": [
           {
             "candidate": "20261005T205038896Z",
             "evidence": "work/analysis/q3-timeline-range/20261005T210000Z/unit-record.json",
             "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-product-state.json"
+          },
+          {
+            "candidate": "20261006T185539543Z",
+            "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
+            "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
+            "remaining": [
+              "All other Strip classes and multiple same-class vertical mapping",
+              "Original OLE drag/system MIDI clipboard/external Producer ABI and Ctrl+V routing",
+              "Original dynamic comparison: exact clock boundaries/blank-anchor/duplicate Tempo remain unobserved under retained original startup/window block",
+              "Q2 independent original-free Windows unavailable",
+              "Q1 fresh five forms, conflicting embedded/default Transport, active Stop/replay and changing-tempo PCM on this candidate",
+              "ExitCode0 not observed after normal UI close; no foreign-process observer retry",
+              "Container embed/export/other classes/KEEP preload/relocation and retained Wave/runtime/FileOutput/auxiliary all40 responsibilities",
+              "Prior Script strict initial transition failure5.485/5.475s retained as historical failure; no conversion to pass",
+              "All-strip shared selection/move integration and external ABI/OLE/Snap/meter/reanchor",
+              "Original dynamic overlapping move/Tempo collision policy",
+              "Q1 current five-form integration, active Stop/replay/tempo audio",
+              "Q2 independent original-free Windows unavailable",
+              "All40 and all8 incomplete"
+            ]
           }
         ],
         "currentEvidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json"
       },
       "TempoStripMgr.dll": {
         "status": "作業中",
-        "candidate": "20261006T185539543Z",
+        "candidate": "20261006T213433891Z",
         "implementation": "timeline.* / timeline_editor.* / sequence.* / SegmentDocument / Main",
-        "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
+        "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
         "remaining": [
-          "All other Strip classes and multiple same-class vertical mapping",
+          "Strip classes other than the verified five and multiple same-class vertical mapping",
           "Original OLE drag/system MIDI clipboard/external Producer ABI and Ctrl+V routing",
           "Original dynamic comparison: exact clock boundaries/blank-anchor/duplicate Tempo remain unobserved under retained original startup/window block",
           "Q2 independent original-free Windows unavailable",
@@ -1777,14 +2059,42 @@
           "Original dynamic overlapping move/Tempo collision policy",
           "Q1 current five-form integration, active Stop/replay/tempo audio",
           "Q2 independent original-free Windows unavailable",
-          "All40 and all8 incomplete"
+          "All40 and all8 incomplete",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
         ],
-        "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
+        "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
         "history": [
           {
             "candidate": "20261005T205038896Z",
             "evidence": "work/analysis/q3-timeline-range/20261005T210000Z/unit-record.json",
             "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-product-state.json"
+          },
+          {
+            "candidate": "20261006T185539543Z",
+            "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
+            "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
+            "remaining": [
+              "All other Strip classes and multiple same-class vertical mapping",
+              "Original OLE drag/system MIDI clipboard/external Producer ABI and Ctrl+V routing",
+              "Original dynamic comparison: exact clock boundaries/blank-anchor/duplicate Tempo remain unobserved under retained original startup/window block",
+              "Q2 independent original-free Windows unavailable",
+              "Q1 fresh five forms, conflicting embedded/default Transport, active Stop/replay and changing-tempo PCM on this candidate",
+              "ExitCode0 not observed after normal UI close; no foreign-process observer retry",
+              "Container embed/export/other classes/KEEP preload/relocation and retained Wave/runtime/FileOutput/auxiliary all40 responsibilities",
+              "Prior Script strict initial transition failure5.485/5.475s retained as historical failure; no conversion to pass",
+              "original any-MIDI compatibility and dynamic comparison required; unavailable original execution remains blocker",
+              "SMF2/SMPTE/SysEx/meta/cross-channel remapping policies need contract before claiming full MIDI responsibility",
+              "nonzero MIDI port and non-C-major key signature, source metadata/name fidelity, repeated same-time tempo policies remain incomplete",
+              "MIDI channel10 non-drum remap, program/bank/metadata fidelity and arbitrary source SMF remain queued",
+              "Same final candidate Q1 five forms/embedded-default route control, full40/full8 and original-free Q2 remain incomplete",
+              "Very large supported files may incur quadratic Sequence insertion; performance bound policy pending",
+              "Normal UI window close observed, foreign process ExitCode0 not verified",
+              "All-strip shared selection/move integration and external ABI/OLE/Snap/meter/reanchor",
+              "Original dynamic overlapping move/Tempo collision policy",
+              "Q1 current five-form integration, active Stop/replay/tempo audio",
+              "Q2 independent original-free Windows unavailable",
+              "All40 and all8 incomplete"
+            ]
           }
         ],
         "midiImport": {
@@ -1796,11 +2106,11 @@
       },
       "SequenceStripMgr.dll": {
         "status": "作業中",
-        "candidate": "20261006T185539543Z",
+        "candidate": "20261006T213433891Z",
         "implementation": "timeline.* / timeline_editor.* / sequence.* / SegmentDocument / Main",
-        "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
+        "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
         "remaining": [
-          "All other Strip classes and multiple same-class vertical mapping",
+          "Strip classes other than the verified five and multiple same-class vertical mapping",
           "Original OLE drag/system MIDI clipboard/external Producer ABI and Ctrl+V routing",
           "Original dynamic comparison: exact clock boundaries/blank-anchor/duplicate Tempo remain unobserved under retained original startup/window block",
           "Q2 independent original-free Windows unavailable",
@@ -1819,14 +2129,42 @@
           "Original dynamic overlapping move/Tempo collision policy",
           "Q1 current five-form integration, active Stop/replay/tempo audio",
           "Q2 independent original-free Windows unavailable",
-          "All40 and all8 incomplete"
+          "All40 and all8 incomplete",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
         ],
-        "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
+        "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
         "history": [
           {
             "candidate": "20261005T205038896Z",
             "evidence": "work/analysis/q3-timeline-range/20261005T210000Z/unit-record.json",
             "archive": "work/analysis/q3-timeline-move/20261006T185000Z/previous-product-state.json"
+          },
+          {
+            "candidate": "20261006T185539543Z",
+            "evidence": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
+            "scope": "Shared Tempo/Sequence half-open selected range atomic move, button and actual drag; whole40 not accepted",
+            "remaining": [
+              "All other Strip classes and multiple same-class vertical mapping",
+              "Original OLE drag/system MIDI clipboard/external Producer ABI and Ctrl+V routing",
+              "Original dynamic comparison: exact clock boundaries/blank-anchor/duplicate Tempo remain unobserved under retained original startup/window block",
+              "Q2 independent original-free Windows unavailable",
+              "Q1 fresh five forms, conflicting embedded/default Transport, active Stop/replay and changing-tempo PCM on this candidate",
+              "ExitCode0 not observed after normal UI close; no foreign-process observer retry",
+              "Container embed/export/other classes/KEEP preload/relocation and retained Wave/runtime/FileOutput/auxiliary all40 responsibilities",
+              "Prior Script strict initial transition failure5.485/5.475s retained as historical failure; no conversion to pass",
+              "original any-MIDI compatibility and dynamic comparison required; unavailable original execution remains blocker",
+              "SMF2/SMPTE/SysEx/meta/cross-channel remapping policies need contract before claiming full MIDI responsibility",
+              "nonzero MIDI port and non-C-major key signature, source metadata/name fidelity, repeated same-time tempo policies remain incomplete",
+              "MIDI channel10 non-drum remap, program/bank/metadata fidelity and arbitrary source SMF remain queued",
+              "Same final candidate Q1 five forms/embedded-default route control, full40/full8 and original-free Q2 remain incomplete",
+              "Very large supported files may incur quadratic Sequence insertion; performance bound policy pending",
+              "Normal UI window close observed, foreign process ExitCode0 not verified",
+              "All-strip shared selection/move integration and external ABI/OLE/Snap/meter/reanchor",
+              "Original dynamic overlapping move/Tempo collision policy",
+              "Q1 current five-form integration, active Stop/replay/tempo audio",
+              "Q2 independent original-free Windows unavailable",
+              "All40 and all8 incomplete"
+            ]
           }
         ],
         "midiImport": {
@@ -1884,7 +2222,9 @@
           "MIDI channel10 non-drum remap, program/bank/metadata fidelity and arbitrary source SMF remain queued",
           "Same final candidate Q1 five forms/embedded-default route control, full40/full8 and original-free Q2 remain incomplete",
           "Very large supported files may incur quadratic Sequence insertion; performance bound policy pending",
-          "Normal UI window close observed, foreign process ExitCode0 not verified"
+          "Normal UI window close observed, foreign process ExitCode0 not verified",
+          "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain",
+          "Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain"
         ],
         "sourceScriptHost": {
           "candidate": "20261006T081405935Z",
@@ -1927,6 +2267,51 @@
             "Q2 independent original-free Windows unavailable",
             "All40 responsibility residuals and all8 remain; core/Motif and other documented Windows5 refusals frozen"
           ]
+        },
+        "history": [
+          {
+            "remaining": [
+              "original any-MIDI compatibility and dynamic comparison required; unavailable original execution remains blocker",
+              "SMF2/SMPTE/SysEx/meta/cross-channel remapping policies need contract before claiming full MIDI responsibility",
+              "nonzero MIDI port and non-C-major key signature, source metadata/name fidelity, repeated same-time tempo policies remain incomplete",
+              "MIDI channel10 non-drum remap, program/bank/metadata fidelity and arbitrary source SMF remain queued",
+              "Same final candidate Q1 five forms/embedded-default route control, full40/full8 and original-free Q2 remain incomplete",
+              "Very large supported files may incur quadratic Sequence insertion; performance bound policy pending",
+              "Normal UI window close observed, foreign process ExitCode0 not verified"
+            ]
+          },
+          {
+            "candidate": "20261006T213433891Z",
+            "evidence": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
+            "scope": "Five source strips Tempo/Sequence/Lyric/Marker/Mute share selected-group/nth half-open range and one history; main native save, distinct reload and two normal exits0; original bulk parity and all40/all8 incomplete",
+            "remaining": [
+              "original any-MIDI compatibility and dynamic comparison required; unavailable original execution remains blocker",
+              "SMF2/SMPTE/SysEx/meta/cross-channel remapping policies need contract before claiming full MIDI responsibility",
+              "nonzero MIDI port and non-C-major key signature, source metadata/name fidelity, repeated same-time tempo policies remain incomplete",
+              "MIDI channel10 non-drum remap, program/bank/metadata fidelity and arbitrary source SMF remain queued",
+              "Same final candidate Q1 five forms/embedded-default route control, full40/full8 and original-free Q2 remain incomplete",
+              "Very large supported files may incur quadratic Sequence insertion; performance bound policy pending",
+              "Normal UI window close observed, foreign process ExitCode0 not verified",
+              "Original bulk parity, remaining strips/OLE/snap/meter/external ABI, new candidate Q1/audio, Q2 and all40/all8 remain"
+            ]
+          }
+        ],
+        "candidate": "20261006T222153066Z",
+        "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+        "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+        "sourceToolFactory": {
+          "candidate": "20261006T222153066Z",
+          "status": "限定合格",
+          "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+          "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json"
+        },
+        "fileOutputMultiHistory": [],
+        "fileOutputMulti": {
+          "candidate": "20261007T004920093Z",
+          "status": "限定合格",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+          "scope": "Two directly routed FileOutput buffers, native route ordering and atomic recording lifecycle, main add/UndoRedo/save/normal exit/distinct restore, independent numbered PCM and same-PID WASAPI. Original dynamics, active GUI interruption, tempo change, Sends and all40/all8 remain.",
+          "fullAcceptance": false
         }
       },
       "ChordMapDesigner.ocx": {
@@ -1984,16 +2369,158 @@
             "scope": "Bounded Composer generation/Main history/native save/distinct reload/Style note PCM C-G-C; full responsibility incomplete"
           }
         ]
+      },
+      "AudioPathDesigner.ocx": {
+        "status": "作業中",
+        "implementation": "AudioPathDocument / audio_path Band preparation / typed graph",
+        "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+        "remaining": [
+          "Original same-input dynamic/reciprocal comparison blocked by retained DLS warning/process loss; SDK/RIFF/PCM are independent evidence only.",
+          "Q2 independent Windows environment without original Producer files/registration/search paths unavailable.",
+          "Style all-unmapped PCM, live AudioPath switching, concurrent sessions, all-component audition and FileOutput remain.",
+          "Wave event CRUD/clipboard/trim and other all40 responsibilities remain; timeline/ABI/Parameter provisioning/DMO/discovery also remain.",
+          "Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain"
+        ],
+        "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+        "history": [
+          {
+            "status": "作業中",
+            "implementation": "AudioPathDocument / ToolGraph editor / source ToolFactory / Conductor AudioPath graph",
+            "scope": "Bounded typed AudioPath graph and actual runtime27; main edit/save/separate reload exits0; current PCM 3x8 endpoint pitches; full responsibility incomplete",
+            "remaining": "Parameter typed/editor/source Tool automation now bounded; main provisioning/DMO/discovery remain. Tool palette/Producer ABI/property pages and main GUI factory provisioning remain; explicit source C++ factories only. Original reciprocal AudioPath graph edits and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart with no usable window. Live AudioPath switch, unmapped channel silent behavior, broader Conductor/FileOutput responsibility remain. Current PCM proves 3x8 endpoint pitches with last embedded AudioPath graph; early Stop/resume/independent tempo fitting and Q1 same final five-format scenario remain. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete.",
+            "evidence": "work/analysis/q3-audiopath-graph/20261005T060000Z/unit-record.json"
+          },
+          {
+            "evidence": "work/analysis/q3-unconnected-audiopath/20261005T093800Z/unit-record.json",
+            "scope": "Unconnected Segment PChannel silent behavior bounded native/main/save/reload/PCM verified; complete responsibility remains incomplete",
+            "remaining": [
+              "Original same-input dynamic/reciprocal comparison blocked by retained DLS warning/process loss; SDK/RIFF/PCM are independent evidence only.",
+              "Q2 independent Windows environment without original Producer files/registration/search paths unavailable.",
+              "Style all-unmapped PCM, live AudioPath switching, concurrent sessions, all-component audition and FileOutput remain.",
+              "Wave event CRUD/clipboard/trim and other all40 responsibilities remain; timeline/ABI/Parameter provisioning/DMO/discovery also remain."
+            ]
+          }
+        ],
+        "candidate": "20261006T222153066Z",
+        "sourceToolFactory": {
+          "candidate": "20261006T222153066Z",
+          "status": "限定合格",
+          "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+          "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json"
+        },
+        "fileOutputMultiHistory": [],
+        "fileOutputMulti": {
+          "candidate": "20261007T004920093Z",
+          "status": "限定合格",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+          "scope": "Two directly routed FileOutput buffers, native route ordering and atomic recording lifecycle, main add/UndoRedo/save/normal exit/distinct restore, independent numbered PCM and same-PID WASAPI. Original dynamics, active GUI interruption, tempo change, Sends and all40/all8 remain.",
+          "fullAcceptance": false
+        }
+      },
+      "DLSDesigner.ocx": {
+        "status": "作業中",
+        "remaining": [
+          "Q2: independent Windows without original Producer binaries, registration or search paths remains unavailable; no whole original-independence claim.",
+          "Original same-input dynamic/reciprocal DLS/Wave/other comparison remains blocked by unavailable original components; RIFF and PCM are independent evidence, not a substitute.",
+          "Current ordinary core remains unexecuted/blocked by frozen historical atomic Chordmap Project Windows5 after690; dedicated failures/blocked/unexecuted are never passes.",
+          "Wave Track waih loop-enable/end semantics, music-time/stream/variation/multiple-track/shared Timeline remain; DLS ADSR/release/full waveform, inherited DLS runtime export and all-component audition remain.",
+          "Full40 responsibility mapping, common Timeline/OLE/COM, cache/reference repair, runtime/export/recovery, source ABI, file output/live/multibuffer/generation/deployment remain."
+        ],
+        "sampleInheritanceHistory": [],
+        "sampleInheritance": {
+          "candidate": "20261007T001647816Z",
+          "status": "限定合格",
+          "evidence": "work/analysis/q3-sample-inheritance/20261006T233800Z/unit-record.json",
+          "scope": "DLS Wave sample inheritance and explicit one-shot, private runtime WSMP resolution, native three-document author/save/normal exit/distinct reload and same-PID differential PCM; original dynamic parity and all40/all8 remain separate",
+          "fullAcceptance": false
+        }
+      },
+      "FileOutputDMO.dll": {
+        "status": "作業中",
+        "remaining": [
+          "Q1 current004920093Z: fresh native Project and all five forms, Style/Transport priority, active Stop/quiet/restart and tempo-change PCM remain unexecuted. Previous five-form222153066Z is historical; this four-document FileOutput unit is bounded.",
+          "Current FileOutput GUI Stop and record Stop occurred after natural four-second notes. Active GUI interruption and record Stop while music sounds are unverified, never inferred from native tests or silence afterward.",
+          "Q2 independent Windows with no original binaries/Producer COM/search paths is unavailable. Original New offers only Project/Add-Ins empty; same-input dynamic designer comparison remains unobserved. RIFF/PCM are not original parity.",
+          "Current ordinary core is blocked/unexecuted under frozen historical atomic Chordmap Project Windows5 after690; Script Reference.spp Windows5 after84 is separately frozen. No OS bypass or unchanged retry.",
+          "FileOutput Sends/unrouted groups, overwrite options, simultaneous sessions, live path switching and required legacy ABI remain. WaveTrack loop-enable/end/override and inherited DLS runtime export remain.",
+          "All40: common Timeline/OLE/clipboard/COM, repair/cache, full generation/Script/Container/Tool/Parameter, controls, source deployment/upgrade, Farm/StylePlayer and dependency provenance remain. Old unstarted labels do not erase existing implementations."
+        ],
+        "fileOutputMultiHistory": [],
+        "fileOutputMulti": {
+          "candidate": "20261007T004920093Z",
+          "status": "限定合格",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+          "scope": "Two directly routed FileOutput buffers, native route ordering and atomic recording lifecycle, main add/UndoRedo/save/normal exit/distinct restore, independent numbered PCM and same-PID WASAPI. Original dynamics, active GUI interruption, tempo change, Sends and all40/all8 remain.",
+          "fullAcceptance": false
+        }
       }
     },
     "registeredDrivers": {
-      "candidate": "20261006T185539543Z",
-      "run": "work/acceptance/registered-drivers/20261006T190051438Z/run.json",
-      "counts": {
-        "未実行": 66,
+      "candidate": "20261007T004920093Z",
+      "run": "work/acceptance/registered-drivers/20261007T013632971Z/run.json",
+      "rawCounts": {
+        "未実行": 69,
         "障害あり": 21,
-        "合格": 20
+        "合格": 21
       },
+      "counts": {
+        "未実行": 65,
+        "障害あり": 21,
+        "合格": 25
+      },
+      "supplements": [
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-FileOutputMultiPcmAuditor",
+          "status": "合格",
+          "runner": "scripts/Test-FileOutputMultiPcmAuditor.mjs",
+          "runnerSha256": "266dccae0fc78799b3101f6dd5144f80a8b5d0bc5af870764294646bbdafe7d5",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/native-pcm-controls/negative-tests.json",
+          "evidenceSha256": "9671b4cbc9314dbb1fafdb3cb12e734a5e23dede80f44fd2ce3e65a1f0b3db79",
+          "scope": "Current two independent numbered WAVs, correct route ordering/pitches and six rejecting PCM controls",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-FileOutputMultiGuiAudioAuditor",
+          "status": "合格",
+          "runner": "scripts/Test-FileOutputMultiGuiAudioAuditor.mjs",
+          "runnerSha256": "bb2162d9d4e7db77f67cf0d737d2af7b760e6cec24db85ee9fa0f32f866559d0",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/gui-audio-controls/negative-tests.json",
+          "evidenceSha256": "a766a2766ceba72edb01e0edcefa318d40a56d218bab7c2e321d4f68f4577a74",
+          "scope": "Current main saved/reopened two-output PCM/WASAPI and seven rejecting controls; active GUI interruption and tempo change unverified",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-ProductGuiProjectStyleDlsAuditor",
+          "runner": "scripts/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+          "runnerSha256": "de2077a0b839c6d984cd9318f7e347f5de1c4baa54558d86b76d88b20510780a",
+          "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+          "status": "合格",
+          "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/style-negative-controls-v2/negative-tests.json",
+          "evidenceSha256": "98777aaa28dfc315c88aee79ad3ed8f7206978e5d4400ae7d2b36d781d219c44",
+          "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z",
+          "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z/gui-project-style-dls-audio-proof.json",
+          "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-ProductGuiTransportDlsPriorityAuditor",
+          "runner": "scripts/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+          "runnerSha256": "d33e37bef86cd3717ae375334a455e458ddbbba8675d42fa8af6df57c8b2bd87",
+          "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+          "status": "合格",
+          "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/transport-negative-controls-v2/negative-tests.json",
+          "evidenceSha256": "301f78ff88edc00de7710e449b938f5a3c7e5805feb9d5ad81ec36e81ccf6030",
+          "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z",
+          "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z/gui-transport-dls-priority-proof.json",
+          "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+          "fullAcceptance": false
+        }
+      ],
+      "total": 111,
       "fullAcceptance": false
     },
     "history": [
@@ -4031,16 +4558,18 @@
       }
     ],
     "deployment": {
-      "status": "未実行",
-      "candidate": "20261006T154607013Z",
-      "scope": "Snapshot CMake install0 only; source package publication/deployment separate; current registered refusal retained",
-      "evidence": "work/acceptance/registered-drivers/20261006T155015293Z/run.json"
+      "candidate": "20261007T004920093Z",
+      "status": "障害あり",
+      "evidence": "work/acceptance/registered-drivers/20261007T013632971Z/run.json",
+      "scope": "Source deployment driver only; whole original-free environment separate"
     },
     "q1Integration": {
-      "candidate": "20261006T185539543Z",
-      "status": "未実行",
-      "scope": "Current Timeline move GUI bounded only; new native five forms/Style/Transport/activeStop/tempo pending",
-      "nextAction": "Q1: fixed185539543Z new native Project five forms → edit Undo/Redo save exit0 → distinct reload → WASAPI active Stop/replay/tempo, Style and embedded Segment versus Transport priority; no old audio transfer"
+      "candidate": "20261007T004920093Z",
+      "status": "代表経路限定合格・全体未完",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scenarioProof": "work/analysis/q1-final-candidate/20261007T014258Z/scenario-proof.json",
+      "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+      "fullAcceptance": false
     },
     "historicalMisidentifiedFeatureIds": {
       "WaveDesigner.dll": {
@@ -4106,26 +4635,85 @@
       "scope": "Same Main saved owned Script: steady 10→5s tempo effect, active Stop/silence/replay bounded pass. Strict initial transition failed; whole audio criterion not passed.",
       "fullAcceptance": false
     },
-    "updatedUtc": "2026-10-06T19:15:35.970Z",
-    "nextIndependentUnit": "Q1: fixed185539543Z new native Project five forms → edit Undo/Redo save exit0 → distinct reload → WASAPI active Stop/replay/tempo, Style and embedded Segment versus Transport priority; no old audio transfer",
+    "updatedUtc": "2026-10-07T02:26:01.427Z",
+    "nextIndependentUnit": "Q3G StylePlayer: observe the existing original auxiliary app and bundled text contract, preserve the existing Style/ChordMap/Band/Conductor implementations, then connect missing composition, audition and motif responsibilities in the source product. Retain Q2/original-designer blocks and all40/all8 scope; no unchanged Windows5 retry.",
     "drivers": {
-      "candidate": "20261006T185539543Z",
-      "run": "work/acceptance/registered-drivers/20261006T190051438Z/run.json",
-      "counts": {
-        "未実行": 66,
+      "candidate": "20261007T004920093Z",
+      "run": "work/acceptance/registered-drivers/20261007T013632971Z/run.json",
+      "rawCounts": {
+        "未実行": 69,
         "障害あり": 21,
-        "合格": 20
-      }
+        "合格": 21
+      },
+      "counts": {
+        "未実行": 65,
+        "障害あり": 21,
+        "合格": 25
+      },
+      "supplements": [
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-FileOutputMultiPcmAuditor",
+          "status": "合格",
+          "runner": "scripts/Test-FileOutputMultiPcmAuditor.mjs",
+          "runnerSha256": "266dccae0fc78799b3101f6dd5144f80a8b5d0bc5af870764294646bbdafe7d5",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/native-pcm-controls/negative-tests.json",
+          "evidenceSha256": "9671b4cbc9314dbb1fafdb3cb12e734a5e23dede80f44fd2ce3e65a1f0b3db79",
+          "scope": "Current two independent numbered WAVs, correct route ordering/pitches and six rejecting PCM controls",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-FileOutputMultiGuiAudioAuditor",
+          "status": "合格",
+          "runner": "scripts/Test-FileOutputMultiGuiAudioAuditor.mjs",
+          "runnerSha256": "bb2162d9d4e7db77f67cf0d737d2af7b760e6cec24db85ee9fa0f32f866559d0",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/gui-audio-controls/negative-tests.json",
+          "evidenceSha256": "a766a2766ceba72edb01e0edcefa318d40a56d218bab7c2e321d4f68f4577a74",
+          "scope": "Current main saved/reopened two-output PCM/WASAPI and seven rejecting controls; active GUI interruption and tempo change unverified",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-ProductGuiProjectStyleDlsAuditor",
+          "runner": "scripts/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+          "runnerSha256": "de2077a0b839c6d984cd9318f7e347f5de1c4baa54558d86b76d88b20510780a",
+          "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+          "status": "合格",
+          "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/style-negative-controls-v2/negative-tests.json",
+          "evidenceSha256": "98777aaa28dfc315c88aee79ad3ed8f7206978e5d4400ae7d2b36d781d219c44",
+          "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z",
+          "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z/gui-project-style-dls-audio-proof.json",
+          "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-ProductGuiTransportDlsPriorityAuditor",
+          "runner": "scripts/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+          "runnerSha256": "d33e37bef86cd3717ae375334a455e458ddbbba8675d42fa8af6df57c8b2bd87",
+          "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+          "status": "合格",
+          "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/transport-negative-controls-v2/negative-tests.json",
+          "evidenceSha256": "301f78ff88edc00de7710e449b938f5a3c7e5805feb9d5ad81ec36e81ccf6030",
+          "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z",
+          "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z/gui-transport-dls-priority-proof.json",
+          "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+          "fullAcceptance": false
+        }
+      ],
+      "total": 111,
+      "fullAcceptance": false
     },
     "runtimeNoteEvidence": {
       "candidate": "20261006T035623702Z",
       "scope": "Native lyric-runtime note forwarding only; prior dedicated note CLI runs historical"
     },
     "smoke": {
-      "candidate": "20261006T185539543Z",
+      "candidate": "20261007T004920093Z",
       "status": "合格",
-      "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\registered-drivers\\20261006T190051438Z\\Test-ProductHost.log",
-      "scope": "Product host driver bounded smoke; not all40"
+      "evidence": "work/acceptance/registered-drivers/20261007T013632971Z/run.json",
+      "scope": "Bounded host smoke"
     },
     "q1IntegrationHistory": [
       {
@@ -4640,12 +5228,30 @@
         "candidate": "20261006T182656003Z",
         "status": "作業中",
         "scope": "Current bounded Wave PCM lifecycle established; full Fresh native five-form integration/active Stop/tempo not rerun"
+      },
+      {
+        "candidate": "20261006T222153066Z",
+        "status": "代表経路限定合格・全体未完",
+        "evidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "scenarioProof": "work/analysis/q1-current-integration/20261006T225403Z/scenario-proof.json",
+        "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T001647816Z",
+        "status": "未実行",
+        "scope": "Q1: prior222153066Z representative five-form/native Project/audio is historical; current candidate fresh five-form/tempo full chain remains unexecuted. This three-form DLS scenario is bounded.",
+        "historicalEvidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "fullAcceptance": false
       }
     ],
     "integrationProgress": {
-      "candidate": "20261006T182656003Z",
-      "status": "作業中",
-      "scope": "Current bounded Wave PCM lifecycle established; full Fresh native five-form integration/active Stop/tempo not rerun"
+      "candidate": "20261007T004920093Z",
+      "status": "代表経路限定合格・全体未完",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scenarioProof": "work/analysis/q1-final-candidate/20261007T014258Z/scenario-proof.json",
+      "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+      "fullAcceptance": false
     },
     "blockedChordGlobal": "work/analysis/q3-chord-global/20261006T140700Z/unit-record.json",
     "unitHistory": [
@@ -4658,33 +5264,428 @@
         "candidate": "20261006T185539543Z",
         "unit": "work/analysis/q3-timeline-move/20261006T185000Z/unit-record.json",
         "report": "docs/analysis/q3-timeline-move-2026-10-07.md"
+      },
+      {
+        "candidate": "20261006T185539543Z",
+        "unit": "work/analysis/q1-current-integration/20261006T192000Z/unit-record.json",
+        "archive": "work/analysis/q3-lyric-range/20261006T202000Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261006T202431545Z",
+        "unit": "work/analysis/q3-lyric-range/20261006T202000Z/unit-record.json",
+        "archive": "work/analysis/q1-fixed-integration/20261006T205000Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261006T202431545Z",
+        "unit": "work/analysis/q1-fixed-integration/20261006T205000Z/unit-record.json",
+        "archive": "work/analysis/q3-marker-mute-range/20261006T213500Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261006T213433891Z",
+        "unit": "work/analysis/q3-marker-mute-range/20261006T213500Z/unit-record.json",
+        "archive": "work/analysis/q3-tool-factory/20261006T215905Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261006T222153066Z",
+        "unit": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+        "archive": "work/analysis/q1-current-integration/20261006T225403Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261006T222153066Z",
+        "unit": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "archive": "work/analysis/q3-sample-inheritance/20261006T233800Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261007T001647816Z",
+        "unit": "work/analysis/q3-sample-inheritance/20261006T233800Z/unit-record.json",
+        "archive": "work/analysis/q3-file-output-multi/20261007T003852Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261007T004920093Z",
+        "unit": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+        "archive": "work/analysis/q1-final-candidate/20261007T014258Z/product-state.json.before-promotion"
       }
     ],
     "q1CurrentIntegration": {
-      "candidate": "20261006T185539543Z",
-      "status": "部分確認・Transport音声失敗・再収録GUI障害",
-      "evidence": "work/analysis/q1-current-integration/20261006T192000Z/unit-record.json",
+      "candidate": "20261007T004920093Z",
+      "status": "代表経路限定合格・全体未完",
+      "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/unit-record.json",
+      "scenarioProof": "work/analysis/q1-final-candidate/20261007T014258Z/scenario-proof.json",
+      "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
       "fullAcceptance": false
     },
     "driverRound": {
-      "candidate": "20261006T185539543Z",
-      "run": "work/acceptance/registered-drivers/20261006T200205506Z/run.json",
-      "counts": {
-        "合格": 20,
+      "candidate": "20261007T004920093Z",
+      "run": "work/acceptance/registered-drivers/20261007T013632971Z/run.json",
+      "rawCounts": {
+        "未実行": 69,
         "障害あり": 21,
-        "未実行": 66
+        "合格": 21
+      },
+      "counts": {
+        "未実行": 65,
+        "障害あり": 21,
+        "合格": 25
+      },
+      "supplements": [
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-FileOutputMultiPcmAuditor",
+          "status": "合格",
+          "runner": "scripts/Test-FileOutputMultiPcmAuditor.mjs",
+          "runnerSha256": "266dccae0fc78799b3101f6dd5144f80a8b5d0bc5af870764294646bbdafe7d5",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/native-pcm-controls/negative-tests.json",
+          "evidenceSha256": "9671b4cbc9314dbb1fafdb3cb12e734a5e23dede80f44fd2ce3e65a1f0b3db79",
+          "scope": "Current two independent numbered WAVs, correct route ordering/pitches and six rejecting PCM controls",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-FileOutputMultiGuiAudioAuditor",
+          "status": "合格",
+          "runner": "scripts/Test-FileOutputMultiGuiAudioAuditor.mjs",
+          "runnerSha256": "bb2162d9d4e7db77f67cf0d737d2af7b760e6cec24db85ee9fa0f32f866559d0",
+          "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/gui-audio-controls/negative-tests.json",
+          "evidenceSha256": "a766a2766ceba72edb01e0edcefa318d40a56d218bab7c2e321d4f68f4577a74",
+          "scope": "Current main saved/reopened two-output PCM/WASAPI and seven rejecting controls; active GUI interruption and tempo change unverified",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-ProductGuiProjectStyleDlsAuditor",
+          "runner": "scripts/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+          "runnerSha256": "de2077a0b839c6d984cd9318f7e347f5de1c4baa54558d86b76d88b20510780a",
+          "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiProjectStyleDlsAuditor.mjs",
+          "status": "合格",
+          "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/style-negative-controls-v2/negative-tests.json",
+          "evidenceSha256": "98777aaa28dfc315c88aee79ad3ed8f7206978e5d4400ae7d2b36d781d219c44",
+          "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z",
+          "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/style-session-v2/audio-20261007T021515742Z/gui-project-style-dls-audio-proof.json",
+          "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+          "fullAcceptance": false
+        },
+        {
+          "candidate": "20261007T004920093Z",
+          "id": "Test-ProductGuiTransportDlsPriorityAuditor",
+          "runner": "scripts/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+          "runnerSha256": "d33e37bef86cd3717ae375334a455e458ddbbba8675d42fa8af6df57c8b2bd87",
+          "savedRunner": "work/analysis/q1-final-candidate/20261007T014258Z/Test-ProductGuiTransportDlsPriorityAuditor.mjs",
+          "status": "合格",
+          "evidence": "work/analysis/q1-final-candidate/20261007T014258Z/transport-negative-controls-v2/negative-tests.json",
+          "evidenceSha256": "301f78ff88edc00de7710e449b938f5a3c7e5805feb9d5ad81ec36e81ccf6030",
+          "sourceCapture": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z",
+          "producingProof": "work/analysis/q1-final-candidate/20261007T014258Z/transport-session/audio-20261007T021743166Z/gui-transport-dls-priority-proof.json",
+          "scope": "Positive current PCM accepted and explicit derived negative controls rejected; product full acceptance separate",
+          "fullAcceptance": false
+        }
+      ],
+      "total": 111,
+      "fullAcceptance": false
+    },
+    "inProgressUnit": {
+      "path": "C:/Users/dolph/OneDrive/ドキュメント/GitHub/directmusic-producer-clone/work/analysis/q3-style-player/20261007T022658Z/unit-start.json",
+      "phase": "Q3G",
+      "startedUtc": "2026-10-07T02:27:09.664Z",
+      "target": "StylePlayer original composition/audition contract and source connection",
+      "fullAcceptance": false
+    },
+    "responsibilityIdCorrections": [
+      {
+        "oldId": "AudioPathDesigner.dll",
+        "correctId": "AudioPathDesigner.ocx",
+        "evidence": "docs/analysis/feature-map.csv",
+        "previous": {
+          "status": "作業中",
+          "implementation": "AudioPathDocument / audio_path Band preparation / typed graph",
+          "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+          "remaining": [
+            "Original same-input dynamic/reciprocal comparison blocked by retained DLS warning/process loss; SDK/RIFF/PCM are independent evidence only.",
+            "Q2 independent Windows environment without original Producer files/registration/search paths unavailable.",
+            "Style all-unmapped PCM, live AudioPath switching, concurrent sessions, all-component audition and FileOutput remain.",
+            "Wave event CRUD/clipboard/trim and other all40 responsibilities remain; timeline/ABI/Parameter provisioning/DMO/discovery also remain.",
+            "Arbitrary external Tool and Producer property ABI, reference-time, DMO/buffer, remaining envelope overlap/flush/shape semantics and shared Timeline integration remain"
+          ],
+          "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+          "history": [
+            {
+              "status": "作業中",
+              "implementation": "AudioPathDocument / ToolGraph editor / source ToolFactory / Conductor AudioPath graph",
+              "scope": "Bounded typed AudioPath graph and actual runtime27; main edit/save/separate reload exits0; current PCM 3x8 endpoint pitches; full responsibility incomplete",
+              "remaining": "Parameter typed/editor/source Tool automation now bounded; main provisioning/DMO/discovery remain. Tool palette/Producer ABI/property pages and main GUI factory provisioning remain; explicit source C++ factories only. Original reciprocal AudioPath graph edits and same-input dynamic/audio comparison blocked by retained DLS warning/process loss/restart with no usable window. Live AudioPath switch, unmapped channel silent behavior, broader Conductor/FileOutput responsibility remain. Current PCM proves 3x8 endpoint pitches with last embedded AudioPath graph; early Stop/resume/independent tempo fitting and Q1 same final five-format scenario remain. Q2 independent original-free Windows unavailable; all40/all8 same final configuration incomplete.",
+              "evidence": "work/analysis/q3-audiopath-graph/20261005T060000Z/unit-record.json"
+            },
+            {
+              "evidence": "work/analysis/q3-unconnected-audiopath/20261005T093800Z/unit-record.json",
+              "scope": "Unconnected Segment PChannel silent behavior bounded native/main/save/reload/PCM verified; complete responsibility remains incomplete",
+              "remaining": [
+                "Original same-input dynamic/reciprocal comparison blocked by retained DLS warning/process loss; SDK/RIFF/PCM are independent evidence only.",
+                "Q2 independent Windows environment without original Producer files/registration/search paths unavailable.",
+                "Style all-unmapped PCM, live AudioPath switching, concurrent sessions, all-component audition and FileOutput remain.",
+                "Wave event CRUD/clipboard/trim and other all40 responsibilities remain; timeline/ABI/Parameter provisioning/DMO/discovery also remain."
+              ]
+            }
+          ],
+          "candidate": "20261006T222153066Z",
+          "sourceToolFactory": {
+            "candidate": "20261006T222153066Z",
+            "status": "限定合格",
+            "scope": "Source-owned Velocity Tool factory/palette/properties, embedded AudioPath Tool IMediaParamInfo discovery, two music-time gain curves; main edit/history/native save/distinct reload and two normal exits0; same reopened PID eight-note control/effect120→180BPM PCM; original/all40/all8 incomplete",
+            "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json"
+          }
+        },
+        "correctedUtc": "2026-10-06T22:53:02.803Z"
       }
-    }
+    ],
+    "guiHistory": [
+      {
+        "candidate": "20261006T222153066Z",
+        "evidence": "work/analysis/q3-tool-factory/20261006T215905Z/unit-proof.json",
+        "unit": "work/analysis/q3-tool-factory/20261006T215905Z/unit-record.json",
+        "archive": "work/analysis/q1-current-integration/20261006T225403Z/product-state.json.before-promotion"
+      },
+      {
+        "candidate": "20261007T001647816Z",
+        "passed": true,
+        "evidence": "work/analysis/q3-sample-inheritance/20261006T233800Z/runtime-fixed/unit-proof.json",
+        "processes": {
+          "author": 22048,
+          "reload": 20504
+        },
+        "observations": [
+          {
+            "label": "Author explicit one-shot over looping Wave",
+            "utc": "2026-10-07T00:24:39.996Z",
+            "window": 6494836
+          },
+          {
+            "label": "Author inherited settled",
+            "utc": "2026-10-07T00:24:49.129Z",
+            "window": 6494836
+          },
+          {
+            "label": "Author Undo explicit settled",
+            "utc": "2026-10-07T00:24:52.698Z",
+            "window": 6494836
+          },
+          {
+            "label": "Author Redo inherited settled",
+            "utc": "2026-10-07T00:24:59.148Z",
+            "window": 6494836
+          },
+          {
+            "label": "Author saved inherited settled",
+            "utc": "2026-10-07T00:25:07.800Z",
+            "window": 6494836
+          },
+          {
+            "label": "Author Project saved settled",
+            "utc": "2026-10-07T00:26:05.991Z",
+            "window": 133438350
+          },
+          {
+            "label": "Reload saved inherited settled",
+            "utc": "2026-10-07T00:27:05.797Z",
+            "window": 19405446
+          },
+          {
+            "label": "Reload explicit one-shot settled",
+            "utc": "2026-10-07T00:32:40.129Z",
+            "window": 66722156
+          },
+          {
+            "label": "Reload Undo inherited settled",
+            "utc": "2026-10-07T00:33:36.066Z",
+            "window": 28121944
+          },
+          {
+            "label": "Final stopped before normal reload exit",
+            "utc": "2026-10-07T00:34:03.406Z",
+            "window": 56761188
+          }
+        ],
+        "scope": "DLS Wave sample inheritance and explicit one-shot, private runtime WSMP resolution, native three-document author/save/normal exit/distinct reload and same-PID differential PCM; original dynamic parity and all40/all8 remain separate",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T004920093Z",
+        "evidence": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-proof.json",
+        "unit": "work/analysis/q3-file-output-multi/20261007T003852Z/unit-record.json",
+        "archive": "work/analysis/q1-final-candidate/20261007T014258Z/product-state.json.before-promotion"
+      }
+    ],
+    "q1CurrentIntegrationHistory": [
+      {
+        "candidate": "20261006T222153066Z",
+        "status": "代表経路限定合格・全体未完",
+        "evidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "scenarioProof": "work/analysis/q1-current-integration/20261006T225403Z/scenario-proof.json",
+        "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T001647816Z",
+        "status": "未実行",
+        "scope": "Q1: prior222153066Z representative five-form/native Project/audio is historical; current candidate fresh five-form/tempo full chain remains unexecuted. This three-form DLS scenario is bounded.",
+        "historicalEvidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "fullAcceptance": false
+      }
+    ],
+    "q1FiveDocumentScenarioHistory": [
+      {
+        "candidate": "20261006T222153066Z",
+        "status": "代表経路限定合格・全体未完",
+        "evidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "scenarioProof": "work/analysis/q1-current-integration/20261006T225403Z/scenario-proof.json",
+        "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T001647816Z",
+        "status": "未実行",
+        "scope": "Q1: prior222153066Z representative five-form/native Project/audio is historical; current candidate fresh five-form/tempo full chain remains unexecuted. This three-form DLS scenario is bounded.",
+        "historicalEvidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "fullAcceptance": false
+      }
+    ],
+    "integrationProgressHistory": [
+      {
+        "candidate": "20261006T222153066Z",
+        "status": "代表経路限定合格・全体未完",
+        "evidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "scenarioProof": "work/analysis/q1-current-integration/20261006T225403Z/scenario-proof.json",
+        "scope": "Current candidate: fresh main-created native Project with10 owned documents/six forms; five-form edit/UndoRedo/save, author normal exit0, distinct reload normal exit0, serial Style and Transport sounding Stop/quiet/full replay/tempo PCM. All40/all8/original comparison separate",
+        "fullAcceptance": false
+      },
+      {
+        "candidate": "20261007T001647816Z",
+        "status": "未実行",
+        "scope": "Q1: prior222153066Z representative five-form/native Project/audio is historical; current candidate fresh five-form/tempo full chain remains unexecuted. This three-form DLS scenario is bounded.",
+        "historicalEvidence": "work/analysis/q1-current-integration/20261006T225403Z/unit-record.json",
+        "fullAcceptance": false
+      }
+    ],
+    "audioHistory": [
+      {
+        "candidate": "20261007T001647816Z",
+        "status": "限定合格",
+        "passed": true,
+        "capture": "work/acceptance/product-project-gui/20261007T002626038Z/audio-20261007T003127638Z",
+        "proof": "work/acceptance/product-project-gui/20261007T002626038Z/audio-20261007T003127638Z/dls-sample-inheritance-proof.json",
+        "sha256": "7dbad264818102c262eef6a58ab830dea3600b3b81c3ef267e28cc9f1b3929b3",
+        "controls": "work/analysis/q3-sample-inheritance/20261006T233800Z/runtime-fixed/audio-controls/negative-tests.json",
+        "controlsSha256": "c4af8d1d32337a9ef7d50973848bb396e495f2297a16aeae117f56f0103d5d2e",
+        "plays": [
+          {
+            "phase": "inherited",
+            "from": 12.051,
+            "to": 26.062,
+            "beforeStop": 0.03262779431239606,
+            "initialDelay": 1.0540000000000003,
+            "interval": 10,
+            "sound": [
+              {
+                "time": 13.105,
+                "rise": 0.030947409460697472,
+                "early": 0.01154541309712675,
+                "late": 0.032656526278318644,
+                "pitch": 0.011541877013016285,
+                "lower": 0.00001312928471777082,
+                "upper": 0.000011354258346649502
+              },
+              {
+                "time": 23.105,
+                "rise": 0.03095984447352195,
+                "early": 0.01154572069286363,
+                "late": 0.03265306435433915,
+                "pitch": 0.011541147243949211,
+                "lower": 0.00003357358979944299,
+                "upper": 0.00003952996198609947
+              }
+            ],
+            "quiet": 0
+          },
+          {
+            "phase": "one-shot",
+            "from": 82.186,
+            "to": 96.2,
+            "beforeStop": 0,
+            "initialDelay": 1.073999999999998,
+            "interval": 10,
+            "sound": [
+              {
+                "time": 83.26,
+                "rise": 0.02769678247449644,
+                "early": 0.011544946748204079,
+                "late": 0,
+                "pitch": 0,
+                "lower": 0,
+                "upper": 0
+              },
+              {
+                "time": 93.26,
+                "rise": 0.027696782548603555,
+                "early": 0.011547475059175546,
+                "late": 0,
+                "pitch": 0,
+                "lower": 0,
+                "upper": 0
+              }
+            ],
+            "quiet": 0
+          },
+          {
+            "phase": "restored",
+            "from": 137.477,
+            "to": 151.481,
+            "beforeStop": 0.03262780322270755,
+            "initialDelay": 1.078000000000003,
+            "interval": 10,
+            "sound": [
+              {
+                "time": 138.555,
+                "rise": 0.0312235519279683,
+                "early": 0.011546670113592072,
+                "late": 0.032642159157370065,
+                "pitch": 0.011540632144627961,
+                "lower": 0.000039989063843345845,
+                "upper": 0.000023620957408429155
+              },
+              {
+                "time": 148.555,
+                "rise": 0.0312235519279683,
+                "early": 0.011548086831462284,
+                "late": 0.0326431433752176,
+                "pitch": 0.011541072624921992,
+                "lower": 0.000033051361147946644,
+                "upper": 0.00003664840728239527
+              }
+            ],
+            "quiet": 0
+          }
+        ],
+        "scope": "DLS Wave sample inheritance and explicit one-shot, private runtime WSMP resolution, native three-document author/save/normal exit/distinct reload and same-PID differential PCM; original dynamic parity and all40/all8 remain separate",
+        "fullAcceptance": false
+      }
+    ],
+    "deploymentHistory": [
+      {
+        "status": "未実行",
+        "candidate": "20261006T154607013Z",
+        "scope": "Snapshot CMake install0 only; source package publication/deployment separate; current registered refusal retained",
+        "evidence": "work/acceptance/registered-drivers/20261006T155015293Z/run.json"
+      }
+    ]
   },
   "legacyFieldsScope": "schema1由来フィールドは版別履歴。現行判定とqueueはcurrent/acceptance-status/analysis-planを使う。",
-  "updatedUtc": "2026-10-06T16:48:44.749Z",
-  "inProgressUnit": "work/analysis/q3-script-messages/20261006T041300Z/unit-record.json",
-  "pendingSourceChange": {
-    "baseline": "20261006T035623702Z",
-    "unit": "work/analysis/q3-script-messages/20261006T041300Z/unit-record.json",
-    "historicalPassTransfer": false,
-    "status": "Script Trace/error implementation in progress"
+  "updatedUtc": "2026-10-07T01:42:58.458Z",
+  "inProgressUnit": {
+    "candidate": "20261007T004920093Z",
+    "phase": "Q1",
+    "unit": "C:/Users/dolph/OneDrive/ドキュメント/GitHub/directmusic-producer-clone/work/analysis/q1-final-candidate/20261007T014258Z/unit-start.json",
+    "state": "immutable inputs prepared; GUI author unexecuted",
+    "fullAcceptance": false
   },
+  "pendingSourceChange": null,
   "currentHistory": [
     {
       "updatedUtc": "2026-10-06T11:32:19.175Z",

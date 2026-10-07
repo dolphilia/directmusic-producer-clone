@@ -8,6 +8,7 @@ namespace producer::app {
 struct ToolFactory {
     std::array<std::uint8_t,16> classId;
     std::function<runtime::Tool*(const GraphTool&)> create; // transfers one reference
+    std::function<void(const GraphTool&)> validate; // optional preflight before replacing playback
 };
 using OwnedRuntimeGraph=std::unique_ptr<runtime::Graph,void(*)(runtime::Graph*)>;
 void validate_tool_factories(const Bytes&,const std::vector<ToolFactory>&);

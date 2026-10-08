@@ -177,6 +177,14 @@ std::wstring relative_to(const std::filesystem::path& file,const std::filesystem
 std::filesystem::path runtime_name(std::filesystem::path p){auto ext=p.extension().wstring();std::transform(ext.begin(),ext.end(),ext.begin(),[](wchar_t c){return static_cast<wchar_t>(towlower(c));});
             if(ext==L".sgp"||ext==L".sgt")p.replace_extension(L".sgt");else if(ext==L".stp"||ext==L".sty")p.replace_extension(L".sty");else if(ext==L".bnp"||ext==L".bnd")p.replace_extension(L".bnd");else if(ext==L".dlp"||ext==L".dls")p.replace_extension(L".dls");else if(ext==L".aup"||ext==L".aud")p.replace_extension(L".aud");else if(ext==L".cop"||ext==L".con")p.replace_extension(L".con");else throw std::runtime_error("Runtime export component is not implemented");return p;}
         void convert_runtime(Chunk& node) {
+            // The OS collection loader needs explicit effective samples just
+            // like live playback. Resolve them only in this private runtime
+            // tree: native inheritance and the editor checkpoint/history stay
+            // untouched, and an explicit zero-loop Region remains one shot.
+            if(node.type=="DLS "){
+                DlsDocument collection;collection.load(node.encode());
+                node=Chunk::parse(collection.playback_sample_bytes());
+            }
             // Authoring-only records observed in the bundled design/runtime
             // sample pairs. Unknown chunks retain their bytes and padding.
             const auto design=[&](const Chunk& c){const auto& p=node.type;
@@ -349,6 +357,13 @@ void Framework::new_project() {
     Chunk n;n.id="name";n.data=utf16(name_);projectRoot_.children.push_back(n);
 }
 size_t Framework::new_segment() {documents_.push_back({L"",components_.create_document("DMSG"),std::nullopt});projectDirty_=true;return documents_.size()-1;}
+size_t Framework::adopt_composed_segment(const Bytes& bytes){
+    auto d=components_.create_document("DMSG");d->load(bytes);
+    const auto root=Chunk::parse(bytes);const auto identity=root.find("guid");if(!identity||identity->data.size()!=16)throw std::runtime_error("Composed Segment needs its own 16-byte identity");
+    for(const auto& r:d->style_references())if(!r.hasId||!r.filename.empty())throw std::runtime_error("Composed Segment needs owned Style identities");
+    d->resolve_style_context(projectDirectory_.empty()?std::filesystem::current_path().wstring():projectDirectory_,style_catalog());
+    documents_.push_back({L"",std::move(d),std::nullopt});projectDirty_=true;return documents_.size()-1;
+}
 size_t Framework::import_midi_segment(const std::wstring& path){
     auto imported=import_midi(read_file(path));
     auto warnings=warnings_;for(const auto& n:imported.notices)warnings.emplace_back(n.begin(),n.end());

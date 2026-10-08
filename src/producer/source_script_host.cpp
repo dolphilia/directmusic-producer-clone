@@ -3,31 +3,86 @@
 #include <ActivScp.h>
 #include <dmerror.h>
 #include <algorithm>
+#include <array>
 #include <cstring>
+#include <utility>
 #include <vector>
 namespace producer::app {
 namespace {
-struct BridgeNames{std::wstring performance,object,load,alias,global;};
+struct BridgeNames{std::wstring performance,object,load,alias,global,play,stop,mask,result,constant,playingCheck,playingStop;std::array<std::wstring,4> arguments;};
 BridgeNames bridge_names(const ScriptDocument& doc){
-    auto objects=doc.container().objects();for(unsigned i=0;;++i){auto prefix=L"ProducerHost"+std::to_wstring(i);BridgeNames names{prefix+L"Performance",prefix+L"Object",prefix+L"Load",prefix+L"Alias",prefix+L"Global"};
-        bool used=false;for(const auto& item:objects)if(item.alias)for(const auto& name:{names.performance,names.object,names.load,names.alias,names.global})if(!_wcsicmp(name.c_str(),item.alias->c_str()))used=true;if(!used)return names;
+    auto objects=doc.container().objects();for(unsigned i=0;;++i){auto prefix=L"ProducerHost"+std::to_wstring(i);BridgeNames names{prefix+L"Performance",prefix+L"Object",prefix+L"Load",prefix+L"Alias",prefix+L"Global",prefix+L"Play",prefix+L"Stop",prefix+L"Mask",prefix+L"Result",prefix+L"Constant",prefix+L"PlayingCheck",prefix+L"PlayingStop",{prefix+L"Argument0",prefix+L"Argument1",prefix+L"Argument2",prefix+L"Argument3"}};
+        bool used=false;for(const auto& item:objects)if(item.alias){for(const auto& name:{names.performance,names.object,names.load,names.alias,names.global,names.play,names.stop,names.mask,names.result,names.constant,names.playingCheck,names.playingStop})if(!_wcsicmp(name.c_str(),item.alias->c_str()))used=true;for(const auto& name:names.arguments)if(!_wcsicmp(name.c_str(),item.alias->c_str()))used=true;}if(!used)return names;
     }
 }
 }
 bool uses_source_script_host(const ScriptDocument& doc){return doc.source().has_value()&&(!_wcsicmp(doc.language().c_str(),L"VBScript")||!_wcsicmp(doc.language().c_str(),L"JScript"));}
-Bytes source_script_loader_bytes(const ScriptDocument& doc){if(!uses_source_script_host(doc))return doc.save_bytes();auto helper=doc;helper.set_properties(doc.name(),L"VBScript",bool(doc.flags()&1),bool(doc.flags()&2));const auto names=bridge_names(doc);helper.set_source(L"Dim "+names.performance+L"\r\nDim "+names.object+L"\r\nDim "+names.alias+L"\r\nSub "+names.load+L"()\r\nEval("+names.alias+L").Load\r\nEnd Sub\r\n");return helper.save_bytes();}
+Bytes source_script_loader_bytes(const ScriptDocument& doc){
+    if(!uses_source_script_host(doc))return doc.save_bytes();auto helper=doc;helper.set_properties(doc.name(),L"VBScript",bool(doc.flags()&1),bool(doc.flags()&2));const auto n=bridge_names(doc);
+    std::wstring source;for(const auto& name:{n.performance,n.object,n.alias,n.mask,n.result})source+=L"Dim "+name+L"\r\n";for(const auto& name:n.arguments)source+=L"Dim "+name+L"\r\n";
+    source+=L"Sub "+n.load+L"()\r\nEval("+n.alias+L").Load\r\nEnd Sub\r\nSub "+n.play+L"()\r\nSelect Case "+n.mask+L"\r\n";
+    // Preserve omitted optional slots, including explicit missing arguments.
+    // The OS owns flags, embedded AudioPath choice, transitions and the result.
+    for(unsigned mask=0;mask<16;++mask){source+=L"Case "+std::to_wstring(mask)+L"\r\nSet "+n.result+L" = Eval("+n.alias+L").Play(";unsigned count=4;while(count&&!(mask&(1u<<(count-1))))--count;for(unsigned i=0;i<count;++i){if(i)source+=L",";if(mask&(1u<<i))source+=n.arguments[i];}source+=L")\r\n";}
+    source+=L"End Select\r\nEnd Sub\r\nSub "+n.stop+L"()\r\nIf "+n.mask+L" = 0 Then\r\nEval("+n.alias+L").Stop\r\nElse\r\nEval("+n.alias+L").Stop "+n.arguments[0]+L"\r\nEnd If\r\nEnd Sub\r\n";
+    source+=L"Sub "+n.constant+L"()\r\n"+n.result+L" = Eval("+n.alias+L")\r\nEnd Sub\r\n";
+    source+=L"Sub "+n.playingCheck+L"()\r\n"+n.result+L" = "+n.object+L".IsPlaying\r\nEnd Sub\r\nSub "+n.playingStop+L"()\r\nIf "+n.mask+L" = 0 Then\r\n"+n.object+L".Stop\r\nElse\r\n"+n.object+L".Stop "+n.arguments[0]+L"\r\nEnd If\r\nEnd Sub\r\n";
+    helper.set_source(source);return helper.save_bytes();
+}
 namespace {
 void copy_text(WCHAR* out,size_t capacity,const WCHAR* in){if(!in){out[0]=0;return;}size_t n=0;while(n+1<capacity&&in[n]){out[n]=in[n];++n;}out[n]=0;}
 void clear_exception(EXCEPINFO& e){SysFreeString(e.bstrSource);SysFreeString(e.bstrDescription);SysFreeString(e.bstrHelpFile);e={};}
+// Public DirectMusic Producer help: Segment.Play/Stop and PlayingSegment.Stop.
+// These are scripting names, whose values differ from DMUS_SEGF_* values.
+constexpr const wchar_t* scriptConstants[]={L"IsControl",L"IsSecondary",L"AlignToBar",L"AlignToBeat",L"AlignToSegment",L"AtBeat",L"AtFinish",L"AtGrid",L"AtImmediate",L"AtMarker",L"AtMeasure",L"PlayFill",L"PlayIntro",L"PlayBreak",L"PlayEnd",L"PlayEndAndIntro",L"PlayModulate",L"NoCutoff"};
+using ConstantValues=std::vector<std::pair<std::wstring,LONG>>;
+HRESULT read_script_constants(runtime::Script* helper,const BridgeNames& names,ConstantValues& values,runtime::ScriptErrorInfo* error){
+    // Performance automation has no type information (GetTypeInfo E_NOTIMPL).
+    // Ask the same owning OS Script for library values, without guessed flags
+    // or changing authored source. Only documented constant names are queried.
+    HRESULT hr=S_OK;for(const auto name:scriptConstants){
+        VARIANT argument,value,number;VariantInit(&argument);VariantInit(&value);VariantInit(&number);argument.vt=VT_BSTR;argument.bstrVal=SysAllocString(name);if(!argument.bstrVal)return E_OUTOFMEMORY;
+        hr=helper->SetVariableVariant(const_cast<WCHAR*>(names.alias.c_str()),argument,FALSE,error);VariantClear(&argument);
+        if(SUCCEEDED(hr))hr=helper->CallRoutine(const_cast<WCHAR*>(names.constant.c_str()),error);
+        if(SUCCEEDED(hr))hr=helper->GetVariableVariant(const_cast<WCHAR*>(names.result.c_str()),&value,error);
+        if(SUCCEEDED(hr)&&(value.vt==VT_EMPTY||value.vt==VT_NULL))hr=DISP_E_UNKNOWNNAME;
+        if(SUCCEEDED(hr))hr=VariantChangeType(&number,&value,0,VT_I4);if(SUCCEEDED(hr))values.emplace_back(name,number.lVal);VariantClear(&number);VariantClear(&value);if(FAILED(hr))break;
+    }
+    VARIANT empty;VariantInit(&empty);runtime::ScriptErrorInfo cleanup{};cleanup.size=sizeof(cleanup);helper->SetVariableVariant(const_cast<WCHAR*>(names.alias.c_str()),empty,FALSE,&cleanup);helper->SetVariableVariant(const_cast<WCHAR*>(names.result.c_str()),empty,FALSE,&cleanup);return hr;
+}
+class GlobalDispatch final:public IDispatch {
+    LONG refs_=1;IDispatch* performance_;ConstantValues constants_;
+    static constexpr DISPID firstConstant=-1000;
+public:
+    GlobalDispatch(IDispatch* performance,ConstantValues values):performance_(performance),constants_(std::move(values)){performance_->AddRef();}
+    ~GlobalDispatch(){performance_->Release();}
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id,void** out)override{if(!out)return E_POINTER;*out=nullptr;if(id!=IID_IUnknown&&id!=IID_IDispatch)return E_NOINTERFACE;*out=this;AddRef();return S_OK;}
+    ULONG STDMETHODCALLTYPE AddRef()override{return InterlockedIncrement(&refs_);}
+    ULONG STDMETHODCALLTYPE Release()override{auto n=InterlockedDecrement(&refs_);if(!n)delete this;return n;}
+    HRESULT STDMETHODCALLTYPE GetTypeInfoCount(UINT* out)override{return performance_->GetTypeInfoCount(out);}
+    HRESULT STDMETHODCALLTYPE GetTypeInfo(UINT index,LCID locale,ITypeInfo** out)override{return performance_->GetTypeInfo(index,locale,out);}
+    HRESULT STDMETHODCALLTYPE GetIDsOfNames(REFIID iid,LPOLESTR* names,UINT count,LCID locale,DISPID* out)override{
+        if(iid!=IID_NULL)return DISP_E_UNKNOWNINTERFACE;if(!names||!out||!count)return E_INVALIDARG;
+        if(count==1&&names[0])for(size_t i=0;i<constants_.size();++i)if(!_wcsicmp(names[0],constants_[i].first.c_str())){out[0]=firstConstant-static_cast<DISPID>(i);return S_OK;}
+        return performance_->GetIDsOfNames(iid,names,count,locale,out);
+    }
+    HRESULT STDMETHODCALLTYPE Invoke(DISPID id,REFIID iid,LCID locale,WORD flags,DISPPARAMS* args,VARIANT* out,EXCEPINFO* error,UINT* bad)override{
+        const auto index=static_cast<long long>(firstConstant)-id;if(index<0||index>=static_cast<long long>(constants_.size()))return performance_->Invoke(id,iid,locale,flags,args,out,error,bad);
+        if(iid!=IID_NULL)return DISP_E_UNKNOWNINTERFACE;if(!(flags&DISPATCH_PROPERTYGET))return DISP_E_MEMBERNOTFOUND;if(!args||!out)return E_POINTER;if(args->cNamedArgs)return DISP_E_NONAMEDARGS;if(args->cArgs)return DISP_E_BADPARAMCOUNT;
+        VariantInit(out);out->vt=VT_I4;out->lVal=constants_[static_cast<size_t>(index)].second;return S_OK;
+    }
+};
 
-// Container automation Load needs the owning OS Script's execution context.
-// Keep loading lazy: invoke this bridge only when the authored script calls Load.
+// Container automation uses its owning OS Script's execution context.
+// Keep realization lazy: only authored Load/Play/Stop invokes the bridge.
 const GUID aliasBridgeId={0x46868603,0x3c21,0x4d1b,{0x96,0x24,0xad,0x07,0x98,0x72,0x21,0x45}};
 struct AliasBridge:IUnknown{virtual IDispatch* original()=0;virtual HRESULT get_object(REFIID,void**,runtime::ScriptErrorInfo*)=0;};
+void unwrap_alias(VARIANT&);
+void wrap_playing(VARIANT&,runtime::Script*,const BridgeNames&);
 class AliasDispatch final:public IDispatch,public AliasBridge {
-    LONG refs_=1;IDispatch* object_;runtime::Script* helper_;BridgeNames names_;std::wstring alias_;DISPID load_=DISPID_UNKNOWN;
+    LONG refs_=1;IDispatch* object_;runtime::Script* helper_;BridgeNames names_;std::wstring alias_;DISPID load_=DISPID_UNKNOWN,play_=DISPID_UNKNOWN,stop_=DISPID_UNKNOWN;
 public:
-    AliasDispatch(IDispatch* object,runtime::Script* helper,BridgeNames names,std::wstring alias):object_(object),helper_(helper),names_(std::move(names)),alias_(std::move(alias)){object_->AddRef();helper_->AddRef();LPOLESTR name=const_cast<WCHAR*>(L"Load");object_->GetIDsOfNames(IID_NULL,&name,1,LOCALE_USER_DEFAULT,&load_);}
+    AliasDispatch(IDispatch* object,runtime::Script* helper,BridgeNames names,std::wstring alias):object_(object),helper_(helper),names_(std::move(names)),alias_(std::move(alias)){object_->AddRef();helper_->AddRef();for(auto [text,id]:{std::pair{L"Load",&load_},std::pair{L"Play",&play_},std::pair{L"Stop",&stop_}}){LPOLESTR name=const_cast<WCHAR*>(text);object_->GetIDsOfNames(IID_NULL,&name,1,LOCALE_USER_DEFAULT,id);}}
     ~AliasDispatch(){object_->Release();helper_->Release();}
     IDispatch* original()override{object_->AddRef();return object_;}
     HRESULT get_object(REFIID id,void** out,runtime::ScriptErrorInfo* error)override{return helper_->GetVariableObject(alias_.data(),id,out,error);}
@@ -38,13 +93,49 @@ public:
     HRESULT STDMETHODCALLTYPE GetTypeInfo(UINT i,LCID l,ITypeInfo** out)override{return object_->GetTypeInfo(i,l,out);}
     HRESULT STDMETHODCALLTYPE GetIDsOfNames(REFIID id,LPOLESTR* n,UINT c,LCID l,DISPID* out)override{return object_->GetIDsOfNames(id,n,c,l,out);}
     HRESULT STDMETHODCALLTYPE Invoke(DISPID id,REFIID iid,LCID locale,WORD flags,DISPPARAMS* args,VARIANT* out,EXCEPINFO* exception,UINT* bad)override{
-        if(id!=load_||load_==DISPID_UNKNOWN)return object_->Invoke(id,iid,locale,flags,args,out,exception,bad);
-        if(iid!=IID_NULL)return DISP_E_UNKNOWNINTERFACE;if(!(flags&DISPATCH_METHOD))return DISP_E_MEMBERNOTFOUND;if(!args)return E_POINTER;if(args->cNamedArgs)return DISP_E_NONAMEDARGS;if(args->cArgs)return DISP_E_BADPARAMCOUNT;
+        if(id==DISPID_UNKNOWN||(id!=load_&&id!=play_&&id!=stop_))return object_->Invoke(id,iid,locale,flags,args,out,exception,bad);
+        if(iid!=IID_NULL)return DISP_E_UNKNOWNINTERFACE;if(!(flags&DISPATCH_METHOD))return DISP_E_MEMBERNOTFOUND;if(!args)return E_POINTER;if(args->cNamedArgs)return DISP_E_NONAMEDARGS;
+        const auto maximum=id==play_?4u:id==stop_?1u:0u;if(args->cArgs>maximum)return DISP_E_BADPARAMCOUNT;if(args->cArgs&&!args->rgvarg)return E_POINTER;
         VARIANT value;VariantInit(&value);value.vt=VT_BSTR;value.bstrVal=SysAllocString(alias_.c_str());if(!value.bstrVal)return E_OUTOFMEMORY;runtime::ScriptErrorInfo error{};error.size=sizeof(error);
-        auto hr=helper_->SetVariableVariant(names_.alias.data(),value,FALSE,&error);VariantClear(&value);if(SUCCEEDED(hr))hr=helper_->CallRoutine(names_.load.data(),&error);
-        if(FAILED(hr)&&exception){*exception={};exception->scode=FAILED(error.result)?error.result:hr;exception->bstrSource=SysAllocString(error.component);exception->bstrDescription=SysAllocString(error.description);return DISP_E_EXCEPTION;}if(SUCCEEDED(hr)&&out)VariantInit(out);return hr;
+        auto hr=helper_->SetVariableVariant(names_.alias.data(),value,FALSE,&error);VariantClear(&value);LONG mask=0;
+        for(UINT i=0;SUCCEEDED(hr)&&i<args->cArgs;++i){hr=VariantCopyInd(&value,&args->rgvarg[args->cArgs-1-i]);if(SUCCEEDED(hr)&&!(value.vt==VT_ERROR&&value.scode==DISP_E_PARAMNOTFOUND)){unwrap_alias(value);mask|=1<<i;hr=helper_->SetVariableVariant(names_.arguments[i].data(),value,value.vt==VT_DISPATCH||value.vt==VT_UNKNOWN,&error);}VariantClear(&value);}
+        if(SUCCEEDED(hr))hr=helper_->SetVariableNumber(names_.mask.data(),mask,&error);
+        auto& routine=id==play_?names_.play:id==stop_?names_.stop:names_.load;if(SUCCEEDED(hr))hr=helper_->CallRoutine(routine.data(),&error);
+        VARIANT result;VariantInit(&result);if(SUCCEEDED(hr)&&id==play_)hr=helper_->GetVariableVariant(names_.result.data(),&result,&error);
+        // Release temporary parameter/result references even when execution fails.
+        runtime::ScriptErrorInfo cleanup{};cleanup.size=sizeof(cleanup);for(auto& argument:names_.arguments)helper_->SetVariableVariant(argument.data(),value,FALSE,&cleanup);helper_->SetVariableVariant(names_.result.data(),value,FALSE,&cleanup);
+        if(FAILED(hr)){VariantClear(&result);if(exception){*exception={};exception->scode=FAILED(error.result)?error.result:hr;exception->bstrSource=SysAllocString(error.component);exception->bstrDescription=SysAllocString(error.description);return DISP_E_EXCEPTION;}return hr;}
+        if(id==play_)wrap_playing(result,helper_,names_);if(out)*out=result;else VariantClear(&result);return hr;
     }
 };
+// Returned PlayingSegment methods also require their owning OS Script context.
+// The original automation/interface is retained, including from-instance use.
+class PlayingDispatch final:public IDispatch,public AliasBridge {
+    LONG refs_=1;IDispatch* object_;runtime::Script* helper_;BridgeNames names_;DISPID check_=DISPID_UNKNOWN,stop_=DISPID_UNKNOWN;
+public:
+    PlayingDispatch(IDispatch* object,runtime::Script* helper,BridgeNames names):object_(object),helper_(helper),names_(std::move(names)){object_->AddRef();helper_->AddRef();for(auto [text,id]:{std::pair{L"IsPlaying",&check_},std::pair{L"Stop",&stop_}}){LPOLESTR name=const_cast<WCHAR*>(text);object_->GetIDsOfNames(IID_NULL,&name,1,LOCALE_USER_DEFAULT,id);}}
+    ~PlayingDispatch(){object_->Release();helper_->Release();}
+    IDispatch* original()override{object_->AddRef();return object_;}
+    HRESULT get_object(REFIID id,void** out,runtime::ScriptErrorInfo* error)override{VARIANT value;VariantInit(&value);value.vt=VT_DISPATCH;value.pdispVal=object_;auto hr=helper_->SetVariableVariant(names_.object.data(),value,TRUE,error);if(SUCCEEDED(hr))hr=helper_->GetVariableObject(names_.object.data(),id,out,error);VariantInit(&value);runtime::ScriptErrorInfo cleanup{};cleanup.size=sizeof(cleanup);helper_->SetVariableVariant(names_.object.data(),value,FALSE,&cleanup);return hr;}
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id,void** out)override{if(!out)return E_POINTER;*out=nullptr;if(id==IID_IUnknown||id==IID_IDispatch)*out=static_cast<IDispatch*>(this);else if(id==aliasBridgeId)*out=static_cast<AliasBridge*>(this);else return E_NOINTERFACE;AddRef();return S_OK;}
+    ULONG STDMETHODCALLTYPE AddRef()override{return InterlockedIncrement(&refs_);}
+    ULONG STDMETHODCALLTYPE Release()override{auto n=InterlockedDecrement(&refs_);if(!n)delete this;return n;}
+    HRESULT STDMETHODCALLTYPE GetTypeInfoCount(UINT* out)override{return object_->GetTypeInfoCount(out);}
+    HRESULT STDMETHODCALLTYPE GetTypeInfo(UINT i,LCID locale,ITypeInfo** out)override{return object_->GetTypeInfo(i,locale,out);}
+    HRESULT STDMETHODCALLTYPE GetIDsOfNames(REFIID iid,LPOLESTR* names,UINT count,LCID locale,DISPID* out)override{return object_->GetIDsOfNames(iid,names,count,locale,out);}
+    HRESULT STDMETHODCALLTYPE Invoke(DISPID id,REFIID iid,LCID locale,WORD flags,DISPPARAMS* args,VARIANT* out,EXCEPINFO* exception,UINT* bad)override{
+        if(id==DISPID_UNKNOWN||(id!=check_&&id!=stop_))return object_->Invoke(id,iid,locale,flags,args,out,exception,bad);
+        if(iid!=IID_NULL)return DISP_E_UNKNOWNINTERFACE;if(!(flags&(id==check_?DISPATCH_METHOD|DISPATCH_PROPERTYGET:DISPATCH_METHOD)))return DISP_E_MEMBERNOTFOUND;if(!args)return E_POINTER;if(args->cNamedArgs)return DISP_E_NONAMEDARGS;if(args->cArgs>(id==check_?0u:1u))return DISP_E_BADPARAMCOUNT;if(args->cArgs&&!args->rgvarg)return E_POINTER;
+        runtime::ScriptErrorInfo error{};error.size=sizeof(error);VARIANT value;VariantInit(&value);value.vt=VT_DISPATCH;value.pdispVal=object_;auto hr=helper_->SetVariableVariant(names_.object.data(),value,TRUE,&error);VariantInit(&value);LONG mask=0;
+        if(SUCCEEDED(hr)&&args->cArgs){hr=VariantCopyInd(&value,args->rgvarg);if(SUCCEEDED(hr)&&!(value.vt==VT_ERROR&&value.scode==DISP_E_PARAMNOTFOUND)){unwrap_alias(value);mask=1;hr=helper_->SetVariableVariant(names_.arguments[0].data(),value,value.vt==VT_DISPATCH||value.vt==VT_UNKNOWN,&error);}VariantClear(&value);}
+        if(SUCCEEDED(hr))hr=helper_->SetVariableNumber(names_.mask.data(),mask,&error);auto& routine=id==check_?names_.playingCheck:names_.playingStop;if(SUCCEEDED(hr))hr=helper_->CallRoutine(routine.data(),&error);
+        VARIANT result;VariantInit(&result);if(SUCCEEDED(hr)&&id==check_)hr=helper_->GetVariableVariant(names_.result.data(),&result,&error);
+        runtime::ScriptErrorInfo cleanup{};cleanup.size=sizeof(cleanup);for(auto name:{names_.object,names_.arguments[0],names_.result})helper_->SetVariableVariant(name.data(),value,FALSE,&cleanup);
+        if(FAILED(hr)){VariantClear(&result);if(exception){*exception={};exception->scode=FAILED(error.result)?error.result:hr;exception->bstrSource=SysAllocString(error.component);exception->bstrDescription=SysAllocString(error.description);return DISP_E_EXCEPTION;}return hr;}
+        if(out)*out=result;else VariantClear(&result);return hr;
+    }
+};
+void wrap_playing(VARIANT& value,runtime::Script* helper,const BridgeNames& names){if(value.vt==VT_DISPATCH&&value.pdispVal){auto* wrapped=new PlayingDispatch(value.pdispVal,helper,names);value.pdispVal->Release();value.pdispVal=wrapped;}}
 void unwrap_alias(VARIANT& value){IUnknown* object=value.vt==VT_DISPATCH?static_cast<IUnknown*>(value.pdispVal):value.vt==VT_UNKNOWN?value.punkVal:nullptr;if(!object)return;AliasBridge* bridge=nullptr;if(SUCCEEDED(object->QueryInterface(aliasBridgeId,reinterpret_cast<void**>(&bridge)))){auto* original=bridge->original();bridge->Release();VariantClear(&value);value.vt=VT_DISPATCH;value.pdispVal=original;}}
 
 struct Site final:IActiveScriptSite {
@@ -71,7 +162,13 @@ struct Site final:IActiveScriptSite {
 };
 class Host final:public runtime::Script {
     LONG refs_=1;IActiveScript* engine_=nullptr;IActiveScriptParse* parser_=nullptr;IDispatch* dispatch_=nullptr;Site* site_=nullptr;IDispatch* global_=nullptr;runtime::Script* helper_;BridgeNames names_;
-    HRESULT report(HRESULT hr,runtime::ScriptErrorInfo* error){if(error){*error=site_?site_->last:runtime::ScriptErrorInfo{};error->size=sizeof(*error);if(FAILED(hr)&&!FAILED(error->result))error->result=hr;}return FAILED(hr)?DMUS_E_SCRIPT_ERROR_IN_SCRIPT:hr;}
+    HRESULT report(HRESULT hr,runtime::ScriptErrorInfo* error){
+        // JScript can return S_OK from SetScriptState after OnScriptError has
+        // reported a global initialization failure. Preserve that failure so
+        // an aborted new Script never replaces the previous valid session.
+        if(SUCCEEDED(hr)&&site_&&FAILED(site_->last.result))hr=site_->last.result;
+        if(error){*error=site_?site_->last:runtime::ScriptErrorInfo{};error->size=sizeof(*error);if(FAILED(hr)&&!FAILED(error->result))error->result=hr;}return FAILED(hr)?DMUS_E_SCRIPT_ERROR_IN_SCRIPT:hr;
+    }
     HRESULT member(WCHAR* name,DISPID& id){if(!dispatch_)return DMUS_E_NOT_INIT;if(!name)return E_POINTER;LPOLESTR n=name;return dispatch_->GetIDsOfNames(IID_NULL,&n,1,LOCALE_USER_DEFAULT,&id);}
     HRESULT invoke(WCHAR* name,WORD flags,DISPPARAMS* args,VARIANT* result,runtime::ScriptErrorInfo* error){site_->reset();DISPID id=0;auto hr=member(name,id);if(FAILED(hr))return report(hr,error);EXCEPINFO e{};UINT bad=0;hr=dispatch_->Invoke(id,IID_NULL,LOCALE_USER_DEFAULT,flags,args,result,&e,&bad);if(e.pfnDeferredFillIn)e.pfnDeferredFillIn(&e);if(FAILED(hr)&&!FAILED(site_->last.result)){site_->last.result=e.scode?e.scode:hr;copy_text(site_->last.description,260,e.bstrDescription);copy_text(site_->last.component,260,e.bstrSource);}clear_exception(e);return report(hr,error);}
     HRESULT enumerate(bool routines,DWORD index,WCHAR* out){if(!out)return E_POINTER;if(!dispatch_)return DMUS_E_NOT_INIT;ITypeInfo* info=nullptr;auto hr=dispatch_->GetTypeInfo(0,LOCALE_USER_DEFAULT,&info);if(FAILED(hr))return hr;TYPEATTR* attr=nullptr;hr=info->GetTypeAttr(&attr);if(FAILED(hr)){info->Release();return hr;}std::vector<std::wstring> names;
@@ -86,6 +183,7 @@ public:
     HRESULT initialize(const ScriptDocument& doc,runtime::Performance* performance,runtime::ScriptErrorInfo* error){
         names_=bridge_names(doc);auto& bridge=names_.performance;runtime::ScriptErrorInfo local{};local.size=sizeof(local);auto hr=helper_->SetVariableObject(bridge.data(),performance,&local);if(FAILED(hr)){if(error)*error=local;return hr;}VARIANT object;VariantInit(&object);hr=helper_->GetVariableVariant(bridge.data(),&object,&local);if(FAILED(hr)||object.vt!=VT_DISPATCH||!object.pdispVal){VariantClear(&object);if(error)*error=local;return FAILED(hr)?hr:E_NOINTERFACE;}
         LPOLESTR trace=const_cast<WCHAR*>(L"Trace");DISPID traceId=0;hr=object.pdispVal->GetIDsOfNames(IID_NULL,&trace,1,LOCALE_USER_DEFAULT,&traceId);if(SUCCEEDED(hr))global_=new ScriptPerformanceAutomation(performance,object.pdispVal,traceId);VariantClear(&object);if(FAILED(hr))return hr;
+        ConstantValues constants;hr=read_script_constants(helper_,names_,constants,&local);if(FAILED(hr)){if(error){*error=local;if(!FAILED(error->result))error->result=hr;}return hr;}auto* globals=new GlobalDispatch(global_,std::move(constants));global_->Release();global_=globals;
         site_=new Site(global_,helper_,names_);CLSID language{};hr=CLSIDFromProgID(doc.language().c_str(),&language);if(SUCCEEDED(hr))hr=CoCreateInstance(language,nullptr,CLSCTX_INPROC_SERVER,IID_IActiveScript,reinterpret_cast<void**>(&engine_));if(SUCCEEDED(hr))hr=engine_->QueryInterface(IID_IActiveScriptParse,reinterpret_cast<void**>(&parser_));if(SUCCEEDED(hr))hr=engine_->SetScriptSite(site_);if(SUCCEEDED(hr))hr=parser_->InitNew();
         if(SUCCEEDED(hr))hr=engine_->AddNamedItem(names_.global.c_str(),SCRIPTITEM_GLOBALMEMBERS);
         for(const auto& item:doc.container().objects())if(SUCCEEDED(hr)&&item.alias&&!item.alias->empty())hr=engine_->AddNamedItem(item.alias->c_str(),SCRIPTITEM_ISVISIBLE);

@@ -97,8 +97,8 @@ function observe(label, regex) {
 for (const [label, regex] of [
   ['New Project settled', /Untitled segment/], ['Initial Undo settled', /Notes: 0\./], ['Initial Redo settled', /Notes: 1\./],
   ['Sequence Change6 settled', /0 clocks 6 BPM/], ['Sequence Undo5 settled', /0 clocks 5 BPM/], ['Sequence Redo6 settled', /0 clocks 6 BPM/],
-  ['Style Change109 settled', /Style tempo: 109\.000000 BPM/], ['Style Undo108 settled', /Style tempo: 108\.000000 BPM/], ['Style Redo109 settled; Save menu', /Style tempo: 109\.000000 BPM/],
-  ['Band Change101 settled', /volume 101/], ['Band Undo100 settled', /volume 100/], ['Band Redo101 settled; Save menu', /volume 101/],
+  ['Style Change109 settled', /Style tempo: 109\.000000 BPM/], ['Style Undo108 settled', /Style tempo: 108\.000000 BPM/], ['Style Redo109 settled', /Style tempo: 109\.000000 BPM/], ['Style Save menu', /Style tempo: 109\.000000 BPM/],
+  ['Band Change101 settled', /volume 101/], ['Band Undo100 settled', /volume 100/], ['Band Redo101 settled', /volume 101/], ['Band Save menu', /volume 101/],
   ['DLS Change1 settled', /Key low Value: 1 ID:/], ['DLS Undo0 settled', /Key low Value: 0 ID:/], ['DLS Redo1 settled', /Key low Value: 1 ID:/],
   ['AudioPath name change settled', /Name Value: Q1 Current Conflict ID:/], ['AudioPath Undo Conflict settled', /Name Value: Conflict ID:/], ['AudioPath Redo Current settled', /Name Value: Q1 Current Conflict ID:/],
   ['Separate process restored Fresh native Project', /Notes: 1\./], ['source-sequence-final-restored', /0 clocks 5 BPM/],

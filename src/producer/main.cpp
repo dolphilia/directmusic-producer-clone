@@ -30,8 +30,12 @@
 #include "motif_editor.h"
 #include "playback_window.h"
 #include "playback_monitor.h"
+#include "style_player_session.h"
+#include "style_player_window.h"
+#include "farm_player_window.h"
 #include "envelope_parameters.h"
 #include "compat/playback_runtime.h"
+#include "compat/waves_reverb.h"
 #include <algorithm>
 #include <cwctype>
 #include <filesystem>
@@ -51,6 +55,9 @@ HMENU transportMenu=nullptr;
 constexpr UINT TransportPath=2000;
 constexpr UINT StartFileOutput=3100,StopFileOutput=3101;
 constexpr UINT ImportMidi=3102,MessageWindowCommand=3103;
+constexpr UINT StylePlayerCommand=3104;
+constexpr UINT FarmPlayerCommand=3105;
+constexpr UINT WavesReverbCommand=3106;
 HWND messageWindow=nullptr,messageText=nullptr;size_t lyricCursor=0,scriptMessageCursor=0,scriptDiagnosticCursor=0,scriptCallCursor=0;
 static_assert(StartFileOutput>=TransportPath+1000 && StopFileOutput>=TransportPath+1000,
               "Recording commands must not overlap the dynamic AudioPath menu");
@@ -324,6 +331,8 @@ void command(HWND window,UINT id,UINT notification) {
     case ContainerDocuments:show_container_documents(window,framework);break;
     case TimelineRangeEditor:if(!styleMode&&!bandMode&&!framework.documents().empty()){show_timeline_range(window,document());refresh(window);}else throw std::runtime_error("Select a Segment for Timeline range editing");break;
     case ChordMapEditor:show_chordmap_editor(window,framework);break;
+    case StylePlayerCommand:{const auto adopted=show_style_player(window,framework,conductor,styleMode?std::optional<size_t>(activeStyle):std::nullopt);if(adopted){active=*adopted;styleMode=false;bandMode=false;refresh_group_fields(window,true);}break;}
+    case FarmPlayerCommand:show_farm_player(window,framework);break;
     case AudioPathEditor:show_audio_path_editor(window,framework);break;
     case ScriptTrackEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_script_track_editor(window,framework,active);break;
     case SegmentTriggerEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_segment_trigger_editor(window,framework,active);break;
@@ -425,6 +434,22 @@ void command(HWND window,UINT id,UINT notification) {
     case MeterDelete: if(!document().delete_meter(static_cast<std::int32_t>(meter_input(measureEdit)-1)))throw std::runtime_error("Cannot remove the initial meter or edit a Style-backed document");break;
     case Play: {const auto& path=framework.documents().at(active).path;conductor.play(document().save_bytes(),path.empty()?L"":std::filesystem::path(path).parent_path().wstring(),window,document().styles(),framework.playback_collections(active),{},framework.playback_waves(active),framework.trigger_playback(active),framework.playback_chordmaps(active));playbackStatus=L"Playing document snapshot";SetTimer(window,1,100,nullptr);break;}
     case StartFileOutput:{Bytes bytes=document().audio_path();if(bytes.empty())bytes=conductor.default_audio_path();if(bytes.empty())throw std::runtime_error("Select an AudioPath with FileOutput first");const auto output=choose(window,true,L"Buffer recording WAV\0*.wav\0",L"wav");if(!output.empty()){conductor.start_file_output(bytes,output,window);playbackStatus=L"Buffer recording started; Play and Stop leave recording active";}break;}
+    case WavesReverbCommand:{
+        const auto bytes=conductor.playback_bytes();if(bytes.empty())throw std::runtime_error("Play a Segment with Waves Reverb first");
+        const auto root=Chunk::parse(bytes);const auto config=root.find("RIFF","DMAP");if(!config)throw std::runtime_error("The playing Segment has no owned AudioPath");
+        AudioPathDocument path;path.load(config->encode());const auto ids=path.buffers();const auto effects=path.effects();
+        std::vector<size_t> seen;std::wostringstream text;
+        for(const auto& port:path.ports())for(const auto& route:port.routes)for(size_t i=0;i<route.buffers.size();++i){
+            const auto found=std::find(ids.begin(),ids.end(),route.buffers[i]);const auto buffer=static_cast<size_t>(found-ids.begin());
+            if(std::find(seen.begin(),seen.end(),buffer)!=seen.end())continue;seen.push_back(buffer);DWORD occurrence=0;
+            for(const auto& effect:effects)if(effect.buffer==buffer){GUID cls{};std::memcpy(&cls,effect.classId.data(),16);if(!IsEqualGUID(cls,producer::compat::wavesReverbClass))continue;
+                const auto p=conductor.waves_reverb_parameters(route.base,static_cast<DWORD>(i),occurrence++);
+                text<<L"Buffer "<<buffer+1<<L", Waves Reverb "<<occurrence<<L":\nInput gain "<<p.inputGain<<L" dB\nReverb mix "<<p.reverbMix<<L" dB\nReverb time "<<p.reverbTime<<L" ms\nHigh-frequency time ratio "<<p.highFrequencyRatio<<L"\n\n";
+            }
+        }
+        if(text.str().empty())throw std::runtime_error("The playing AudioPath has no Waves Reverb on a PChannel buffer");
+        MessageBoxW(window,text.str().c_str(),L"Playing Waves Reverb",MB_OK|MB_ICONINFORMATION);break;
+    }
     case StopFileOutput:conductor.stop_file_output();playbackStatus=L"Buffer recording stopped and WAV finalized";break;
     case Stop: conductor.stop();collect_lyric_messages();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";break;
     case PlaybackSessions: show_playback_window(window,conductor);break;
@@ -543,7 +568,19 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             if(!styleMode&&!bandMode&&!framework.documents().empty()) {
                 const auto& d=document();const double zoom=520.0/std::max(1,d.length());const Timeline t; // Raw clock axis; pixel conversion does not depend on meter.
                 MoveToEx(dc,20,440,nullptr);LineTo(dc,550,440);
-                for(const auto& e:d.tempos()) {const int x=20+t.pixel(e.time,zoom,0);MoveToEx(dc,x,410,nullptr);LineTo(dc,x,460);const auto text=std::to_wstring(e.bpm);TextOutW(dc,x,465,text.c_str(),static_cast<int>(text.size()));}
+                const auto tempos=d.tempos();
+                for(size_t i=0;i<tempos.size();++i) {
+                    const auto& e=tempos[i];const int x=20+t.pixel(e.time,zoom,0);
+                    MoveToEx(dc,x,410,nullptr);LineTo(dc,x,460);
+                    auto text=std::to_wstring(e.bpm);
+                    while(text.size()>1&&text.back()==L'0')text.pop_back();
+                    if(text.back()==L'.')text.pop_back();
+                    // Keep labels inside their clock interval. Dense events
+                    // remain available in the complete Tempo list above.
+                    const int end=i+1<tempos.size()?20+t.pixel(tempos[i+1].time,zoom,0):550;
+                    RECT label{std::max(20,x),465,std::min(550,end-4),485};
+                    if(label.right>label.left)DrawTextW(dc,text.data(),static_cast<int>(text.size()),&label,DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX);
+                }
             }
             return 0;
         }
@@ -663,6 +700,38 @@ int group_playback_smoke(const std::wstring& directory,const std::wstring& input
     const auto json="{\"scope\":\"whole Segment snapshot, type-filtered runtime track groups; original Producer and audio unverified\",\"passed\":"+std::string(passed?"true":"false")+",\"snapshotExact\":"+(exact?"true":"false")+",\"sourceSnapshotExact\":"+(sourceExact?"true":"false")+",\"started\":"+(started?"true":"false")+",\"stopped\":"+(stopped?"true":"false")+",\"queryCount\":"+std::to_string(count)+",\"error\":\""+error+"\",\"queries\":["+queries+"],\"calls\":["+calls+"],\"modulePathsUtf16Hex\":["+modules+"],\"modulesAfterCleanupUtf16Hex\":["+module_report()+"]}\n";
     const auto finalJson=json.substr(0,json.size()-2)+",\"runtimeOrderMatchesRiff\":"+(orderMatched?"true":"false")+",\"parameters\":["+parameters+"]}\n";
     write_file_atomic((base/L"playback.json").wstring(),Bytes(finalJson.begin(),finalJson.end()));return passed?0:1;
+}
+int style_player_audio_run(const std::wstring& directory,const std::wstring& stylePath,const std::wstring& chordMapPath);
+int style_player_audio(const std::wstring& directory,const std::wstring& stylePath,const std::wstring& chordMapPath){
+    try{return style_player_audio_run(directory,stylePath,chordMapPath);}catch(const std::exception& e){const std::string error=e.what();write_file_atomic((std::filesystem::absolute(directory)/L"failure.txt").wstring(),Bytes(error.begin(),error.end()));return 1;}
+}
+int style_player_audio_run(const std::wstring& directory,const std::wstring& stylePath,const std::wstring& chordMapPath){
+    // Bounded StylePlayer.txt contract run: Play, Re-Compose, live Band change, Shape change, Motif layer, Stop, Play again.
+    const auto base=std::filesystem::absolute(directory);std::filesystem::create_directories(base);Framework host;const auto si=host.open_style(stylePath);std::optional<Bytes> map;
+    if(chordMapPath!=L"-"){const auto mi=host.open_chordmap(chordMapPath);map=host.chordmap_document(mi).save_bytes();}
+    Conductor player;player.enable_note_observation();std::string error,phases,modules;bool passed=false;
+    StylePlayerSession session(player,GetDesktopWindow(),host.style_playback_snapshot(si),host.style_playback_collections(si),map);
+    auto stamp=[&](const char* label){LARGE_INTEGER before,after,frequency;QueryPerformanceCounter(&before);const auto id=session.primary_id();const auto position=id?player.position(id):PlaybackPosition{};QueryPerformanceCounter(&after);QueryPerformanceFrequency(&frequency);const auto qpc=static_cast<unsigned long long>((static_cast<double>(before.QuadPart)+static_cast<double>(after.QuadPart))*5000000.0/static_cast<double>(frequency.QuadPart));if(!phases.empty())phases+=",";phases+="{\"phase\":\""+std::string(label)+"\",\"qpc100ns\":"+std::to_string(qpc)+",\"clocks\":"+std::to_string(position.clocks)+",\"start\":"+std::to_string(position.start)+",\"tempo\":"+std::to_string(position.tempo)+",\"primaryId\":"+std::to_string(id)+",\"playing\":"+(position.playing?"true":"false")+"}";};
+    auto ready=[&](const char* label){const auto deadline=GetTickCount64()+5000;while(!session.playing()){if(GetTickCount64()>=deadline)throw std::runtime_error("StylePlayer scheduled playback did not start");Sleep(10);}stamp(label);};
+    auto sounding=[&]{const auto deadline=GetTickCount64()+1500;for(;;){const auto p=player.position(session.primary_id());const auto offset=(p.clocks-p.start)%768;if(p.playing&&offset>=60&&offset<=100)return;if(GetTickCount64()>=deadline)throw std::runtime_error("StylePlayer sounding Stop clock not reached");Sleep(2);}};
+    write_file_atomic((base/L"source-style.stp").wstring(),host.style_document(si).save_bytes());if(map)write_file_atomic((base/L"source-map.cdm").wstring(),*map);const auto ownedCollections=host.style_playback_collections(si);for(size_t i=0;i<ownedCollections.size();++i)write_file_atomic((base/(L"source-collection-"+std::to_wstring(i)+L".dls")).wstring(),ownedCollections[i].bytes);
+    std::string counters;auto count=[&](const char* label){if(!counters.empty())counters+=",";const auto id=session.primary_id();const auto position=id?player.position(id):PlaybackPosition{};counters+="{\"after\":\""+std::string(label)+"\",\"compositions\":"+std::to_string(session.compositions())+",\"restarts\":"+std::to_string(session.restarts())+",\"bandChanges\":"+std::to_string(session.band_changes())+",\"motifs\":"+std::to_string(session.motif_requests())+",\"primaryId\":"+std::to_string(id)+",\"primaryStart\":"+std::to_string(position.start)+",\"primaryClocks\":"+std::to_string(position.clocks)+",\"mappedPChannel\":"+std::to_string(id?player.convert_pchannel(id,5):0)+",\"sessions\":"+std::to_string(player.playback_ids().size())+",\"playing\":"+(session.playing()?"true":"false")+"}";if(const auto* c=session.composition()){const auto name=std::wstring(label,label+std::strlen(label))+L".sgp";write_file_atomic((base/name).wstring(),c->segment);}};
+    try{
+        const auto bands=session.band_names();const auto motifs=session.motif_names();
+        stamp("play-request");session.play();modules=module_report();stamp("play-returned");ready("play-ready");count("play");Sleep(10000);
+        stamp("recompose-request");session.recompose();stamp("recompose-returned");ready("recompose-ready");count("recompose");Sleep(3000);
+        if(session.restarts()!=1)throw std::runtime_error("Re-Compose did not restart exactly once");
+        if(!bands.empty()){stamp("band-request");session.select_band(bands.back());count("band");stamp("band-returned");Sleep(3000);if(session.restarts()!=1)throw std::runtime_error("Band change restarted playback");}
+        auto settings=session.settings();settings.shape=StyleShape::Quiet;stamp("shape-request");session.set_settings(settings);stamp("shape-returned");ready("shape-ready");count("shape");Sleep(3000);if(session.restarts()!=2)throw std::runtime_error("Shape change did not restart");
+        if(!motifs.empty()){stamp("motif-request");session.play_motif(motifs.front());count("motif");stamp("motif-returned");Sleep(3000);if(session.restarts()!=2)throw std::runtime_error("Motif restarted playback");}
+        sounding();stamp("stop-request");session.stop();count("stop");stamp("stop-returned");Sleep(2500);
+        stamp("replay-request");session.set_settings(session.settings());stamp("replay-returned");ready("replay-ready");count("replay");Sleep(3000);if(session.restarts()!=3)throw std::runtime_error("Stopped parameter change did not restart");
+        sounding();stamp("final-stop-request");session.stop();count("final-stop");stamp("final-stop-returned");Sleep(2000);passed=!player.note_observation_overflow()&&!player.note_observation_forwarding_failed();
+    }catch(const std::exception& e){error=e.what();}
+    const auto notes=player.observed_notes();player.shutdown();std::string noteJson;for(const auto& n:notes){if(!noteJson.empty())noteJson+=",";noteJson+="{\"clocks\":"+std::to_string(n.clocks)+",\"duration\":"+std::to_string(n.duration)+",\"channel\":"+std::to_string(n.channel)+",\"midiValue\":"+std::to_string(n.midiValue)+",\"velocity\":"+std::to_string(n.velocity)+"}";}
+    const auto* c=session.composition();if(c)write_file_atomic((base/L"composed.sgp").wstring(),c->segment);
+    const auto report="{\"passed\":"+std::string(passed&&!notes.empty()?"true":"false")+",\"error\":\""+error+"\",\"phases\":["+phases+"],\"counters\":["+counters+"],\"notes\":["+noteJson+"],\"modulePathsUtf16Hex\":["+modules+"],\"fullAcceptance\":false}\n";
+    write_file_atomic((base/L"style-player-audio.json").wstring(),Bytes(report.begin(),report.end()));return passed&&!notes.empty()?0:1;
 }
 int motif_concurrent_audio(const std::wstring& directory,const std::wstring& primaryInput,const std::wstring& secondaryInput,const std::wstring& name){
     const auto base=std::filesystem::absolute(directory);std::filesystem::create_directories(base);Framework host;const auto first=host.open_style(primaryInput),second=host.open_style(secondaryInput);Conductor player;player.enable_note_observation();
@@ -1142,6 +1211,7 @@ auto number=[](const wchar_t* text,unsigned long maximum){const std::wstring val
         else if(argc==6&&std::wstring(argv[1])==L"--notification-identity-stress")result=notification_identity_stress(argv[2],argv[3],argv[4],argv[5]);
         else if(argc==6&&std::wstring(argv[1])==L"--motif-primary-cancel-audio")result=motif_primary_cancel_audio(argv[2],argv[3],argv[4],argv[5]);
         else if(argc==6&&std::wstring(argv[1])==L"--motif-primary-replacement-audio")result=motif_primary_replacement_audio(argv[2],argv[3],argv[4],argv[5]);
+        else if(argc==5&&std::wstring(argv[1])==L"--style-player-audio")result=style_player_audio(argv[2],argv[3],argv[4]);
         else if(argc==6&&std::wstring(argv[1])==L"--motif-concurrent-audio")result=motif_concurrent_audio(argv[2],argv[3],argv[4],argv[5]);
         else if(argc==5&&std::wstring(argv[1])==L"--motif-concurrent-observe")result=motif_concurrent_observe(argv[2],argv[3],argv[4]);
         else if(argc==5&&std::wstring(argv[1])==L"--style-motif-observe")result=note_observe(argv[2],argv[3],MotifSelection{0,argv[4]},true);
@@ -1181,8 +1251,8 @@ auto number=[](const wchar_t* text,unsigned long maximum){const std::wstring val
             HMENU menu=CreateMenu(),file=CreatePopupMenu();
             transportMenu=CreatePopupMenu();AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(transportMenu),L"Transport AudioPath");
             AppendMenuW(file,MF_STRING,NewProject,L"New Project");AppendMenuW(file,MF_STRING,NewSegment,L"New Segment");AppendMenuW(file,MF_STRING,Open,L"Open...");AppendMenuW(file,MF_STRING,ImportMidi,L"Import MIDI as Segment...");AppendMenuW(file,MF_STRING,SaveSegment,L"Save Document");AppendMenuW(file,MF_STRING,SaveDocumentAs,L"Save Document As...");AppendMenuW(file,MF_STRING,SaveProject,L"Save Project As...");AppendMenuW(file,MF_STRING,CopyProject,L"Copy Project...");AppendMenuW(file,MF_STRING,Exit,L"Exit");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(file),L"File");
-            HMENU addInsMenu=CreatePopupMenu();AppendMenuW(addInsMenu,MF_STRING,MessageWindowCommand,L"Message Window");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(addInsMenu),L"Add-Ins");
-            HMENU recordingMenu=CreatePopupMenu();AppendMenuW(recordingMenu,MF_STRING,StartFileOutput,L"Start Buffer Recording...");AppendMenuW(recordingMenu,MF_STRING,StopFileOutput,L"Stop Buffer Recording");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(recordingMenu),L"Recording");
+            HMENU addInsMenu=CreatePopupMenu();AppendMenuW(addInsMenu,MF_STRING,MessageWindowCommand,L"Message Window");AppendMenuW(addInsMenu,MF_STRING,StylePlayerCommand,L"StylePlayer...");AppendMenuW(addInsMenu,MF_STRING,FarmPlayerCommand,L"Farm Score Player...");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(addInsMenu),L"Add-Ins");
+            HMENU recordingMenu=CreatePopupMenu();AppendMenuW(recordingMenu,MF_STRING,StartFileOutput,L"Start Buffer Recording...");AppendMenuW(recordingMenu,MF_STRING,StopFileOutput,L"Stop Buffer Recording");AppendMenuW(recordingMenu,MF_STRING,WavesReverbCommand,L"Playing Waves Reverb Parameters...");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(recordingMenu),L"Recording");
             HMENU patternMenu=CreatePopupMenu();AppendMenuW(patternMenu,MF_STRING,PatternNew,L"New Pattern");AppendMenuW(patternMenu,MF_STRING,MotifNew,L"New Motif");AppendMenuW(patternMenu,MF_STRING,MotifSettings,L"Motif Playback Settings...");AppendMenuW(patternMenu,MF_STRING,MotifPlay,L"Play Selected Motif");AppendMenuW(patternMenu,MF_STRING,StopCurrentPlayback,L"Stop Most Recent Playback");AppendMenuW(patternMenu,MF_STRING,PlaybackSessions,L"Playback Sessions...");AppendMenuW(patternMenu,MF_STRING,MotifBandAssign,L"Assign Selected Style Band to Motif");AppendMenuW(patternMenu,MF_STRING,MotifBandEdit,L"Edit Motif Band Instruments...");AppendMenuW(patternMenu,MF_STRING,PatternDelete,L"Delete Pattern...");AppendMenuW(patternMenu,MF_STRING,PatternDuplicate,L"Duplicate Pattern");AppendMenuW(patternMenu,MF_STRING,PatternUnshare,L"Make Selected Part Independent");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(patternMenu),L"Pattern");
             InsertMenuW(file,2,MF_BYPOSITION|MF_STRING,NewPlaybackTest,L"New Playback Test");
             AppendMenuW(file,MF_STRING,AudioPathEditor,L"AudioPath Documents...");

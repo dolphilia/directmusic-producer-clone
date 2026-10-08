@@ -72,6 +72,7 @@ public:
     // UI stores indexes, never raw pointers across document creation/deletion.
     void new_project();
     size_t new_segment();
+    size_t adopt_composed_segment(const Bytes&);
     size_t import_midi_segment(const std::wstring& path);
     size_t open_segment(const std::wstring& path);
     size_t new_style();size_t open_style(const std::wstring& path);

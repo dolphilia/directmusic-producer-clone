@@ -1,5 +1,6 @@
 #pragma once
 #include "script_document.h"
+#include "script_dependencies.h"
 #include "compat/script_runtime.h"
 namespace producer::app {
 struct ScriptResult {HRESULT result=S_OK;runtime::ScriptErrorInfo error{};bool passed()const{return result!=S_FALSE&&SUCCEEDED(result);} };
@@ -7,14 +8,14 @@ struct ScriptDiagnostic {std::wstring operation,name;ScriptResult result;std::ui
 // UI-thread owner: release before Performance/COM shutdown. Serialized source
 // remains owned while Loader can refer to its memory descriptor.
 class ScriptSession {
-    bool initialized_=false;Bytes memory_;runtime::Loader* loader_=nullptr;runtime::Script* script_=nullptr;
+    bool initialized_=false;Bytes memory_;std::vector<ScriptRuntimeDependency> dependencies_;runtime::Loader* loader_=nullptr;runtime::Script* script_=nullptr;
     ScriptResult last_;std::vector<ScriptDiagnostic> diagnostics_;bool diagnosticOverflow_=false;
     ScriptResult finish(const std::wstring&,const std::wstring&);
     void begin();
 public:
     ScriptSession();~ScriptSession();
     ScriptSession(const ScriptSession&)=delete;ScriptSession& operator=(const ScriptSession&)=delete;
-    ScriptResult load(const Bytes&,const std::wstring&,runtime::Performance*);
+    ScriptResult load(const Bytes&,const std::wstring&,runtime::Performance*,std::vector<ScriptRuntimeDependency> dependencies={});
     ScriptResult call(const std::wstring&);
     ScriptResult set_number(const std::wstring&,LONG);
     ScriptResult get_number(const std::wstring&,LONG&);

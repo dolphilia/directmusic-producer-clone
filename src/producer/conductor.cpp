@@ -1,5 +1,7 @@
 #include "conductor.h"
+#include "environmental_reverb_dmo.h"
 #include "source_script_host.h"
+#include "script_dependencies.h"
 #include "source_tools.h"
 #include "document.h"
 #include "audio_path.h"
@@ -8,6 +10,9 @@
 #include "compat/playback_runtime.h"
 #include "compat/tempo_runtime.h"
 #include "compat/producer_ids.h"
+#include "compat/waves_reverb.h"
+#include "compat/directsound_send.h"
+#include <dsound.h>
 #include <objidl.h>
 #include "compat/time_signature.h"
 #include <filesystem>
@@ -103,7 +108,6 @@ struct PlaybackSession {
 // Validate before the loader can instantiate serialized effects. A document
 // may retain unknown effects, but audition never falls back to Producer COM.
 static void validate_audio_effects(const AudioPathDocument& path){
-    static const wchar_t* classes[]={L"{DAFD8210-5711-4B91-9FE3-F75B7AE279BF}",L"{EFE6629C-81F7-4281-BD91-C9D604A95AF6}",L"{EFCA3D92-DFD8-4672-A603-7420894BAD98}",L"{EF3E932C-D40B-4F51-8CCF-3F98F1B29D5D}",L"{EF114C90-CD1D-484E-96E5-09CFAF912A21}",L"{EF011F79-4000-406D-87AF-BFFB3FC39D57}",L"{120CED89-3BF4-4173-A132-3CB406CF3231}",L"{EF985E71-D5C7-42D4-BA4D-2D073E2E96F4}"};
     for(const auto& effect:path.effects()){
         GUID id{};std::memcpy(&id,effect.classId.data(),16);
         if(IsEqualGUID(id,fileOutputClass)){
@@ -117,12 +121,18 @@ static void validate_audio_effects(const AudioPathDocument& path){
                 }
             }continue;
         }
-        bool allowed=false;for(const auto text:classes){GUID expected{};if(SUCCEEDED(CLSIDFromString(text,&expected))&&IsEqualGUID(expected,id)){allowed=true;break;}}
-        if(!allowed)throw std::runtime_error("AudioPath effect needs an explicitly declared source or OS factory; original fallback refused");
+        if(IsEqualGUID(id,producer::compat::directSoundSendClass)){
+            // Builtin Send is allocated by the declared Windows AudioPath,
+            // not by an unregistered/Producer effect COM class.
+            (void)os_server(runtime::performanceClass,L"dmime.dll");
+            (void)prepare_audio_path_send_runtime(path.save_bytes());continue;
+        }
+        if(!is_declared_os_audio_effect(effect.classId))throw std::runtime_error("AudioPath effect needs an explicitly declared source or OS factory; original fallback refused");
         (void)os_server(id,L"dsdmo.dll");
     }
 }
 static void prepare_source_effects(Chunk& path){
+    path=Chunk::parse(prepare_audio_path_send_runtime(path.encode()));
     for(auto& buffer:path.children)if(buffer.id=="LIST"&&buffer.type=="dbfl")if(auto descriptor=buffer.find("RIFF","DSBC"))if(auto effects=descriptor->find("LIST","fxls"))
         for(auto& effect:effects->children)if(effect.id=="RIFF"&&effect.type=="DSFX")if(auto header=effect.find("fxhr")){
             if(header->data.size()<56)throw std::runtime_error("Truncated runtime effect header");GUID id{};std::memcpy(&id,header->data.data()+4,16);
@@ -134,8 +144,11 @@ struct Conductor::State:PlaybackSession {
     std::vector<ScriptDiagnostic> scriptDiagnosticHistory;bool scriptDiagnosticHistoryOverflow=false;
     std::vector<NativeScriptCall> scriptHistory;bool scriptHistoryOverflow=false;
     std::unique_ptr<FileOutputRegistration> fileOutputRegistration;
+    std::unique_ptr<EnvironmentalReverbRegistration> environmentalReverbRegistration;
     runtime::AudioPath* recordingPath=nullptr;
     std::vector<FileOutputControl*> recordingControls;
+    std::vector<IMediaObject*> recordingWaves;
+    std::vector<IMediaObject*> recordingEnvironmental;
     Bytes recordingConfig;
     runtime::Performance* performance=nullptr;bool com=false,audio=false;
     bool observeNotes=false,observeLyrics=false,observeScriptMessages=false;runtime::Graph* graph=nullptr;NoteObserver* observer=nullptr;LyricObserver* lyricObserver=nullptr;LyricObserver* scriptMessageObserver=nullptr;
@@ -155,6 +168,7 @@ void Conductor::check(const char* operation,HRESULT result) {
 void Conductor::initialize_runtime(HWND owner){auto& s=*state_;
         if(!s.com){check("CoInitializeEx",CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED));s.com=true;}
         if(!s.fileOutputRegistration)s.fileOutputRegistration=std::make_unique<FileOutputRegistration>();
+        if(!s.environmentalReverbRegistration)s.environmentalReverbRegistration=std::make_unique<EnvironmentalReverbRegistration>();
         if(!s.performance){
             servers_={os_server(runtime::performanceClass,L"dmime.dll"),os_server(runtime::loaderClass,L"dmloader.dll")};
             check("CoCreate Performance8",CoCreateInstance(runtime::performanceClass,nullptr,CLSCTX_INPROC_SERVER,runtime::performance8Id,reinterpret_cast<void**>(&s.performance)));
@@ -184,41 +198,9 @@ ScriptResult Conductor::track_script_number(PlaybackId id,const std::array<std::
 ScriptSession& Conductor::script_session(){if(!state_->script)throw std::runtime_error("No initialized Script session");return *state_->script;}
 ScriptResult Conductor::load_script(const Bytes& bytes,const std::wstring& directory,HWND owner){
     ScriptDocument document;document.load(bytes);
-    // Resolve references into a private source snapshot before any activation.
-    // Serialized documents and their original reference chunks remain untouched.
-    auto runtimeRoot=Chunk::parse(bytes);auto container=runtimeRoot.find("RIFF","DMCN");
-    std::vector<std::wstring> containedServers{os_server(runtime::containerClass,L"dmloader.dll")};
-    const auto objects=document.container().objects();size_t objectIndex=0;
-    for(auto& entry:container->find("LIST","cosl")->children)if(entry.id=="LIST"&&entry.type=="cobl"){
-        const auto& object=objects.at(objectIndex++);GUID classId{};std::memcpy(&classId,object.classId.data(),16);
-        // The SDK cobl grammar places its optional alias before the header.
-        // Windows binds the alias while reading cobh; tolerate source readers'
-        // retained late aliases by normalizing only this private runtime copy.
-        const auto alias=std::find_if(entry.children.begin(),entry.children.end(),[](const Chunk& c){return c.id=="coba";});
-        if(alias!=entry.children.end())std::rotate(entry.children.begin(),alias,alias+1);
-        if(!IsEqualGUID(classId,runtime::segmentClass))throw std::runtime_error("Container runtime class routing incomplete; document retained");
-        containedServers.push_back(os_server(classId,L"dmime.dll"));auto payload=object.payload;
-        if(object.reference){
-            const auto header=payload.find("refh"),file=payload.find("file");
-            if(!(read32(header->data,16)&16)||!file)throw std::runtime_error("Container reference needs explicit source file resolution");
-            const auto name=decode_utf16(file->data);if(name.empty())throw std::runtime_error("Container reference file is empty");
-            auto path=std::filesystem::path(name);if(path.is_relative()){if(directory.empty())throw std::runtime_error("Container reference directory unavailable");path=std::filesystem::path(directory)/path;}
-            payload=Chunk::parse(read_file(path.lexically_normal().wstring()));
-            if(const auto expected=object.payload.find("guid")){const auto actual=payload.find("guid");if(!actual||actual->data!=expected->data)throw std::runtime_error("Container reference GUID mismatch");}
-        }
-        if(payload.id!="RIFF"||payload.type!="DMSG")throw std::runtime_error("Container Segment payload type mismatch");
-        SegmentDocument segment;segment.load(payload.encode());
-        std::function<void(const Chunk&)> validate=[&](const Chunk& node){
-            if((node.id=="LIST"&&node.type=="DMRF")||(node.id=="RIFF"&&(node.type=="DMTG"||node.type=="DMAP"||node.type=="DMCN")))throw std::runtime_error("Nested Container runtime dependency resolver incomplete");
-            if(node.id=="RIFF"&&node.type=="DMBD")containedServers.push_back(os_server(runtime::bandRuntimeClass,L"dmband.dll"));
-            if(node.id=="trkh"){if(node.data.size()<16)throw std::runtime_error("Container Segment track header truncated");GUID track{};std::memcpy(&track,node.data.data(),16);containedServers.push_back(os_server(track,IsEqualGUID(track,runtime::bandTrackRuntimeClass)?L"dmband.dll":L"dmime.dll"));}
-            for(const auto& child:node.children)validate(child);
-        };validate(payload);
-        if(object.reference){
-            auto h=entry.find("cobh");std::copy_n("RIFF",4,h->data.begin()+20);std::copy_n("DMSG",4,h->data.begin()+24);
-            for(auto& child:entry.children)if(child.id=="LIST"&&child.type=="DMRF"){child=std::move(payload);break;}
-        }
-    }
+    auto snapshot=prepare_script_runtime(bytes,directory);
+    std::vector<std::wstring> containedServers;
+    for(const auto& requirement:snapshot.requirements)containedServers.push_back(os_server(requirement.classId,requirement.server));
     auto scriptServer=os_server(runtime::scriptClass,L"dmscript.dll");
     auto language=document.language();std::transform(language.begin(),language.end(),language.begin(),[](wchar_t c){return static_cast<wchar_t>(std::towlower(c));});
     const wchar_t* engineName=language==L"vbscript"?L"vbscript.dll":language==L"jscript"?L"jscript.dll":nullptr;
@@ -230,7 +212,7 @@ ScriptResult Conductor::load_script(const Bytes& bytes,const std::wstring& direc
     try{initialize_runtime(owner);}catch(...){shutdown();throw;}
     servers_.push_back(scriptServer);servers_.push_back(engineServer);
     servers_.insert(servers_.end(),containedServers.begin(),containedServers.end());
-    auto candidate=std::make_unique<ScriptSession>();const auto result=candidate->load(runtimeRoot.encode(),directory,state_->performance);
+    auto candidate=std::make_unique<ScriptSession>();const auto result=candidate->load(snapshot.script,directory,state_->performance,std::move(snapshot.dependencies));
     auto archive=[&](const ScriptSession& old){for(const auto& d:old.diagnostics()){if(state_->scriptDiagnosticHistory.size()<4096)state_->scriptDiagnosticHistory.push_back(d);else state_->scriptDiagnosticHistoryOverflow=true;}state_->scriptDiagnosticHistoryOverflow|=old.diagnostic_overflow();};
     if(result.passed()){if(state_->script)archive(*state_->script);state_->script.swap(candidate);}else archive(*candidate);return result;
 }
@@ -269,6 +251,10 @@ PlaybackPosition Conductor::position(PlaybackId id){
     try{auto result=position();std::swap(static_cast<PlaybackSession&>(s),**found);return result;}
     catch(...){std::swap(static_cast<PlaybackSession&>(s),**found);throw;}
 }
+DWORD Conductor::convert_pchannel(PlaybackId id,DWORD channel){
+    auto& s=*state_;PlaybackSession* session=nullptr;if(s.id==id&&id)session=&s;else{const auto found=std::find_if(s.retained.begin(),s.retained.end(),[&](const auto& p){return p->id==id;});if(found!=s.retained.end())session=found->get();}
+    if(!session||!session->audioPath)throw std::runtime_error("Playback route is unavailable");DWORD result=0;check("Convert source PChannel on session route",session->audioPath->ConvertPChannel(channel,&result));return result;
+}
 const Bytes& Conductor::playback_bytes() const{return state_->memory;}
 const std::vector<ResolvedStyle>& Conductor::playback_styles() const{return state_->styles;}
 const std::vector<ResolvedCollection>& Conductor::playback_collections() const{return state_->collections;}
@@ -289,6 +275,20 @@ void Conductor::set_default_audio_path(const Bytes& bytes){
     defaultAudioPath_.swap(validated);
 }
 bool Conductor::file_output_active() const{return !state_->recordingControls.empty();}
+WavesReverbParameters Conductor::waves_reverb_parameters(DWORD pchannel,DWORD bufferIndex,DWORD effectIndex,PlaybackId id){
+    PlaybackSession* session=state_.get();
+    if(id&&id!=session->id){session=nullptr;for(auto& retained:state_->retained)if(retained->id==id){session=retained.get();break;}}
+    if(!session||!session->id||!session->audioPath)throw std::runtime_error("Select a playback session with an owned AudioPath");
+    IDirectSoundFXWavesReverb* raw=nullptr;
+    const auto found=session->audioPath->GetObjectInPath(pchannel,0x6100,bufferIndex,producer::compat::wavesReverbClass,effectIndex,producer::compat::wavesReverbInterface,reinterpret_cast<void**>(&raw));
+    std::unique_ptr<IDirectSoundFXWavesReverb,void(*)(IDirectSoundFXWavesReverb*)> effect(raw,[](IDirectSoundFXWavesReverb* p){if(p)p->Release();});
+    check("Get owned Waves Reverb DMO",found);
+    if(found!=S_OK||!effect)throw std::runtime_error("Waves Reverb lookup was incomplete");
+    DSFXWavesReverb parameters{};const auto result=effect->GetAllParameters(&parameters);
+    check("Read owned Waves Reverb parameters",result);
+    if(result!=S_OK)throw std::runtime_error("Waves Reverb parameters were incomplete");
+    return {parameters.fInGain,parameters.fReverbMix,parameters.fReverbTime,parameters.fHighFreqRTRatio};
+}
 void Conductor::start_file_output(const Bytes& bytes,const std::wstring& filename,HWND owner){
     auto& s=*state_;if(s.recordingPath)throw std::runtime_error("FileOutput recording already active");
     if(!playback_ids().empty())throw std::runtime_error("Stop playback before starting buffer recording");
@@ -301,24 +301,19 @@ void Conductor::start_file_output(const Bytes& bytes,const std::wstring& filenam
         selected.push_back(effect.buffer);
     }}
     if(selected.empty())throw std::runtime_error("Add FileOutput to an AudioPath buffer before recording");
-    struct Target {size_t buffer;DWORD pchannel,index;std::wstring filename;};
-    std::vector<Target> targets;const auto buffers=path.buffers();
-    // Number by mix-group traversal, not by physical buffer chunk order. A
-    // shared buffer is one recording even when several routes reference it.
-    for(const auto& port:path.ports())for(const auto& route:port.routes)for(size_t i=0;i<route.buffers.size();++i){
-        const auto found=std::find(buffers.begin(),buffers.end(),route.buffers[i]);const auto buffer=static_cast<size_t>(found-buffers.begin());
-        if(std::find(selected.begin(),selected.end(),buffer)!=selected.end()&&std::none_of(targets.begin(),targets.end(),[&](const auto& t){return t.buffer==buffer;}))targets.push_back({buffer,route.base,static_cast<DWORD>(i),{}});
-    }
-    if(targets.size()!=selected.size())throw std::runtime_error("FileOutput buffer is not connected to a PChannel route; Send recording remains unsupported");
+    auto privatePath=Chunk::parse(bytes);prepare_source_effects(privatePath);
+    struct Target {size_t buffer;DWORD pchannel,stage,index;std::wstring filename;};
+    std::vector<Target> targets;
+    for(const auto& target:audio_path_file_output_targets(bytes,privatePath.encode()))targets.push_back({target.buffer,target.pchannel,target.stage,target.index,{}});
     if(filename.empty()||filename.find(L'\0')!=std::wstring::npos)throw std::runtime_error("Invalid FileOutput filename");
     const auto output=std::filesystem::path(filename);if(output.filename().empty())throw std::runtime_error("Invalid FileOutput filename");
     for(size_t i=0;i<targets.size();++i){targets[i].filename=(i?output.parent_path()/(output.stem().wstring()+std::to_wstring(i)+output.extension().wstring()):output).wstring();
         if(std::filesystem::exists(targets[i].filename))throw std::runtime_error("FileOutput output already exists; no recording started");}
     Bytes recordingConfig=bytes;std::vector<FileOutputControl*> controls;controls.reserve(targets.size());
+    std::vector<IMediaObject*> waves,environmental;
     initialize_runtime(owner);
     runtime::Loader* loader=nullptr;runtime::Segment* carrier=nullptr;IUnknown* config=nullptr;
     runtime::AudioPath* runtimePath=nullptr;
-    auto privatePath=Chunk::parse(bytes);prepare_source_effects(privatePath);
     const auto carrierBytes=prepare_transport_audio_path({},privatePath.encode());
     try{
         check("Create FileOutput config loader",CoCreateInstance(runtime::loaderClass,nullptr,CLSCTX_INPROC_SERVER,runtime::loader8Id,reinterpret_cast<void**>(&loader)));
@@ -328,20 +323,34 @@ void Conductor::start_file_output(const Bytes& bytes,const std::wstring& filenam
         check("Get FileOutput AudioPath config",carrier->GetAudioPathConfig(&config));if(!config)throw std::runtime_error("No FileOutput config");
         const auto created=s.performance->CreateAudioPath(config,TRUE,&runtimePath);check("Create FileOutput AudioPath",created);
         if(created!=S_OK||!runtimePath)throw std::runtime_error("Incomplete FileOutput buffer creation");
+        for(const auto& target:audio_path_waves_reverb_targets(bytes,privatePath.encode())){
+            DWORD occurrence=0;for(const auto& effect:effects){GUID id{};std::memcpy(&id,effect.classId.data(),16);
+                if(effect.buffer!=target.buffer||!IsEqualGUID(id,producer::compat::wavesReverbClass))continue;
+                IMediaObject* dmo=nullptr;
+                const auto found=runtimePath->GetObjectInPath(target.pchannel,target.stage,target.index,producer::compat::wavesReverbClass,occurrence++,__uuidof(IMediaObject),reinterpret_cast<void**>(&dmo));
+                if(dmo)waves.push_back(dmo);check("Get retained recording Waves DMO",found);
+                if(found!=S_OK||!dmo)throw std::runtime_error("Incomplete recording Waves DMO lookup");
+            }
+        }
+        for(const auto& target:audio_path_environmental_reverb_targets(bytes,privatePath.encode())){
+            IMediaObject* dmo=nullptr;const auto found=runtimePath->GetObjectInPath(target.pchannel,target.stage,target.index,environmentalReverbRuntimeClass,0,__uuidof(IMediaObject),reinterpret_cast<void**>(&dmo));
+            if(dmo)environmental.push_back(dmo);check("Get retained recording Environmental Reverb DMO",found);
+            if(found!=S_OK||!dmo)throw std::runtime_error("Incomplete recording Environmental Reverb DMO lookup");
+        }
         for(const auto& target:targets){FileOutputControl* control=nullptr;
-            const auto result=runtimePath->GetObjectInPath(target.pchannel,0x6100,target.index,fileOutputRuntimeClass,0,fileOutputControlId,reinterpret_cast<void**>(&control));
+            const auto result=runtimePath->GetObjectInPath(target.pchannel,target.stage,target.index,fileOutputRuntimeClass,0,fileOutputControlId,reinterpret_cast<void**>(&control));
             // Preserve any returned reference even when lookup reports failure.
             if(control)controls.push_back(control);check("Get source buffer FileOutput control",result);
             if(!control)throw std::runtime_error("No source FileOutput control");
             check("Set FileOutput filename",control->SetFilename(target.filename.c_str()));}
         for(auto* control:controls)check("Start buffer FileOutput",control->Start());
-        s.recordingConfig.swap(recordingConfig);s.recordingPath=runtimePath;runtimePath=nullptr;s.recordingControls.swap(controls);
+        s.recordingConfig.swap(recordingConfig);s.recordingPath=runtimePath;runtimePath=nullptr;s.recordingControls.swap(controls);s.recordingWaves.swap(waves);s.recordingEnvironmental.swap(environmental);
         release(config);release(carrier);release(loader);
-    }catch(...){for(auto*& control:controls){control->Stop();release(control);}release(runtimePath);release(config);release(carrier);release(loader);throw;}
+    }catch(...){for(auto*& control:controls){control->Stop();release(control);}for(auto*& dmo:waves)release(dmo);for(auto*& dmo:environmental)release(dmo);release(runtimePath);release(config);release(carrier);release(loader);throw;}
 }
 void Conductor::stop_file_output(){auto& s=*state_;if(s.recordingControls.empty())return;
     HRESULT result=S_OK;for(auto*& control:s.recordingControls){const auto stopped=control->Stop();if(FAILED(stopped)&&SUCCEEDED(result))result=stopped;release(control);}
-    s.recordingControls.clear();release(s.recordingPath);s.recordingConfig.clear();check("Stop and finalize buffer FileOutput",result);
+    s.recordingControls.clear();for(auto*& dmo:s.recordingWaves)release(dmo);s.recordingWaves.clear();for(auto*& dmo:s.recordingEnvironmental)release(dmo);s.recordingEnvironmental.clear();release(s.recordingPath);s.recordingConfig.clear();check("Stop and finalize buffer FileOutput",result);
 }
 void Conductor::set_tool_factories(std::vector<ToolFactory> factories){
     if(state_->performance)throw std::runtime_error("Declare Tool factories before initialization");
@@ -359,7 +368,7 @@ void Conductor::play(const Bytes& bytes,const std::wstring& directory,HWND owner
     snapshot.segment=prepare_transport_audio_path(snapshot.segment,defaultAudioPath_);
     play_snapshot(std::move(snapshot),directory,owner,collections,motif,{},waves,triggers,mapSnapshot.maps);
 }
-void Conductor::play_motif(const StyleCatalogEntry& owned,const std::wstring& name,HWND owner,const std::vector<ResolvedCollection>& collections,const PlaybackOptions& options,const Bytes& audioPath){
+void Conductor::play_motif(const StyleCatalogEntry& owned,const std::wstring& name,HWND owner,const std::vector<ResolvedCollection>& collections,const PlaybackOptions& options,const Bytes& audioPath,PlaybackId sharedRoute){
     StyleDocument source;source.load(owned.bytes);StyleReference reference{};reference.groups=1;reference.hasId=true;
     Bytes bytes=owned.bytes;if(source.has_object_id())reference.objectId=source.object_id();else{
         GUID id{};if(FAILED(CoCreateGuid(&id)))throw std::runtime_error("Playback Style GUID creation failed");std::memcpy(reference.objectId.data(),&id,16);
@@ -367,9 +376,13 @@ void Conductor::play_motif(const StyleCatalogEntry& owned,const std::wstring& na
     }
     Bytes context=prepare_transport_audio_path({},audioPath.empty()?defaultAudioPath_:audioPath);
     StylePlaybackSnapshot snapshot{std::move(context),{{reference,owned.path,std::move(bytes),source.meter()}}};
-    play_snapshot(std::move(snapshot),L"",owner,collections,MotifSelection{0,name},options);
+    play_snapshot(std::move(snapshot),L"",owner,collections,MotifSelection{0,name},options,{},{},{},sharedRoute);
 }
-void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring& directory,HWND owner,const std::vector<ResolvedCollection>& collections,const std::optional<MotifSelection>& motif,const PlaybackOptions& options,const std::vector<ResolvedWave>& waves,const SegmentTriggerPlayback& triggers,const std::vector<ResolvedChordMap>& maps){
+void Conductor::play_extra(const Bytes& segment,HWND owner,const std::vector<ResolvedCollection>& collections,const PlaybackOptions& options,PlaybackId sharedRoute){
+    auto snapshot=prepare_style_playback(segment,{});snapshot.segment=prepare_command_playback(snapshot.segment);snapshot.segment=prepare_transport_audio_path(snapshot.segment,defaultAudioPath_);
+    play_snapshot(std::move(snapshot),L"",owner,collections,{},options,{},{},{},sharedRoute);
+}
+void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring& directory,HWND owner,const std::vector<ResolvedCollection>& collections,const std::optional<MotifSelection>& motif,const PlaybackOptions& options,const std::vector<ResolvedWave>& waves,const SegmentTriggerPlayback& triggers,const std::vector<ResolvedChordMap>& maps,PlaybackId sharedRoute){
     if(options.delayClocks<0)throw std::runtime_error("Playback delay cannot be negative");
     DWORD flags=options.afterPrepareTime?runtime::playAfterPrepareTime:0;
     switch(options.boundary){
@@ -424,6 +437,12 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
     }
     const auto verifyStyleCopies=[&](const std::vector<ResolvedStyle>& a,const std::vector<ResolvedStyle>& b){for(const auto& x:a)for(const auto& y:b)if(x.reference.hasId&&y.reference.hasId&&x.reference.objectId==y.reference.objectId&&x.bytes!=y.bytes)throw std::runtime_error("Conflicting owned trigger Style snapshots share a GUID");};verifyStyleCopies(snapshot.styles,triggers.styles);verifyStyleCopies(triggers.styles,triggers.styles);
     auto& s=*state_;
+    std::unique_ptr<runtime::AudioPath,void(*)(runtime::AudioPath*)> route(nullptr,[](runtime::AudioPath* p){if(p)p->Release();});
+    if(sharedRoute){
+        if(!options.secondary)throw std::runtime_error("Shared AudioPath requires secondary playback");
+        PlaybackSession* source=s.id==sharedRoute?&s:nullptr;for(auto& retained:s.retained)if(retained->id==sharedRoute)source=retained.get();
+        if(!source||!source->audioPath)throw std::runtime_error("Shared playback route unavailable");source->audioPath->AddRef();route.reset(source->audioPath);
+    }
     collect_notifications();
     // A secondary instance shares the performance clock while owning its
     // loader, descriptors, downloads and SegmentState independently.
@@ -536,7 +555,8 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
         bool sourceScriptTracks=false;if(!s.memory.empty()){const auto root=Chunk::parse(s.memory);if(const auto tracks=root.find("LIST","trkl"))for(const auto& t:tracks->children)if(t.find("LIST","scrt"))sourceScriptTracks=true;}for(const auto& child:s.triggeredSnapshots){const auto root=Chunk::parse(child.bytes);if(const auto tracks=root.find("LIST","trkl"))for(const auto& t:tracks->children)if(t.find("LIST","scrt"))sourceScriptTracks=true;}
         if(sourceScriptTracks){servers_.push_back(os_server(runtime::graphClass,L"dmime.dll"));s.nativeScripts=std::make_unique<NativeScriptTrackRuntime>(s.scripts,s.sourceScripts);s.nativeScripts->attach(s.segment,s.memory);for(size_t i=0;i<s.triggeredSnapshots.size();++i)s.nativeScripts->attach(s.triggeredSegments[i],s.triggeredSnapshots[i].bytes);}
         if(!graphBytes.empty()){servers_.push_back(os_server(runtime::graphClass,L"dmime.dll"));s.toolGraph=create_tool_graph(graphBytes,toolFactories_);check("Attach owned Segment ToolGraph",s.segment->SetGraph(s.toolGraph.get()));}
-        if(hasSegment&&Chunk::parse(s.memory).find("RIFF","DMAP")){
+        if(route){s.audioPath=route.release();}
+        else if(hasSegment&&Chunk::parse(s.memory).find("RIFF","DMAP")){
             // GetMotif creates a new Segment, not the context DMSG containing
             // the user's AudioPath. Load the context solely as a configuration
             // carrier; never Download or Play it in place of the selected Motif.
@@ -659,6 +679,14 @@ void Conductor::stop_current() {
     for(auto* child:s.triggeredSegments)if(s.performance){check("Stop owned triggered Segment",s.performance->StopEx(child,0,0));const auto deadline=GetTickCount64()+2000;HRESULT playing;do{playing=s.performance->IsPlaying(child,nullptr);if(playing!=S_OK)break;Sleep(10);}while(GetTickCount64()<deadline);check("IsPlaying triggered Segment after Stop",playing);if(playing==S_OK)check("Triggered Segment stop timeout",HRESULT_FROM_WIN32(ERROR_TIMEOUT));}
     for(size_t i=0;i<s.triggeredDownloads;++i)check("Unload owned triggered Segment",s.triggeredSegments[i]->Unload(s.audioPath?s.audioPath:static_cast<IUnknown*>(s.performance)));s.triggeredDownloads=0;
     for(auto*& child:s.triggeredSegments)release(child);s.triggeredSegments.clear();s.triggeredSnapshots.clear();
+    // The recorder retains this path across Stop/replay. Discard its DSP
+    // history only after the last session using it has stopped; FileOutput
+    // keeps capturing silence, and another shared session is left audible.
+    if(s.audioPath&&s.audioPath==s.recordingPath&&!std::any_of(s.retained.begin(),s.retained.end(),[&](const auto& other){return other->id&&other->audioPath==s.audioPath;}))
+    {
+        for(auto* dmo:s.recordingWaves)check("Flush retained recording Waves after last Stop",dmo->Flush());
+        for(auto* dmo:s.recordingEnvironmental)check("Flush retained recording Environmental Reverb after last Stop",dmo->Flush());
+    }
     release(s.playing);
     // Public notification consumers receive value copies even after release.
     if(s.downloaded){check("Unload segment",s.segment->Unload(s.audioPath?s.audioPath:static_cast<IUnknown*>(s.performance)));s.downloaded=false;}
@@ -769,11 +797,13 @@ void Conductor::shutdown() noexcept {
     cleanup(s);for(auto& retained:s.retained)cleanup(*retained);s.retained.clear();
     s.script.reset();
     for(auto*& control:s.recordingControls){log("Finalize FileOutput cleanup",control->Stop());release(control);}s.recordingControls.clear();release(s.recordingPath);s.recordingConfig.clear();
+    for(auto*& dmo:s.recordingWaves)release(dmo);s.recordingWaves.clear();for(auto*& dmo:s.recordingEnvironmental)release(dmo);s.recordingEnvironmental.clear();
     if(s.performance)log("CloseDown",s.performance->CloseDown());s.audio=false;release(s.performance);
     s.notificationIds.clear();s.pendingNotifications.clear();
     // CloseDown completes the realtime callbacks before releasing the observer.
     release(s.graph);release(s.observer);release(s.lyricObserver);release(s.scriptMessageObserver);
     s.fileOutputRegistration.reset();
+    s.environmentalReverbRegistration.reset();
     if(s.com){CoUninitialize();s.com=false;}
 }
 }

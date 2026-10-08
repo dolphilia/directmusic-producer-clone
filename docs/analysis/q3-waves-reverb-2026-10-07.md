@@ -1,0 +1,38 @@
+# Waves Reverb source continuation, 2026-10-07
+
+Waves default insertion, main UI and typed readonly DSP retrieval are implemented in the working tree. The unit is unfinished: SDK discovery remains blocked and the changed C++ has not been compiled or executed. `fullAcceptance=false`; the latest completed product unit remains Timeline keyboard.
+
+The [unit record](../../work/analysis/q3-waves-reverb/20261007T102349728Z/unit-record.json) keeps the original scope and unmet end conditions. The [continuation](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/continuation-start.json) preserves [before files](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/before-files.json), inputs and a [216-file final unbuilt source snapshot](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/unbuilt-source-snapshot-v2.json). This snapshot has no generated binary and is not a new candidate.
+
+The last successful build is `20261007T074917222Z`, 208 saved sources, configure/build/install exit0. The latest build attempt remains `20261007T084224157Z`, 208 saved sources, configure exit1, build/install unexecuted, outputs0. Both saved snapshots and hashes are retained. Current sources differ from the failed snapshot in 18 entries. Earlier successful native/GUI/audio runs are historical.
+
+Changes within the recorded [contract](waves-reverb-contract.md):
+
+- AudioPath default Waves insertion shares existing FileOutput materialization, incoming Send reference rewriting and whole-document Undo/Redo. Existing effect order, opaque data and mix-in role are preserved. Factory defaults have no invented serialized parameter payload.
+- AudioPath Documents adds **Add Waves Reverb** for the selected buffer. The main **Recording → Playing Waves Reverb Parameters** command reads values from the actual playing owned AudioPath. Lookup uses the standard class/interface and SDK `GetAllParameters`; returned COM references are released even on failure. Inspection does not instantiate an alternate effect.
+- `waves-reverb-document` and `waves-reverb-runtime` are registered with a strict wrapper. Prepared tests cover exact custom-buffer edits, history/no-op/rejection, native Project reload, runtime export retaining Waves while removing FileOutput, actual SDK defaults, native disk reload, replay, two route buffers, missing object/session rejection and cleanup. Both modes are **unexecuted**.
+- Controlled dry/wet two-buffer Project fixtures retain the original Project/Band/DLS bytes and alter only CTRLFX if required, an appended standard Waves effect, and the matching embedded AudioPath. Physical storage order differs from route order. They prepare later main/audio tests, without claiming product or original observations.
+
+The [fresh independent run](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/independent-run.json) records Node executable/script hashes, arguments, PID and ordinary exit0: fixture PID4244, byte auditor PID18680, controls PID6940. The [proof](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/fixture-recorded-proof.json) covers five source inputs and ten output files. The [controls](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/controls-recorded/controls.json) accept unchanged data and reject eight retained mutations, including wrong class, reserved/options bytes, embedded path disagreement, changed dependency, truncated RIFF and incorrect buffer coordinates. Negative output hashes are recomputed so these checks exercise the byte oracle. This is fixture validation only; native/DSP/GUI/PCM remain unexecuted.
+
+The final [source/state/provenance run](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/checkpoint-run.json) exited normally with Node PID3060 and [proof](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/checkpoint-proof.json). JS syntax, wrapper AST and whitespace checks passed. A final [oracle correction](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/oracle-correction.json) makes expected materialized descriptor bytes explicit instead of copying the generated descriptor. The initial unbuilt snapshot and preceding proof/run remain preserved. These are source checks; no C++ compiler or product ran.
+
+The regression inventory now has 87 native modes and 133 drivers/inspectors. Previous gates, histories and entries are retained. No suite regeneration or old pass transfer was used. The current candidate's registered native and driver rounds remain unexecuted.
+
+The [process observation](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/process-observation.json) rechecks four existing Producer EXEs/hashes/start times/statuses. No process was operated, terminated or launched as the changed product.
+
+During reconciliation, each acceptance criterion's current-scope prose still described older candidate successes while its candidate pointed to the failed0842 build. The [correction record](../../work/analysis/q3-waves-reverb/20261007T102349728Z/continuation-20261007T105953171Z/acceptance-scope-corrections.json) preserves those strings and the complete before file, then corrects current scope to failed configuration/no output/unexecuted runtime. The eight statuses remain five in progress and three blocked, zero passed. All40 responsibility records and the eight acceptance conditions are preserved.
+
+To reproduce independent preparation, use a fresh output and controls directory:
+
+```powershell
+node scripts/Create-WavesReverbFixture.mjs work/analysis/q3-file-output-stop/20261007T050605Z/author/MultiCapture <fresh-fixtures>
+node scripts/Inspect-WavesReverbFixture.mjs <fresh-fixtures> <fresh-proof.json>
+node scripts/Test-WavesReverbFixtureAuditor.mjs <fresh-fixtures> <fresh-controls>
+```
+
+The exact producing commands and saved scripts are in the independent run. After changed SDK refusal conditions and required environment decision are evidenced, build/install a new source snapshot, run `Test-WavesReverb.ps1 -BuildSummaryPath <new-build-summary>` and related Sequence/DLS/Script/Farm/Send/AudioPath/FileOutput regressions. Complete Tempo main/native/two-process lifecycle first, then the Waves/Farm/Send pending main/native/PCM and comparison stages. Frozen Windows5 cases are separate and must not be retried merely because SDK discovery is resolved.
+
+SDK error remains `MSB4184 [Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion(Windows, 10.0)`, denied path `C:\Users\dolph\AppData\Local\Microsoft SDKs`. The new task supplied no answer to the existing environment decision or evidence that discovery conditions changed. No identical build retry, alternate compiler/SDK, COM/security change or permission bypass occurred. Original StylePlayer approval timeout and independent original-free Windows/Q2 remain separate obstacles.
+
+Waves source/fixture preparation exhausts this recorded bounded implementation scope. Farm/Send plus Waves have accumulated unexecuted changes; priority returns to a new candidate and integration, rather than further subdivisions in the same group. A further independent repair requires a concrete product defect and primary contract; custom parameters, Send factories and new features are not started merely to postpone validation. All unmet stages and remaining responsibilities stay in current state.

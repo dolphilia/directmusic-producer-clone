@@ -25,15 +25,18 @@ foreach($t in $manifest.tests){
   if($Only.Count -and $t.id -notin $Only){continue}
   $case=Join-Path $run $t.id;New-Item -ItemType Directory -Path $case|Out-Null
   $inputs=@($t.inputs|ForEach-Object {if(Test-Path -LiteralPath $_){[ordered]@{path=[IO.Path]::GetFullPath($_);sha256=Hash $_}}})
-  $r=[ordered]@{id=$t.id;status='未実行';inputs=$inputs;arguments=@();processId=$null;exitCode=$null;timedOut=$false;checks=$null;error=$null;evidence=$case}
+  $r=[ordered]@{id=$t.id;status='未実行';inputs=$inputs;arguments=@();processId=$null;processStartUtc=$null;invocationUtc=$null;exitCode=$null;timedOut=$false;checks=$null;error=$null;evidence=$case}
   if($t.blockedByKnownOsRefusal){$r.status='障害あり';$r.error=$t.blockedByKnownOsRefusal.reason}
   elseif($refusedRecovery -and $t.id -like 'runtime-recovery-*'){$r.status='障害あり';$r.error='Earlier fresh Recovery publication refused; no unchanged retry: '+$refusedRecovery}
   elseif($t.workflow){$r.status='検証待ち';$r.error=$t.workflow}
   elseif($inputs.Count -ne @($t.inputs).Count){$r.status='障害あり';$r.error='Required input missing'}
   else {
-    $arguments=@(('"'+(Join-Path $case 'core')+'"'))+@($t.arguments)+@($inputs|ForEach-Object {'"'+$_.path+'"'});$r.arguments=$arguments
+    $directoryName=if($t.outputDirectoryName){[string]$t.outputDirectoryName}else{'core'}
+    if([IO.Path]::GetFileName($directoryName) -ne $directoryName -or $directoryName -in @('.','..')){throw 'Registered test output directory must be one relative folder name'}
+    $arguments=@(('"'+(Join-Path $case $directoryName)+'"'))+@($t.arguments)+@($inputs|ForEach-Object {'"'+$_.path+'"'});$r.arguments=$arguments
     try {
-      $p=Start-Process -FilePath $exe -ArgumentList $arguments -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $case 'stdout.txt') -RedirectStandardError (Join-Path $case 'stderr.txt');$r.processId=$p.Id
+      $r.invocationUtc=[DateTime]::UtcNow.ToString('o')
+      $p=Start-Process -FilePath $exe -ArgumentList $arguments -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $case 'stdout.txt') -RedirectStandardError (Join-Path $case 'stderr.txt');$r.processId=$p.Id;$r.processStartUtc=$p.StartTime.ToUniversalTime().ToString('o')
       $caseTimeout=if($t.timeoutMs){[int]$t.timeoutMs}else{15000};if($caseTimeout -lt 1000 -or $caseTimeout -gt 120000){throw 'Invalid registered timeout'}
       $r.timedOut=-not $p.WaitForExit($caseTimeout)
       if($r.timedOut){$r.status='障害あり';$r.error='Timeout; process retained; no unchanged retry'}

@@ -4,6 +4,8 @@ $ErrorActionPreference='Stop'
 $repo=Split-Path $PSScriptRoot -Parent
 $manifest=Get-Content (Join-Path $repo 'docs/analysis/regression-manifest.json') -Raw|ConvertFrom-Json
 $run=Join-Path $repo ('work/acceptance/registered-drivers/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'));New-Item -ItemType Directory -Path $run|Out-Null
+Copy-Item -LiteralPath (Join-Path $repo 'docs/analysis/regression-manifest.json') -Destination (Join-Path $run 'manifest.json')
+Copy-Item -LiteralPath $PSCommandPath -Destination (Join-Path $run 'driver.ps1')
 $results=[Collections.Generic.List[object]]::new()
 foreach($d in $manifest.drivers){
   $r=[ordered]@{id=$d.id;runner=$d.runner;status='未実行';reason=$null;parameters=@{};evidence=$null;error=$null}
@@ -35,5 +37,5 @@ foreach($d in $manifest.drivers){
   }
   $results.Add($r)
 }
-[ordered]@{schema=1;candidate=Split-Path (Split-Path $BuildSummaryPath -Parent) -Leaf;buildSummary=[IO.Path]::GetFullPath($BuildSummaryPath);buildSummarySha256=(Get-FileHash $BuildSummaryPath).Hash.ToLowerInvariant();createdUtc=[DateTime]::UtcNow.ToString('o');results=@($results.ToArray());scope='One driver inventory pass; unmet prerequisites remain unexecuted; native/GUI/audio/full acceptance separate';fullAcceptance=$false}|ConvertTo-Json -Depth 9|Set-Content (Join-Path $run 'run.json') -Encoding UTF8
+[ordered]@{schema=1;candidate=Split-Path (Split-Path $BuildSummaryPath -Parent) -Leaf;buildSummary=[IO.Path]::GetFullPath($BuildSummaryPath);buildSummarySha256=(Get-FileHash $BuildSummaryPath).Hash.ToLowerInvariant();manifestSha256=(Get-FileHash -LiteralPath (Join-Path $run 'manifest.json')).Hash.ToLowerInvariant();driverSha256=(Get-FileHash -LiteralPath $PSCommandPath).Hash.ToLowerInvariant();createdUtc=[DateTime]::UtcNow.ToString('o');results=@($results.ToArray());scope='One driver inventory pass; unmet prerequisites remain unexecuted; native/GUI/audio/full acceptance separate';fullAcceptance=$false}|ConvertTo-Json -Depth 9|Set-Content (Join-Path $run 'run.json') -Encoding UTF8
 Write-Output ('Evidence: '+$run)

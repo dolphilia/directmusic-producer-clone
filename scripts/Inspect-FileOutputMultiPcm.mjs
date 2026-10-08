@@ -1,5 +1,7 @@
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import assert from 'node:assert/strict';
-const [dirArg,buildArg,inputArg]=process.argv.slice(2);assert(buildArg,'Usage: Inspect-FileOutputMultiPcm.mjs RECORD_DIRECTORY BUILD_SUMMARY [INPUT_DIRECTORY]');
+const [dirArg,buildArg,inputArg,mode]=process.argv.slice(2);assert(buildArg,'Usage: Inspect-FileOutputMultiPcm.mjs RECORD_DIRECTORY BUILD_SUMMARY [INPUT_DIRECTORY] [--active-stop-long-notes]');
+assert(mode===undefined||mode==='--active-stop-long-notes','Unknown PCM scenario');
+const expectedDuration=mode==='--active-stop-long-notes'?122880:3072;
 const dir=path.resolve(dirArg),buildPath=path.resolve(buildArg),read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,'')),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const build=read(buildPath);assert(build.passed&&build.sourceSnapshotUnchanged);
 for(const s of build.sources)assert.equal(hash(path.join(build.sourceRoot,s.path)),s.sha256);
@@ -16,7 +18,7 @@ assert.deepEqual(headers.map(c=>[c.data.readUInt32LE(0),c.data.readUInt32LE(4),c
 assert(headers[0].data.subarray(16,32).equals(only(buffers[1].children,'ddah').data.subarray(0,16)));assert(headers[1].data.subarray(16,32).equals(only(buffers[0].children,'ddah').data.subarray(0,16)));
 for(const b of buffers){const fx=only(only(b.children,'RIFF','DSBC').children,'LIST','fxls');assert.equal(fx.children.length,1);assert.equal(only(fx.children[0].children,'fxhr').data.subarray(4,20).toString('hex'),'11146d2dd7dce745addeacac85a2425d');}
 const song=only(tree(fs.readFileSync(songPath)),'RIFF','DMSG'),embedded=only(song.children,'RIFF','DMAP');assert(embedded.data.equals(ap.data));
-const events=only(flat(song.children),'evtl').data,stride=events.readUInt32LE(0),notes=[];assert(stride>=20);for(let p=4;p<events.length;p+=stride)if((events[p+14]&0xf0)===0x90&&events[p+16])notes.push({clocks:events.readInt32LE(p),duration:events.readInt32LE(p+4),channel:events.readUInt32LE(p+8),midi:events[p+15],velocity:events[p+16]});assert.deepEqual(notes,[{clocks:0,duration:3072,channel:0,midi:69,velocity:96},{clocks:0,duration:3072,channel:8,midi:60,velocity:96}]);
+const events=only(flat(song.children),'evtl').data,stride=events.readUInt32LE(0),notes=[];assert(stride>=20);for(let p=4;p<events.length;p+=stride)if((events[p+14]&0xf0)===0x90&&events[p+16])notes.push({clocks:events.readInt32LE(p),duration:events.readInt32LE(p+4),channel:events.readUInt32LE(p+8),midi:events[p+15],velocity:events[p+16]});assert.deepEqual(notes,[{clocks:0,duration:expectedDuration,channel:0,midi:69,velocity:96},{clocks:0,duration:expectedDuration,channel:8,midi:60,velocity:96}]);
 const collection=only(tree(fs.readFileSync(collectionPath)),'RIFF','DLS '),wave=only(only(collection.children,'LIST','wvpl').children,'LIST','wave'),sample=only(wave.children,'wsmp').data;assert.equal(sample.readUInt16LE(4),60);assert.equal(sample.readUInt32LE(16),1);assert.equal(only(wave.children,'data').data.length,32000);
 const recordings=[];
 for(const [name,midi,other] of [['Record.wav',69,60],['Record1.wav',60,69]]){
@@ -35,5 +37,5 @@ for(const [name,midi,other] of [['Record.wav',69,60],['Record1.wav',60,69]]){
 assert(Math.abs(recordings[0].seconds-recordings[1].seconds)<.05,'All buffer controls share one recording lifecycle');
 for(let i=0;i<2;i++)assert(Math.abs(recordings[0].onsets[i]-recordings[1].onsets[i])<.05,'Both independently routed buffers receive each simultaneous musical start');
 assert(!fs.existsSync(path.join(dir,'Record2.wav')),'A shared or repeated route must not invent another recording');
-const proof={schema:1,passed:true,candidate:path.basename(path.dirname(buildPath)),scope:'Independent two numbered FileOutput WAVs: route0 note69 then route8 note60, two musical starts, exclusive pitches, simultaneous lifecycle and valid PCM/RIFF; GUI/original and stop timing require separate evidence',buildSummary:buildPath,buildSummarySha256:hash(buildPath),sourceFolder,inputs,notes,recordings,auditorSha256:hash(process.argv[1]),fullAcceptance:false};
+const proof={schema:2,passed:true,scenario:mode??'short-notes',expectedDuration,candidate:path.basename(path.dirname(buildPath)),scope:'Independent two numbered FileOutput WAVs: route0 note69 then route8 note60, two musical starts, exclusive pitches, simultaneous lifecycle and valid PCM/RIFF; GUI/original and stop timing require separate evidence',buildSummary:buildPath,buildSummarySha256:hash(buildPath),sourceFolder,inputs,notes,recordings,auditorSha256:hash(process.argv[1]),fullAcceptance:false};
 fs.writeFileSync(dir+'/file-output-multi-pcm-proof.json',JSON.stringify(proof,null,2)+'\n');fs.copyFileSync(process.argv[1],dir+'/file-output-multi-pcm-auditor.mjs');console.log(JSON.stringify(proof));

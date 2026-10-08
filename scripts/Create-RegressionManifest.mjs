@@ -44,11 +44,24 @@ for(const m of source.matchAll(/if\((?:\(argc==4\|\|argc==5\)|\(argc==3\|\|argc=
   if(flag==='--marker-document')inputs=['work/analysis/q3-marker/20261004T204000Z'];
   if(flag==='--wave-document')inputs=['work/producer/samples/Tutorial/FinishedProject/SfxCow.wvp','work/producer/samples/Tutorial/FinishedProject/SfxCow.sgp'];
   if(flag==='--wave-track')inputs=['work/producer/samples/Tutorial/FinishedProject/SfxCow.sgp'];
+  if(flag==='--style-player')inputs=['work/producer/samples/QuickStart/Heartlnd.stp','work/producer/style-library/BOOGIE.CDM'];
+  if(flag==='--style-player-default')inputs=['work/producer/samples/QuickStart/Heartlnd.stp','work/producer/style-library/BOOGIE.CDM'];
+  // Keep reviewed input bindings. Inferring a format from a flag's arity can
+  // substitute an AudioPath for a Project or a DLS for a Wave.
+  const registered=existingManifest?.tests?.find(t=>t.arguments?.[0]===flag);
+  if(registered?.inputs?.length===inputs.length)inputs=registered.inputs;
   if(flag==='--script-document')inputs=['work/producer/samples/FarmGame/FarmMusic.spt','work/producer/samples/Tutorial/FinishedProject/FarmMusic.spp'];
+  if(flag==='--script-dependencies'||flag==='--farm-script-runtime')inputs=['work/analysis/q3-farm-player/20261007T085530733Z/native-inputs'];
   const dependent=flag.endsWith('-verify');
   tests.push({id:flag.slice(2),runner:'producer_core_tests',arguments:[flag],inputs,originalExecutableRequired:false,
-    originalDataRequired:inputs.some(p=>p.includes('/samples/')||p.includes('/style-library')||p===observed),scope:'dedicated native mode; GUI/audio/dynamic original comparison separate',
+    originalDataRequired:flag==='--script-dependencies'||flag==='--farm-script-runtime'||inputs.some(p=>p.includes('/samples/')||p.includes('/style-library')||p===observed),scope:'dedicated native mode; GUI/audio/dynamic original comparison separate',
     workflow:dependent?'Requires fresh prepare, Producer recovery, then verify in the same directory':null,status:'未実行'});
+  // Native Producer Project names must match their containing directory.
+  if(flag==='--style-player-default')tests.at(-1).outputDirectoryName='Default';
+  if(flag==='--script-dependencies'||flag==='--farm-script-runtime'){
+    tests.at(-1).inputSetup={generator:'scripts/Create-FarmRuntimeFixture.mjs',sha256:hash('scripts/Create-FarmRuntimeFixture.mjs'),source:'work/producer/samples/FarmGame',proof:'work/analysis/q3-farm-player/20261007T085530733Z/native-inputs/fixture.json',scope:'19 exact native data copies; no original executable in input directory; all referenced input bytes covered by directory hash'};
+    if(flag==='--farm-script-runtime')tests.at(-1).timeoutMs=45000;
+  }
 }
 // Shared dispatch conditions also expose independent modes. Do not silently
 // omit the owned/runtime alternatives when regenerating the inventory.
@@ -62,10 +75,19 @@ for(const m of source.matchAll(/if\(argc==3&&\(std::wstring\(argv\[2\]\)==L"(--[
 }
 const drivers=fs.readdirSync('scripts').filter(p=>/^Test-.*\.(ps1|mjs)$/.test(p)).map(p=>{
   const text=read('scripts/'+p);
+  const delegated=[...text.matchAll(/-Only\s+['"]([\w-]+)['"]/g)]
+    .flatMap(m=>tests.find(t=>t.id===m[1])?.arguments??[]);
   return {id:p.replace(/\.(ps1|mjs)$/,''),runner:'scripts/'+p,sha256:hash('scripts/'+p),
-    dedicatedModes:[...new Set([...text.matchAll(/['"](--[\w-]+)['"]/g)].map(m=>m[1]))],
+    dedicatedModes:[...new Set([...text.matchAll(/['"](--[\w-]+)['"]/g)].map(m=>m[1]).concat(delegated))],
     inputSetup:'See runner parameters and preparation/auditor prerequisites; missing input is not a pass',status:'未実行'};
 });
+// Explicitly registered inspectors and evidence-local auditors are obligations
+// too. Regenerating the Test-* inventory must not silently drop them.
+for(const previous of existingManifest?.drivers??[])if(!drivers.some(d=>d.id===previous.id)){
+  const entry={...previous,status:'未実行'};delete entry.lastResult;
+  if(fs.existsSync(entry.runner))entry.sha256=hash(entry.runner);
+  drivers.push(entry);
+}
 const manifest={schema:1,createdUtc:new Date().toISOString(),sourceDispatcher:{path:'tests/producer/core_tests.cpp',sha256:hash('tests/producer/core_tests.cpp')},
   environment:'Windows Win32 Release; authorized normal host execution; preserve OS-denied cases',
   passRule:'exit 0 AND parsed passed=true AND unchanged candidate/input hashes; expected rejection requires a separate explicit oracle',
@@ -80,6 +102,7 @@ for(const kind of ['tests','drivers'])for(const entry of manifest[kind]){
     entry.resultHistory=[...(previous.resultHistory??[])];
     if(previous.lastResult&&!entry.resultHistory.some(r=>r.run===previous.lastResult.run&&r.id===previous.lastResult.id))entry.resultHistory.push(previous.lastResult);
     if(previous.timeoutMs)entry.timeoutMs=previous.timeoutMs;
+    if(previous.independentEvidence)entry.independentEvidence=previous.independentEvidence;
   }
 }
 fs.writeFileSync('docs/analysis/regression-manifest.json',JSON.stringify(manifest,null,2)+'\n');

@@ -4,6 +4,8 @@
 #include <sstream>
 #include <dmerror.h>
 #include <atomic>
+#include <cstring>
+#include <utility>
 namespace producer::app {
 namespace {
 std::atomic<std::uint64_t> diagnosticSequence{0};
@@ -20,14 +22,19 @@ ScriptSession::ScriptSession(){begin();}
 ScriptSession::~ScriptSession(){if(script_)script_->Release();if(loader_)loader_->Release();}
 void ScriptSession::begin(){last_={};last_.error.size=sizeof(last_.error);}
 ScriptResult ScriptSession::finish(const std::wstring& operation,const std::wstring& name){if(!last_.passed()){if(diagnostics_.size()<4096)diagnostics_.push_back({operation,name,last_,++diagnosticSequence});else diagnosticOverflow_=true;}return last_;}
-ScriptResult ScriptSession::load(const Bytes& bytes,const std::wstring& directory,runtime::Performance* performance){
+ScriptResult ScriptSession::load(const Bytes& bytes,const std::wstring& directory,runtime::Performance* performance,std::vector<ScriptRuntimeDependency> dependencies){
     if(script_||loader_)throw std::runtime_error("Script session already loaded");ScriptDocument document;document.load(bytes);
     if(!performance)throw std::runtime_error("Script requires initialized Performance");
-    const bool sourceHost=uses_source_script_host(document);memory_=source_script_loader_bytes(document);
+    const bool sourceHost=uses_source_script_host(document);memory_=source_script_loader_bytes(document);dependencies_=std::move(dependencies);
     begin();
     last_.result=CoCreateInstance(runtime::loaderClass,nullptr,CLSCTX_INPROC_SERVER,runtime::loader8Id,reinterpret_cast<void**>(&loader_));if(FAILED(last_.result))return finish(L"Initialize",document.name());
     last_.result=loader_->EnableCache(runtime::allTypes,TRUE);if(FAILED(last_.result))return finish(L"Initialize",document.name());
     if(!directory.empty()){auto search=directory;last_.result=loader_->SetSearchDirectory(runtime::allTypes,search.data(),TRUE);if(FAILED(last_.result))return finish(L"Initialize",document.name());}
+    // Child-first descriptors refer only to owned memory/GUID, never the
+    // serialized filename. SetObject registers metadata; do not GetObject
+    // here, so NOLOADS and source alias.Load still decide realization.
+    for(auto& dependency:dependencies_){runtime::ObjectDesc d{};d.size=sizeof(d);d.valid=1|2|1024;std::memcpy(&d.classId,dependency.classId.data(),16);std::memcpy(&d.objectId,dependency.objectId.data(),16);d.memoryLength=static_cast<LONGLONG>(dependency.runtimeBytes.size());d.memory=dependency.runtimeBytes.data();
+        last_.result=loader_->SetObject(&d);if(last_.result!=S_OK){if(SUCCEEDED(last_.result))last_.result=E_FAIL;return finish(L"Register dependency",dependency.path);}}
     runtime::ObjectDesc desc{};desc.size=sizeof(desc);desc.valid=2|1024;desc.classId=runtime::scriptClass;desc.memoryLength=static_cast<LONGLONG>(memory_.size());desc.memory=memory_.data();
     last_.result=loader_->GetObject(&desc,runtime::scriptId,reinterpret_cast<void**>(&script_));if(last_.result!=S_OK||!script_){if(SUCCEEDED(last_.result))last_.result=E_FAIL;return finish(L"Initialize",document.name());}
     last_.result=script_->Init(performance,&last_.error);

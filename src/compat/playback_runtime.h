@@ -31,7 +31,11 @@ inline constexpr GUID loader8Id={0x19e7c08c,0x0a44,0x4e6a,{0xa1,0x16,0x59,0x5a,0
 inline constexpr GUID segment8Id={0xc6784488,0x41a3,0x418f,{0xaa,0x15,0xb3,0x50,0x93,0xba,0x42,0xd4}};
 struct Music;struct Sound;struct Track;struct Graph;struct Port;struct Instrument;struct DownloadedInstrument;
 struct Message;struct NotificationMessage;struct NoteRange;struct ChordKey;struct TimeSignature;struct AudioParams;
-struct Performance;struct Segment;
+struct Performance;struct Segment;struct SegmentState;
+inline constexpr GUID bandParam={0x02bb1938,0xcb8b,0x11d2,{0x8b,0xb9,0,0x60,8,0x93,0xb1,0xb6}};
+inline constexpr GUID bandTrackClass={0xd2ac2894,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+struct BandParam {LONG physicalTime;IUnknown* band;};
+static_assert(sizeof(BandParam)==8 && offsetof(BandParam,band)==4);
 #pragma pack(push,8)
 struct Message {
     DWORD size;LONGLONG referenceTime;LONG musicTime;
@@ -108,10 +112,13 @@ struct Style: IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetEmbellishmentLength(DWORD,DWORD,DWORD*,DWORD*)=0;
     virtual HRESULT STDMETHODCALLTYPE GetTempo(double*)=0;
 };
-struct MusicObject;
-// Frozen dmusici.h IDirectMusicComposer: only the first method is needed.
+inline constexpr GUID musicObjectId={0xd2ac28b5,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+struct MusicObject:IUnknown {virtual HRESULT STDMETHODCALLTYPE GetDescriptor(ObjectDesc*)=0;};
+// Frozen dmusici.h IDirectMusicComposer: only the first two methods are needed
+// (ComposeSegmentFromTemplate, ComposeSegmentFromShape); later slots are unused.
 struct Composer: IUnknown {
     virtual HRESULT STDMETHODCALLTYPE ComposeSegmentFromTemplate(Style*,Segment*,WORD,ChordMap*,Segment**)=0;
+    virtual HRESULT STDMETHODCALLTYPE ComposeSegmentFromShape(Style*,WORD measures,WORD shape,WORD activity,BOOL intro,BOOL end,ChordMap*,Segment**)=0;
 };
 struct Loader: IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetObject(ObjectDesc*,REFIID,void**)=0;

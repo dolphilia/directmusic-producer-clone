@@ -1,0 +1,721 @@
+{
+  "schema": 1,
+  "updatedUtc": "2026-10-08T17:39:07.673Z",
+  "updatedJst": "2026-10-09T02:39:07.673+09:00",
+  "target": "DirectMusic Producer 5.3.0.900",
+  "contract": {
+    "path": "docs/analysis/ui-compatibility.md",
+    "sha256": "6595648b0b2a5afa809aab3966b0ae8a5bd10d73b71a2b74522db5ee772ecc10"
+  },
+  "responsibilityMap": {
+    "path": "docs/analysis/feature-map.csv",
+    "sha256": "6d5962d72ce26179c58ff9fadaa536d90d21dd4846568b440318aa93c9898378",
+    "moduleCount": 40
+  },
+  "inventoryComplete": false,
+  "status": "未着手",
+  "comparisonCandidate": null,
+  "productBaselineCandidate": "20261008T073500338Z",
+  "latestTrialCandidate": "20261008T171355889Z",
+  "fullAcceptance": false,
+  "scope": "全40責務の群対応と比較規則を設定。原版の具体的な全画面/操作列の列挙・現候補での比較は未実行。群数は完成率ではない。",
+  "acceptanceIds": [
+    "clean-build",
+    "startup-shutdown",
+    "original-data-load",
+    "edit-save",
+    "separate-process-reload",
+    "play-stop-tempo-audio",
+    "repeat-invalid-input",
+    "original-independence"
+  ],
+  "historicalComparisons": [
+    {
+      "path": "work/comparison/tempo-dll/20261002T042219651Z/comparison.json",
+      "sha256": "cb9af47663b728b36fe4eac5e8897ba87dc5cdbf6dc2f74c421f18842faf5081",
+      "scope": "原版Timelineを含む限定Tempoホストで画像66枚等が一致。自作本体の全画面/操作比較ではない。"
+    }
+  ],
+  "entries": [
+    {
+      "id": "UI01",
+      "name": "本体・文書管理・共通コントロール",
+      "responsibilityModules": [
+        "DMUSProd.exe",
+        "MFC42.DLL",
+        "MSFLXGRD.OCX"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "主画面、文書切替、メニュー、確認/取消し、dirty表示"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI02",
+      "name": "Timeline・Tempo・拍子・Sequence・MIDI",
+      "responsibilityModules": [
+        "Timeline.dll",
+        "TimeSigStripMgr.dll",
+        "TempoStripMgr.dll",
+        "SequenceStripMgr.dll",
+        "MIDIStripMgr.dll"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "時刻軸、zoom/scroll、選択、プロパティ、キー/マウス、clipboard/drag"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI03",
+      "name": "Segment・時刻付き参照",
+      "responsibilityModules": [
+        "SegmentDesigner.ocx",
+        "StyleRefStripMgr.dll",
+        "BandStripMgr.dll",
+        "ChordMapRefStripMgr.dll",
+        "SegmentStripMgr.dll"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "track配置/切替/設定と参照編集の入口/手順"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI04",
+      "name": "Style・Pattern・Motif",
+      "responsibilityModules": [
+        "StyleDesigner.ocx"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "所有/共有、編集/複製/auditionとプロパティ"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI05",
+      "name": "Band楽器割当",
+      "responsibilityModules": [
+        "BandEditor.ocx"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "音色/PChannel表示/変更/選択/履歴"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI06",
+      "name": "Chord・ChordMap・SignPost",
+      "responsibilityModules": [
+        "ChordMapDesigner.ocx",
+        "ChordMapStripMgr.dll",
+        "ChordStripMgr.dll",
+        "SignPostStripMgr.dll"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "節点/イベント、選択、接続、編集手順"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI07",
+      "name": "DLS・Envelope・RegionKeyboard・PanVol",
+      "responsibilityModules": [
+        "DLSDesigner.ocx",
+        "ADSREnvelope.ocx",
+        "RegionKeyboard.ocx",
+        "PanVol.ocx"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "波形/鍵盤/Region/包絡、範囲/音量/pan操作"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI08",
+      "name": "AudioPath・Send・効果",
+      "responsibilityModules": [
+        "AudioPathDesigner.ocx"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "経路/宛先/効果順序/既定値、挿入/編集/取消し"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI09",
+      "name": "Command・Lyric・Marker・Mute・Param・Wave",
+      "responsibilityModules": [
+        "CommandStripMgr.dll",
+        "LyricStripMgr.dll",
+        "MarkerStripMgr.dll",
+        "MuteStripMgr.dll",
+        "ParamStripMgr.dll",
+        "WaveStripMgr.dll"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "strip描画、時刻/範囲選択、CRUD/履歴"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI10",
+      "name": "Script文書・時刻起動",
+      "responsibilityModules": [
+        "ScriptDesigner.ocx",
+        "ScriptStripMgr.dll"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "参照/変数/routine、実行/エラー表示と編集"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI11",
+      "name": "Container",
+      "responsibilityModules": [
+        "ContainerDesigner.ocx"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "参照/埋込/alias、追加/削除/保存"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI12",
+      "name": "ToolGraph",
+      "responsibilityModules": [
+        "ToolGraphDesigner.ocx"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "tool順序/接続/parameter表示と編集"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI13",
+      "name": "Transport・音声ファイル出力",
+      "responsibilityModules": [
+        "Conductor.dll",
+        "FileOutputDMO.dll"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "Play/Stop/再開/tempo/録音、状態/操作可能表示"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "UI14",
+      "name": "Farm・StylePlayer",
+      "responsibilityModules": [
+        "Farm.exe",
+        "StylePlayer.exe"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "補助アプリ必要機能、選択/再生/停止の画面/手順"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [
+        {
+          "scope": "原版StylePlayer起動・動的比較",
+          "reason": "Computer Use app approval timed out",
+          "tracking": {
+            "path": "docs/analysis/product-state.json",
+            "pointer": "/current"
+          },
+          "unchangedRetry": false
+        }
+      ],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "completed": false
+    },
+    {
+      "id": "ROLE01",
+      "name": "導入解除・CRT",
+      "responsibilityModules": [
+        "Uninst.dll",
+        "MSVCRT.DLL"
+      ],
+      "functionalTracking": {
+        "path": "docs/analysis/product-state.json",
+        "pointer": "/current",
+        "unitSelection": "所属責務について最新単位/ソース/一次証拠を選び、限定成立と残責務を照合する。current全体を本群の合格根拠にしない。"
+      },
+      "integrationTracking": {
+        "path": "docs/analysis/acceptance-status.json",
+        "pointer": "/criteria"
+      },
+      "reference": {
+        "inventoryStatus": "未着手",
+        "evidence": [],
+        "firstScope": "導入/解除画面の有無とUI非適用の責務を根拠付きで確定"
+      },
+      "appearance": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版基準と各必要画面/状態を確定し、同条件で比較する。"
+      },
+      "interaction": {
+        "status": "未着手",
+        "comparisonCandidate": null,
+        "evidence": [],
+        "remaining": "原版の入口/操作列/前後状態を確定し、本体保存/復元と結合する。"
+      },
+      "cases": [],
+      "differences": [],
+      "blockers": [],
+      "applicability": {
+        "status": "要確認",
+        "nonApplicableResponsibilities": [],
+        "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
+      },
+      "nextAction": "導入/解除の必要UIとCRT内部責務を分け、非適用の根拠を確定する。",
+      "completed": false
+    }
+  ]
+}

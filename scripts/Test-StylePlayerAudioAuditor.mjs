@@ -1,0 +1,17 @@
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import assert from 'node:assert/strict';import {spawnSync} from 'node:child_process';
+const source=path.resolve(process.argv[2]),out=path.resolve(process.argv[3]);assert(!fs.existsSync(out));fs.mkdirSync(out,{recursive:true});const json=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,'')),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex'),positive=json(source+'/style-player-audio-proof.json');assert(positive.passed);const cases=[];
+for(const name of ['unchanged','silence','missing-motif','no-stop','no-replay','band-gap','rising-high-lost','background','bad-packet-origin']){
+ const dir=out+'/'+name;fs.cpSync(source,dir,{recursive:true});fs.unlinkSync(dir+'/style-player-audio-proof.json');const wav=fs.readFileSync(dir+'/output.wav');let dataAt=0,fmt;for(let p=12;p+8<=wav.length;){const n=wav.readUInt32LE(p+4),id=wav.toString('ascii',p,p+4);if(id==='fmt ')fmt=wav.subarray(p+8,p+8+n);if(id==='data')dataAt=p+8;p+=8+n+(n&1);}assert(dataAt&&fmt);const rate=fmt.readUInt32LE(4),channels=fmt.readUInt16LE(2),align=fmt.readUInt16LE(12),at=n=>positive.phases[n].seconds;
+ let from=0,to=0,frequency=0;if(name==='silence')wav.fill(0,dataAt);
+ if(name==='missing-motif'){from=at('motif-returned')+1.2;to=at('stop-request')-.2;frequency=440;}
+ if(name==='no-stop'){from=at('stop-returned')+1;to=at('replay-request')-.1;frequency=440;}
+ if(name==='no-replay'){from=at('replay-ready');to=at('final-stop-request');}
+ if(name==='band-gap'){from=at('band-request')-.15;to=from+.6;}
+ if(name==='rising-high-lost'){from=at('play-ready')+7.8;to=at('recompose-request')-.1;frequency=440;}
+ if(name==='background'){from=.3;to=at('play-request')-.2;frequency=1000;}
+ if(to>from)for(let i=Math.floor(from*rate);i<Math.ceil(to*rate);i++)for(let c=0;c<channels;c++)wav.writeFloatLE(frequency?.02*Math.sin(2*Math.PI*frequency*i/rate):0,dataAt+i*align+c*4);
+ fs.writeFileSync(dir+'/output.wav',wav);
+ if(name==='bad-packet-origin'){const lines=fs.readFileSync(dir+'/packets.csv','utf8').trimEnd().split(/\r?\n/),p=lines[2].split(',');p[4]=String(Number(p[4])+1000000);lines[2]=p.join(',');fs.writeFileSync(dir+'/packets.csv',lines.join('\n')+'\n');}
+ const r=spawnSync(process.execPath,['scripts/Inspect-StylePlayerAudio.mjs',dir],{encoding:'utf8'});fs.writeFileSync(dir+'/control.stdout.txt',r.stdout);fs.writeFileSync(dir+'/control.stderr.txt',r.stderr);assert([0,1].includes(r.status),r.stderr);assert.equal(r.status,name==='unchanged'?0:1,name);const proof=fs.existsSync(dir+'/style-player-audio-proof.json')?json(dir+'/style-player-audio-proof.json'):null;assert.equal(proof?.passed??false,name==='unchanged',name);assert(json(dir+'/player/style-player-audio.json').passed);cases.push({name,expectedPass:name==='unchanged',actualPass:proof?.passed??false,exitCode:r.status,wavSha256:hash(dir+'/output.wav'),proofSha256:proof?hash(dir+'/style-player-audio-proof.json'):null});
+}
+fs.copyFileSync(process.argv[1],out+'/auditor-control.mjs');fs.writeFileSync(out+'/negative-tests.json',JSON.stringify({schema:1,createdUtc:new Date().toISOString(),passed:true,source,sourceProofSha256:hash(source+'/style-player-audio-proof.json'),sourceWavSha256:hash(source+'/output.wav'),cases,scope:'Derived PCM/packet controls with successful native API evidence preserved; no new product recordings',fullAcceptance:false},null,2)+'\n');console.log(JSON.stringify({out,passed:true,cases:cases.length}));

@@ -14,6 +14,7 @@
 
 namespace producer::app {
 struct RuntimeCall { std::string operation; HRESULT result; };
+struct WavesReverbParameters {float inputGain,reverbMix,reverbTime,highFrequencyRatio;};
 struct PlaybackPosition { bool playing; LONG clocks,start; double tempo;bool tempoAvailable=false; };
 struct CommandParameterSample { HRESULT result; LONG next; CommandEvent event; };
 using PlaybackId=std::uint64_t;
@@ -45,7 +46,7 @@ class Conductor {
     void stop_current();
     void register_notification_identity();
     void collect_notifications();
-    void play_snapshot(StylePlaybackSnapshot,const std::wstring&,HWND,const std::vector<ResolvedCollection>&,const std::optional<MotifSelection>&,const PlaybackOptions& = {},const std::vector<ResolvedWave>& = {},const SegmentTriggerPlayback& = {},const std::vector<ResolvedChordMap>& = {});
+    void play_snapshot(StylePlaybackSnapshot,const std::wstring&,HWND,const std::vector<ResolvedCollection>&,const std::optional<MotifSelection>&,const PlaybackOptions& = {},const std::vector<ResolvedWave>& = {},const SegmentTriggerPlayback& = {},const std::vector<ResolvedChordMap>& = {},PlaybackId sharedRoute=0);
 public:
     Conductor();~Conductor();
     ScriptResult load_script(const Bytes&,const std::wstring& referenceDirectory,HWND owner);
@@ -64,12 +65,19 @@ public:
     void play(const Bytes&,const std::wstring& referenceDirectory,HWND owner,const std::vector<ResolvedStyle>& styles={},const std::vector<ResolvedCollection>& collections={},const std::optional<MotifSelection>& motif={},const std::vector<ResolvedWave>& waves={},const SegmentTriggerPlayback& triggers={},const std::vector<ResolvedChordMap>& maps={});
     // Standalone owned Style. Optional owned AudioPath uses a private config
     // carrier only; the playable Segment is still obtained from GetMotif.
-    void play_motif(const StyleCatalogEntry&,const std::wstring& name,HWND owner,const std::vector<ResolvedCollection>& collections={},const PlaybackOptions& options={},const Bytes& audioPath={});
+    void play_motif(const StyleCatalogEntry&,const std::wstring& name,HWND owner,const std::vector<ResolvedCollection>& collections={},const PlaybackOptions& options={},const Bytes& audioPath={},PlaybackId sharedRoute=0);
+    // Plays a self-contained Segment (e.g. a Band-only carrier) as an additional
+    // session without disturbing running sessions. Embedded AudioPath wins.
+    void play_extra(const Bytes& segment,HWND owner,const std::vector<ResolvedCollection>& collections={},const PlaybackOptions& options=PlaybackOptions{PlaybackBoundary::Immediate,true,true,0},PlaybackId sharedRoute=0);
     PlaybackRequest playback_request() const;
     PlaybackId current_playback_id() const;
     std::vector<PlaybackId> playback_ids() const;
     std::vector<PlaybackSessionView> playback_sessions();
     PlaybackPosition position(PlaybackId);
+    DWORD convert_pchannel(PlaybackId,DWORD);
+    // Read the actual owned AudioPath DMO. effectIndex counts Waves instances
+    // in that buffer (not all effects); returned values own no COM reference.
+    WavesReverbParameters waves_reverb_parameters(DWORD pchannel,DWORD bufferIndex,DWORD effectIndex=0,PlaybackId id=0);
     void stop(PlaybackId);
     void start_file_output(const Bytes& audioPath,const std::wstring& filename,HWND owner);
     void stop_file_output();

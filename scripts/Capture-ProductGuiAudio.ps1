@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$GuiRun,[string]$RecorderBuildSummaryPath='work/build/audio-capture/20261004T032918787Z/build-summary.json',[ValidateRange(16,300)][int]$DurationSeconds=32,[string[]]$AdditionalInputs=@(),[switch]$SilentKeepAlive)
+param([Parameter(Mandatory)][string]$GuiRun,[string]$RecorderBuildSummaryPath='work/build/audio-capture/20261006T211007927Z/build-summary.json',[ValidateRange(16,300)][int]$DurationSeconds=32,[string[]]$AdditionalInputs=@(),[switch]$SilentKeepAlive)
 $ErrorActionPreference='Stop'
 function Hash([string]$p){(Get-FileHash -LiteralPath $p).Hash.ToLowerInvariant()}
 $gui=[IO.Path]::GetFullPath($GuiRun);$launch=Get-Content -LiteralPath (Join-Path $gui 'launch.json') -Raw|ConvertFrom-Json

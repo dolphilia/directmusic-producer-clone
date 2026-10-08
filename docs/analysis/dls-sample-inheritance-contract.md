@@ -17,6 +17,7 @@
 - 拒否は文書公開前に行い、保存 bytes、dirty checkpoint、Undo と保留 Redo、再生準備の呼出元スナップショットを変更しない。不正値を含む原版入力の lossless load/save 自体は保持し、黙って丸めない。
 - 編集済み owned DLS は次の Play で採用する。保存前の編集・Undo がディスクの古い DLS に置換されないことを本体の録音差分で検証する。
 - 再生用の私有 DLS コピーでは、Region に `wsmp` がない場合だけ、cue が指す Wave の `wsmp` 全体を複製する。編集文書・ディスク・履歴には上書きを追加せず、明示的なゼロループ Region は変更しない。これは候補 `234743632Z` の本体 PCM で、継承と Undo 復元が約75msで途切れ、明示 one shot が約1秒鳴った実測を受けた再生境界の修正である。OS 再生器に渡す有効値を明示する判断であり、原版 Producer の動的比較済みという意味ではない。
+- standalone・Project一括・設定済みruntime保存にも同じ私有コピーの境界を適用する。runtime DLS は継承する全 Wave WSMP と文書identity/PCMを持ち、native文書は Region WSMP 不在のまま保持する。不正サンプルは出力公開前に拒否し、既存出力、native bytes、dirty/Undo/Redoを保持する。これは既存OS再生器の観測と同じ契約からの適用判断であり、原版のruntime変換結果を動的比較済みとは扱わない。拡張ヘッダ/レコード/末尾、独立SMPL、未知chunk/paddingの保持を独立期待木と照合する。
 
 ## 今回の終了条件
 

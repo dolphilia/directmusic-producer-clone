@@ -64,9 +64,9 @@ Chunk Chunk::parse_list(const Bytes& b) {
 }
 Bytes read_file(const std::wstring& path) {
     std::ifstream f(std::filesystem::path(path),std::ios::binary|std::ios::ate);
-    if (!f) throw std::runtime_error("Unable to open input file");
+    if (!f) throw InputFileReadError("Unable to open input file");
     const auto n=f.tellg(); if (n<0 || n>static_cast<std::streamoff>(maxFile)) throw std::runtime_error("Input size limit");
-    Bytes b(static_cast<size_t>(n)); f.seekg(0); if (!b.empty() && !f.read(reinterpret_cast<char*>(b.data()),n)) throw std::runtime_error("Input read failed"); return b;
+    Bytes b(static_cast<size_t>(n)); f.seekg(0); if (!b.empty() && !f.read(reinterpret_cast<char*>(b.data()),n)) throw InputFileReadError("Input read failed"); return b;
 }
 void write_file_atomic(const std::wstring& path, const Bytes& bytes) {
     const auto full=std::filesystem::absolute(path);

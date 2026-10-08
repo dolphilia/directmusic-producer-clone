@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 namespace producer::app {
 using Bytes = std::vector<std::uint8_t>;
@@ -20,6 +21,9 @@ struct Chunk {
 };
 std::uint32_t read32(const Bytes& bytes, size_t offset);
 void put32(Bytes& bytes, size_t offset, std::uint32_t value);
+// Only open/read IO failures use this subtype. Size/format limits remain
+// ordinary errors, so selecting a cached object cannot suppress those guards.
+class InputFileReadError : public std::runtime_error {public:using std::runtime_error::runtime_error;};
 Bytes read_file(const std::wstring& path);
 void write_file_atomic(const std::wstring& path, const Bytes& bytes);
 Bytes utf16(const std::wstring& text);

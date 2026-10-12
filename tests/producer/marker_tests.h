@@ -23,7 +23,28 @@ void marker_boundary_tests(const std::filesystem::path& dir){
     auto inconsistent=extended;put32(inconsistent.children.back().find("play")->data,4,1);const auto inconsistentBefore=inconsistent.encode();rejected([&]{mark_marker_boundaries(inconsistent,MarkerKind::enter,{0},true);},"Bulk rejects disagreeing duplicate MARK containers");require(inconsistent.encode()==inconsistentBefore,"Malformed duplicate bulk operation is atomic");
     const auto base=dir/L"MarkerBoundaries";std::filesystem::create_directories(base);write_file_atomic((base/L"SourceMarkers.sgp").wstring(),gridBefore);Framework host;host.open_segment((base/L"SourceMarkers.sgp").wstring());host.save_project((base/L"MarkerBoundaries.pro").wstring());Framework reload;reload.open_project((base/L"MarkerBoundaries.pro").wstring());require(reload.document(0).save_bytes()==gridBefore&&reload.document(0).markers().size()==10,"Bulk Marker native Project separate Framework restores mixed-meter boundary records");
 }
+void marker_properties_position_tests(){
+    SegmentDocument d;const auto axis=d.timeline();
+    const auto p=axis.grid_position(4045);
+    require(p.measure==1&&p.beat==1&&p.grid==1&&p.tick==13&&axis.grid_clocks(p)==4045,"Marker properties grid/tick exact clock round trip");
+    require(axis.grid_clocks({2,0,0,0})==6144,"Original Enter measure3 beat1 grid1 tick0 maps6144");
+    require(d.add_marker({3072,MarkerKind::play})&&d.add_marker({6144,MarkerKind::enter}),"Marker properties two distinct kinds fixture");
+    const auto before=d.save_bytes();size_t selected=1;
+    require(d.edit_marker(selected,{axis.grid_clocks({3,1,1,13}),MarkerKind::enter},0,&selected)&&selected==1&&d.markers()[1].time==10189&&d.markers()[0].time==3072,"Musical Enter position editing retains kind and peer");
+    const auto edited=d.save_bytes();require(d.undo()&&d.save_bytes()==before,"Musical Marker edit whole-byte Undo");
+    rejected([&]{axis.grid_clocks({1,0,4,0});},"Marker grid beyond selected meter refused");
+    rejected([&]{axis.grid_clocks({1,0,0,192});},"Marker tick beyond grid refused");
+    rejected([&]{axis.grid_clocks({1,4,0,0});},"Marker beat beyond selected meter refused");
+    require(d.save_bytes()==before&&d.redo()&&d.save_bytes()==edited,"Rejected grid conversions leave document and Redo untouched");
+    require(d.set_meter(1,3,8,3),"Mixed meter Marker properties fixture");const auto mixed=d.timeline();
+    const auto q=mixed.grid_position(3601);require(q.measure==1&&q.beat==1&&q.grid==1&&q.tick==17&&mixed.grid_clocks(q)==3601,"Marker grid/tick follows meter transition");
+    rejected([&]{mixed.grid_clocks({1,0,3,0});},"Mixed meter grid upper bound refused");
+    SegmentDocument fractional;require(fractional.set_meter(0,4,4,5),"Noninteger grid properties fixture");
+    rejected([&]{fractional.timeline().grid_position(0);},"Noninteger grid read does not invent rounding");
+    rejected([&]{fractional.timeline().grid_clocks({0,0,0,0});},"Noninteger grid edit does not invent rounding");
+}
 void marker_document_tests(const std::filesystem::path& dir,const std::wstring& original=L""){
+    marker_properties_position_tests();
     marker_boundary_tests(dir);
     SegmentDocument doc;const auto empty=doc.save_bytes();size_t selected=999;
     require(doc.add_marker({3073,MarkerKind::play},0,&selected)&&selected==0,"Marker precise grid/tick time insert");const auto one=doc.save_bytes();

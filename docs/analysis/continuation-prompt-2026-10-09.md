@@ -1,6 +1,8 @@
+> 2026-10-10更新: この版は履歴です。次タスクには[新版継続プロンプト](continuation-prompt-2026-10-10.md)と[引き継ぎ資料](handoff-2026-10-10.md)を使用してください。以下の古い「次の作業」を現行指示にしないでください。
+
 # DirectMusic Producer 再構築の継続実行プロンプト
 
-2026-10-09（日本時間）改訂。機能・文書互換に加え、原版の外観・操作感を可能な限り再現する方針を含む。人が実装再開を指示するとき、以下の「実行指示」を使用する。この文書の作成・参照だけでは現在の一時停止を解除しない。
+2026-10-09（日本時間）改訂。機能・文書互換に加え、原版の外観・操作感を可能な限り再現する方針を含む。ユーザーの「計画の一時停止を解除してください。」により実装再開済み。以下の「実行指示」と現行状態の入口を照合して継続する。文書の作成・参照自体を再開や停止の指示にしない。
 
 同じ作業木とGit対象外の`work/`一次証拠を引き継ぐ。候補・件数・PID・未達条件は開始時の`current`と一次記録で決める。10月7日/5日版と旧objectiveファイルの引き継ぎ時点の状態を、最新状態より優先しない。ユーザーの新しい指示と現行計画に従う。
 
@@ -31,8 +33,9 @@ current.latestUnit/latestReport、independentInProgressUnit、inProgressUnit、u
 既存変更・未追跡ファイル・失敗候補・入力・録音・成果物・承認記録を保持してください。processはEXE/hash/開始時刻/状態を再観測してから操作や起動を判断し、古いPIDを固定値として使わないでください。移送にはGit対象外workの保全とhash照合も必要です。
 
 【最初の作業と順序】
-1. 最新候補の未達本体統合を完結させてください。改訂時点では限定採用0735を保持し、最新試験1713はbuild/install・関連13試験・独立SDK PCM比較が成立していますが、本体GUI/native保存/別process復元/二通常終了/WASAPI/原版比較は未達です。この状態を開始時に再照合してください。旧Q1成功を新候補へ転用しないでください。
-   保存/作業ソースと生成物が一致し、関連試験の条件も一致するなら、完了済みbuildをやり直すことを既定の次作業にしないでください。currentから準備済みSend既定Env protocolを読み、Add Env/Send既定宛先/−600/UndoRedo/native保存/通常終了/別process復元/通常終了、固定WASAPI Play/発音中Stop/無音/再開へ進んでください。ソース変更時は新候補build/関連回帰を先行してください。比較障害は未完のまま残してください。
+1. currentと最新一次記録を照合してください。最新004938（20261010T004938577Z）はChord/Scale四組鍵盤・level分離・上下root転調・Sharps/Flats・文書UndoRedo・native保存・別process復元が限定成立。work/analysis/ui-chord-scale/20261010T002919Z/unit-record-v1.jsonと報告を参照。240保存/作業ソース・4出力、関連17は原始11+不足6を区別、公開API13、独立native714/結合1480、六通常exit0。初回spin逆転失敗は修正済み。必要PCMではMIDI61/能動Stop/無音/replay成立、onset約1.093/1.121秒>固定1秒とテンポ判定は不合格。原版比較未確認、completed=false。
+   次は共通Transportの独立Style開始待ち。現実装はStyle付きだとprepare1000msを強制する。Script/Tool/trigger/sharedの先読みを保護し、短いprepareを許す条件を固定して新候補で修正・回帰・本体保存/復元/固定PCMへ進む。Strings包絡の二重onsetは判定器の適用を先に検証し、旧不合格/閾値を後から書き換えない。
+   最新004938の原始native96は58pass/37frozen/既存匿名Bandfail1、原始driver164は24pass/23blocked/117notrun。2309の原始旧Mute scope失敗と専用補足は別履歴。凍結37件を同条件再試行しない。003350方向失敗、区間外録音、Bandなし無音録音、修正版PCMのonset/tempo失敗、2221/2048等を保持。0735限定採用/Q1 latestUnit/latestReportは維持。
 2. 原版の画面・操作基準を確定してください。主画面/文書管理、Timeline/プロパティ、Transportから、保存済み観測・help・許可された観測で必要画面と代表操作を台帳casesへ登録してください。全40責務の必要画面/操作一覧が確定するまでinventoryComplete=falseを維持してください。台帳整理だけで製品単位を完成にしないでください。
 3. 共通UIとQ3各機能を並行して仕上げてください。原版基準に沿って主画面、文書切替、メニュー、Timeline、プロパティを小さな単位で接続し、機能・外観・操作の不足を同じ単位で解消してください。既存の文書/再生実装を活用し、機能の全実装後までUI比較を延期しないでください。
 4. 全40責務とUI差分を解消し、同じ最終候補で全登録群・全8受入・独立Windows・配布再現を確認してください。Q2環境が用意されたら他の独立作業と並行して早期に実証してください。
@@ -76,4 +79,6 @@ Q2は原版実行物・Producer COM登録・原版探索先のない独立Window
 
 [最新の計画改訂](plan-review-2026-10-09.md)、[現行計画](../analysis-plan.md)、[UI互換契約](ui-compatibility.md)、[UI台帳](ui-compatibility.json)、`product-state.current`を参照する。[Send既定Envの中断報告](q3-send-environmental-reverb-2026-10-09.md)とその準備済みprotocolが直近の本体統合への入口。改訂時点の候補・件数を将来の実行結果へ転用しない。
 
-10月7日版・10月5日版と旧objectiveファイルは履歴として保持する。今回の計画改訂で製品実装・build/native/GUI/audioは再開しておらず、現在のgoalはpausedのまま。この実行指示を人が送信したときに再開する。
+10月7日版・10月5日版と旧objectiveファイルは履歴として保持する。計画改訂時点ではgoalをpausedのまま保持した。その後の人の再開指示を`current.executionResume`に結び付け、製品実装・build/native/GUI/audioを再開済み。現在の候補と未達条件は`current.latestBuildAttempt`・`independentInProgressUnit`と一次証拠から読む。
+
+現行入口（2026-10-10）: 0000 Chordの限定本体/native結果と次の四鍵盤契約をcurrentへ保存。原版比較/Q2/凍結拒否と既存音声失敗を保持。

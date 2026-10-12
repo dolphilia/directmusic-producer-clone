@@ -14,7 +14,7 @@ ChordEvent decode(const Bytes& b) {
     e.time=static_cast<std::int32_t>(read32(b,36));e.measure=static_cast<std::uint16_t>(b[40]|(b[41]<<8));e.beat=b[42];e.flags=b[43];
     const size_t count=read32(b,4+size),stride=read32(b,8+size),start=12+size;
     if(stride<20||count>(b.size()-start)/stride||count*stride!=b.size()-start)throw std::runtime_error("Invalid SubChord array");
-    e.subchords.clear();for(size_t i=0;i<count;++i){const size_t p=start+i*stride;e.subchords.push_back({read32(b,p),read32(b,p+4),read32(b,p+8),read32(b,p+12),b[p+16],b[p+17]});}
+    e.subchords.clear();for(size_t i=0;i<count;++i){const size_t p=start+i*stride;e.subchords.push_back({read32(b,p),read32(b,p+4),read32(b,p+8),read32(b,p+12),b[p+16],b[p+17],i});}
     if(e.time<0)throw std::runtime_error("Negative Chord time");return e;
 }
 std::vector<Record> records(const Chunk& cord) {
@@ -28,7 +28,7 @@ Chunk encode(const ChordEvent& e,const Chunk* previous) {
     Chunk c;c.id="crdb";size_t size=40,stride=20;
     if(previous){c=*previous;size=read32(c.data,0);stride=read32(c.data,8+size);}
     Bytes b(12+size+stride*e.subchords.size());put32(b,0,static_cast<std::uint32_t>(size));
-    if(previous){std::copy_n(c.data.begin()+4,size,b.begin()+4);const size_t oldCount=read32(c.data,4+size);for(size_t i=0;i<std::min(oldCount,e.subchords.size());++i)std::copy_n(c.data.begin()+12+size+i*stride,stride,b.begin()+12+size+i*stride);}
+    if(previous){std::copy_n(c.data.begin()+4,size,b.begin()+4);const size_t oldCount=read32(c.data,4+size);for(size_t i=0;i<e.subchords.size();++i){const auto source=e.subchords[i].sourceIndex==SIZE_MAX?i:e.subchords[i].sourceIndex;if(source<oldCount)std::copy_n(c.data.begin()+12+size+source*stride,stride,b.begin()+12+size+i*stride);}}
     if(!previous||decode(previous->data).name!=e.name){std::fill(b.begin()+4,b.begin()+36,0);auto name=utf16(e.name);if(name.size()>32)name.resize(32);std::copy(name.begin(),name.end(),b.begin()+4);}
     put32(b,36,static_cast<std::uint32_t>(e.time));b[40]=static_cast<std::uint8_t>(e.measure);b[41]=static_cast<std::uint8_t>(e.measure>>8);b[42]=e.beat;b[43]=e.flags;
     put32(b,4+size,static_cast<std::uint32_t>(e.subchords.size()));put32(b,8+size,static_cast<std::uint32_t>(stride));
@@ -45,12 +45,52 @@ bool same_slot(const ChordEvent& a,const ChordEvent& b){return a.measure==b.meas
 bool valid_chord(const ChordEvent& e,const ChordEvent* previous) {
     if(e.time<0||e.name.size()>16||e.name.find(L'\0')!=std::wstring::npos||e.subchords.empty()||e.subchords.size()>8)return false;
     if((!previous||e.flags!=previous->flags)&&(e.flags&~1u))return false;
-    for(size_t i=0;i<e.subchords.size();++i){const auto& s=e.subchords[i];const auto old=previous&&i<previous->subchords.size()?&previous->subchords[i]:nullptr;
+    for(size_t i=0;i<e.subchords.size();++i){const auto& s=e.subchords[i];const auto source=s.sourceIndex==SIZE_MAX?i:s.sourceIndex;const auto old=previous&&source<previous->subchords.size()?&previous->subchords[source]:nullptr;
         if(s.chordRoot>23&&(!old||s.chordRoot!=old->chordRoot))return false;
         if(s.scaleRoot>23&&(!old||s.scaleRoot!=old->scaleRoot))return false;
         if((s.chordPattern&0xff000000u)&&(!old||s.chordPattern!=old->chordPattern))return false;
         if((s.scalePattern&0xff000000u)&&(!old||s.scalePattern!=old->scalePattern))return false;
     }return true;
+}
+std::optional<size_t> chord_level(const ChordEvent& e,unsigned level){
+    if(level>=4)return std::nullopt;std::optional<size_t> found;
+    for(size_t i=0;i<e.subchords.size();++i)if(e.subchords[i].levels&(1u<<level)){if(found)return std::nullopt;found=i;}
+    return found;
+}
+namespace {
+bool split_level(ChordEvent& e,unsigned level,size_t& index){
+    const auto found=chord_level(e,level);if(!found)return false;index=*found;
+    const auto bit=1u<<level;if(e.subchords[index].levels==bit)return true;
+    if(e.subchords.size()>=8)return false;
+    auto copy=e.subchords[index];copy.levels=bit;
+    e.subchords[index].levels&=~bit;e.subchords.push_back(copy);index=e.subchords.size()-1;return true;
+}
+}
+bool toggle_chord_tone(ChordEvent& event,unsigned level,unsigned note){
+    const auto found=chord_level(event,level);if(!found||note>=48)return false;
+    const auto& old=event.subchords[*found];if(old.chordRoot>23||(old.chordPattern&0xff000000u))return false;
+    std::uint64_t tones=std::uint64_t(old.chordPattern)<<old.chordRoot;tones^=std::uint64_t(1)<<note;
+    if(!tones)return false;unsigned root=0;while(!(tones&(std::uint64_t(1)<<root)))++root;
+    if(root>23||(tones>>root)>0xffffffu)return false;
+    auto next=event;size_t index=0;if(!split_level(next,level,index))return false;
+    next.subchords[index].chordRoot=static_cast<std::uint8_t>(root);next.subchords[index].chordPattern=static_cast<std::uint32_t>(tones>>root);
+    if(!valid_chord(next,&event))return false;event=std::move(next);return true;
+}
+bool toggle_chord_scale(ChordEvent& event,unsigned level,unsigned pitch){
+    const auto found=chord_level(event,level);if(!found||pitch>=12)return false;
+    const auto& old=event.subchords[*found];if(old.scaleRoot>23||(old.scalePattern&0xff000000u))return false;
+    const auto relative=(pitch+12-old.scaleRoot%12)%12;auto pattern=old.scalePattern;
+    // Display the two-octave native scale as pitch classes. Clear both copies
+    // when removing a class; newly selected classes use its lower octave.
+    const auto bits=(1u<<relative)|(1u<<(relative+12));if(pattern&bits)pattern&=~bits;else pattern|=1u<<relative;
+    auto next=event;size_t index=0;if(!split_level(next,level,index))return false;next.subchords[index].scalePattern=pattern;
+    if(!valid_chord(next,&event))return false;event=std::move(next);return true;
+}
+bool transpose_chord(ChordEvent& event,int semitones){
+    if(!semitones||event.subchords.empty())return false;
+    for(const auto& s:event.subchords){const auto chord=static_cast<std::int64_t>(s.chordRoot)+semitones,scale=static_cast<std::int64_t>(s.scaleRoot)+semitones;if(chord<0||chord>23||scale<0||scale>23)return false;}
+    auto next=event;for(auto& s:next.subchords){s.chordRoot=static_cast<std::uint8_t>(s.chordRoot+semitones);s.scaleRoot=static_cast<std::uint8_t>(s.scaleRoot+semitones);}
+    if(!valid_chord(next,&event))return false;event=std::move(next);return true;
 }
 std::vector<ChordEvent> chord_events(const Chunk& cord){std::vector<ChordEvent> e;for(const auto& r:records(cord))e.push_back(r.event);return e;}
 bool set_chord_event(Chunk& cord,ChordEvent e,size_t* result){

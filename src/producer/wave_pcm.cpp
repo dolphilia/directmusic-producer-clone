@@ -3,6 +3,7 @@
 #include <map>
 #include <stdexcept>
 #include <cstring>
+#include <cmath>
 namespace producer::app {namespace {
 Chunk* single(Chunk& c,const char* id,const char* type=""){
     Chunk* found=nullptr;for(auto& x:c.children)if(x.id==id&&(!type[0]||x.type==type)){if(found)throw std::runtime_error("Ambiguous Wave position metadata");found=&x;}return found;
@@ -58,5 +59,86 @@ bool WaveDocument::erase_pcm(std::uint64_t begin,std::uint64_t end){
 bool WaveDocument::paste_pcm(std::uint64_t insertion,const Bytes& wave){
     const auto f=format();WaveDocument source;source.load(wave);const auto sf=source.format();if(f.tag!=1||sf.tag!=1||f.channels!=sf.channels||f.sampleRate!=sf.sampleRate||f.blockAlign!=sf.blockAlign||f.bits!=sf.bits)throw std::runtime_error("PCM paste requires matching uncompressed channel rate and sample format");if(insertion>f.frames)throw std::runtime_error("PCM insertion outside Wave");if(!sf.frames)return false;
     const auto& payload=source.root_.find("data")->data;auto next=root_;auto& b=next.find("data")->data;if(payload.size()>b.max_size()-b.size()||f.frames>UINT32_MAX||sf.frames>UINT32_MAX-f.frames)throw std::runtime_error("PCM paste exceeds Wave capacity");positions(next,{insertion,insertion,sf.frames,f.frames});b.insert(b.begin()+static_cast<size_t>(insertion*f.blockAlign),payload.begin(),payload.end());return commit(std::move(next));
+}
+std::uint64_t WaveDocument::nearest_zero_frame(std::uint64_t frame)const {
+    const auto f=format();
+    if(f.tag!=1||(f.bits!=8&&f.bits!=16&&f.bits!=24&&f.bits!=32))throw std::runtime_error("Snap to Zero requires 8, 16, 24 or 32-bit PCM");
+    if(frame>f.frames)throw std::runtime_error("Snap position outside Wave");
+    if(!f.frames)return frame;
+    const auto& data=root_.find("data")->data;
+    const auto sample=[&](std::uint64_t at,unsigned channel){
+        const auto p=static_cast<size_t>(at*f.blockAlign+channel*(f.bits/8));
+        if(f.bits==8)return std::int64_t(data[p])-128;
+        std::int64_t value=0;for(unsigned j=0;j<f.bits/8;++j)value|=std::int64_t(data[p+j])<<(j*8);
+        if(value&(std::int64_t(1)<<(f.bits-1)))value-=std::int64_t(1)<<f.bits;
+        return value;
+    };
+    const auto zero=[&](std::uint64_t at){
+        for(unsigned c=0;c<f.channels;++c){
+            if(!at){if(sample(0,c))return false;}
+            else if(at==f.frames){if(sample(at-1,c))return false;}
+            else{const auto a=sample(at-1,c),b=sample(at,c);if(a&&b&&((a<0)==(b<0)))return false;}
+        }
+        return true;
+    };
+    // Search both sides at equal distance; the earlier frame wins a tie.
+    for(std::uint64_t distance=0;distance<=std::max(frame,f.frames-frame);++distance){
+        if(distance<=frame&&zero(frame-distance))return frame-distance;
+        if(distance&&distance<=f.frames-frame&&zero(frame+distance))return frame+distance;
+    }
+    return frame;
+}
+bool WaveDocument::find_best_sample_loop_end(size_t index,std::uint64_t begin,std::uint64_t end){
+    const auto f=format();auto loops=sample_loops();
+    if(f.tag!=1||(f.bits!=8&&f.bits!=16&&f.bits!=24&&f.bits!=32))throw std::runtime_error("Find Best Loop End requires 8, 16, 24 or 32-bit PCM");
+    if(index>=loops.size())throw std::runtime_error("Select an existing loop to refine");
+    const auto loop=loops[index];
+    if(loop.type>1||!loop.length||std::uint64_t(loop.start)+loop.length>f.frames)throw std::runtime_error("Selected loop is outside Wave");
+    if(begin>=end||end>f.frames)throw std::runtime_error("Select a nonempty search region inside Wave");
+    const auto first=std::max(std::uint64_t(loop.start)+1,begin+1);
+    if(first>end)throw std::runtime_error("Search region must contain a sample after the loop start");
+    const auto& data=root_.find("data")->data;
+    const auto sample=[&](std::uint64_t at,unsigned channel){
+        const auto p=static_cast<size_t>(at*f.blockAlign+channel*(f.bits/8));
+        std::int64_t value=f.bits==8?std::int64_t(data[p])-128:0;
+        if(f.bits!=8){for(unsigned j=0;j<f.bits/8;++j)value|=std::int64_t(data[p+j])<<(j*8);if(value&(std::int64_t(1)<<(f.bits-1)))value-=std::int64_t(1)<<f.bits;}
+        return std::ldexp(static_cast<double>(value),1-static_cast<int>(f.bits));
+    };
+    // Compare the two samples surrounding the seam in every channel. This
+    // deterministic heuristic is not a claim about the original search algorithm.
+    std::vector<std::pair<double,double>> target;
+    for(unsigned c=0;c<f.channels;++c){const auto head=sample(loop.start,c);target.push_back({loop.start?sample(loop.start-1,c):f.frames>1?2*head-sample(1,c):head,head});}
+    const auto cost=[&](std::uint64_t at){
+        double score=0;
+        for(unsigned c=0;c<f.channels;++c){const auto tail=sample(at-1,c),head=at<f.frames?sample(at,c):at>1?2*tail-sample(at-2,c):tail;const auto a=tail-target[c].first,b=head-target[c].second;score+=a*a+b*b;}
+        return score;
+    };
+    auto best=first;auto bestCost=cost(first);
+    for(auto at=first+1;at<=end;++at){const auto score=cost(at);if(score<bestCost){best=at;bestCost=score;}}
+    loops[index].length=checked(best-loop.start);
+    return set_sample_loops(loops);
+}
+bool WaveDocument::clone_sample_loop(size_t index){
+    const auto f=format();const auto loops=sample_loops();
+    if(f.tag!=1)throw std::runtime_error("Clone Loop requires uncompressed PCM");
+    if(index>=loops.size())throw std::runtime_error("Select an existing loop to clone");
+    const auto loop=loops[index];
+    if(loop.type>1||!loop.length||std::uint64_t(loop.start)+loop.length>f.frames)throw std::runtime_error("Selected loop is outside Wave");
+    const auto origin=cloneOrigin_&&cloneOrigin_->index==index?*cloneOrigin_:CloneOrigin{index,loop};
+    if(origin.loop.start!=loop.start||origin.loop.type!=loop.type||origin.loop.length>loop.length)throw std::runtime_error("Clone Loop origin changed");
+    const auto insertion=std::uint64_t(loop.start)+loop.length,added=std::uint64_t(origin.loop.length);
+    if(f.frames>UINT32_MAX||added>UINT32_MAX-f.frames||added>UINT32_MAX-loop.length)throw std::runtime_error("Clone Loop exceeds Wave capacity");
+    const auto clip=Chunk::parse(copy_pcm(origin.loop.start,std::uint64_t(origin.loop.start)+added));
+    const auto& payload=clip.find("data")->data;auto next=root_;
+    positions(next,{insertion,insertion,added,f.frames});
+    auto& data=next.find("data")->data;
+    if(payload.size()>data.max_size()-data.size())throw std::runtime_error("Clone Loop exceeds PCM capacity");
+    data.insert(data.begin()+static_cast<size_t>(insertion*f.blockAlign),payload.begin(),payload.end());
+    // Ordinary insertion at a region's end follows that region. Clone Loop
+    // explicitly includes the copy in this loop; other metadata keeps its mapping.
+    auto& wsmp=next.find("wsmp")->data;size_t at=read32(wsmp,0);
+    for(size_t i=0;i<index;++i)at+=read32(wsmp,at);
+    put32(wsmp,at+12,checked(std::uint64_t(loop.length)+added));
+    return commit(std::move(next),origin);
 }
 }

@@ -1,0 +1,32 @@
+void meter_properties_tests(const std::filesystem::path& dir){
+    SegmentDocument d;const auto implicit=d.save_bytes();
+    require(!d.can_edit_meter()&&!d.edit_meter(0,0,3,4,4)&&d.save_bytes()==implicit&&!d.can_undo(),"Implicit default meter is not an authored marker");
+    require(d.set_meter(0,4,4,4)&&d.set_meter(1,4,4,4)&&d.set_meter(4,3,4,4)&&d.add_tempo(768,137.75)&&d.add_tempo(4656,191.5),"Meter properties explicit multi-event fixture");
+    auto tree=Chunk::parse(d.save_bytes());Chunk opaque;opaque.id="zzzz";opaque.data={0x79,0x33,0xb1};opaque.padding=0xa4;tree.children.push_back(opaque);
+    d.load(tree.encode());const auto before=d.save_bytes();size_t selected=99;
+    require(d.can_edit_meter()&&d.edit_meter(1,2,4,4,8,&selected)&&selected==1,"Selected marker changes measure and grid in one edit");
+    auto expected=tree;auto payload=expected.find("LIST","trkl")->children[1].find("LIST","TIMS")->find("tims");put32(payload->data,12,6144);payload->data[18]=8;
+    const auto edited=d.save_bytes();require(edited==expected.encode(),"Only selected meter clock/grid bytes change for equal 4/4 relocation");
+    require(d.undo()&&d.save_bytes()==before&&!d.dirty()&&!d.can_undo(),"Meter properties one Undo returns exact clean checkpoint");
+    require(d.redo()&&d.save_bytes()==edited&&!d.can_redo(),"Meter properties one Redo returns exact edit");
+    const auto reject=[&](size_t index,int measure,unsigned beats,unsigned beat,unsigned grid){const auto b=d.save_bytes();const bool dirty=d.dirty(),undo=d.can_undo(),redo=d.can_redo();return !d.edit_meter(index,measure,beats,beat,grid)&&d.save_bytes()==b&&d.dirty()==dirty&&d.can_undo()==undo&&d.can_redo()==redo;};
+    require(reject(0,1,4,4,4),"First marker cannot leave measure1");
+    require(reject(1,4,4,4,8)&&reject(1,0,4,4,8),"Duplicate measure relocation does not overwrite another marker");
+    require(reject(99,2,4,4,8)&&reject(1,-1,4,4,8)&&reject(1,INT32_MAX,4,4,8),"Invalid index/measure/end leaves bytes and history unchanged");
+    require(reject(1,2,0,4,8)&&reject(1,2,256,4,8)&&reject(1,2,4,3,8)&&reject(1,2,4,4,0)&&reject(1,2,4,4,65536),"Invalid native signature values leave bytes and history unchanged");
+    require(reject(1,2,4,4,8),"Identical marker edit adds no history");
+    require(d.edit_meter(1,5,4,4,8,&selected)&&selected==2&&d.timeline().meters()[1].measure==4,"Marker relocation across peer updates selected index");
+    require(d.undo()&&d.save_bytes()==edited,"Reordered marker relocation is atomic");
+    d.load(before);d.select(2);require(d.edit_meter(0,0,5,4,4)&&d.tempos()[2].time==5424&&d.tempos()[2].selected,"Signature edit uses existing musical-coordinate Tempo reanchor");
+    require(d.undo()&&d.save_bytes()==before&&d.tempos()[2].time==4656,"Reanchor Undo restores meter and Tempo together");
+    auto grouped=tree;auto& tracks=grouped.find("LIST","trkl")->children;auto peer=tracks[1];put32(peer.find("trkh")->data,20,2);tracks.push_back(peer);const auto groupInput=grouped.encode();d.load(groupInput);d.select_track_group(2);
+    require(d.edit_meter(1,2,4,4,8)&&Chunk::parse(d.save_bytes()).find("LIST","trkl")->children[1].encode()==tree.find("LIST","trkl")->children[1].encode(),"Meter properties follow selected group and preserve peer group");
+    d.load(groupInput);rejected([&]{d.select_track_group(1,0,1);},"Absent selected meter index rejected by existing atomic context API");
+    require(d.selected_groups()==1&&d.selected_meter_index()==0&&d.save_bytes()==groupInput&&!d.can_undo()&&!d.dirty(),"Rejected selected meter index retains previous valid context/bytes/history");
+    d.select_track_group(4);require(!d.can_edit_meter()&&!d.edit_meter(0,0,5,4,4)&&d.save_bytes()==groupInput,"Absent group cannot edit another meter");
+    auto styled=tree;auto styleTrack=style_reference_track(1);styleTrack.find("LIST","sttr")->children.push_back(style_reference(L"missing-meter-style.sty",0));styled.find("LIST","trkl")->children.push_back(styleTrack);d.load(styled.encode());
+    require(!d.can_edit_meter()&&!d.edit_meter(0,0,5,4,4)&&d.save_bytes()==styled.encode()&&!d.can_undo(),"Style-backed meter rejects before unresolved Style lookup");
+    d.load(edited);d.save((dir/L"MeterEdited.sgp").wstring());SegmentDocument reload;reload.load(read_file((dir/L"MeterEdited.sgp").wstring()));
+    require(reload.save_bytes()==edited&&reload.timeline().meters()[1].measure==2&&reload.timeline().meters()[1].grids==8&&!reload.dirty()&&!reload.can_undo(),"Separate native reload preserves edited marker and clean history");
+    write_file_atomic((dir/L"MeterBefore.sgp").wstring(),before);
+}

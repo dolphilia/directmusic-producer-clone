@@ -1,3 +1,46 @@
+void responsive_style_start_tests(const std::filesystem::path& dir){
+    const auto base=dir/L"ResponsiveStyle";std::filesystem::create_directories(base);
+    StyleDocument style;require(style.new_pattern(L"Pulse",0)&&style.add_band_gm_instrument({},48,0,64,100),"Responsive Style owns Pattern and downloaded GM Band");
+    style.set_tempo(120);
+    for(int i=0;i<4;++i)require(style.insert_part_note(0,i,{i*4,384,0,UINT32_MAX,48,100}),"Responsive Style owns four beat notes");
+    auto root=Chunk::parse(style.save_bytes());
+    std::function<void(Chunk&)> fixedChord=[&](Chunk& c){
+        if(c.id=="prth"){require(c.data.size()==160,"Responsive Style native Part stride");c.data[150]=2;}
+        if(c.id=="note"){require(read32(c.data,0)==24&&c.data.size()==100,"Responsive Style native note stride");for(size_t i=4;i<c.data.size();i+=24)c.data[i+21]=2;}
+        for(auto& child:c.children)fixedChord(child);
+    };fixedChord(root);style.load(root.encode());style.save((base/L"Pulse.stp").wstring());
+    Framework host;const auto si=host.new_segment();auto& segment=host.document(si);
+    ChordEvent chord;chord.name=L"M";chord.subchords[0].chordRoot=13;chord.subchords[0].scaleRoot=13;
+    require(segment.set_chord(chord)&&segment.set_band(0,style.bands().front().save_bytes()),"Responsive Segment owns transposed Chord and explicit Band Track");
+    host.save_segment(si,(base/L"Pulse.sgp").wstring());const auto sti=host.open_style((base/L"Pulse.stp").wstring());
+    require(host.assign_style_reference(si,sti,0),"Responsive Segment references owned Style");host.save_segment(si,(base/L"Pulse.sgp").wstring());
+    const auto bytes=segment.save_bytes(),styleBytes=host.style_document(sti).save_bytes();
+    Conductor player;player.enable_note_observation();player.prepare(nullptr);
+    const auto prepare=[&]{for(auto it=player.calls().rbegin();it!=player.calls().rend();++it)if(it->operation.find("Playback prepare milliseconds ")==0)return std::stoul(it->operation.substr(30));throw std::runtime_error("Missing actual runtime prepare observation");};
+    for(unsigned attempt=0;attempt<2;++attempt){
+        const auto prior=player.observed_notes().size();player.play(bytes,base.wstring(),nullptr,segment.styles());const auto request=player.playback_request();
+        require(prepare()==300&&(request.flags&producer::runtime::playAfterPrepareTime),"Independent owned Style uses 300ms and retains AFTERPREPARETIME");
+        const auto deadline=GetTickCount64()+5000;while(player.observed_notes().size()<prior+4&&GetTickCount64()<deadline)Sleep(10);
+        const auto notes=player.observed_notes();require(notes.size()>=prior+4,"Initial and replay Style generate four actual notes");
+        std::cerr<<"responsive attempt="<<attempt<<" actualStart="<<request.actualStart<<" firstNote="<<notes[prior].clocks<<"\n";
+        require(notes[prior].clocks==request.actualStart,"Responsive start preserves the first generated beat");
+        for(size_t i=prior;i<prior+4;++i){require(notes[i].midiValue==61&&notes[i].musicValue==48&&notes[i].playMode==2,"Responsive generated pitch follows authored C sharp chord");if(i>prior)require(notes[i].clocks-notes[i-1].clocks==768,"Responsive generated notes preserve 120BPM beat clocks");}
+        require(player.segment_tempo(0)==120,"Responsive runtime retains authored tempo");player.stop();
+    }
+    require(!player.note_observation_overflow()&&!player.note_observation_forwarding_failed(),"Responsive observer forwards actual notes without loss");
+    // A previously scheduled instance still owns the shared performance clock.
+    player.play(bytes,base.wstring(),nullptr,segment.styles());const auto primary=player.current_playback_id();
+    player.play_extra(SegmentDocument::playback_test().save_bytes(),nullptr);const auto secondary=player.current_playback_id();
+    require(primary!=secondary&&player.playback_ids().size()==2&&prepare()==300,"Secondary plain Segment retains current shared Style preparation");
+    player.stop(secondary);require(player.playback_ids().size()==1&&player.current_playback_id()==primary,"Stopping responsive secondary retains the original Style session");player.stop();
+    StyleDocument guarded;guarded.load(styleBytes);require(guarded.new_motif(L"Guard")&&guarded.assign_motif_band(1,0),"Lookahead guard owns a standalone Motif and Band");
+    player.play_motif({L"",guarded.save_bytes()},L"Guard",nullptr);const auto motifId=player.current_playback_id();
+    require(prepare()==1000,"Standalone Motif retains full runtime preparation");
+    player.play(bytes,base.wstring(),nullptr,segment.styles());
+    require(player.playback_ids().size()==2&&prepare()==1000,"Responsive replacement cannot shorten a retained Motif performance clock");
+    player.stop(player.current_playback_id());require(player.current_playback_id()==motifId,"Replacement Stop retains original Motif owner");player.stop();
+    require(segment.save_bytes()==bytes&&!segment.dirty()&&host.style_document(sti).save_bytes()==styleBytes&&!host.style_document(sti).dirty(),"Responsive playback leaves native bytes and history checkpoints untouched");
+}
 void style_player_tests(const std::filesystem::path& dir,const std::wstring& stylePath,const std::wstring& mapPath){
     const auto styleBytes=read_file(stylePath),mapBytes=read_file(mapPath);StyleDocument style;style.load(styleBytes);ChordMapDocument map;map.load(mapBytes);
     const StyleCatalogEntry source{stylePath,styleBytes};std::vector<Bytes> outputs;
@@ -25,4 +68,5 @@ void style_player_tests(const std::filesystem::path& dir,const std::wstring& sty
     session.set_chordmap(mapBytes);require(session.primary_id()!=0&&session.compositions()==count+3,"ChordMap change starts playback after Stop");session.stop();
     session.set_style(source,{},mapBytes);require(session.primary_id()!=0&&session.compositions()==count+4,"Style change starts playback after Stop");session.stop();
     require(styleBytes==read_file(stylePath)&&mapBytes==read_file(mapPath),"Stopped parameter restarts retain immutable source documents");
+    player.shutdown();responsive_style_start_tests(dir);
 }

@@ -44,11 +44,11 @@ std::vector<ResolvedCollection> resolve_collections(const std::vector<Collection
 std::vector<CollectionReference> BandDocument::collection_references() const {std::vector<CollectionReference> result;for(const auto& i:instruments())if(!i.collectionReference.empty())result.push_back(collection_reference(i.collectionReference));return result;}
 std::vector<CollectionReference> document_collection_references(const Bytes& bytes){const auto root=Chunk::parse(bytes);std::vector<CollectionReference> result;std::function<void(const Chunk&)> visit=[&](const Chunk& c){if(c.id=="RIFF"&&c.type=="DMBD"){BandDocument band;band.load(c.encode());const auto refs=band.collection_references();result.insert(result.end(),refs.begin(),refs.end());return;}for(const auto& child:c.children)visit(child);};visit(root);return result;}
 CollectionPlaybackSnapshot prepare_collection_playback(const std::vector<Bytes>& documents,const std::vector<ResolvedCollection>& dependencies){
-    CollectionPlaybackSnapshot result{documents,dependencies};std::vector<Chunk> roots;roots.reserve(documents.size());for(const auto& b:documents)roots.push_back(Chunk::parse(b));std::vector<Chunk*> descriptors;
-    std::function<void(Chunk&)> visit=[&](Chunk& c){if(c.id=="RIFF"&&c.type=="DMBD"){BandDocument check;check.load(c.encode());(void)check.collection_references();if(auto instruments=c.find("LIST","lbil"))for(auto& item:instruments->children)if(item.id=="LIST"&&item.type=="lbin")if(auto ref=item.find("LIST","DMRF"))descriptors.push_back(ref);return;}for(auto& child:c.children)visit(child);};for(auto& root:roots)visit(root);
+    CollectionPlaybackSnapshot result{documents,dependencies};std::vector<Chunk> roots;roots.reserve(documents.size());for(const auto& b:documents)roots.push_back(Chunk::parse(b));std::vector<Chunk*> descriptors,owners;
+    std::function<void(Chunk&)> visit=[&](Chunk& c){if(c.id=="RIFF"&&c.type=="DMBD"){BandDocument check;check.load(c.encode());(void)check.collection_references();if(auto instruments=c.find("LIST","lbil"))for(auto& item:instruments->children)if(item.id=="LIST"&&item.type=="lbin")if(auto ref=item.find("LIST","DMRF")){descriptors.push_back(ref);owners.push_back(&item);}return;}for(auto& child:c.children)visit(child);};for(auto& root:roots)visit(root);
     if(descriptors.size()!=dependencies.size())throw std::runtime_error("Unresolved playback collection dependencies");
     // Complete preflight before runtime identity mapping or Conductor::stop.
-    for(const auto& dependency:dependencies){DlsDocument check;check.load(dependency.bytes);check.validate_playback_samples();}
+    std::vector<bool> emptyCollections;for(const auto& dependency:dependencies){DlsDocument check;check.load(dependency.bytes);check.validate_playback_samples();emptyCollections.push_back(check.instruments().empty());}
     const auto samePath=[](const std::wstring& a,const std::wstring& b){return !a.empty()&&!b.empty()&&CompareStringOrdinal(a.c_str(),-1,b.c_str(),-1,TRUE)==CSTR_EQUAL;};
     for(size_t i=0;i<dependencies.size();++i){const auto ref=collection_reference(descriptors[i]->encode());const auto& supplied=dependencies[i];if(ref.filename!=supplied.reference.filename||ref.objectId!=supplied.reference.objectId)throw std::runtime_error("Playback collection context mismatch");const auto identity=collection_identity(supplied.bytes);if(ref.objectId&&(!identity||ref.objectId!=identity))throw std::runtime_error("Playback collection identity mismatch");auto& mapped=result.collections[i];bool reused=false;
         for(size_t j=0;j<i;++j)if(samePath(supplied.path,dependencies[j].path)){if(supplied.bytes!=dependencies[j].bytes)throw std::runtime_error("Conflicting collection snapshots share a path");mapped.bytes=result.collections[j].bytes;mapped.reference.objectId=result.collections[j].reference.objectId;reused=true;break;}
@@ -56,6 +56,19 @@ CollectionPlaybackSnapshot prepare_collection_playback(const std::vector<Bytes>&
         for(size_t j=0;j<i;++j)if(mapped.reference.objectId==result.collections[j].reference.objectId&&(mapped.bytes!=result.collections[j].bytes||supplied.bytes!=dependencies[j].bytes))throw std::runtime_error("Conflicting collection snapshots share a runtime GUID");mapped.reference.filename.clear();
         auto& descriptor=*descriptors[i];auto header=descriptor.find("refh");put32(header->data,16,(read32(header->data,16)|3u)&~(16u|32u));auto guid=descriptor.find("guid");if(!guid){Chunk c;c.id="guid";descriptor.children.push_back(c);guid=&descriptor.children.back();}guid->data.assign(mapped.reference.objectId->begin(),mapped.reference.objectId->end());
     }
+    // An authored empty DLS reference is valid editor state, but cannot supply
+    // a runtime instrument. Only an explicit default-GM preference authorizes
+    // this projection. All dependency/context/conflict checks above still run.
+    std::vector<ResolvedCollection> playable;for(size_t i=0;i<dependencies.size();++i){
+        if(emptyCollections[i]&&(read32(owners[i]->find("bins")->data,28)&0x1000u)){
+            // The runtime Band no longer names a collection. Classify this
+            // private instrument as GM so the loader downloads the default
+            // set; USE_DEFAULT_GM_SET alone does not identify a collection.
+            auto& bins=owners[i]->find("bins")->data;put32(bins,28,read32(bins,28)|0x100u);
+            auto& children=owners[i]->children;children.erase(std::remove_if(children.begin(),children.end(),[](const Chunk& c){return c.id=="LIST"&&c.type=="DMRF";}),children.end());
+        }else playable.push_back(std::move(result.collections[i]));
+    }
+    result.collections=std::move(playable);
     for(size_t i=0;i<roots.size();++i)result.documents[i]=roots[i].encode();return result;
 }
 Bytes relocate_collection_references(const Bytes& bytes,const std::vector<ResolvedCollection>& dependencies,const std::wstring& directory){
@@ -91,14 +104,14 @@ bool BandDocument::relocate_collections(const std::vector<ResolvedCollection>& d
     auto root=Chunk::parse(after);BandDocument check;check.load(after);(void)check.collection_references();
     undo_.push_back(before);if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(root);return true;
 }
-bool BandDocument::set_collection_reference(size_t index,const CollectionReference& value){
+bool BandDocument::set_collection_reference(size_t index,const CollectionReference& value,bool useDefaultGm){
     if(!value.objectId&&value.filename.empty())return false;if(value.filename.size()>259||value.filename.find(L'\0')!=std::wstring::npos)return false;
     if(!value.filename.empty()){const auto path=std::filesystem::path(value.filename);if(path.is_absolute()||path.has_root_name()||path.lexically_normal().empty()||*path.lexically_normal().begin()==L"..")return false;}
     const auto parsed=instruments();if(index>=parsed.size())return false;auto next=root_;auto list=next.find("LIST","lbil");size_t at=0;
     for(auto& item:list->children)if(item.id=="LIST"&&item.type=="lbin"&&at++==index){auto ref=item.find("LIST","DMRF");if(!ref){Chunk c;c.id="LIST";c.type="DMRF";item.children.push_back(c);ref=&item.children.back();}else (void)collection_reference(ref->encode());
         auto header=ref->find("refh");if(!header){Chunk c;c.id="refh";c.data=Bytes(20);std::memcpy(c.data.data(),&collectionClass,16);ref->children.push_back(c);header=&ref->children.back();}const auto valid=(read32(header->data,16)&~(1u|16u|32u|64u|1024u|2048u))|2u|(value.objectId?1u:0u)|(!value.filename.empty()?16u:0u);put32(header->data,16,valid);
         for(const auto& name:{std::string("guid"),std::string("file")}){auto child=ref->find(name);const bool present=name=="guid"?value.objectId.has_value():!value.filename.empty();if(!present){ref->children.erase(std::remove_if(ref->children.begin(),ref->children.end(),[&](const Chunk& c){return c.id==name;}),ref->children.end());continue;}if(!child){Chunk c;c.id=name;ref->children.push_back(c);child=&ref->children.back();}child->data=name=="guid"?Bytes(value.objectId->begin(),value.objectId->end()):utf16(value.filename);}
-        auto& flags=item.find("bins")->data;put32(flags,28,read32(flags,28)&~(0x100u|0x200u|0x400u|0x1000u));break;
+        auto& flags=item.find("bins")->data;put32(flags,28,(read32(flags,28)&~(0x100u|0x200u|0x400u|0x1000u))|(useDefaultGm?0x1000u:0u));break;
     }
     if(next.encode()==save_bytes())return false;undo_.push_back(save_bytes());if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next);return true;
 }
@@ -118,7 +131,32 @@ BandDocument::BandDocument(){
     Chunk id;id.id="guid";const auto bytes=reinterpret_cast<const unsigned char*>(&identity);id.data.assign(bytes,bytes+sizeof(identity));root_.children.push_back(id);
     Chunk list;list.id="LIST";list.type="lbil";root_.children.push_back(list);saved_=save_bytes();
 }
+BandDocument BandDocument::inactive_default(const std::wstring& name){
+    BandDocument band;if(!band.set_name(name))throw std::runtime_error("Invalid default Band name");
+    auto list=band.root_.find("LIST","lbil");
+    for(std::uint32_t channel=0;channel<16;++channel){
+        Chunk item;item.id="LIST";item.type="lbin";Chunk header;header.id="bins";header.data=Bytes(44);
+        put32(header.data,0,channel==9?0x80000000u:0u);put32(header.data,24,channel);
+        // GM/default-set metadata does not activate PATCH/PAN/VOLUME etc.
+        put32(header.data,28,0x1100u);header.data[32]=64;header.data[33]=100;
+        item.children.push_back(std::move(header));list->children.push_back(std::move(item));
+    }
+    band.saved_=band.save_bytes();band.undo_.clear();band.redo_.clear();return band;
+}
 void BandDocument::load(const Bytes& bytes){auto next=Chunk::parse(bytes);if(next.id!="RIFF"||next.type!="DMBD")throw std::runtime_error("Expected DMBD Band");BandDocument check;check.root_=next;(void)check.instruments();root_=std::move(next);saved_=bytes;undo_.clear();redo_.clear();}
+std::wstring BandDocument::name() const {
+    const auto info=unique_band(root_,"LIST","UNFO");if(!info)return L"";
+    const auto value=unique_band(*info,"UNAM");return value?decode_utf16(value->data):L"";
+}
+bool BandDocument::set_name(const std::wstring& value){
+    if(value.empty()||value.size()>255||value.find(L'\0')!=std::wstring::npos)return false;
+    if(name()==value)return false;
+    auto next=root_;auto info=next.find("LIST","UNFO");
+    if(!info){Chunk c;c.id="LIST";c.type="UNFO";next.children.push_back(c);info=&next.children.back();}
+    auto label=info->find("UNAM");if(!label){Chunk c;c.id="UNAM";info->children.push_back(c);label=&info->children.back();}
+    label->data=utf16(value);
+    undo_.push_back(save_bytes());if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next);return true;
+}
 std::vector<BandInstrument> BandDocument::instruments() const {
     std::vector<BandInstrument> result;for(const auto item:instrument_lists(root_)){
         const auto header=unique_band(*item,"bins");if(!header||header->data.size()<34)throw std::runtime_error("Band instrument truncated");const auto& b=header->data;
@@ -140,6 +178,47 @@ bool BandDocument::add_gm_instrument(std::uint32_t patch,std::uint32_t pchannel,
     if((patch&~0x807f7f7fu)||pan>127||volume>127)return false;for(const auto& i:instruments())if(i.pchannel==pchannel)return false;
     auto next=root_;auto list=next.find("LIST","lbil");if(!list){Chunk c;c.id="LIST";c.type="lbil";next.children.push_back(c);list=&next.children.back();}
     Chunk item;item.id="LIST";item.type="lbin";Chunk header;header.id="bins";header.data=Bytes(44);put32(header.data,0,patch);put32(header.data,24,pchannel);put32(header.data,28,0x1163u);header.data[32]=static_cast<std::uint8_t>(pan);header.data[33]=static_cast<std::uint8_t>(volume);item.children.push_back(header);list->children.push_back(item);
+    undo_.push_back(save_bytes());if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next);return true;
+}
+bool BandDocument::assign_gm_patch(std::uint32_t pchannel,std::uint32_t patch){
+    if(pchannel>=0xfffffffcu||(patch&~0x807f7f7fu))return false;
+    (void)instruments();auto next=root_;auto list=next.find("LIST","lbil");
+    if(!list){Chunk c;c.id="LIST";c.type="lbil";next.children.push_back(c);list=&next.children.back();}
+    Chunk* target=nullptr;for(auto& c:list->children)if(c.id=="LIST"&&c.type=="lbin"&&read32(c.find("bins")->data,24)==pchannel){target=&c;break;}
+    if(!target){Chunk item;item.id="LIST";item.type="lbin";Chunk header;header.id="bins";header.data=Bytes(44);put32(header.data,24,pchannel);header.data[32]=64;header.data[33]=100;item.children.push_back(header);list->children.push_back(item);target=&list->children.back();}
+    auto& header=target->find("bins")->data;put32(header,0,patch);put32(header,28,(read32(header,28)&~(0x200u|0x400u))|0x1103u);
+    target->children.erase(std::remove_if(target->children.begin(),target->children.end(),[](const Chunk& c){return c.id=="LIST"&&c.type=="DMRF";}),target->children.end());
+    if(next.encode()==save_bytes())return false;undo_.push_back(save_bytes());if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next);return true;
+}
+bool BandDocument::assign_dls_patch(std::uint32_t pchannel,std::uint32_t patch,const CollectionReference& reference,bool emptyCollection){
+    if(pchannel>=0xfffffffcu||(patch&~0x807f7f7fu))return false;
+    const auto parsed=instruments();const auto old=std::find_if(parsed.begin(),parsed.end(),[&](const auto& i){return i.pchannel==pchannel;});
+    const bool useDefaultGm=emptyCollection&&old!=parsed.end()&&(old->flags&0x1000u);
+    auto next=*this;(void)next.assign_gm_patch(pchannel,patch);
+    const auto assigned=next.instruments();const auto found=std::find_if(assigned.begin(),assigned.end(),[&](const auto& i){return i.pchannel==pchannel;});
+    if(found==assigned.end()||!next.set_collection_reference(static_cast<size_t>(found-assigned.begin()),reference,useDefaultGm))return false;
+    if(emptyCollection)for(auto& item:next.root_.find("LIST","lbil")->children)if(item.id=="LIST"&&item.type=="lbin"){
+        auto& b=item.find("bins")->data;if(read32(b,24)!=pchannel)continue;
+        if(!(read32(b,28)&0x80u)){if(b.size()<36)b.resize(36);b[34]=0;b[35]=0;}
+        put32(b,28,read32(b,28)|0x80u);break;
+    }
+    if(next.save_bytes()==save_bytes())return false;
+    undo_.push_back(save_bytes());if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next.root_);return true;
+}
+bool BandDocument::set_mix(const std::vector<BandMixValue>& values){
+    if(values.empty())return false;const auto parsed=instruments();
+    for(size_t i=0;i<values.size();++i){const auto& v=values[i];
+        if(v.pchannel>=0xfffffffcu||v.pan>127||v.volume>127)return false;
+        if(std::none_of(parsed.begin(),parsed.end(),[&](const auto& p){return p.pchannel==v.pchannel;}))return false;
+        for(size_t j=0;j<i;++j)if(values[j].pchannel==v.pchannel)return false;
+    }
+    auto next=root_;for(auto& item:next.find("LIST","lbil")->children)if(item.id=="LIST"&&item.type=="lbin"){
+        auto& b=item.find("bins")->data;const auto channel=read32(b,24);
+        const auto value=std::find_if(values.begin(),values.end(),[&](const auto& v){return v.pchannel==channel;});
+        if(value==values.end())continue;put32(b,28,read32(b,28)|0x60u);
+        b[32]=static_cast<std::uint8_t>(value->pan);b[33]=static_cast<std::uint8_t>(value->volume);
+    }
+    if(next.encode()==save_bytes())return false;
     undo_.push_back(save_bytes());if(undo_.size()>100)undo_.erase(undo_.begin());redo_.clear();root_=std::move(next);return true;
 }
 bool BandDocument::undo(){if(undo_.empty())return false;auto next=Chunk::parse(undo_.back());redo_.push_back(save_bytes());undo_.pop_back();root_=std::move(next);return true;}

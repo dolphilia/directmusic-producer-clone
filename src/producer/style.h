@@ -82,6 +82,8 @@ public:
     // Optional template copies all opaque record bytes, including future tails.
     bool insert_part_note(size_t partIndex,size_t position,const StyleNoteEdit&,std::optional<size_t> templateIndex={});
     bool delete_part_note(size_t partIndex,size_t noteIndex);
+    bool can_undo() const {return !undo_.empty();}
+    bool can_redo() const {return !redo_.empty();}
     bool undo();bool redo();
 };
 std::vector<StyleReference> style_references(const Chunk& segment);

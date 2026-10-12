@@ -1,5 +1,6 @@
 #pragma once
 #include "riff.h"
+#include "waves_reverb_parameters.h"
 #include "lyric_observer.h"
 #include "style.h"
 #include "command.h"
@@ -9,26 +10,35 @@
 #include "segment_trigger_playback.h"
 #include "native_script_track.h"
 #include "chordmap_reference.h"
+#include "performance_settings.h"
+#include "band.h"
+#include "metronome.h"
+#include "native_metronome_track.h"
+#include "midi_echo.h"
 #include <windows.h>
 #include <memory>
 
 namespace producer::app {
 struct RuntimeCall { std::string operation; HRESULT result; };
-struct WavesReverbParameters {float inputGain,reverbMix,reverbTime,highFrequencyRatio;};
-struct PlaybackPosition { bool playing; LONG clocks,start; double tempo;bool tempoAvailable=false; };
+struct PlaybackPosition { bool playing; LONG clocks,start; double tempo;bool tempoAvailable=false,countingIn=false; };
 struct CommandParameterSample { HRESULT result; LONG next; CommandEvent event; };
 using PlaybackId=std::uint64_t;
 struct PlaybackNotification { GUID type; DWORD option,field1,field2,group; LONG clocks; bool currentSegment; PlaybackId playbackId=0; };
 struct PlaybackNote { LONG clocks,duration;DWORD channel,group;WORD musicValue;BYTE midiValue,velocity,flags,playMode; };
+struct PlaybackMidi {LONG clocks;DWORD channel;BYTE status,byte1,byte2;};
 struct MotifSelection {size_t styleIndex;std::wstring name;};
 enum class PlaybackBoundary {Immediate,Stored,Grid,Beat,Measure};
 struct PlaybackOptions {
     PlaybackBoundary boundary=PlaybackBoundary::Immediate;
     bool afterPrepareTime=true,secondary=false;
     LONG delayClocks=0;
+    std::optional<LONG> startPoint; // private runtime seek; serialized source stays unchanged
+    std::optional<Timeline> metronomeTimeline;
 };
-struct PlaybackRequest {DWORD flags=0;LONG submittedClocks=0,requestedClocks=0;DWORD runtimeDefaultResolution=0;LONG actualStart=0;};
-struct PlaybackSessionView {PlaybackId id;std::wstring name;bool secondary;PlaybackPosition position;};
+struct PlaybackRequest {DWORD flags=0;LONG submittedClocks=0,requestedClocks=0;DWORD runtimeDefaultResolution=0;LONG actualStart=0;LONG startPoint=0;LONG countInStart=0,countInClocks=0;};
+struct PlaybackSessionView {PlaybackId id;std::wstring name;bool secondary;PlaybackPosition position;bool stoppingAtBoundary=false;};
+struct PerformanceSynthesizer {GUID id{};std::wstring name;DWORD flags=0,maxVoices=0,maxPChannels=0;};
+struct PerformanceRuntimeState {DWORD voices=0,sampleRate=0,portSampleRate=0;std::optional<DWORD> latencyMs;GUID port{};std::wstring portName;};
 // Private playback copy: an embedded Segment AudioPath takes precedence.
 // An empty Segment produces a Motif configuration carrier only.
 Bytes prepare_transport_audio_path(const Bytes& segment,const Bytes& audioPath);
@@ -40,15 +50,43 @@ class Conductor {
     std::vector<RuntimeCall> calls_;
     std::vector<std::wstring> servers_;
     Bytes defaultAudioPath_;
+    float tempoModifier_=1.0f;
+    PerformanceSettings performanceSettings_;
+    std::optional<MetronomeSettings> metronomeSettings_;
+    std::shared_ptr<MetronomeRuntimeTrace> metronomeTrace_;
     std::vector<ToolFactory> toolFactories_;
     void check(const char*,HRESULT);
     void initialize_runtime(HWND);
     void stop_current();
     void register_notification_identity();
     void collect_notifications();
-    void play_snapshot(StylePlaybackSnapshot,const std::wstring&,HWND,const std::vector<ResolvedCollection>&,const std::optional<MotifSelection>&,const PlaybackOptions& = {},const std::vector<ResolvedWave>& = {},const SegmentTriggerPlayback& = {},const std::vector<ResolvedChordMap>& = {},PlaybackId sharedRoute=0);
+    void submit_live_midi(const std::vector<LiveMidi>&,bool track=false);
+    void play_snapshot(StylePlaybackSnapshot,const std::wstring&,HWND,const std::vector<ResolvedCollection>&,const std::optional<MotifSelection>&,const PlaybackOptions& = {},const std::vector<ResolvedWave>& = {},const SegmentTriggerPlayback& = {},const std::vector<ResolvedChordMap>& = {},PlaybackId sharedRoute=0,bool audition=false,bool downloadOnly=false);
 public:
     Conductor();~Conductor();
+    // Initialize the declared audio runtime without creating a playback session.
+    // The main window can do this before its first user Play request.
+    void prepare(HWND owner);
+    // The separate note-preview owner can load instruments without scheduling
+    // a note. Its private path stays alive across preview Stop/replay only.
+    void prepare_note_audition(const Bytes&,HWND,const std::vector<ResolvedCollection>& = {});
+    void play_note_audition(const Bytes&,HWND,const std::vector<ResolvedCollection>& = {});
+    // Audition state belongs to this Performance, never a document or history.
+    // Valid before prepare; active playback adopts the change in place.
+    void set_tempo_modifier(float multiplier);
+    float tempo_modifier()const{return tempoModifier_;}
+    float runtime_tempo_modifier();
+    const PerformanceSettings& performance_settings()const{return performanceSettings_;}
+    void set_metronome(const MetronomeSettings&);
+    bool metronome_failed()const;
+    void enable_metronome_observation();
+    std::vector<MetronomeRuntimeEvent> metronome_events()const;
+    bool metronome_observation_overflow()const;
+    std::vector<PerformanceSynthesizer> synthesizers(HWND owner);
+    PerformanceRuntimeState performance_runtime_state();
+    // Initialization changes are staged on a new runtime before the current
+    // owner is stopped. Latency alone is applied in place with rollback.
+    void apply_performance_settings(const PerformanceSettings&,HWND owner);
     ScriptResult load_script(const Bytes&,const std::wstring& referenceDirectory,HWND owner);
     ScriptSession& script_session();
     std::vector<ScriptDiagnostic> script_diagnostics()const;
@@ -62,7 +100,7 @@ public:
     void set_default_audio_path(const Bytes&);
     void set_tool_factories(std::vector<ToolFactory>);
     const Bytes& default_audio_path() const {return defaultAudioPath_;}
-    void play(const Bytes&,const std::wstring& referenceDirectory,HWND owner,const std::vector<ResolvedStyle>& styles={},const std::vector<ResolvedCollection>& collections={},const std::optional<MotifSelection>& motif={},const std::vector<ResolvedWave>& waves={},const SegmentTriggerPlayback& triggers={},const std::vector<ResolvedChordMap>& maps={});
+    void play(const Bytes&,const std::wstring& referenceDirectory,HWND owner,const std::vector<ResolvedStyle>& styles={},const std::vector<ResolvedCollection>& collections={},const std::optional<MotifSelection>& motif={},const std::vector<ResolvedWave>& waves={},const SegmentTriggerPlayback& triggers={},const std::vector<ResolvedChordMap>& maps={},std::optional<LONG> startPoint={},std::optional<Timeline> metronomeTimeline={});
     // Standalone owned Style. Optional owned AudioPath uses a private config
     // carrier only; the playable Segment is still obtained from GetMotif.
     void play_motif(const StyleCatalogEntry&,const std::wstring& name,HWND owner,const std::vector<ResolvedCollection>& collections={},const PlaybackOptions& options={},const Bytes& audioPath={},PlaybackId sharedRoute=0);
@@ -71,10 +109,24 @@ public:
     void play_extra(const Bytes& segment,HWND owner,const std::vector<ResolvedCollection>& collections={},const PlaybackOptions& options=PlaybackOptions{PlaybackBoundary::Immediate,true,true,0},PlaybackId sharedRoute=0);
     PlaybackRequest playback_request() const;
     PlaybackId current_playback_id() const;
+    PlaybackId primary_playback_id() const;
+    // Schedule on each owned Segment default boundary; keep all runtime owners
+    // alive until the monitor observes completion. Zero means all sessions.
+    void stop_at_boundary(PlaybackId id=0);
     std::vector<PlaybackId> playback_ids() const;
     std::vector<PlaybackSessionView> playback_sessions();
     PlaybackPosition position(PlaybackId);
     DWORD convert_pchannel(PlaybackId,DWORD);
+    // Explicit local PChannels are converted on this session's AudioPath.
+    // Validate and allocate the whole batch before sending its first CC.
+    // Successful sends transfer ownership to Performance; runtime send failure
+    // may have delivered a prefix and is reported, never called atomic.
+    void set_band_mix(PlaybackId,const std::vector<BandMixValue>&);
+    // Immediate channel-voice input on an owned, running Segment AudioPath.
+    // Mapping/validation/allocation precede delivery. Runtime send failures
+    // can deliver a prefix; cleanup retains the possibly sounding notes.
+    void send_live_midi(PlaybackId,const std::vector<LiveMidi>&);
+    void clear_live_midi();
     // Read the actual owned AudioPath DMO. effectIndex counts Waves instances
     // in that buffer (not all effects); returned values own no COM reference.
     WavesReverbParameters waves_reverb_parameters(DWORD pchannel,DWORD bufferIndex,DWORD effectIndex=0,PlaybackId id=0);
@@ -92,6 +144,7 @@ public:
     // Optional bounded observer for the actual generated runtime notes. It
     // forwards messages unchanged; enable before the first play.
     void enable_note_observation();
+    void enable_midi_observation();
     void enable_lyric_observation();
     void enable_script_message_observation();
     std::vector<PlaybackLyric> observed_script_messages()const;
@@ -99,6 +152,7 @@ public:
     std::vector<PlaybackLyric> observed_lyrics() const;
     bool lyric_observation_failed() const;
     std::vector<PlaybackNote> observed_notes() const;
+    std::vector<PlaybackMidi> observed_midi() const;
     bool note_observation_overflow() const;
     bool note_observation_forwarding_failed() const;
     StyleMeter segment_meter(LONG time,DWORD groups=1,DWORD index=0);

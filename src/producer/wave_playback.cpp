@@ -17,6 +17,12 @@ WavePlaybackSnapshot prepare_wave_playback(const Bytes& source,const std::vector
         WaveDocument wave;wave.load(dependencies[i].bytes);const auto identity=wave.identity();if(items[i].objectId&&identity!=items[i].objectId)throw std::runtime_error("Wave playback identity mismatch");
         if(!items[i].objectId&&std::filesystem::path(items[i].filename).filename()!=std::filesystem::path(dependencies[i].path).filename())throw std::runtime_error("Wave filename-only context mismatch");
         const auto format=wave.format();if(format.tag==1){const auto offset=items[i].placement.startOffset;if(offset<0||static_cast<long double>(offset)*format.sampleRate>static_cast<long double>(format.frames)*10000000.0L)throw std::runtime_error("Wave start offset exceeds owned PCM");}
+        const auto loop=items[i].loop;
+        if(loop.start||loop.end){
+            if(!loop.enabled())throw std::runtime_error("Unsupported Wave item loop endpoints");
+            if(format.tag!=1)throw std::runtime_error("Wave item loop bounds require uncompressed PCM");
+            if(loop.end>=format.frames)throw std::runtime_error("Wave item loop exceeds owned PCM");
+        }
         result.waves[i].format=format;
         for(size_t j=0;j<i;++j){WaveDocument prior;prior.load(dependencies[j].bytes);if(identity&&identity==prior.identity()&&dependencies[i].bytes!=dependencies[j].bytes)throw std::runtime_error("Conflicting Wave snapshots share an identity");}
     }

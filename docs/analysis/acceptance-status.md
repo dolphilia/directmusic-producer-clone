@@ -1,24 +1,30 @@
 # 全体8受入の現在状態
 
-改訂：2026-10-09（日本時間）。正本は[acceptance-status.json](acceptance-status.json)。限定採用候補073500338Zの[Q1単位](../../work/analysis/q1-current-0735/20261008T084556994Z/unit-record.json)を維持。最新試験171355889Zの[Send既定Env単位](q3-send-environmental-reverb-2026-10-09.md)はbuild/関連13試験まで保存して一時停止中。本体GUI/native保存/二通常終了/WASAPI/原版比較は未達。全体未完了、fullAcceptance=false。
+表示環境の現行条件：ユーザーが主ディスプレイと解像度を変更した。4K/200%は以前の条件で、変更後のOS倍率は未測定。入力前に返却windowと最新画像で座標を再取得し、厳密比較では双方のDPI/font/theme/client寸法を記録する。
 
-|受入|状態|現行範囲・不足|
-|---|---|---|
-|クリーンビルド|作業中|限定採用0735の218保存source・4生成物一致。試験1713は224保存source・4生成物一致、configure/build/install0。全40実装・Q2・UI資産等の由来確認未完。|
-|起動と終了|作業中|0735 Q1の二通常exit0、1056 Farmの保存/別起動復元の限定証拠を保持。1713本体未実行。全画面/原版手順/全責務未達。|
-|原版データの読込|作業中|Q1六形式10文書source fixture復元、Farm NAME/CATEGORY/class限定合格を保持。全原版形式・意味比較は不足。|
-|編集と保存|作業中|五形式変更/UndoRedo/native保存、六形式10所有文書・一意GUIDを独立監査。全strip/clipboard/ABI、原版入口/キー/マウス/focus/表示比較が不足。|
-|終了後の再読込|作業中|0735 Q1の最終12入力と六形式復元、1056 Farmの23入力と別process復元/二通常exit0を保持。1713未実行。全責務・原版UI復元方針の比較不足。|
-|再生と停止|作業中|0735 Q1のStyle/Transportは限定合格。1056 Bird先頭音はnative/mainで限定一致。native13音は独立譜面に音高/長さ/強さ/music clocks一致。全PCM源・Night・100 BPM・混合・main発音中Bird Stop未達。|
-|繰り返しと異常入力|障害あり|1056 native91は53合格/37凍結障害/三Band失敗1。Bird先頭PCMの8+6対照、譜面監査15対照は限定成立。通常core拒否と全対象反復/異常入力未達。|
-|原版依存の解消|障害あり|Q2原版実行物/COM登録/探索先のない独立Windows未用意。全機能の原版依存解消未証明。|
+登録検証追補：224147同候補一巡：native100＝51合格2990検査/48既知OS凍結/匿名Band1保留。driver172＝18合格/30凍結/124未実行。153入力（7ディレクトリを含む）・18 producing run・291保存/作業ソース・4出力を285検査で照合。新規失敗なし、全登録合格ではない。 [最新一巡](priority-regression-224147-2026-10-12.md)。fullAcceptance=false。
 
-40責務保持、6作業中/2障害/0全体合格。1056 native91原始53合格/37障害/失敗1、driver159原始24合格/23障害/112未実行。新登録5と既存2の改訂実行を併記して登録164、29限定合格/23障害/112未実行。0735の90原始試験と12補足は候補別履歴に保持。障害と未実行を合格に含めない。0735 Q1の成功を1056へ転用せず、原版互換・Q2・全40/全8は未完。
+追加比較：151135・画像7/8の追加比較：正式原版と候補で初期Band選択/Down→Chord/Home→Band/Cancelが一致。候補空OKは異なる手順による単体確認。4トラック/8ノートと入力全バイト不変、11124/10296二通常exit0、289ソース/4出力一致。原版空選択を確立できず空OK未実行のため比較単位全体は未完。 [部分比較報告](ui-add-tracks-comparison-2026-10-12.md)。全体fullAcceptance=false。
 
-## 外観と操作の横断条件
+最新限定調査：20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。 [休止記録](ui-current-tempo-pause-2026-10-12.md)。fullAcceptance=false。 次：ユーザーが再開を指示するまで作業を進めない。再開後は004853の保存/作業291ソース・4出力・入力を照合し、現在の低解像度と最新windowを再観測。正式原版のEscape/focus-loss/不正値契約の未確認を保持し、004853本体を専用candidate Projectで初起動→132.25入力/Enter/UndoRedo/spin/文書所有権→native保存→通常終了→別process復元/通常終了→固定WASAPIテンポ/発音中Stop/無音/replay比較へ進む。保存済み235833空CC・224147一巡/CC15/16を新候補の実行証拠へ転用しない。49native/30driverの凍結、SSP04親/6640破棄回答待ち、独立Style015244/Q2/全40/全8を保持。
 
-[UI互換契約](ui-compatibility.md)と[正本台帳](ui-compatibility.json)を既存8項目へ結び付けた。15群に全40対象を対応付け、具体的な全画面/操作列は今後の原版観測で確定する。`inventoryComplete=false`、外観/操作は未着手。台帳設定と今回の計画改訂を比較実行や製品合格にしない。
+| 受入 | 状態 | 現在の確認範囲と不足 |
+| --- | --- | --- |
+| クリーンビルド | 作業中 | 080641 configure/build/install各0、288ソース/4出力一致。全40/Q2/資産由来未完 |
+| 起動と終了 | 作業中 | 080641 Band作者18540/reload20920の二通常exit0。ベロシティ作者22876/別21724は別証拠。全画面/原版手順未達 |
+| 原版データの読込 | 作業中 | 候補別の原版入力/ANSI参照等を保持。今回の検証用Project/Segment/DLS読込は成立。全入力/graph/KEEP残差は未達 |
+| 編集と保存 | 作業中 | 080641 Band1binsのみ変更/他30leaf保持。Project既存filhのFILETIME・実サイズ1622を更新。Sequenceベロシティ保存は別証拠。全責務/ABI/原版比較未達 |
+| 終了後の再読込 | 作業中 | 080641別process20920でPCh1/Organ1/Pan R64/Volume100/1note復元。ベロシティ8notesは別単位。全原版UI比較未達 |
+| 再生と停止 | 作業中 | 080641 Band300秒18/19、初回0.470秒/再開0.480秒成立、firstStop後残音約1.78秒で静音失敗。Sequenceベロシティ300秒12/12は別証拠。旧失敗・Count-In15/16（操作窓80.906秒>80秒）・原版音声未確認を保持 |
+| 繰り返しと異常入力 | 障害あり | 080641原始native100:53合格2965検査/46OS凍結/既知Band1保留、driver172:20合格/28OS凍結/124未実行。専用3runは別補足 |
+| 原版依存の解消 | 障害あり | 080641 Mainの80実ロード元を74x86/6WoW64ホストに分けPE/hash照合、正式原版先0件。点観測で全40/Q2独立Windowsは未証明 |
 
-必要な画面・メニュー・字体/色/アイコンと、キー/マウス/選択/drag/clipboard/UndoRedo/focus/dialog操作を同じ最終候補で確認する。必要比較未確認・未解決UI差分が残る間は該当受入を合格にしない。UI非適用と環境差は責務ごとに理由・根拠・影響を記録する。旧Tempoの原版Timelineを使った画像一致を自作本体全体へ転用しない。
+Count-Inの単位は未完。原版Options右クリック/Open/Escapeの部分観測が成立したが、異なる設定値のため動的Count-In比較には使わない。高さ498px/480px、字体/余白/アイコンの差を残す。
 
-現在の一時停止と製品候補・実行結果・全8状態を維持する。人が再開を指示するときは[刷新した継続プロンプト](continuation-prompt-2026-10-09.md)を使う。
+元PCM判定13/16と120秒操作失敗を保持する。測定訂正v3は固定閾値を維持し、合成対照12/12の上で同じ300秒PCMを15/16とした。訂正で操作窓失敗を合格にしない。原始一巡と専用GUI/PCM補足、候補別証拠を分ける。
+
+次は[優先計画](priority-segment-sequence-2026-10-10.md)と[継続プロンプト](continuation-prompt-2026-10-10.md)に従う。StopEx/IsPlaying待機/AudioPath deactivateの時刻と戻り値を欠落なく残すログを用意し、長いOrgan1ノート・再生中pan/volume UndoRedo後のfirstStopを検証コピーで再現する。原因が確認できた所有再生ライフサイクルだけ修正し、ソース変更時は新候補identity・関連試験・native100/driver172を更新。同じ固定300秒・19条件/1秒settle/音量・音高・無音閾値でBandを再検証する。旧初回1.15秒失敗と今回stoppedQuiet失敗を保持。Count-In15/16（操作窓80.906秒>80秒）、Echo停止中/実機/Advanced/録音、SSP04全gesture/原版比較、独立Style015244/Q2/OS凍結は未達のまま保持。
+
+旧候補の全文は[更新前保存版](../../work/analysis/ui-metronome-countin/20261011T030344139Z/before-integration-v1/docs/analysis/acceptance-status.md)とJSON履歴へ保持した。SSP08 220927の50%PCM16/16、SSP07 220927の18/18、SSP06 210412の14/16、Band201607の18/19、Metronome022456の14/15、その他候補を031359の実行済み結果へ転用しない。
+
+040727の表示検証ではSegment/DLSはbyte不変、Projectの既存FILETIMEだけ更新。厳しい3ファイル不変条件は不成立で、音楽payload保持と分ける。原版の追従/固定/再追従は部分比較のみ。表示変更のため新規PCMは非適用、031359の音声失敗は保持する。

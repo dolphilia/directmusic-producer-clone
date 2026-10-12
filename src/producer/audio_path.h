@@ -1,5 +1,6 @@
 #pragma once
 #include "riff.h"
+#include "waves_reverb_parameters.h"
 #include <array>
 #include <optional>
 namespace producer::app {
@@ -30,6 +31,8 @@ public:
     std::vector<AudioPathEffect> effects() const;
     bool add_file_output(size_t buffer);
     bool add_waves_reverb(size_t buffer);
+    std::optional<WavesReverbParameters> waves_reverb_parameters(size_t buffer,size_t effect) const;
+    bool set_waves_reverb_parameters(size_t buffer,size_t effect,const WavesReverbParameters&);
     bool add_mixin_buffer(std::uint32_t channels);
     bool add_environmental_reverb_buffer();
     std::optional<size_t> environmental_reverb_buffer() const;

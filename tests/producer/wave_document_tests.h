@@ -1,4 +1,88 @@
+void wave_viewport_tests(){
+    WaveViewport view;view.fit(220500);
+    require(view.frame_at(-1,1000)==0&&view.frame_at(1000,1000)==220500&&view.frame_at(500,1000)==110250,"Fitted Wave viewport maps clipped edges and midpoint to absolute frames");
+    require(view.zoom(true,44100)&&view.first==22050&&view.count==110250&&view.pixel_at(44100,1000)==200,"Zoom anchors an in-view insertion at the same relative pixel");
+    require(view.frame_at(500,1000)==77175&&view.scroll(true,true)&&view.first==110250&&view.frame_at(1000,1000)==220500,"Zoomed drag maps through visible range and page scroll clamps at final frame");
+    require(!view.scroll(true,true)&&view.scroll(false,false)&&view.first==99225,"Boundary scroll is a no-op and line scroll moves one tenth of viewport");
+    require(view.zoom(false,0)&&view.first==0&&view.count==220500,"Zoom out uses view center for offscreen insertion and saturates to fitted Wave");
+    view.synchronize(396900);require(view.first==0&&view.count==396900,"Editing a fitted Wave expands the fitted view with the document");
+    require(view.zoom(true,0),"Wave can enter a zoomed view");view.scroll_to(UINT64_MAX);view.synchronize(100);require(view.first==0&&view.count==100,"PCM shrink clamps zoom and scroll to surviving Wave frames");
+    view.fit(3);require(view.zoom(true,1)&&view.count==2&&view.zoom(true,1)&&view.count==1&&!view.zoom(true,1),"Odd spans zoom to one frame without empty ranges");
+    view.fit(0);require(!view.zoom(true,0)&&!view.scroll(true,true)&&view.frame_at(90,0)==0&&view.pixel_at(0,0)==0,"Empty Wave and zero-width observations remain bounded");
+    view.fit(UINT64_MAX);require(view.frame_at(1000,1000)==UINT64_MAX&&view.frame_at(500,1000)==UINT64_MAX/2&&view.pixel_at(UINT64_MAX-1,1000)==999,"Large absolute frame mapping avoids multiply overflow and floating-point endpoint rounding");
+    WaveViewport other;other.fit(1000);view.fit(220500);view.zoom(true,0);require(other.count==1000&&other.first==0&&view.count==110250,"Different open Wave viewport values remain independent");
+}
+void wave_loop_tools_tests(const std::filesystem::path& dir,const std::wstring& wavePath){
+    const auto source=Chunk::parse(read_file(wavePath));
+    const auto make=[&](unsigned bits,unsigned channels,const std::vector<std::int32_t>& samples){
+        auto root=source;root.children.erase(std::remove_if(root.children.begin(),root.children.end(),[](const Chunk& c){return c.id=="wsmp"||c.id=="smpl"||c.id=="cue "||c.id=="fact"||(c.id=="LIST"&&c.type=="adtl");}),root.children.end());
+        auto& fmt=root.find("fmt ")->data;fmt[2]=static_cast<std::uint8_t>(channels);fmt[3]=0;fmt[12]=static_cast<std::uint8_t>(channels*bits/8);fmt[13]=0;fmt[14]=static_cast<std::uint8_t>(bits);fmt[15]=0;put32(fmt,8,44100*channels*bits/8);
+        auto& data=root.find("data")->data;data.clear();for(const auto sample:samples){if(bits==8)data.push_back(static_cast<std::uint8_t>(sample+128));else for(unsigned j=0;j<bits/8;++j)data.push_back(static_cast<std::uint8_t>(std::uint32_t(sample)>>(j*8)));}return root;
+    };
+    for(const auto bits:{8u,16u,24u,32u}){
+        WaveDocument d;const auto initial=make(bits,1,{10,10,-10,-10,10,10}).encode();d.load(initial);
+        require(d.nearest_zero_frame(0)==2&&d.nearest_zero_frame(3)==2&&d.nearest_zero_frame(6)==4,"Snap selects nearest sign boundary, earlier tie and bounded Wave endpoints");
+        rejected([&]{d.nearest_zero_frame(7);},"Snap rejects out-of-bounds frame");
+        require(d.save_bytes()==initial&&!d.dirty()&&!d.undo(),"Snap does not alter PCM metadata dirty or history");
+        d.load(make(bits,1,{10,10,10,10,10,10}).encode());require(d.nearest_zero_frame(3)==3,"DC waveform without zero boundary keeps original point");
+        d.load(make(bits,1,{0,0,0,0,0,0}).encode());require(d.nearest_zero_frame(0)==0&&d.nearest_zero_frame(3)==3&&d.nearest_zero_frame(6)==6,"Exact silence retains selection and frame-end position");
+        d.load(make(bits,2,{10,-10,10,-10,10,-10,10,-10}).encode());require(d.nearest_zero_frame(3)==3,"Opposite channel cancellation is not a zero-amplitude frame boundary");
+        d.load(make(bits,2,{10,-10,10,-10,-10,10,-10,10}).encode());require(d.nearest_zero_frame(0)==2,"Stereo requires a zero or sign crossing in every channel");
+    }
+    auto root=make(16,1,{11,12,13,14,15,16,17,18,19,20});
+    Chunk wsmp;wsmp.id="wsmp";wsmp.data.resize(67,0);put32(wsmp.data,0,24);wsmp.data[4]=60;put32(wsmp.data,16,2);for(size_t i=0;i<2;++i){const auto at=24+i*20;put32(wsmp.data,at,20);put32(wsmp.data,at+4,0);put32(wsmp.data,at+8,i?7:2);put32(wsmp.data,at+12,i?2:3);for(size_t j=0;j<4;++j)wsmp.data[at+16+j]=static_cast<std::uint8_t>(0xa0+i*4+j);}wsmp.data[20]=0xe1;wsmp.data[64]=0xf1;wsmp.data[65]=0xf2;wsmp.data[66]=0xf3;wsmp.padding=0x79;root.children.push_back(wsmp);
+    Chunk fact;fact.id="fact";fact.data={10,0,0,0,0xb1};root.children.push_back(fact);Chunk opaque;opaque.id="zzzz";opaque.data={1,2,3};opaque.padding=0x65;root.children.push_back(opaque);
+    Chunk smpl;smpl.id="smpl";smpl.data.resize(60,0);put32(smpl.data,12,60);put32(smpl.data,28,1);put32(smpl.data,36,91);put32(smpl.data,44,1);put32(smpl.data,48,4);put32(smpl.data,52,0x80000000);put32(smpl.data,56,3);root.children.push_back(smpl);
+    WaveDocument d;const auto before=root.encode();d.load(before);
+    require(d.clone_sample_loop(0)&&d.format().frames==13&&d.sample_loops()==std::vector<WaveSampleLoop>{{0,2,6},{0,10,2}},"First Clone appends selected region and includes it in the selected loop, shifting later loop");
+    auto expected=root;const auto clip=Chunk::parse(d.copy_pcm(2,5)).find("data")->data;auto& pcm=expected.find("data")->data;pcm.insert(pcm.begin()+10,clip.begin(),clip.end());put32(expected.find("wsmp")->data,36,6);put32(expected.find("wsmp")->data,52,10);put32(expected.find("fact")->data,0,13);const auto first=expected.encode();require(d.save_bytes()==first,"Clone changes only exact PCM insertion and selected/later WSMP/fact; extended headers records tail SMPL unknown chunks identity preserved");
+    require(d.clone_sample_loop(0)&&d.format().frames==16&&d.sample_loops()[0].length==9,"Repeated Clone copies original three frames, not expanded six-frame loop");pcm.insert(pcm.begin()+16,clip.begin(),clip.end());put32(expected.find("wsmp")->data,36,9);put32(expected.find("wsmp")->data,52,13);put32(expected.find("fact")->data,0,16);const auto second=expected.encode();require(d.save_bytes()==second,"Repeated Clone exact sequence and metadata mapping");
+    require(d.undo()&&d.save_bytes()==first,"Clone Undo is one complete transaction");rejected([&]{d.clone_sample_loop(9);},"Invalid Clone loop selection rejected");require(d.save_bytes()==first&&d.redo()&&d.save_bytes()==second,"Invalid Clone retains bytes and pending Redo with original-region series");
+    require(d.undo()&&d.clone_sample_loop(0)&&d.save_bytes()==second,"Branching Clone after Undo retains original three-frame length");
+    const auto folder=dir/L"WaveLoopTools";std::filesystem::create_directories(folder);d.save((folder/L"Cloned.wvp").wstring());require(d.clone_sample_loop(0)&&d.format().frames==19&&d.sample_loops()[0].length==12,"Native save keeps same-process Clone origin");
+    require(d.undo()&&d.save_bytes()==second&&!d.dirty(),"Clone after save Undo returns exact checkpoint");WaveDocument restored;restored.load(read_file((folder/L"Cloned.wvp").wstring()));require(restored.save_bytes()==second&&restored.clone_sample_loop(0)&&restored.format().frames==25,"New document starts new Clone series from restored current loop");
+    require(d.set_name(L"Loop tools")&&d.clone_sample_loop(0)&&d.format().frames==25,"Other actual edits reset transient Clone origin");require(d.undo()&&d.undo()&&d.save_bytes()==second&&d.clone_sample_loop(0)&&d.format().frames==19,"Undo of intervening edit restores original Clone series");
+    auto malformed=root;put32(malformed.find("wsmp")->data,24,UINT32_MAX);WaveDocument invalid;invalid.load(malformed.encode());const auto bad=invalid.save_bytes();rejected([&]{invalid.clone_sample_loop(0);},"Malformed Clone loop metadata rejects before PCM mutation");require(invalid.save_bytes()==bad&&!invalid.dirty()&&!invalid.undo(),"Malformed Clone retains document and history");
+    auto compressed=root;compressed.find("fmt ")->data[0]=2;invalid.load(compressed.encode());const auto compressedBefore=invalid.save_bytes();rejected([&]{invalid.nearest_zero_frame(0);},"Compressed Snap rejected");rejected([&]{invalid.clone_sample_loop(0);},"Compressed Clone rejected");require(invalid.save_bytes()==compressedBefore&&!invalid.undo(),"Unsupported PCM tools are atomic");
+    Framework host;host.open_wave((folder/L"Cloned.wvp").wstring());host.save_project((folder/L"WaveLoopTools.pro").wstring());Framework reload;reload.open_project((folder/L"WaveLoopTools.pro").wstring());require(reload.waves().size()==1&&reload.wave_document(0).save_bytes()==second&&reload.wave_document(0).sample_loops()[0].length==9,"Native Project restores cloned PCM and loop metadata");
+}
+void wave_best_loop_tests(const std::filesystem::path& dir,const std::wstring& wavePath){
+    const auto source=Chunk::parse(read_file(wavePath));
+    const auto make=[&](unsigned bits,unsigned channels,const std::vector<std::int32_t>& samples,std::uint32_t start,std::uint32_t length){
+        auto root=source;root.children.erase(std::remove_if(root.children.begin(),root.children.end(),[](const Chunk& c){return c.id=="wsmp"||c.id=="smpl"||c.id=="cue "||c.id=="fact"||(c.id=="LIST"&&c.type=="adtl");}),root.children.end());
+        auto& fmt=root.find("fmt ")->data;fmt[2]=static_cast<std::uint8_t>(channels);fmt[3]=0;fmt[12]=static_cast<std::uint8_t>(channels*bits/8);fmt[13]=0;fmt[14]=static_cast<std::uint8_t>(bits);fmt[15]=0;put32(fmt,8,44100*channels*bits/8);
+        auto& data=root.find("data")->data;data.clear();for(const auto value:samples){if(bits==8)data.push_back(static_cast<std::uint8_t>(value+128));else for(unsigned j=0;j<bits/8;++j)data.push_back(static_cast<std::uint8_t>(std::uint32_t(value)>>(j*8)));}
+        Chunk wsmp;wsmp.id="wsmp";wsmp.data.resize(47,0);put32(wsmp.data,0,24);wsmp.data[4]=60;put32(wsmp.data,16,1);put32(wsmp.data,24,20);put32(wsmp.data,28,1);put32(wsmp.data,32,start);put32(wsmp.data,36,length);wsmp.data[20]=0xe1;wsmp.data[40]=0xa1;wsmp.data[44]=0xf1;wsmp.padding=0x79;root.children.push_back(wsmp);
+        Chunk opaque;opaque.id="zzzz";opaque.data={1,2,3};opaque.padding=0x65;root.children.push_back(opaque);return root;
+    };
+    const std::vector<std::int32_t> samples{40,50,60,3,4,10,11,12,13,3,4,22,23,24,25,26};
+    for(const auto bits:{8u,16u,24u,32u}){
+        auto root=make(bits,1,samples,4,4);auto& w=root.find("wsmp")->data;w.insert(w.begin()+44,20,0);put32(w,16,2);put32(w,44,20);put32(w,48,0);put32(w,52,12);put32(w,56,2);w[60]=0xb1;
+        Chunk smpl;smpl.id="smpl";smpl.data.resize(60,0);put32(smpl.data,28,1);put32(smpl.data,44,2);put32(smpl.data,48,7);root.children.push_back(smpl);
+        const auto before=root.encode();auto expected=root;put32(expected.find("wsmp")->data,36,6);const auto after=expected.encode();WaveDocument d;d.load(before);
+        require(d.find_best_sample_loop_end(0,8,13)&&d.sample_loops()==std::vector<WaveSampleLoop>{{1,4,6},{0,12,2}},"Best loop end selects independent unique matching seam in range, retaining start/type and other loop");
+        require(d.save_bytes()==after&&d.dirty()&&d.can_undo()&&!d.can_redo(),"Best end changes only WSMP length; PCM SMPL identity extended headers records padding tail and unknown bytes exact");
+        require(d.undo()&&d.save_bytes()==before&&!d.dirty()&&d.can_redo(),"Best end is one reversible complete transaction");
+        rejected([&]{d.find_best_sample_loop_end(0,8,8);},"Empty best-end range rejects");rejected([&]{d.find_best_sample_loop_end(0,13,8);},"Reversed best-end range rejects");rejected([&]{d.find_best_sample_loop_end(0,8,17);},"Outside best-end range rejects");rejected([&]{d.find_best_sample_loop_end(2,8,13);},"Missing selected loop rejects");rejected([&]{d.find_best_sample_loop_end(0,0,3);},"Range entirely before start rejects");
+        require(d.save_bytes()==before&&!d.dirty()&&!d.can_undo()&&d.redo()&&d.save_bytes()==after,"Rejected best-end requests preserve clean checkpoint and pending Redo");
+        require(!d.find_best_sample_loop_end(0,8,13)&&d.undo()&&d.save_bytes()==before&&!d.undo(),"Already optimal end is no-op without extra history");
+        require(d.redo()&&d.save_bytes()==after,"No-op retains prior Redo transaction");
+        const auto path=dir/(L"BestLoop"+std::to_wstring(bits)+L".wvp");d.save(path.wstring());WaveDocument reload;reload.load(read_file(path.wstring()));require(reload.save_bytes()==after&&!reload.dirty()&&!reload.can_undo()&&!reload.can_redo(),"Best loop end restores exact native bytes as clean fresh document");
+    }
+    WaveDocument d;d.load(make(16,1,{1,2,4,5,0,1,2},0,2).encode());require(d.find_best_sample_loop_end(0,3,6)&&d.sample_loops()[0].length==5,"Start at zero uses independently predicted seam with linear preceding sample");
+    d.load(make(16,1,{1,2,30,40,-1,0},0,2).encode());require(d.find_best_sample_loop_end(0,4,6)&&d.sample_loops()[0].length==6,"Search includes selected last sample at Wave EOF without out-of-bounds read");
+    d.load(make(16,1,{7,7,7,7,7,7},1,4).encode());require(d.find_best_sample_loop_end(0,2,6)&&d.sample_loops()[0].length==2,"Exact seam-cost ties choose earliest eligible end");
+    d.load(make(16,2,{5,-5,3,-3,4,-4,5,-5,8,-8,9,-9,3,-3,4,-4,6,-6},2,2).encode());require(d.find_best_sample_loop_end(0,4,8)&&d.sample_loops()[0].length==5,"Opposite stereo cancellation cannot mask seam mismatch in individual channels");
+    d.load(make(32,1,{INT32_MAX,INT32_MIN,100,200,INT32_MIN,100,200,0},2,2).encode());require(d.find_best_sample_loop_end(0,4,7)&&d.sample_loops()[0].length==3,"Signed full-scale 32-bit samples select unique seam without integer-square overflow");
+    d.load(make(8,1,{0},0,1).encode());require(!d.find_best_sample_loop_end(0,0,1)&&!d.dirty()&&!d.can_undo(),"Single-frame Wave has safe unchanged endpoint");
+    auto root=make(16,1,samples,4,4);
+    for(unsigned bad=0;bad<5;++bad){auto invalid=root;if(bad==0)invalid.find("fmt ")->data[0]=2;else if(bad==1)put32(invalid.find("wsmp")->data,24,UINT32_MAX);else if(bad==2)put32(invalid.find("wsmp")->data,28,2);else if(bad==3)put32(invalid.find("wsmp")->data,36,0);else put32(invalid.find("wsmp")->data,36,99);const auto bytes=invalid.encode();d.load(bytes);rejected([&]{d.find_best_sample_loop_end(0,8,13);},"Unsupported PCM or invalid existing loop rejects");require(d.save_bytes()==bytes&&!d.dirty()&&!d.can_undo()&&!d.can_redo(),"Unsupported or malformed best-end request is atomic");}
+    root.children.erase(std::remove_if(root.children.begin(),root.children.end(),[](const Chunk& c){return c.id=="wsmp";}),root.children.end());d.load(root.encode());rejected([&]{d.find_best_sample_loop_end(0,8,13);},"Best end cannot establish a new loop");require(!d.dirty()&&!d.can_undo(),"Missing-loop rejection retains clean document");
+}
 void wave_pcm_tests(const std::filesystem::path& dir,const std::wstring& wavePath){
+    wave_viewport_tests();
+    wave_loop_tools_tests(dir,wavePath);
+    wave_best_loop_tests(dir,wavePath);
     const auto original=read_file(wavePath);auto root=Chunk::parse(original);auto& fmt=root.find("fmt ")->data;fmt[2]=2;fmt[3]=0;put32(fmt,8,44100*4);fmt[12]=4;fmt[13]=0;auto& pcm=root.find("data")->data;pcm.resize(64);for(size_t i=0;i<pcm.size();++i)pcm[i]=static_cast<std::uint8_t>(i+1);
     auto& cue=root.find("cue ")->data;put32(cue,8,2);put32(cue,24,2);put32(cue,32,12);put32(cue,48,12);auto labels=root.find("LIST","adtl");put32(labels->children[0].data,4,10);put32(labels->children[1].data,4,4);
     auto& wsmp=root.find("wsmp")->data;wsmp.resize(55,0);put32(wsmp,16,2);for(size_t i=0;i<2;++i){const auto p=20+i*16;put32(wsmp,p,16);put32(wsmp,p+4,0);put32(wsmp,p+8,i?4:2);put32(wsmp,p+12,i?4:10);}wsmp[52]=0xa1;wsmp[53]=0xa2;wsmp[54]=0xa3;
@@ -14,6 +98,18 @@ void wave_pcm_tests(const std::filesystem::path& dir,const std::wstring& wavePat
     const auto projectDir=dir/L"Pcm";std::filesystem::create_directories(projectDir);write_file_atomic((projectDir/L"Edited.wvp").wstring(),pasted);Framework host;host.open_wave((projectDir/L"Edited.wvp").wstring());host.save_project((projectDir/L"Pcm.pro").wstring());Framework reload;reload.open_project((projectDir/L"Pcm.pro").wstring());require(reload.waves().size()==1&&reload.wave_document(0).save_bytes()==pasted,"Native Project restores PCM and all position metadata");write_file_atomic((dir/L"Before.wvp").wstring(),before);write_file_atomic((dir/L"Deleted.wvp").wstring(),deleted);write_file_atomic((dir/L"Pasted.wvp").wstring(),pasted);write_file_atomic((dir/L"Clipboard.wav").wstring(),clip);
 }
 void wave_sample_loop_tests(const std::filesystem::path& dir,const std::wstring& wavePath){
+    require(wave_pitch_name(60)==L"C5"&&wave_pitch_value(L"C5")==60&&wave_pitch_value(L"f#4")==54&&wave_pitch_value(L"Bb5")==70&&wave_pitch_value(L"127")==127,"Wave Properties uses original C5 middle C pitch names and bounded MIDI numbers");
+    for(const auto value:{L"",L"C-1",L"128",L"H5",L"C11",L"999999999999999999999999"})rejected([&]{wave_pitch_value(value);},"Invalid Wave Properties root pitch rejected");
+    const WaveSampleLoop propLoop{1,10,20};
+    require(wave_loop_value(propLoop,WaveLoopField::end,39,100,false)==WaveSampleLoop{1,10,30}&&wave_loop_value(propLoop,WaveLoopField::length,30,100,false)==WaveSampleLoop{1,10,30},"Inclusive End and Length are reciprocal Wave Properties edits");
+    require(wave_loop_value(propLoop,WaveLoopField::start,15,100,false)==WaveSampleLoop{1,15,15}&&wave_loop_value(propLoop,WaveLoopField::start,15,100,true)==WaveSampleLoop{1,15,20},"Unlocked Start keeps End while locked Start keeps Length");
+    require(wave_loop_value(propLoop,WaveLoopField::end,39,100,true)==WaveSampleLoop{1,20,20},"Locked End moves Start and retains complete loop length and type");
+    rejected([&]{wave_loop_value(propLoop,WaveLoopField::end,9,100,false);},"Wave Properties reversed End rejected");
+    rejected([&]{wave_loop_value(propLoop,WaveLoopField::end,10,100,true);},"Locked End below loop length rejected");
+    rejected([&]{wave_loop_value(propLoop,WaveLoopField::length,0,100,false);},"Empty loop rejected");
+    rejected([&]{wave_loop_value(propLoop,WaveLoopField::length,21,100,true);},"Locked Length edit rejected");
+    rejected([&]{wave_loop_value(propLoop,WaveLoopField::end,UINT64_MAX,100,false);},"Overflowing loop End rejected");
+    rejected([&]{wave_loop_value(propLoop,WaveLoopField::start,90,100,true);},"Locked loop beyond Wave rejected");
     const auto source=read_file(wavePath);WaveDocument doc;doc.load(source);
     require(doc.sample_loops().empty()&&!doc.set_sample_loops({})&&doc.save_bytes()==source&&!doc.undo(),"Empty Wave default loop no-op preserves exact source and history");
     const std::vector<WaveSampleLoop> loops{{0,1000,5000},{1,63000,868}};

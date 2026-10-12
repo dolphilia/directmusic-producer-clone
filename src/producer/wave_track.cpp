@@ -55,6 +55,7 @@ std::vector<WaveItem> wave_items(const Chunk& track){
         size_t index=0;for(const auto& item:unique(part,"LIST","wavi")->children)if(item.id=="LIST"&&item.type=="wave"){
             const auto& h=unique(item,"waih")->data;auto p=placement(h);
             WaveItem value{partIndex,index++,read32(ph,8),read32(h,8),p,filename(item),clockTime,{}};
+            value.loop={read32(h,52),read32(h,56)};
             const auto reference=unique(item,"LIST","DMRF");if(reference->find("guid")){const auto& bytes=unique(*reference,"guid")->data;if(bytes.size()!=16)throw std::runtime_error("Wave reference GUID truncated");std::array<std::uint8_t,16> identity{};std::copy(bytes.begin(),bytes.end(),identity.begin());value.objectId=identity;}
             if(value.filename.empty()&&!value.objectId)throw std::runtime_error("Wave reference has neither identity nor filename");result.push_back(std::move(value));
         }++partIndex;
@@ -81,6 +82,18 @@ bool edit_wave_placement(Chunk& track,size_t part,size_t index,const WavePlaceme
     put32(h,0,static_cast<std::uint32_t>(e.volume));put32(h,4,static_cast<std::uint32_t>(e.pitch));
     put64(h,16,e.time);put64(h,24,e.startOffset);put64(h,40,e.duration);
     if(next.encode()==track.encode())return false;track=std::move(next);return true;
+}
+bool edit_wave_item_loop(Chunk& track,size_t part,size_t index,const WaveItemLoop& loop){
+    if((loop.start||loop.end)&&!loop.enabled())return false;
+    (void)wave_items(track);auto next=track;
+    auto& target=nth(*unique(next,"LIST","wavt"),"wavp",part);
+    auto& item=nth(*unique(target,"LIST","wavi"),"wave",index);
+    auto& header=unique(item,"waih")->data;
+    // Do not reinterpret streaming/invalidation flags or WSMP defaults.
+    // Keep logical time, header extensions and the entire reference exact.
+    put32(header,52,loop.start);put32(header,56,loop.end);
+    if(next.encode()==track.encode())return false;
+    track=std::move(next);return true;
 }
 Bytes copy_wave_event(const Chunk& track,size_t part,size_t index){
     const auto items=wave_items(track);auto selected=std::find_if(items.begin(),items.end(),[&](const auto& e){return e.part==part&&e.index==index;});

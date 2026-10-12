@@ -10,6 +10,7 @@
 #include <cstring>
 #include <filesystem>
 #include <functional>
+#include <limits>
 #include <optional>
 #include <exception>
 #include <stdexcept>
@@ -57,10 +58,19 @@ const Chunk* metadata_list(const Chunk& root,const char* type){
     const Chunk* found=nullptr;for(const auto& c:root.children)if(c.id=="LIST"&&c.type==type){if(found)throw std::runtime_error("Ambiguous Script descriptor metadata");found=&c;}return found;
 }
 std::pair<std::wstring,std::wstring> object_labels(const Bytes& bytes){
-    const auto root=Chunk::parse(bytes);const auto info=metadata_list(root,"UNFO");
-    // Only explicit Unicode metadata is used. ANSI INFO conversion and
-    // Loader case/collision policy remain separate compatibility work.
-    const auto name=info?descriptor_text(one(*info,"UNAM"),"owned name",false):L"";
+    const auto root=Chunk::parse(bytes);std::wstring name;
+    if(root.type=="DLS "||root.type=="WAVE"){
+        // These declared OS classes expose INFO/INAM in their descriptor,
+        // ignoring UNFO even when it appears later. Keep other class policies.
+        const auto info=metadata_list(root,"INFO");const auto field=info?one(*info,"INAM"):nullptr;
+        if(field){const auto& b=field->data;
+            if(b.empty()||b.back()!=0||std::find(b.begin(),b.end(),0)!=b.end()-1||b.size()-1>static_cast<size_t>((std::numeric_limits<int>::max)()))throw std::runtime_error("Script owned ANSI name must have one terminating NUL");
+            const int size=static_cast<int>(b.size()-1);
+            if(size){const auto text=reinterpret_cast<const char*>(b.data());const int count=MultiByteToWideChar(CP_ACP,MB_ERR_INVALID_CHARS,text,size,nullptr,0);
+                if(!count)throw std::runtime_error("Script owned ANSI name is invalid for Windows codepage");name.resize(count);
+                if(MultiByteToWideChar(CP_ACP,MB_ERR_INVALID_CHARS,text,size,name.data(),count)!=count)throw std::runtime_error("Script owned ANSI name decode failed");}
+        }
+    }else{const auto info=metadata_list(root,"UNFO");name=info?descriptor_text(one(*info,"UNAM"),"owned name",false):L"";}
     const auto category=descriptor_text(one(root,"catg"),"owned category",false);
     return {name,category};
 }

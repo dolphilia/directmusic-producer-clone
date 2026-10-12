@@ -1,0 +1,64 @@
+void metronome_runtime_tests(const std::filesystem::path& dir){
+    auto song=SegmentDocument::create_empty({false,20,40000},L"Private click runtime");song.add_tracks({SegmentTrackKind::band,SegmentTrackKind::sequence});song.insert_default_band(0);assign_sequence_gm_patch(song,0,0,16);song.load(song.save_bytes());const auto bytes=song.save_bytes();
+    MetronomeSettings settings;settings.enabled=true;settings.recordOnly=true;settings.countInBars=0;settings.pchannel=0;settings.firstPitch=60;settings.otherPitch=62;settings.firstVelocity=110;settings.otherVelocity=70;
+    Conductor player;player.enable_note_observation();player.enable_metronome_observation();player.set_metronome(settings);player.prepare(GetDesktopWindow());
+    const auto sent=[&]{auto events=player.metronome_events();events.erase(std::remove_if(events.begin(),events.end(),[](const auto& e){return e.stage!="click-note-sent"||e.result!=S_OK;}),events.end());return events;};
+    const auto waitCount=[&](size_t n){const auto until=GetTickCount64()+6000;while(sent().size()<n){if(GetTickCount64()>until)throw std::runtime_error("Private Metronome delivery timed out");Sleep(10);}};
+    player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());waitCount(5);const auto firstId=player.current_playback_id();const auto mapped=player.convert_pchannel(firstId,0);const auto first=sent();
+    require(first.size()>=5&&!player.metronome_failed(),"Private runtime delivers at least one full 4/4 measure without failure");
+    // Keep the actual timestamps even when a timing assertion fails below.
+    const auto initialTrace=metronome_runtime_trace_json(player.metronome_events(),player.metronome_observation_overflow());write_file_atomic((dir/L"metronome-runtime-trace.json").wstring(),Bytes(initialTrace.begin(),initialTrace.end()));
+    const auto events=player.metronome_events();const auto request=std::find_if(events.begin(),events.end(),[](const auto& e){return e.stage=="primary-play-request";});LARGE_INTEGER frequency{};QueryPerformanceFrequency(&frequency);
+    require(request!=events.end()&&static_cast<double>(first[0].qpc-request->qpc)/frequency.QuadPart<=.8,"Cold primary click dispatch stays within800ms of the actual Play request");
+    require(first[0].pitch==60&&first[0].velocity==110&&first[1].pitch==62&&first[1].velocity==70&&first[4].pitch==60&&first[4].velocity==110,"Actual runtime dispatch accents each measure's first beat");
+    bool ordered=true;for(size_t i=1;i<5;++i)ordered&=first[i].musicTime-first[i-1].musicTime==768;
+    require(ordered,"Half-open track scheduling emits each beat once at 768 clocks");
+    require(std::all_of(first.begin(),first.end(),[&](const auto& e){return e.pchannel==mapped;}),"Click notes use the primary's converted AudioPath route");
+    settings.enabled=false;player.set_metronome(settings);Sleep(100);const auto disabled=sent().size();Sleep(1100);
+    require(sent().size()==disabled&&player.position(firstId).playing,"Toolbar disable gates queued clicks without stopping the Segment");
+    settings.enabled=true;settings.firstVelocity=settings.otherVelocity=0;player.set_metronome(settings);Sleep(100);const auto muted=sent().size();Sleep(1100);
+    require(sent().size()==muted,"Zero velocity suppresses dispatch even when Metronome is enabled");
+    settings.firstPitch=65;settings.otherPitch=67;settings.firstVelocity=settings.otherVelocity=89;player.set_metronome(settings);waitCount(muted+2);const auto changed=sent();
+    require(changed.back().velocity==89&&(changed.back().pitch==65||changed.back().pitch==67),"Live settings update future queued clicks without rebuilding playback");
+    const auto observed=player.observed_notes();require(std::any_of(observed.begin(),observed.end(),[&](const auto& n){return n.channel==mapped&&n.velocity==89&&(n.midiValue==65||n.midiValue==67);}),"Generated click notes traverse the actual Performance graph");
+    player.stop();const auto stopped=sent().size();Sleep(700);require(sent().size()==stopped&&player.playback_ids().empty(),"Stop cancels queued private dispatch and releases playback ownership");
+    player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());waitCount(stopped+2);player.stop();player.shutdown();
+    require(!player.initialized()&&!player.metronome_failed()&&!player.metronome_observation_overflow()&&!player.note_observation_overflow()&&!player.note_observation_forwarding_failed(),"Restart and normal shutdown preserve bounded observations without forwarding loss");
+    require(song.save_bytes()==bytes&&song.notes().empty()&&!song.dirty()&&!song.can_undo()&&!song.can_redo(),"Runtime-only clicks leave native data, empty Sequence and document history untouched");
+    const auto trace=metronome_runtime_trace_json(player.metronome_events(),player.metronome_observation_overflow());write_file_atomic((dir/L"metronome-runtime-trace.json").wstring(),Bytes(trace.begin(),trace.end()));
+}
+void metronome_countin_runtime_tests(const std::filesystem::path& dir){
+    auto song=SegmentDocument::create_empty({false,20,40000},L"Count-in runtime");song.add_tracks({SegmentTrackKind::band,SegmentTrackKind::sequence});song.insert_default_band(0);assign_sequence_gm_patch(song,0,0,16);song.add_tempo(0,120);song.add_note({0,384,0,72,96});song.set_meter(1,3,8,2);song.add_tempo(3072,90);song.add_tempo(3840,240);song.add_note({3072,384,0,74,96});song.load(song.save_bytes());const auto bytes=song.save_bytes();
+    MetronomeSettings settings;settings.enabled=true;settings.recordOnly=false;settings.countInBars=1;settings.pchannel=0;settings.firstPitch=60;settings.otherPitch=62;
+    Conductor player;player.enable_note_observation();player.enable_metronome_observation();player.set_metronome(settings);player.prepare(GetDesktopWindow());
+    struct Evidence {Conductor& player;std::filesystem::path file;~Evidence(){try{const auto trace=metronome_runtime_trace_json(player.metronome_events(),player.metronome_observation_overflow());write_file_atomic(file.wstring(),Bytes(trace.begin(),trace.end()));}catch(...){}}} evidence{player,dir/L"metronome-countin-runtime-trace.json"};
+    const auto events=[&](const char* stage){auto values=player.metronome_events();values.erase(std::remove_if(values.begin(),values.end(),[&](const auto& e){return e.stage!=stage||e.result!=S_OK;}),values.end());return values;};
+    const auto wait=[&](auto ready){const auto until=GetTickCount64()+9000;while(!ready()){if(GetTickCount64()>until)throw std::runtime_error("Count-in runtime timed out");Sleep(10);}};
+    const auto authored=[&](BYTE pitch){auto notes=player.observed_notes();notes.erase(std::remove_if(notes.begin(),notes.end(),[&](const auto& n){return n.midiValue!=pitch;}),notes.end());return notes;};
+    player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());const auto first=player.playback_request();const auto id=player.current_playback_id();
+    require(first.countInClocks==3072&&first.actualStart==first.countInStart+3072&&first.requestedClocks==first.actualStart,"Real count-in schedules the authored Segment exactly one4/4 bar after the resolved carrier start");
+    const auto pending=player.position(id);require(pending.playing&&pending.countingIn&&pending.clocks<pending.start,"Transport remains owned and the authored play cursor has not reached its start during count-in");
+    wait([&]{return !authored(72).empty()&&!player.position(id).countingIn;});const auto prefix=events("countin-click-note-sent");
+    require(prefix.size()==4&&prefix.front().musicTime==first.countInStart&&prefix.back().musicTime==first.countInStart+2304,"Runtime emits exactly four count-in clicks before handing off without an extra boundary click");
+    require(prefix[0].pitch==60&&prefix[1].pitch==62&&prefix[2].pitch==62&&prefix[3].pitch==62,"Count-in first-beat accent uses the selected metronome settings");
+    require(std::all_of(prefix.begin(),prefix.end(),[&](const auto& e){return e.pchannel==player.convert_pchannel(id,0)&&e.musicTime<first.actualStart;}),"Count-in uses the authored primary AudioPath and every click precedes its start");
+    require(authored(72).front().clocks>=first.actualStart,"No authored Sequence note is scheduled inside the count-in interval");
+    LARGE_INTEGER frequency{};QueryPerformanceFrequency(&frequency);bool cadence=true;for(size_t i=1;i<prefix.size();++i)cadence&=prefix[i].musicTime-prefix[i-1].musicTime==768&&std::abs(double(prefix[i].qpc-prefix[i-1].qpc)/frequency.QuadPart-.5)<.08;
+    require(cadence,"Initial count-in cadence follows the source120BPM clock rather than the prior Performance tempo");
+    player.stop();settings.countInBars=2;player.set_metronome(settings);const auto beforeStop=events("countin-click-note-sent").size();const auto authorBeforeStop=authored(72).size();
+    player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());wait([&]{return events("countin-click-note-sent").size()>beforeStop;});require(player.position().countingIn,"Stop fixture is still inside the two-bar count-in");player.stop();const auto cancelled=events("countin-click-note-sent").size();Sleep(4500);
+    require(player.playback_ids().empty()&&events("countin-click-note-sent").size()==cancelled&&authored(72).size()==authorBeforeStop,"Stop during count-in cancels queued clicks and the future authored Segment beyond its original due time");
+    player.set_tempo_modifier(.5f);player.set_metronome(settings);const auto seekPrefixBegin=events("countin-click-note-sent").size();
+    player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},3072,song.timeline());const auto seek=player.playback_request();
+    require(seek.startPoint==3072&&seek.countInClocks==2304&&seek.actualStart==seek.countInStart+2304,"Seeking to3/8 uses two local bars and preserves the authored start point");
+    wait([&]{return !authored(74).empty()&&!player.position().countingIn;});const auto seekEvents=events("countin-click-note-sent");
+    require(seekEvents.size()==seekPrefixBegin+6&&seekEvents[seekPrefixBegin].pitch==60&&seekEvents[seekPrefixBegin+3].pitch==60,"Seek count-in starts on its own first beat and accents each3/8 bar");
+    bool halfSpeed=true;for(size_t i=seekPrefixBegin+1;i<seekEvents.size();++i)halfSpeed&=seekEvents[i].musicTime-seekEvents[i-1].musicTime==384&&std::abs(double(seekEvents[i].qpc-seekEvents[i-1].qpc)/frequency.QuadPart-2./3)<.08;
+    require(halfSpeed,"Count-in freezes the starting90BPM meter and honors50% without applying a future240BPM event early");
+    require(authored(74).back().clocks>=seek.actualStart,"Seeked authored notes begin only after the count-in handoff");player.stop();player.set_tempo_modifier(1.f);
+    settings.recordOnly=true;player.set_metronome(settings);player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());require(player.playback_request().countInClocks==0&&!player.position().countingIn,"Record Only does not count in ordinary playback");
+    const auto active=player.current_playback_id();settings.recordOnly=false;settings.countInBars=0xffffffffu;player.set_metronome(settings);const auto calls=player.calls().size();rejected([&]{player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());},"Oversized count-in rejects before scheduling");
+    require(player.current_playback_id()==active&&player.calls().size()==calls,"Rejected count-in preserves the existing playback owner and runtime calls");player.stop();settings.enabled=false;settings.countInBars=2;player.set_metronome(settings);player.play(bytes,L"",GetDesktopWindow(),{},{},{},{},{},{},0,song.timeline());require(player.playback_request().countInClocks==0&&!player.position().countingIn,"Disabled metronome bypasses All Playback count-in");player.stop();player.shutdown();
+    require(!player.metronome_failed()&&!player.metronome_observation_overflow()&&!player.note_observation_overflow()&&!player.note_observation_forwarding_failed(),"Count-in restart Stop and shutdown release both instances without observer loss");
+    require(song.save_bytes()==bytes&&!song.dirty()&&!song.can_undo()&&!song.can_redo(),"Count-in playback never shifts or edits authored native data or history");
+}

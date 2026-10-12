@@ -1,4 +1,5 @@
 #include "conductor.h"
+#include "native_metronome_track.h"
 #include "environmental_reverb_dmo.h"
 #include "source_script_host.h"
 #include "script_dependencies.h"
@@ -13,6 +14,8 @@
 #include "compat/waves_reverb.h"
 #include "compat/directsound_send.h"
 #include <dsound.h>
+#include <dmusicc.h>
+#include <dmksctrl.h>
 #include <objidl.h>
 #include "compat/time_signature.h"
 #include <filesystem>
@@ -26,6 +29,7 @@
 #include <limits>
 #include <map>
 #include <dmerror.h>
+#include <cmath>
 
 namespace producer::app {
 namespace {
@@ -33,9 +37,12 @@ class NoteObserver final:public runtime::Tool {
     volatile LONG references_=1;
     mutable SRWLOCK lock_=SRWLOCK_INIT;
     std::array<PlaybackNote,4096> notes_{};
+    std::array<PlaybackMidi,4096> midi_{};
+    size_t midiCount_=0;bool notesEnabled_=true,midiEnabled_=false;
     size_t count_=0;bool overflow_=false;
     volatile LONG forwardingFailed_=0;
 public:
+    NoteObserver(bool notes=true,bool midi=false):notesEnabled_(notes),midiEnabled_(midi){}
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id,void** result) override {
         if(!result)return E_POINTER;*result=nullptr;
         if(IsEqualGUID(id,IID_IUnknown)||IsEqualGUID(id,runtime::toolId)){*result=static_cast<runtime::Tool*>(this);AddRef();return S_OK;}return E_NOINTERFACE;
@@ -44,15 +51,20 @@ public:
     ULONG STDMETHODCALLTYPE Release() override {const auto n=InterlockedDecrement(&references_);if(!n)delete this;return static_cast<ULONG>(n);}
     HRESULT STDMETHODCALLTYPE Init(runtime::Graph*) override {return S_OK;} // no parent reference cycle
     HRESULT STDMETHODCALLTYPE GetMsgDeliveryType(DWORD* value) override {if(!value)return E_POINTER;*value=8;return S_OK;}
-    HRESULT STDMETHODCALLTYPE GetMediaTypeArraySize(DWORD* value) override {if(!value)return E_POINTER;*value=1;return S_OK;}
-    HRESULT STDMETHODCALLTYPE GetMediaTypes(DWORD** values,DWORD count) override {if(!values||!*values)return E_POINTER;if(count!=1)return E_INVALIDARG;(*values)[0]=1;return S_OK;}
+    HRESULT STDMETHODCALLTYPE GetMediaTypeArraySize(DWORD* value) override {if(!value)return E_POINTER;*value=DWORD(notesEnabled_)+DWORD(midiEnabled_);return S_OK;}
+    HRESULT STDMETHODCALLTYPE GetMediaTypes(DWORD** values,DWORD count) override {if(!values||!*values)return E_POINTER;if(count!=DWORD(notesEnabled_)+DWORD(midiEnabled_))return E_INVALIDARG;DWORD i=0;if(notesEnabled_)(*values)[i++]=1;if(midiEnabled_)(*values)[i++]=0;return S_OK;}
     HRESULT STDMETHODCALLTYPE ProcessPMsg(runtime::Performance*,runtime::Message* message) override {
         if(!message)return E_POINTER;
         if(message->flags&0x20)return DMUS_S_FREE; // flushed messages are not rendered notes
-        if(message->type==1&&message->size>=sizeof(runtime::NoteMessage)){
+        if(notesEnabled_&&message->type==1&&message->size>=sizeof(runtime::NoteMessage)){
             const auto& n=*reinterpret_cast<const runtime::NoteMessage*>(message);
             const PlaybackNote copy{message->musicTime,n.duration,message->pchannel,message->group,n.musicValue,n.midiValue,n.velocity,n.noteFlags,n.playMode};
             AcquireSRWLockExclusive(&lock_);if(count_<notes_.size())notes_[count_++]=copy;else overflow_=true;ReleaseSRWLockExclusive(&lock_);
+        }
+        if(midiEnabled_&&message->type==0&&message->size>=sizeof(runtime::MidiMessage)){
+            const auto& m=*reinterpret_cast<const runtime::MidiMessage*>(message);
+            const PlaybackMidi copy{message->musicTime,message->pchannel,m.status,m.byte1,m.byte2};
+            AcquireSRWLockExclusive(&lock_);if(midiCount_<midi_.size())midi_[midiCount_++]=copy;else overflow_=true;ReleaseSRWLockExclusive(&lock_);
         }
         // Stamp BEFORE returning to avoid routing the same message back to us.
         if(message->graph&&SUCCEEDED(message->graph->StampPMsg(message)))return DMUS_S_REQUEUE;
@@ -60,10 +72,30 @@ public:
     }
     HRESULT STDMETHODCALLTYPE Flush(runtime::Performance*,runtime::Message* message,LONGLONG) override {return message?DMUS_S_FREE:S_OK;}
     std::vector<PlaybackNote> snapshot() const {std::vector<PlaybackNote> result;result.reserve(notes_.size());AcquireSRWLockShared(&lock_);result.assign(notes_.begin(),notes_.begin()+count_);ReleaseSRWLockShared(&lock_);return result;}
+    std::vector<PlaybackMidi> midi_snapshot() const {std::vector<PlaybackMidi> result;result.reserve(midi_.size());AcquireSRWLockShared(&lock_);result.assign(midi_.begin(),midi_.begin()+midiCount_);ReleaseSRWLockShared(&lock_);return result;}
     bool overflow() const {AcquireSRWLockShared(&lock_);const bool result=overflow_;ReleaseSRWLockShared(&lock_);return result;}
     bool forwarding_failed() const {return InterlockedCompareExchange(const_cast<volatile LONG*>(&forwardingFailed_),0,0)!=0;}
 };
 template<class T> void release(T*& object) {if(object){object->Release();object=nullptr;}}
+using OwnedPort=std::unique_ptr<IDirectMusicPort,void(*)(IDirectMusicPort*)>;
+OwnedPort path_port(runtime::AudioPath* path){
+    IDirectMusicPort* raw=nullptr;
+    const auto result=path->GetObjectInPath(0xfffffffb,0x4000,0,GUID_All_Objects,0,IID_IDirectMusicPort,reinterpret_cast<void**>(&raw));
+    OwnedPort port(raw,[](IDirectMusicPort* p){if(p)p->Release();});
+    if(FAILED(result)||!port){std::ostringstream text;text<<"AudioPath port lookup failed: 0x"<<std::hex<<static_cast<unsigned long>(result);throw std::runtime_error(text.str());}return port;
+}
+HRESULT port_latency(IDirectMusicPort* port,DWORD& latency,bool write){
+    IKsControl* raw=nullptr;const auto queried=port->QueryInterface(IID_IKsControl,reinterpret_cast<void**>(&raw));
+    std::unique_ptr<IKsControl,void(*)(IKsControl*)> control(raw,[](IKsControl* p){if(p)p->Release();});
+    if(FAILED(queried)||!control)return FAILED(queried)?queried:E_NOINTERFACE;
+    KSPROPERTY property{GUID_DMUS_PROP_WriteLatency,0,static_cast<ULONG>(write?KSPROPERTY_TYPE_SET:KSPROPERTY_TYPE_GET)};ULONG returned=0;
+    const auto result=control->KsProperty(&property,sizeof(property),&latency,sizeof(latency),&returned);
+    if(SUCCEEDED(result)&&!write&&returned!=sizeof(latency))return E_UNEXPECTED;return result;
+}
+void set_path_latency(runtime::AudioPath* path,DWORD latency){
+    auto port=path_port(path);const auto result=port_latency(port.get(),latency,true);
+    if(FAILED(result)){std::ostringstream text;text<<"Set AudioPath write latency failed: 0x"<<std::hex<<static_cast<unsigned long>(result);throw std::runtime_error(text.str());}
+}
 std::wstring os_server(REFGUID clsid,const wchar_t* expected) {
     wchar_t guid[40]{};if(!StringFromGUID2(clsid,guid,40))throw std::runtime_error("Runtime CLSID formatting failed");
     const auto key=std::wstring(L"CLSID\\")+guid+L"\\InprocServer32";
@@ -84,7 +116,7 @@ struct PlaybackSession {
     runtime::Loader* loader=nullptr;
     runtime::Segment* segment=nullptr;runtime::SegmentState* playing=nullptr;
     runtime::AudioPath* audioPath=nullptr;
-    Bytes memory,loaderMemory;bool downloaded=false,motif=false,messageWindowEligible=false;
+    Bytes memory,loaderMemory;bool downloaded=false,motif=false,messageWindowEligible=false,stoppingAtBoundary=false;
     std::vector<ResolvedStyle> styles;
     std::vector<runtime::Style*> runtimeStyles;
     std::vector<ResolvedChordMap> maps;
@@ -94,6 +126,10 @@ struct PlaybackSession {
     std::vector<runtime::Script*> sourceScripts;
     std::vector<Bytes> scriptLoaderMemory;
     std::unique_ptr<NativeScriptTrackRuntime> nativeScripts;
+    std::unique_ptr<NativeMetronomeRuntime> metronome;
+    runtime::Segment* countInSegment=nullptr;runtime::SegmentState* countInPlaying=nullptr;
+    Bytes countInMemory;bool countInDownloaded=false;
+    std::unique_ptr<NativeMetronomeRuntime> countInMetronome;
     std::vector<Bytes> triggeredLoaderMemory;
     std::vector<ResolvedCollection> collections;
     std::vector<runtime::Collection*> runtimeCollections;
@@ -140,6 +176,9 @@ static void prepare_source_effects(Chunk& path){
         }
 }
 struct Conductor::State:PlaybackSession {
+    runtime::AudioPath* liveMidiPath=nullptr;
+    std::vector<LiveMidi> liveMidiNotes;
+    std::vector<DWORD> liveMidiPedals;
     std::unique_ptr<ScriptSession> script;
     std::vector<ScriptDiagnostic> scriptDiagnosticHistory;bool scriptDiagnosticHistoryOverflow=false;
     std::vector<NativeScriptCall> scriptHistory;bool scriptHistoryOverflow=false;
@@ -150,9 +189,12 @@ struct Conductor::State:PlaybackSession {
     std::vector<IMediaObject*> recordingWaves;
     std::vector<IMediaObject*> recordingEnvironmental;
     Bytes recordingConfig;
-    runtime::Performance* performance=nullptr;bool com=false,audio=false;
-    bool observeNotes=false,observeLyrics=false,observeScriptMessages=false;runtime::Graph* graph=nullptr;NoteObserver* observer=nullptr;LyricObserver* lyricObserver=nullptr;LyricObserver* scriptMessageObserver=nullptr;
+    runtime::Performance* performance=nullptr;IDirectMusic* music=nullptr;runtime::AudioParams audioParams{};bool com=false,audio=false;
+    bool observeNotes=false,observeMidi=false,observeLyrics=false,observeScriptMessages=false;runtime::Graph* graph=nullptr;NoteObserver* observer=nullptr;LyricObserver* lyricObserver=nullptr;LyricObserver* scriptMessageObserver=nullptr;
     std::vector<std::unique_ptr<PlaybackSession>> retained;
+    std::unique_ptr<PlaybackSession> auditionWarmup;
+    Bytes auditionPathConfig;
+    std::vector<ResolvedCollection> auditionCollections;
     // Keys are compared as addresses, never dereferenced or AddRef'd. A queued
     // notification owns its punkUser, so that identity cannot be reused while
     // an old message still exists. New instances overwrite reused addresses.
@@ -162,8 +204,59 @@ struct Conductor::State:PlaybackSession {
 };
 Conductor::Conductor():state_(std::make_unique<State>()),toolFactories_(source_tool_factories()){}
 Conductor::~Conductor(){shutdown();}
+void Conductor::set_metronome(const MetronomeSettings& value){
+    validate_metronome_settings(value);metronomeSettings_=value;
+    if(state_->metronome)state_->metronome->settings(value);
+    if(state_->countInMetronome)state_->countInMetronome->settings(value);
+    for(const auto& session:state_->retained)if(session->metronome)session->metronome->settings(value);
+    for(const auto& session:state_->retained)if(session->countInMetronome)session->countInMetronome->settings(value);
+}
+bool Conductor::metronome_failed()const{
+    if(state_->countInMetronome&&state_->countInMetronome->failed())return true;
+    for(const auto& session:state_->retained)if(session->countInMetronome&&session->countInMetronome->failed())return true;
+    if(state_->metronome&&state_->metronome->failed())return true;
+    for(const auto& session:state_->retained)if(session->metronome&&session->metronome->failed())return true;return false;
+}
 void Conductor::check(const char* operation,HRESULT result) {
+    if(metronomeTrace_&&(FAILED(result)||
+        (std::strcmp(operation,"Get notification")&&std::strcmp(operation,"IsPlaying")&&std::strcmp(operation,"GetTime")&&std::strcmp(operation,"GetStartTime")&&std::strcmp(operation,"Get runtime tempo"))))metronomeTrace_->record(operation,0,0,0,0,result);
     calls_.push_back({operation,result});if(FAILED(result)){std::ostringstream message;message<<operation<<" failed: 0x"<<std::hex<<static_cast<unsigned long>(result);throw std::runtime_error(message.str());}
+}
+void Conductor::enable_metronome_observation(){if(state_->audio)throw std::runtime_error("Enable Metronome observation before runtime preparation");metronomeTrace_=std::make_shared<MetronomeRuntimeTrace>();}
+std::vector<MetronomeRuntimeEvent> Conductor::metronome_events()const{return metronomeTrace_?metronomeTrace_->events():std::vector<MetronomeRuntimeEvent>{};}
+bool Conductor::metronome_observation_overflow()const{return metronomeTrace_&&metronomeTrace_->overflow();}
+void Conductor::prepare(HWND owner){
+    const bool ready=state_->audio;
+    try{initialize_runtime(owner);}catch(...){if(!ready)shutdown();throw;}
+}
+void Conductor::prepare_note_audition(const Bytes& bytes,HWND owner,const std::vector<ResolvedCollection>& collections){
+    auto& s=*state_;
+    if(s.auditionWarmup||s.id||!s.retained.empty())return;
+    auto holder=std::make_unique<PlaybackSession>();
+    auto snapshot=prepare_style_playback(bytes,{});
+    snapshot.segment=prepare_transport_audio_path(snapshot.segment,defaultAudioPath_);
+    play_snapshot(std::move(snapshot),L"",owner,collections,{}, {},{},{},{},0,true,true);
+    // Download completed, but PlaySegmentEx was never called. This owner has
+    // no public playback identity and cannot replace a Transport primary.
+    std::swap(static_cast<PlaybackSession&>(s),*holder);holder->id=0;
+    s.auditionWarmup=std::move(holder);s.auditionCollections=collections;
+}
+void Conductor::play_note_audition(const Bytes& bytes,HWND owner,const std::vector<ResolvedCollection>& collections){
+    if(metronomeTrace_)metronomeTrace_->record("note-audition-enter");
+    auto snapshot=prepare_style_playback(bytes,{});
+    snapshot.segment=prepare_transport_audio_path(snapshot.segment,defaultAudioPath_);
+    if(metronomeTrace_)metronomeTrace_->record("note-audition-snapshot-prepared");
+    play_snapshot(std::move(snapshot),L"",owner,collections,{}, {},{},{},{},0,true);
+    if(metronomeTrace_)metronomeTrace_->record("note-audition-submitted");
+}
+void Conductor::set_tempo_modifier(float multiplier){
+    if(!std::isfinite(multiplier)||multiplier<runtime::masterTempoMin||multiplier>runtime::masterTempoMax)throw std::runtime_error("Tempo modifier must be 1 to 10000 percent");
+    if(state_->performance)check("Set master tempo",state_->performance->SetGlobalParam(runtime::masterTempo,&multiplier,sizeof(multiplier)));
+    tempoModifier_=multiplier;
+}
+float Conductor::runtime_tempo_modifier(){
+    if(!state_->performance)throw std::runtime_error("Performance is not initialized");
+    float value=0;check("Get master tempo",state_->performance->GetGlobalParam(runtime::masterTempo,&value,sizeof(value)));return value;
 }
 void Conductor::initialize_runtime(HWND owner){auto& s=*state_;
         if(!s.com){check("CoInitializeEx",CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED));s.com=true;}
@@ -172,18 +265,65 @@ void Conductor::initialize_runtime(HWND owner){auto& s=*state_;
         if(!s.performance){
             servers_={os_server(runtime::performanceClass,L"dmime.dll"),os_server(runtime::loaderClass,L"dmloader.dll")};
             check("CoCreate Performance8",CoCreateInstance(runtime::performanceClass,nullptr,CLSCTX_INPROC_SERVER,runtime::performance8Id,reinterpret_cast<void**>(&s.performance)));
-            check("InitAudio",s.performance->InitAudio(nullptr,nullptr,owner,8,16,0,nullptr));s.audio=true;
+            validate_performance_settings(performanceSettings_);
+            s.audioParams={sizeof(runtime::AudioParams),TRUE,2|4,0,performanceSettings_.voices,performanceSettings_.sampleRate,performanceSettings_.defaultSynth};
+            if(!IsEqualGUID(performanceSettings_.defaultSynth,GUID_NULL))s.audioParams.valid|=8;
+            check("InitAudio",s.performance->InitAudio(reinterpret_cast<runtime::Music**>(&s.music),nullptr,owner,8,16,0,&s.audioParams));s.audio=true;
+            runtime::AudioPath* rawPath=nullptr;check("Get initialized default AudioPath",s.performance->GetDefaultAudioPath(&rawPath));
+            std::unique_ptr<runtime::AudioPath,void(*)(runtime::AudioPath*)> initialPath(rawPath,[](runtime::AudioPath* p){if(p)p->Release();});
+            if(!initialPath)throw std::runtime_error("Default AudioPath unavailable");set_path_latency(initialPath.get(),performanceSettings_.latencyMs);
+            check("Initialize master tempo",s.performance->SetGlobalParam(runtime::masterTempo,&tempoModifier_,sizeof(tempoModifier_)));
             check("Add Command notifications",s.performance->AddNotificationType(runtime::commandNotification));
             check("Add Segment notifications",s.performance->AddNotificationType(runtime::segmentNotification));
-            if(s.observeNotes||s.observeLyrics||s.observeScriptMessages){
+            if(s.observeNotes||s.observeMidi||s.observeLyrics||s.observeScriptMessages){
                 servers_.push_back(os_server(runtime::graphClass,L"dmime.dll"));
                 check("CoCreate note graph",CoCreateInstance(runtime::graphClass,nullptr,CLSCTX_INPROC_SERVER,runtime::graphId,reinterpret_cast<void**>(&s.graph)));
-                if(s.observeNotes){s.observer=new NoteObserver;check("Insert note observer",s.graph->InsertTool(s.observer,nullptr,0,0));}
+                if(s.observeNotes||s.observeMidi){s.observer=new NoteObserver(s.observeNotes,s.observeMidi);check("Insert note observer",s.graph->InsertTool(s.observer,nullptr,0,0));}
                 if(s.observeLyrics){s.lyricObserver=new LyricObserver;check("Insert Lyric observer",s.graph->InsertTool(s.lyricObserver,nullptr,0,-1));}
                 if(s.observeScriptMessages){s.scriptMessageObserver=new LyricObserver(14,4,true);check("Insert Script Trace observer",s.graph->InsertTool(s.scriptMessageObserver,nullptr,0,-1));}
                 check("Set note graph",s.performance->SetGraph(s.graph));
             }
         }
+}
+std::vector<PerformanceSynthesizer> Conductor::synthesizers(HWND owner){
+    prepare(owner);std::vector<PerformanceSynthesizer> result;
+    if(!state_->music)throw std::runtime_error("DirectMusic port enumeration unavailable");
+    for(DWORD index=0;;++index){DMUS_PORTCAPS caps{};caps.dwSize=sizeof(caps);const auto found=state_->music->EnumPort(index,&caps);
+        if(found==S_FALSE)break;check("Enum DirectMusic port",found);
+        if(caps.dwClass==DMUS_PC_OUTPUTCLASS&&(caps.dwFlags&DMUS_PC_AUDIOPATH))result.push_back({caps.guidPort,caps.wszDescription,caps.dwFlags,caps.dwMaxVoices,caps.dwMaxChannelGroups*16});
+    }return result;
+}
+PerformanceRuntimeState Conductor::performance_runtime_state(){
+    auto& s=*state_;if(!s.audio)throw std::runtime_error("Performance is not initialized");
+    PerformanceRuntimeState result;result.voices=s.audioParams.voices;result.sampleRate=s.audioParams.sampleRate;
+    runtime::AudioPath* rawPath=nullptr;check("Get default AudioPath settings",s.performance->GetDefaultAudioPath(&rawPath));
+    std::unique_ptr<runtime::AudioPath,void(*)(runtime::AudioPath*)> path(rawPath,[](runtime::AudioPath* p){if(p)p->Release();});if(!path)throw std::runtime_error("Default AudioPath unavailable");
+    auto port=path_port(path.get());DMUS_PORTCAPS caps{};caps.dwSize=sizeof(caps);check("Get initialized synth caps",port->GetCaps(&caps));result.port=caps.guidPort;result.portName=caps.wszDescription;
+    DWORD formatSize=0,bufferSize=0;check("Get synth format size",port->GetFormat(nullptr,&formatSize,&bufferSize));
+    if(formatSize<sizeof(WAVEFORMATEX)||formatSize>1024*1024)throw std::runtime_error("Invalid synth format size");
+    Bytes format(formatSize);check("Get synth format",port->GetFormat(reinterpret_cast<WAVEFORMATEX*>(format.data()),&formatSize,&bufferSize));result.portSampleRate=reinterpret_cast<WAVEFORMATEX*>(format.data())->nSamplesPerSec;
+    DWORD latency=0;const auto observed=port_latency(port.get(),latency,false);calls_.push_back({"Get synth write latency",observed});if(SUCCEEDED(observed))result.latencyMs=latency;return result;
+}
+void Conductor::apply_performance_settings(const PerformanceSettings& next,HWND owner){
+    validate_performance_settings(next);if(next==performanceSettings_)return;
+    if(!IsEqualGUID(next.defaultSynth,GUID_NULL)){
+        const auto ports=synthesizers(owner);if(std::none_of(ports.begin(),ports.end(),[&](const auto& p){return IsEqualGUID(p.id,next.defaultSynth);}))throw std::runtime_error("Selected default synthesizer is unavailable");
+    }
+    if(!state_->audio){performanceSettings_=next;return;}
+    const bool restart=next.voices!=performanceSettings_.voices||next.sampleRate!=performanceSettings_.sampleRate||!IsEqualGUID(next.defaultSynth,performanceSettings_.defaultSynth);
+    if(restart){
+        Conductor staged;staged.performanceSettings_=next;staged.tempoModifier_=tempoModifier_;staged.defaultAudioPath_=defaultAudioPath_;staged.toolFactories_=toolFactories_;
+        staged.state_->observeNotes=state_->observeNotes;staged.state_->observeMidi=state_->observeMidi;staged.state_->observeLyrics=state_->observeLyrics;staged.state_->observeScriptMessages=state_->observeScriptMessages;
+        staged.prepare(owner);staged.state_->nextId=state_->nextId;
+        state_.swap(staged.state_);servers_.swap(staged.servers_);calls_.insert(calls_.end(),staged.calls_.begin(),staged.calls_.end());performanceSettings_=next;return;
+    }
+    std::vector<runtime::AudioPath*> paths;
+    runtime::AudioPath* rawDefault=nullptr;check("Get AudioPath to set latency",state_->performance->GetDefaultAudioPath(&rawDefault));
+    std::unique_ptr<runtime::AudioPath,void(*)(runtime::AudioPath*)> defaultPath(rawDefault,[](runtime::AudioPath* p){if(p)p->Release();});if(defaultPath)paths.push_back(defaultPath.get());
+    if(state_->audioPath)paths.push_back(state_->audioPath);for(const auto& retained:state_->retained)if(retained->audioPath)paths.push_back(retained->audioPath);if(state_->recordingPath)paths.push_back(state_->recordingPath);
+    size_t changed=0;try{for(auto* path:paths){set_path_latency(path,next.latencyMs);++changed;}}
+    catch(...){for(size_t i=0;i<changed;++i){try{set_path_latency(paths[i],performanceSettings_.latencyMs);}catch(...){}}throw;}
+    performanceSettings_=next;
 }
 std::vector<NativeScriptCall> Conductor::track_script_calls(PlaybackId id)const{
     auto calls=state_->scriptHistory;const auto append=[&](const PlaybackSession& session){if(session.nativeScripts)for(auto call:session.nativeScripts->calls()){call.playbackId=session.id;call.messageVisible=session.messageWindowEligible;calls.push_back(call);}};append(*state_);for(const auto& retained:state_->retained)append(*retained);if(id)calls.erase(std::remove_if(calls.begin(),calls.end(),[&](const auto& call){return call.playbackId!=id;}),calls.end());return calls;
@@ -221,6 +361,21 @@ bool Conductor::script_diagnostic_overflow()const{return state_->scriptDiagnosti
 bool Conductor::initialized() const{return state_->audio;}
 PlaybackRequest Conductor::playback_request() const{return state_->request;}
 PlaybackId Conductor::current_playback_id() const{return state_->id;}
+PlaybackId Conductor::primary_playback_id() const{
+    PlaybackId id=0;const auto consider=[&](const PlaybackSession& s){if(s.id&&!(s.request.flags&runtime::playSecondary))id=std::max(id,s.id);};
+    consider(*state_);for(const auto& s:state_->retained)consider(*s);return id;
+}
+void Conductor::stop_at_boundary(PlaybackId id){
+    auto& s=*state_;const auto ids=id?std::vector<PlaybackId>{id}:playback_ids();
+    for(const auto target:ids){PlaybackSession* session=s.id==target?&s:nullptr;
+        for(auto& retained:s.retained)if(retained->id==target)session=retained.get();
+        if(!session||!session->playing)throw std::runtime_error("Unknown playback ID");
+        if(session->stoppingAtBoundary)continue;
+        check("StopEx at Segment default boundary",s.performance->StopEx(session->playing,0,runtime::playDefault));
+        for(auto* child:session->triggeredSegments)check("Stop triggered Segment at default boundary",s.performance->StopEx(child,0,runtime::playDefault));
+        session->stoppingAtBoundary=true;
+    }
+}
 std::vector<PlaybackId> Conductor::playback_ids() const {
     std::vector<PlaybackId> ids;if(state_->id)ids.push_back(state_->id);
     for(const auto& session:state_->retained)if(session->id)ids.push_back(session->id);return ids;
@@ -230,18 +385,18 @@ std::vector<PlaybackSessionView> Conductor::playback_sessions(){
     for(const auto id:playback_ids()){
         const PlaybackSession* session=&s;
         if(id!=s.id)for(const auto& retained:s.retained)if(retained->id==id){session=retained.get();break;}
-        result.push_back({id,session->name,(session->request.flags&runtime::playSecondary)!=0,position(id)});
+        result.push_back({id,session->name,(session->request.flags&runtime::playSecondary)!=0,position(id),session->stoppingAtBoundary});
     }
     return result;
 }
 void Conductor::stop(PlaybackId id){
     auto& s=*state_;if(!id)throw std::runtime_error("Invalid playback ID");
-    if(s.id==id){stop_current();if(!s.retained.empty()){std::swap(static_cast<PlaybackSession&>(s),*s.retained.back());s.retained.pop_back();}return;}
-    const auto found=std::find_if(s.retained.begin(),s.retained.end(),[&](const auto& p){return p->id==id;});
-    if(found==s.retained.end())throw std::runtime_error("Unknown playback ID");
+    const auto found=std::find_if(s.retained.begin(),s.retained.end(),[&](const auto& p){return p->id==id;});if(s.id!=id&&found==s.retained.end())throw std::runtime_error("Unknown playback ID");
+    std::exception_ptr cleanupFailure;try{clear_live_midi();}catch(...){cleanupFailure=std::current_exception();}
+    if(s.id==id){stop_current();if(!s.retained.empty()){std::swap(static_cast<PlaybackSession&>(s),*s.retained.back());s.retained.pop_back();}if(cleanupFailure)std::rethrow_exception(cleanupFailure);return;}
     std::swap(static_cast<PlaybackSession&>(s),**found);
     try{stop_current();}catch(...){std::swap(static_cast<PlaybackSession&>(s),**found);throw;}
-    std::swap(static_cast<PlaybackSession&>(s),**found);s.retained.erase(found);
+    std::swap(static_cast<PlaybackSession&>(s),**found);s.retained.erase(found);if(cleanupFailure)std::rethrow_exception(cleanupFailure);
 }
 PlaybackPosition Conductor::position(PlaybackId id){
     auto& s=*state_;if(s.id==id&&id)return position();
@@ -255,6 +410,72 @@ DWORD Conductor::convert_pchannel(PlaybackId id,DWORD channel){
     auto& s=*state_;PlaybackSession* session=nullptr;if(s.id==id&&id)session=&s;else{const auto found=std::find_if(s.retained.begin(),s.retained.end(),[&](const auto& p){return p->id==id;});if(found!=s.retained.end())session=found->get();}
     if(!session||!session->audioPath)throw std::runtime_error("Playback route is unavailable");DWORD result=0;check("Convert source PChannel on session route",session->audioPath->ConvertPChannel(channel,&result));return result;
 }
+void Conductor::set_band_mix(PlaybackId id,const std::vector<BandMixValue>& values){
+    if(!id||values.empty())throw std::runtime_error("Band mixer requires a playback ID and PChannels");
+    std::vector<DWORD> channels;channels.reserve(values.size());
+    for(const auto& v:values){
+        if(v.pchannel>=0xfffffffcu||v.pan>127||v.volume>127||std::find(channels.begin(),channels.end(),v.pchannel)!=channels.end())throw std::runtime_error("Invalid Band mixer PChannel, duplicate or MIDI value");
+        channels.push_back(v.pchannel);
+    }
+    if(!state_->performance||!position(id).playing)throw std::runtime_error("Band mixer playback is no longer running");
+    std::vector<DWORD> mapped; mapped.reserve(channels.size());
+    for(auto& channel:channels){channel=convert_pchannel(id,channel);if(channel>=0xfffffffcu||std::find(mapped.begin(),mapped.end(),channel)!=mapped.end())throw std::runtime_error("Band mixer route returned a reserved or aliased PChannel");mapped.push_back(channel);}
+    auto& s=*state_;runtime::Graph* rawGraph=nullptr;
+    const auto graphResult=s.performance->GetGraph(&rawGraph);
+    std::unique_ptr<runtime::Graph,void(*)(runtime::Graph*)> graph(rawGraph,[](runtime::Graph* p){if(p)p->Release();});
+    check("Get live Band mixer graph",graphResult);if(!graph)throw std::runtime_error("Live Band mixer graph is unavailable");
+    LONGLONG time=0;check("Get live Band mixer time",s.performance->GetTime(&time,nullptr));
+    const auto free=[&s](runtime::Message* p){if(p)s.performance->FreePMsg(p);};
+    using OwnedMessage=std::unique_ptr<runtime::Message,decltype(free)>;
+    std::vector<OwnedMessage> messages;messages.reserve(values.size()*2);
+    for(size_t i=0;i<values.size();++i)for(unsigned axis=0;axis<2;++axis){
+        runtime::Message* raw=nullptr;const auto allocated=s.performance->AllocPMsg(sizeof(runtime::MidiMessage),&raw);
+        OwnedMessage message(raw,free);check("Allocate live Band mixer MIDI",allocated);if(!message)throw std::runtime_error("Live Band mixer MIDI allocation returned no message");
+        std::memset(raw,0,sizeof(runtime::MidiMessage));raw->size=sizeof(runtime::MidiMessage);raw->referenceTime=time;raw->flags=0x45;raw->pchannel=channels[i];raw->group=0xffffffffu;
+        auto* midi=reinterpret_cast<runtime::MidiMessage*>(raw);midi->status=0xb0;midi->byte1=axis?10:7;midi->byte2=static_cast<BYTE>(axis?values[i].pan:values[i].volume);
+        check("Stamp live Band mixer MIDI",graph->StampPMsg(raw));messages.push_back(std::move(message));
+    }
+    for(auto& message:messages){const auto sent=s.performance->SendPMsg(message.get());if(SUCCEEDED(sent))message.release();check("Send live Band mixer MIDI",sent);}
+}
+void Conductor::submit_live_midi(const std::vector<LiveMidi>& values,bool track){
+    auto& s=*state_;if(!s.performance)throw std::runtime_error("MIDI Echo Performance is unavailable");
+    runtime::Graph* rawGraph=nullptr;const auto found=s.performance->GetGraph(&rawGraph);
+    std::unique_ptr<runtime::Graph,void(*)(runtime::Graph*)> graph(rawGraph,[](runtime::Graph* p){if(p)p->Release();});check("Get MIDI Echo graph",found);
+    LONGLONG time=0;check("Get MIDI Echo time",s.performance->GetTime(&time,nullptr));
+    const auto free=[&s](runtime::Message* p){if(p)s.performance->FreePMsg(p);};
+    using OwnedMessage=std::unique_ptr<runtime::Message,decltype(free)>;
+    std::vector<OwnedMessage> messages;messages.reserve(values.size());
+    for(const auto& value:values){runtime::Message* raw=nullptr;const auto allocated=s.performance->AllocPMsg(sizeof(runtime::MidiMessage),&raw);OwnedMessage message(raw,free);check("Allocate MIDI Echo message",allocated);if(!message)throw std::runtime_error("MIDI Echo allocation returned no message");
+        std::memset(raw,0,sizeof(runtime::MidiMessage));raw->size=sizeof(runtime::MidiMessage);raw->referenceTime=time;raw->flags=0x45;raw->pchannel=value.pchannel;raw->group=0xffffffffu;
+        auto midi=reinterpret_cast<runtime::MidiMessage*>(raw);midi->status=value.status;midi->byte1=value.byte1;midi->byte2=value.byte2;
+        if(graph)check("Stamp MIDI Echo message",graph->StampPMsg(raw));messages.push_back(std::move(message));}
+    for(size_t i=0;i<messages.size();++i){auto& message=messages[i];const auto sent=s.performance->SendPMsg(message.get());if(SUCCEEDED(sent)){message.release();if(track){const auto& value=values[i];
+        const auto sameNote=[&](const auto& n){return n.pchannel==value.pchannel&&n.byte1==value.byte1;};
+        const bool pedal=std::find(s.liveMidiPedals.begin(),s.liveMidiPedals.end(),value.pchannel)!=s.liveMidiPedals.end();
+        if(value.status==0x90&&value.byte2){const auto found=std::find_if(s.liveMidiNotes.begin(),s.liveMidiNotes.end(),sameNote);if(found==s.liveMidiNotes.end())s.liveMidiNotes.push_back({value.pchannel,value.status,value.byte1,1});else found->byte2=1;}
+        if(value.status==0x80||(value.status==0x90&&!value.byte2)){if(pedal){for(auto& n:s.liveMidiNotes)if(sameNote(n))n.byte2=0;}else s.liveMidiNotes.erase(std::remove_if(s.liveMidiNotes.begin(),s.liveMidiNotes.end(),sameNote),s.liveMidiNotes.end());}
+        if(value.status==0xb0&&value.byte1==64){if(value.byte2>=64){if(!pedal)s.liveMidiPedals.push_back(value.pchannel);}else{s.liveMidiPedals.erase(std::remove(s.liveMidiPedals.begin(),s.liveMidiPedals.end(),value.pchannel),s.liveMidiPedals.end());s.liveMidiNotes.erase(std::remove_if(s.liveMidiNotes.begin(),s.liveMidiNotes.end(),[&](const auto& n){return n.pchannel==value.pchannel&&!n.byte2;}),s.liveMidiNotes.end());}}
+        if(value.status==0xb0&&(value.byte1==120||value.byte1==123)){if(value.byte1==123&&pedal){for(auto& n:s.liveMidiNotes)if(n.pchannel==value.pchannel)n.byte2=0;}else s.liveMidiNotes.erase(std::remove_if(s.liveMidiNotes.begin(),s.liveMidiNotes.end(),[&](const auto& n){return n.pchannel==value.pchannel;}),s.liveMidiNotes.end());}
+        }}check("Send MIDI Echo message",sent);}
+}
+void Conductor::send_live_midi(PlaybackId id,const std::vector<LiveMidi>& values){
+    if(values.empty())return;if(values.size()>4096)throw std::runtime_error("MIDI Echo batch is too large");
+    for(const auto& value:values)if(value.pchannel>=0xfffffffcu||value.status<0x80||value.status>0xe0||(value.status&15)||value.byte1>127||value.byte2>127||((value.status==0xc0||value.status==0xd0)&&value.byte2))throw std::runtime_error("Invalid MIDI Echo message");
+    auto& s=*state_;PlaybackSession* session=nullptr;if(id&&s.id==id)session=&s;else for(const auto& item:s.retained)if(id&&item->id==id)session=item.get();
+    if(!session||!session->audioPath||!position(id).playing)throw std::runtime_error("MIDI Echo needs a running Segment AudioPath; stopped-state instrument audition is not implemented");
+    std::vector<LiveMidi> mapped; mapped.reserve(values.size());for(auto value:values){value.pchannel=convert_pchannel(id,value.pchannel);if(value.pchannel>=0xfffffffcu)throw std::runtime_error("MIDI Echo route returned a reserved PChannel");mapped.push_back(value);}
+    if(s.liveMidiPath&&s.liveMidiPath!=session->audioPath)clear_live_midi();
+    if(!s.liveMidiPath){session->audioPath->AddRef();s.liveMidiPath=session->audioPath;}
+    s.liveMidiNotes.reserve(s.liveMidiNotes.size()+mapped.size());s.liveMidiPedals.reserve(s.liveMidiPedals.size()+mapped.size());
+    // Submission allocates the entire batch first. Only successfully accepted
+    // messages update note ownership; a failure preserves the accepted prefix.
+    submit_live_midi(mapped,true);
+}
+void Conductor::clear_live_midi(){
+    auto& s=*state_;if(!s.liveMidiPath)return;std::vector<LiveMidi> cleanup;cleanup.reserve(s.liveMidiNotes.size()+s.liveMidiPedals.size());
+    for(const auto channel:s.liveMidiPedals)cleanup.push_back({channel,0xb0,64,0});for(const auto& note:s.liveMidiNotes)cleanup.push_back({note.pchannel,0x80,note.byte1,0});
+    if(!cleanup.empty())submit_live_midi(cleanup);s.liveMidiNotes.clear();s.liveMidiPedals.clear();release(s.liveMidiPath);
+}
 const Bytes& Conductor::playback_bytes() const{return state_->memory;}
 const std::vector<ResolvedStyle>& Conductor::playback_styles() const{return state_->styles;}
 const std::vector<ResolvedCollection>& Conductor::playback_collections() const{return state_->collections;}
@@ -267,11 +488,14 @@ void Conductor::enable_script_message_observation(){if(state_->performance)throw
 std::vector<PlaybackLyric> Conductor::observed_script_messages()const{return state_->scriptMessageObserver?state_->scriptMessageObserver->snapshot():std::vector<PlaybackLyric>{};}
 bool Conductor::script_message_observation_failed()const{return state_->scriptMessageObserver&&state_->scriptMessageObserver->failed();}
 void Conductor::enable_note_observation(){if(state_->performance)throw std::runtime_error("Enable note observation before initialization");state_->observeNotes=true;}
+void Conductor::enable_midi_observation(){if(state_->performance)throw std::runtime_error("Enable MIDI observation before initialization");state_->observeMidi=true;}
 std::vector<PlaybackNote> Conductor::observed_notes() const{return state_->observer?state_->observer->snapshot():std::vector<PlaybackNote>{};}
+std::vector<PlaybackMidi> Conductor::observed_midi() const{return state_->observer?state_->observer->midi_snapshot():std::vector<PlaybackMidi>{};}
 bool Conductor::note_observation_overflow() const{return state_->observer&&state_->observer->overflow();}
 bool Conductor::note_observation_forwarding_failed() const{return state_->observer&&state_->observer->forwarding_failed();}
 void Conductor::set_default_audio_path(const Bytes& bytes){
     Bytes validated=bytes;if(!validated.empty()){AudioPathDocument config;config.load(validated);}
+    if(validated!=defaultAudioPath_&&!performanceSettings_.persistLatency){auto next=performanceSettings_;next.latencyMs=55;apply_performance_settings(next,nullptr);}
     defaultAudioPath_.swap(validated);
 }
 bool Conductor::file_output_active() const{return !state_->recordingControls.empty();}
@@ -357,7 +581,8 @@ void Conductor::set_tool_factories(std::vector<ToolFactory> factories){
     for(size_t i=0;i<factories.size();++i){if(!factories[i].create)throw std::runtime_error("Missing Tool factory");for(size_t j=0;j<i;++j)if(factories[i].classId==factories[j].classId)throw std::runtime_error("Duplicate Tool factory");}
     toolFactories_=std::move(factories);
 }
-void Conductor::play(const Bytes& bytes,const std::wstring& directory,HWND owner,const std::vector<ResolvedStyle>& styles,const std::vector<ResolvedCollection>& collections,const std::optional<MotifSelection>& motif,const std::vector<ResolvedWave>& waves,const SegmentTriggerPlayback& triggers,const std::vector<ResolvedChordMap>& maps) {
+void Conductor::play(const Bytes& bytes,const std::wstring& directory,HWND owner,const std::vector<ResolvedStyle>& styles,const std::vector<ResolvedCollection>& collections,const std::optional<MotifSelection>& motif,const std::vector<ResolvedWave>& waves,const SegmentTriggerPlayback& triggers,const std::vector<ResolvedChordMap>& maps,std::optional<LONG> startPoint,std::optional<Timeline> metronomeTimeline) {
+    if(metronomeTrace_)metronomeTrace_->record("primary-play-request",startPoint.value_or(0));
     // Validate the caller's serialized document before disturbing playback.
     if(!triggers.source.empty()&&triggers.source!=bytes)throw std::runtime_error("Trigger playback graph does not match current source");
     if(triggers.source.empty()){const auto root=Chunk::parse(bytes);if(const auto tracks=root.find("LIST","trkl"))for(const auto& track:tracks->children)if(track.find("LIST","segt"))for(const auto& e:segment_triggers(track))if(e.hasId||!e.filename.empty()||!e.name.empty())throw std::runtime_error("Resolve owned Segment Trigger graph before playback");}
@@ -366,7 +591,8 @@ void Conductor::play(const Bytes& bytes,const std::wstring& directory,HWND owner
     auto mapSnapshot=prepare_chordmap_playback(snapshot.segment,maps);snapshot.segment=std::move(mapSnapshot.segment);
     snapshot.segment=prepare_command_playback(snapshot.segment);
     snapshot.segment=prepare_transport_audio_path(snapshot.segment,defaultAudioPath_);
-    play_snapshot(std::move(snapshot),directory,owner,collections,motif,{},waves,triggers,mapSnapshot.maps);
+    PlaybackOptions options;options.startPoint=startPoint;options.metronomeTimeline=std::move(metronomeTimeline);
+    play_snapshot(std::move(snapshot),directory,owner,collections,motif,options,waves,triggers,mapSnapshot.maps);
 }
 void Conductor::play_motif(const StyleCatalogEntry& owned,const std::wstring& name,HWND owner,const std::vector<ResolvedCollection>& collections,const PlaybackOptions& options,const Bytes& audioPath,PlaybackId sharedRoute){
     StyleDocument source;source.load(owned.bytes);StyleReference reference{};reference.groups=1;reference.hasId=true;
@@ -382,8 +608,10 @@ void Conductor::play_extra(const Bytes& segment,HWND owner,const std::vector<Res
     auto snapshot=prepare_style_playback(segment,{});snapshot.segment=prepare_command_playback(snapshot.segment);snapshot.segment=prepare_transport_audio_path(snapshot.segment,defaultAudioPath_);
     play_snapshot(std::move(snapshot),L"",owner,collections,{},options,{},{},{},sharedRoute);
 }
-void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring& directory,HWND owner,const std::vector<ResolvedCollection>& collections,const std::optional<MotifSelection>& motif,const PlaybackOptions& options,const std::vector<ResolvedWave>& waves,const SegmentTriggerPlayback& triggers,const std::vector<ResolvedChordMap>& maps,PlaybackId sharedRoute){
+void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring& directory,HWND owner,const std::vector<ResolvedCollection>& collections,const std::optional<MotifSelection>& motif,const PlaybackOptions& options,const std::vector<ResolvedWave>& waves,const SegmentTriggerPlayback& triggers,const std::vector<ResolvedChordMap>& maps,PlaybackId sharedRoute,bool audition,bool downloadOnly){
     if(options.delayClocks<0)throw std::runtime_error("Playback delay cannot be negative");
+    if(options.startPoint){if(snapshot.segment.empty()||motif)throw std::runtime_error("Editor seek requires a Segment snapshot");
+        SegmentDocument source;source.load(snapshot.segment);if(*options.startPoint<0||*options.startPoint>=source.length())throw std::runtime_error("Playback start point outside Segment");}
     DWORD flags=options.afterPrepareTime?runtime::playAfterPrepareTime:0;
     switch(options.boundary){
     case PlaybackBoundary::Immediate:break;
@@ -401,6 +629,13 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
         if(matches!=1)throw std::runtime_error("Owned Motif name must select exactly one Pattern");
     }
     const bool hasSegment=!snapshot.segment.empty();std::vector<Bytes> documents;if(hasSegment)documents.push_back(snapshot.segment);for(const auto& style:snapshot.styles)documents.push_back(style.bytes);auto collectionSnapshot=prepare_collection_playback(documents,collections);if(hasSegment)snapshot.segment=std::move(collectionSnapshot.documents[0]);for(size_t i=0;i<snapshot.styles.size();++i)snapshot.styles[i].bytes=std::move(collectionSnapshot.documents[i+(hasSegment?1:0)]);
+    std::optional<MetronomeCountIn> countIn;
+    if(hasSegment&&metronomeSettings_&&options.metronomeTimeline&&!options.secondary&&!motif&&!audition&&!downloadOnly){
+        const auto root=Chunk::parse(snapshot.segment);const auto start=options.startPoint.value_or(static_cast<LONG>(read32(root.find("segh")->data,8)));
+        // Validate overflow and the complete private carrier before replacing
+        // any session or allowing authored PREPARE/InitPlay callbacks.
+        auto candidate=prepare_metronome_count_in(snapshot.segment,*options.metronomeTimeline,start,*metronomeSettings_);if(candidate.clocks)countIn=std::move(candidate);
+    }
     auto waveSnapshot=prepare_wave_playback(snapshot.segment,waves);snapshot.segment=std::move(waveSnapshot.segment);
     const auto graphBytes=segment_tool_graph(snapshot.segment);
     if(!graphBytes.empty())validate_tool_factories(graphBytes,toolFactories_);
@@ -442,6 +677,11 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
         if(!options.secondary)throw std::runtime_error("Shared AudioPath requires secondary playback");
         PlaybackSession* source=s.id==sharedRoute?&s:nullptr;for(auto& retained:s.retained)if(retained->id==sharedRoute)source=retained.get();
         if(!source||!source->audioPath)throw std::runtime_error("Shared playback route unavailable");source->audioPath->AddRef();route.reset(source->audioPath);
+    }
+    if(audition&&!downloadOnly&&s.auditionWarmup&&pathConfig==s.auditionPathConfig&&
+       collections.size()==s.auditionCollections.size()&&
+       std::equal(collections.begin(),collections.end(),s.auditionCollections.begin(),[](const auto& a,const auto& b){return a.reference.objectId==b.reference.objectId&&a.reference.filename==b.reference.filename&&a.bytes==b.bytes;})){
+        s.auditionWarmup->audioPath->AddRef();route.reset(s.auditionWarmup->audioPath);
     }
     collect_notifications();
     // A secondary instance shares the performance clock while owning its
@@ -615,6 +855,11 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
             check("Create standard AudioPath",obtained);
             if(obtained!=S_OK||!s.audioPath)throw std::runtime_error("Standard AudioPath unavailable");
         }
+        set_path_latency(s.audioPath,performanceSettings_.latencyMs);
+        if(metronomeSettings_&&options.metronomeTimeline&&!options.secondary&&!motif&&!audition&&!downloadOnly){
+            servers_.push_back(os_server(runtime::graphClass,L"dmime.dll"));
+            s.metronome=std::make_unique<NativeMetronomeRuntime>(s.segment,s.audioPath,*options.metronomeTimeline,*metronomeSettings_,metronomeTrace_);
+        }
         if(s.lyricObserver||s.scriptMessageObserver){DWORD channel=0;const auto converted=s.audioPath->ConvertPChannel(0,&channel);calls_.push_back({"Message Window AudioPath PChannel 1",converted});if(converted!=DMUS_E_NOT_FOUND){check("Convert Message Window PChannel",converted);if(converted!=S_OK||channel>=0xfffffffc)throw std::runtime_error("Message Window channel mapping invalid");if(s.lyricObserver)s.lyricObserver->include_channel(channel);}s.messageWindowEligible=converted==S_OK;if(s.scriptMessageObserver)s.scriptMessageObserver->set_visible(s.messageWindowEligible);}
         // GetMotif generates notes and Band data without necessarily carrying
         // its Style's tempo. A standalone primary owns the musical clock;
@@ -641,21 +886,75 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
             producer::TempoParam resolved{};check("Verify standalone Motif tempo",s.segment->GetParam(producer::GUID_TempoParam,0xffffffff,0,0,&next,&resolved));if(resolved.tempo!=bpm)throw std::runtime_error("Standalone Motif runtime tempo differs from Style");
         }
         DWORD defaultResolution=0;check("Get runtime default resolution",s.segment->GetDefaultResolution(&defaultResolution));
+        if(options.startPoint)check("Set editor playback start point",s.segment->SetStartPoint(*options.startPoint));
+        LONG startPoint=0;check("Get editor playback start point",s.segment->GetStartPoint(&startPoint));
+        if(options.startPoint&&startPoint!=*options.startPoint)throw std::runtime_error("Runtime playback start point differs from editor request");
+        if(countIn){
+            std::vector<Bytes> styleBands;const auto references=style_references(Chunk::parse(s.memory));std::vector<size_t> selectedStyles;
+            for(unsigned group=0;group<32;++group){std::optional<size_t> selected;for(size_t i=0;i<references.size();++i)if((references[i].groups&(1u<<group))&&references[i].time<=startPoint&&(!selected||references[i].time>=references[*selected].time))selected=i;
+                if(selected&&std::find(selectedStyles.begin(),selectedStyles.end(),*selected)==selectedStyles.end())selectedStyles.push_back(*selected);}
+            for(const auto i:selectedStyles){runtime::Band* rawBand=nullptr;const auto found=s.runtimeStyles.at(i)->GetDefaultBand(&rawBand);auto band=reinterpret_cast<IUnknown*>(rawBand);std::unique_ptr<IUnknown,void(*)(IUnknown*)> ownedBand(band,[](IUnknown* p){if(p)p->Release();});
+                if(found==DMUS_E_NOT_FOUND)continue;check("Get count-in Style default Band",found);if(!band)throw std::runtime_error("Count-in Style Band is missing");
+                runtime::MusicObject* rawObject=nullptr;check("Query count-in Style Band descriptor",band->QueryInterface(runtime::musicObjectId,reinterpret_cast<void**>(&rawObject)));std::unique_ptr<runtime::MusicObject,void(*)(runtime::MusicObject*)> object(rawObject,[](runtime::MusicObject* p){if(p)p->Release();});if(!object)throw std::runtime_error("Count-in Style Band descriptor is missing");runtime::ObjectDesc descriptor{};descriptor.size=sizeof(descriptor);check("Read count-in Style Band descriptor",object->GetDescriptor(&descriptor));
+                StyleDocument source;source.load(s.styles.at(i).bytes);Bytes match;for(const auto& candidate:source.bands()){const auto bytes=candidate.save_bytes();const auto root=Chunk::parse(bytes);const auto id=root.find("guid");
+                    const bool matches=(descriptor.valid&1)?id&&id->data.size()==16&&!std::memcmp(id->data.data(),&descriptor.objectId,16):(descriptor.valid&4)&&std::wmemchr(descriptor.name,0,64)&&candidate.name()==descriptor.name;
+                    if(matches){if(!match.empty())throw std::runtime_error("Count-in Style Band identity is ambiguous");match=bytes;}}
+                if(match.empty())throw std::runtime_error("Count-in Style Band is not bound to owned source bytes");styleBands.push_back(std::move(match));}
+            *countIn=prepare_metronome_count_in(s.memory,*options.metronomeTimeline,startPoint,*metronomeSettings_,styleBands);s.countInMemory=countIn->segment;
+            runtime::ObjectDesc descriptor{};descriptor.size=sizeof(descriptor);descriptor.valid=2|1024;descriptor.classId=runtime::segmentClass;descriptor.memoryLength=s.countInMemory.size();descriptor.memory=s.countInMemory.data();const auto loaded=s.loader->GetObject(&descriptor,runtime::segment8Id,reinterpret_cast<void**>(&s.countInSegment));check("Load private count-in Segment",loaded);if(loaded!=S_OK||!s.countInSegment)throw std::runtime_error("Private count-in Segment load was partial");
+            producer::TempoParam tempo{};LONG next=0;const auto tempoResult=s.segment->GetParam(producer::GUID_TempoParam,0xffffffff,0,startPoint,&next,&tempo);
+            if(tempoResult==DMUS_E_TRACK_NOT_FOUND){tempo.tempo=120;if(!selectedStyles.empty())check("Get count-in starting Style tempo",s.runtimeStyles.at(selectedStyles.front())->GetTempo(&tempo.tempo));}else check("Get count-in starting Segment tempo",tempoResult);
+            tempo.time=0;check("Set private count-in tempo",s.countInSegment->SetParam(producer::GUID_TempoParam,0xffffffff,0,0,&tempo));
+            s.countInMetronome=std::make_unique<NativeMetronomeRuntime>(s.countInSegment,s.audioPath,countIn->timeline,*metronomeSettings_,metronomeTrace_,startPoint,true);
+            s.countInDownloaded=true;check("Download private count-in Segment",s.countInSegment->Download(s.audioPath));
+        }
         for(auto* child:s.triggeredSegments){const auto hr=child->Download(s.audioPath?s.audioPath:static_cast<IUnknown*>(s.performance));++s.triggeredDownloads;check("Download owned triggered Segment",hr);if(hr!=S_OK)throw std::runtime_error("Triggered Segment download partial");}
         s.downloaded=true;const auto download=s.segment->Download(s.audioPath?s.audioPath:static_cast<IUnknown*>(s.performance));check("Download segment",download);if(!s.collections.empty()&&download!=S_OK)throw std::runtime_error("Owned DLS segment download was partial");
+        if(downloadOnly){s.auditionPathConfig=pathConfig;return;}
+        // Source Script PREPARE calls and tools need the full lookahead.
+        // Independent Segments, including owned Styles, use a shorter audition
+        // window after their Band/instrument downloads have completed. Child
+        // playback graphs still need the full lookahead for their own starts;
+        // never reduce preparation while another session owns the clock.
+        const bool responsive=!motif&&!s.nativeScripts&&!s.toolGraph&&!s.audioPathGraph&&
+            triggers.segments.empty()&&triggers.motifs.empty()&&triggers.scripts.empty();
+        if(s.retained.empty()||!responsive)
+            check("Set source playback prepare time",s.performance->SetPrepareTime(responsive?300:1000));
         // Give the performance its advertised preparation window. Immediate
         // starts can reach the synth before the initial Band/first note is ready.
         DWORD prepareMilliseconds=0;check("Get playback prepare time",s.performance->GetPrepareTime(&prepareMilliseconds));
         calls_.push_back({"Playback prepare milliseconds "+std::to_string(prepareMilliseconds),S_OK});
-        LONG submitted=0;check("Get scheduling music time",s.performance->GetTime(nullptr,&submitted));
-        const auto requested=options.delayClocks?static_cast<LONGLONG>(submitted)+options.delayClocks:0;
+        LONG submitted=0;LONGLONG submittedReference=0;check("Get scheduling music time",s.performance->GetTime(&submittedReference,&submitted));
+        if(metronomeTrace_){LONGLONG queueReference=0;LONG queueMusic=0;check("Get playback queue time",s.performance->GetQueueTime(&queueReference));check("Convert playback queue time",s.performance->ReferenceToMusicTime(queueReference,&queueMusic));metronomeTrace_->record("prepared-queue-music-time",queueMusic);metronomeTrace_->record("submitted-music-time",submitted,0,0,prepareMilliseconds);}
+        LONGLONG requested=options.delayClocks?static_cast<LONGLONG>(submitted)+options.delayClocks:0;
+        // AFTERPREPARETIME resolved a cold primary/private note audition almost one second ahead
+        // even with GetPrepareTime=300ms. Use the public reference/music clock
+        // conversion for this immediate, already downloaded private-track path.
+        // Boundary, delayed, shared, secondary and complex sessions retain their
+        // original scheduling flags and full preparation policy.
+        if(countIn||(responsive&&(s.metronome||audition)&&s.retained.empty()&&!options.secondary&&options.boundary==PlaybackBoundary::Immediate&&options.afterPrepareTime&&!options.delayClocks)){
+            LONGLONG queued=0;check("Get immediate primary queue time",s.performance->GetQueueTime(&queued));
+            const auto prepareReference=static_cast<LONGLONG>(countIn?prepareMilliseconds:300)*10000;
+            if(submittedReference>std::numeric_limits<LONGLONG>::max()-prepareReference||queued>std::numeric_limits<LONGLONG>::max()-500000)throw std::runtime_error("Immediate primary time exceeds runtime range");
+            const auto target=std::max(submittedReference+prepareReference,queued+500000);LONG clocks=0;check("Convert immediate primary start time",s.performance->ReferenceToMusicTime(target,&clocks));requested=clocks;flags&=~runtime::playAfterPrepareTime;
+            if(metronomeTrace_)metronomeTrace_->record("explicit-primary-start-music-time",clocks,flags);
+        }
+        LONG countInStart=0;
+        if(countIn){
+            if(requested<0||requested>LONG_MAX-countIn->clocks)throw std::runtime_error("Count-in scheduled start exceeds runtime range");countInStart=static_cast<LONG>(requested);
+            check("Play private count-in Segment",s.performance->PlaySegmentEx(s.countInSegment,nullptr,nullptr,0,requested,&s.countInPlaying,nullptr,s.audioPath));check("Get count-in actual start",s.countInPlaying->GetStartTime(&countInStart));
+            requested=static_cast<LONGLONG>(countInStart)+countIn->clocks;if(requested>LONG_MAX)throw std::runtime_error("Count-in resolved start exceeds runtime range");
+            if(metronomeTrace_)metronomeTrace_->record("countin-start-music-time",countInStart,0,0,countIn->clocks);
+        }
         if(requested>std::numeric_limits<LONG>::max())throw std::runtime_error("Scheduled music time exceeds runtime range");
         s.request={flags,submitted,static_cast<LONG>(requested)};
-        s.request.runtimeDefaultResolution=defaultResolution;
+        s.request.runtimeDefaultResolution=defaultResolution;s.request.startPoint=startPoint;
+        if(countIn){s.request.countInStart=countInStart;s.request.countInClocks=countIn->clocks;}
         calls_.push_back({"Playback flags "+std::to_string(flags)+" requested clocks "+std::to_string(requested),S_OK});
         check("PlaySegmentEx",s.performance->PlaySegmentEx(s.segment,nullptr,nullptr,flags,requested,&s.playing,nullptr,s.audioPath));
         register_notification_identity();
         check("Get resolved playback start",s.playing->GetStartTime(&s.request.actualStart));
+        if(metronomeTrace_)metronomeTrace_->record("resolved-start-music-time",s.request.actualStart);
     } catch(...){
         // Failure of a new instance must not tear down unrelated playback.
         try{stop_current();}catch(...){shutdown();throw;}
@@ -663,20 +962,35 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
         throw;
     }
 }
-void Conductor::stop(){for(const auto id:playback_ids())stop(id);if(state_->scriptMessageObserver)state_->scriptMessageObserver->set_visible(true);}
+void Conductor::stop(){if(metronomeTrace_)metronomeTrace_->record("stop-request");std::exception_ptr failure;try{clear_live_midi();}catch(...){failure=std::current_exception();}for(const auto id:playback_ids())try{stop(id);}catch(...){if(!failure)failure=std::current_exception();}if(state_->scriptMessageObserver)state_->scriptMessageObserver->set_visible(true);if(failure)std::rethrow_exception(failure);}
 void Conductor::stop_current() {
     auto& s=*state_;
+    if(metronomeTrace_)metronomeTrace_->record("stop-current-enter");
+    if(s.metronome)s.metronome->cancel();
+    if(s.countInMetronome)s.countInMetronome->cancel();
     if(s.nativeScripts){s.nativeScripts->cancel();for(auto call:s.nativeScripts->calls()){call.playbackId=s.id;call.messageVisible=s.messageWindowEligible;if(state_->scriptHistory.size()<4096)state_->scriptHistory.push_back(call);else state_->scriptHistoryOverflow=true;}state_->scriptHistoryOverflow|=s.nativeScripts->overflow();}
+    if(metronomeTrace_)metronomeTrace_->record("stop-runtime-cancelled");
     if(s.playing)register_notification_identity();
     if(s.performance&&s.segment){
+        if(metronomeTrace_)metronomeTrace_->record("stop-ex-enter");
         check("StopEx",s.performance->StopEx(s.playing?s.playing:static_cast<IUnknown*>(s.segment),0,0));
+        if(metronomeTrace_)metronomeTrace_->record("stop-poll-enter");
         const auto deadline=GetTickCount64()+2000;HRESULT playing;
         do {playing=s.performance->IsPlaying(s.segment,s.playing);if(playing!=S_OK)break;Sleep(10);}while(GetTickCount64()<deadline);
         check("IsPlaying after StopEx",playing);
         if(playing==S_OK)check("Stop timeout",HRESULT_FROM_WIN32(ERROR_TIMEOUT));
     }
+    if(s.performance&&s.countInSegment){check("Stop private count-in Segment",s.performance->StopEx(s.countInPlaying?s.countInPlaying:static_cast<IUnknown*>(s.countInSegment),0,0));const auto deadline=GetTickCount64()+2000;HRESULT playing;do{playing=s.performance->IsPlaying(s.countInSegment,s.countInPlaying);if(playing!=S_OK)break;Sleep(10);}while(GetTickCount64()<deadline);check("IsPlaying count-in after Stop",playing);if(playing==S_OK)check("Count-in Stop timeout",HRESULT_FROM_WIN32(ERROR_TIMEOUT));}
     collect_notifications();
     for(auto* child:s.triggeredSegments)if(s.performance){check("Stop owned triggered Segment",s.performance->StopEx(child,0,0));const auto deadline=GetTickCount64()+2000;HRESULT playing;do{playing=s.performance->IsPlaying(child,nullptr);if(playing!=S_OK)break;Sleep(10);}while(GetTickCount64()<deadline);check("IsPlaying triggered Segment after Stop",playing);if(playing==S_OK)check("Triggered Segment stop timeout",HRESULT_FROM_WIN32(ERROR_TIMEOUT));}
+    // StopEx stops notes, but a manually-created path can keep producing an
+    // effect tail while its remaining runtime references are released. The
+    // last session can deactivate that path; shared sessions and the live
+    // FileOutput recorder still need theirs active.
+    if(s.audioPath&&s.audioPath!=s.recordingPath&&(!s.auditionWarmup||s.audioPath!=s.auditionWarmup->audioPath)&&!std::any_of(s.retained.begin(),s.retained.end(),[&](const auto& other){return other->id&&other->audioPath==s.audioPath;})){
+        if(metronomeTrace_)metronomeTrace_->record("stop-deactivate-enter");
+        check("Deactivate last owned AudioPath",s.audioPath->Activate(FALSE));
+    }
     for(size_t i=0;i<s.triggeredDownloads;++i)check("Unload owned triggered Segment",s.triggeredSegments[i]->Unload(s.audioPath?s.audioPath:static_cast<IUnknown*>(s.performance)));s.triggeredDownloads=0;
     for(auto*& child:s.triggeredSegments)release(child);s.triggeredSegments.clear();s.triggeredSnapshots.clear();
     // The recorder retains this path across Stop/replay. Discard its DSP
@@ -688,20 +1002,23 @@ void Conductor::stop_current() {
         for(auto* dmo:s.recordingEnvironmental)check("Flush retained recording Environmental Reverb after last Stop",dmo->Flush());
     }
     release(s.playing);
+    release(s.countInPlaying);if(s.countInDownloaded){check("Unload private count-in Segment",s.countInSegment->Unload(s.audioPath));s.countInDownloaded=false;}release(s.countInSegment);s.countInMetronome.reset();s.countInMemory.clear();
     // Public notification consumers receive value copies even after release.
     if(s.downloaded){check("Unload segment",s.segment->Unload(s.audioPath?s.audioPath:static_cast<IUnknown*>(s.performance)));s.downloaded=false;}
-    s.audioPathGraph.reset();release(s.audioPath);release(s.segment);s.toolGraph.reset();s.motif=false;for(auto& style:s.runtimeStyles)release(style);s.runtimeStyles.clear();for(auto& collection:s.runtimeCollections)release(collection);s.runtimeCollections.clear();for(auto& wave:s.runtimeWaves)release(wave);s.runtimeWaves.clear();s.nativeScripts.reset();for(auto& script:s.sourceScripts)release(script);s.sourceScripts.clear();for(auto& script:s.runtimeScripts)release(script);s.runtimeScripts.clear();for(auto& map:s.runtimeMaps)release(map);s.runtimeMaps.clear();release(s.loader);s.scriptLoaderMemory.clear();s.maps.clear();s.scripts.clear();s.triggeredLoaderMemory.clear();s.loaderMemory.clear();s.waves.clear();s.styles.clear();s.collections.clear();s.firstPatches.clear();s.memory.clear();s.id=0;s.request={};
+    s.audioPathGraph.reset();release(s.audioPath);release(s.segment);s.toolGraph.reset();s.motif=false;for(auto& style:s.runtimeStyles)release(style);s.runtimeStyles.clear();for(auto& collection:s.runtimeCollections)release(collection);s.runtimeCollections.clear();for(auto& wave:s.runtimeWaves)release(wave);s.runtimeWaves.clear();s.nativeScripts.reset();s.metronome.reset();for(auto& script:s.sourceScripts)release(script);s.sourceScripts.clear();for(auto& script:s.runtimeScripts)release(script);s.runtimeScripts.clear();for(auto& map:s.runtimeMaps)release(map);s.runtimeMaps.clear();release(s.loader);s.scriptLoaderMemory.clear();s.maps.clear();s.scripts.clear();s.triggeredLoaderMemory.clear();s.loaderMemory.clear();s.waves.clear();s.styles.clear();s.collections.clear();s.firstPatches.clear();s.memory.clear();s.id=0;s.request={};s.stoppingAtBoundary=false;
+    if(metronomeTrace_)metronomeTrace_->record("stop-current-exit");
 }
 PlaybackPosition Conductor::position() {
     auto& s=*state_;if(!s.performance||!s.segment||!s.playing)return {};
     const auto playing=s.performance->IsPlaying(s.segment,s.playing);check("IsPlaying",playing);
     PlaybackPosition p{};p.playing=playing==S_OK;check("GetTime",s.performance->GetTime(nullptr,&p.clocks));check("GetStartTime",s.playing->GetStartTime(&p.start));
+    p.countingIn=s.countInPlaying&&p.clocks<p.start;if(p.countingIn)p.playing=true;
     for(auto* child:s.triggeredSegments){const auto childPlaying=s.performance->IsPlaying(child,nullptr);check("IsPlaying owned triggered Segment",childPlaying);if(childPlaying==S_OK)p.playing=true;}
     if(p.playing){producer::TempoParam tempo{};LONG next=0;const auto hr=s.performance->GetParam(producer::GUID_TempoParam,0xffffffff,0,p.clocks,&next,&tempo);
         // Wave-only Segments legitimately provide no Tempo parameter. Preserve
         // that absence rather than inventing a tempo or rejecting playback.
-        if(hr==DMUS_E_TRACK_NOT_FOUND||(s.motif&&(s.request.flags&runtime::playSecondary)&&hr==DMUS_E_NOT_FOUND)){
-            calls_.push_back({s.motif?"Motif runtime tempo unavailable":"Segment runtime tempo unavailable",hr});
+        if(hr==DMUS_E_TRACK_NOT_FOUND||((s.request.flags&runtime::playSecondary)&&hr==DMUS_E_NOT_FOUND)){
+            calls_.push_back({s.motif?"Motif runtime tempo unavailable":(s.request.flags&runtime::playSecondary)?"Secondary runtime tempo unavailable":"Segment runtime tempo unavailable",hr});
         }else{check("Get runtime tempo",hr);p.tempo=tempo.tempo;p.tempoAvailable=true;}
     }return p;
 }
@@ -786,19 +1103,23 @@ CommandParameterSample Conductor::command_parameter(LONG time,DWORD groups,DWORD
 void Conductor::shutdown() noexcept {
     auto& s=*state_;
     auto log=[&](const char* op,HRESULT result)noexcept{try{calls_.push_back({op,result});}catch(...){}};
-    auto cleanup=[&](PlaybackSession& session){if(session.nativeScripts)session.nativeScripts->cancel();
+    try{clear_live_midi();}catch(...){log("MIDI Echo cleanup failed",E_FAIL);s.liveMidiNotes.clear();s.liveMidiPedals.clear();release(s.liveMidiPath);}
+    auto cleanup=[&](PlaybackSession& session){if(session.metronome)session.metronome->cancel();if(session.countInMetronome)session.countInMetronome->cancel();if(session.nativeScripts)session.nativeScripts->cancel();
+        if(s.performance&&session.countInSegment)log("Stop count-in cleanup",s.performance->StopEx(session.countInPlaying?session.countInPlaying:static_cast<IUnknown*>(session.countInSegment),0,0));
+        release(session.countInPlaying);if(session.countInDownloaded&&s.performance)log("Unload count-in cleanup",session.countInSegment->Unload(session.audioPath));session.countInDownloaded=false;release(session.countInSegment);session.countInMetronome.reset();session.countInMemory.clear();
         if(s.performance&&session.segment)log("StopEx cleanup",s.performance->StopEx(session.playing?session.playing:static_cast<IUnknown*>(session.segment),0,0));
         for(auto* child:session.triggeredSegments)if(s.performance)log("Stop trigger cleanup",s.performance->StopEx(child,0,0));
         for(size_t i=0;i<session.triggeredDownloads;++i)if(s.performance)log("Unload trigger cleanup",session.triggeredSegments[i]->Unload(session.audioPath?session.audioPath:static_cast<IUnknown*>(s.performance)));session.triggeredDownloads=0;
         for(auto*& child:session.triggeredSegments)release(child);session.triggeredSegments.clear();session.triggeredSnapshots.clear();
         release(session.playing);if(session.downloaded&&session.segment&&s.performance)log("Unload cleanup",session.segment->Unload(session.audioPath?session.audioPath:static_cast<IUnknown*>(s.performance)));session.downloaded=false;
-        release(session.audioPath);release(session.segment);for(auto& style:session.runtimeStyles)release(style);session.runtimeStyles.clear();for(auto& collection:session.runtimeCollections)release(collection);session.runtimeCollections.clear();for(auto& wave:session.runtimeWaves)release(wave);session.runtimeWaves.clear();session.nativeScripts.reset();for(auto& script:session.sourceScripts)release(script);session.sourceScripts.clear();for(auto& script:session.runtimeScripts)release(script);session.runtimeScripts.clear();for(auto& map:session.runtimeMaps)release(map);session.runtimeMaps.clear();release(session.loader);session.scriptLoaderMemory.clear();session.maps.clear();session.scripts.clear();session.triggeredLoaderMemory.clear();session.loaderMemory.clear();session.waves.clear();session.styles.clear();session.collections.clear();session.firstPatches.clear();session.memory.clear();session.id=0;session.request={};
+        release(session.audioPath);release(session.segment);for(auto& style:session.runtimeStyles)release(style);session.runtimeStyles.clear();for(auto& collection:session.runtimeCollections)release(collection);session.runtimeCollections.clear();for(auto& wave:session.runtimeWaves)release(wave);session.runtimeWaves.clear();session.nativeScripts.reset();session.metronome.reset();for(auto& script:session.sourceScripts)release(script);session.sourceScripts.clear();for(auto& script:session.runtimeScripts)release(script);session.runtimeScripts.clear();for(auto& map:session.runtimeMaps)release(map);session.runtimeMaps.clear();release(session.loader);session.scriptLoaderMemory.clear();session.maps.clear();session.scripts.clear();session.triggeredLoaderMemory.clear();session.loaderMemory.clear();session.waves.clear();session.styles.clear();session.collections.clear();session.firstPatches.clear();session.memory.clear();session.id=0;session.request={};
     };
     cleanup(s);for(auto& retained:s.retained)cleanup(*retained);s.retained.clear();
+    if(s.auditionWarmup)cleanup(*s.auditionWarmup);s.auditionWarmup.reset();s.auditionPathConfig.clear();s.auditionCollections.clear();
     s.script.reset();
     for(auto*& control:s.recordingControls){log("Finalize FileOutput cleanup",control->Stop());release(control);}s.recordingControls.clear();release(s.recordingPath);s.recordingConfig.clear();
     for(auto*& dmo:s.recordingWaves)release(dmo);s.recordingWaves.clear();for(auto*& dmo:s.recordingEnvironmental)release(dmo);s.recordingEnvironmental.clear();
-    if(s.performance)log("CloseDown",s.performance->CloseDown());s.audio=false;release(s.performance);
+    if(s.performance)log("CloseDown",s.performance->CloseDown());s.audio=false;release(s.performance);release(s.music);
     s.notificationIds.clear();s.pendingNotifications.clear();
     // CloseDown completes the realtime callbacks before releasing the observer.
     release(s.graph);release(s.observer);release(s.lyricObserver);release(s.scriptMessageObserver);

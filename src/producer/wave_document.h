@@ -10,8 +10,11 @@ struct WaveSampleLoop {
     bool operator==(const WaveSampleLoop& other)const{return type==other.type&&start==other.start&&length==other.length;}
 };
 class WaveDocument {
-    Chunk root_;Bytes saved_;std::vector<Bytes> undo_,redo_;
-    bool commit(Chunk);
+    struct CloneOrigin {size_t index;WaveSampleLoop loop;};
+    struct History {Bytes bytes;std::optional<CloneOrigin> clone;};
+    Chunk root_;Bytes saved_;std::vector<History> undo_,redo_;
+    std::optional<CloneOrigin> cloneOrigin_;
+    bool commit(Chunk,std::optional<CloneOrigin> = {});
 public:
     void load(const Bytes&);
     Bytes save_bytes()const{return root_.encode();}
@@ -31,6 +34,11 @@ public:
     Bytes copy_pcm(std::uint64_t begin,std::uint64_t end)const;
     bool erase_pcm(std::uint64_t begin,std::uint64_t end);
     bool paste_pcm(std::uint64_t insertion,const Bytes& wave);
+    std::uint64_t nearest_zero_frame(std::uint64_t frame)const;
+    bool find_best_sample_loop_end(size_t index,std::uint64_t begin,std::uint64_t end);
+    bool clone_sample_loop(size_t index);
     bool undo();bool redo();
+    bool can_undo()const{return !undo_.empty();}
+    bool can_redo()const{return !redo_.empty();}
 };
 }

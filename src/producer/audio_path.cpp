@@ -277,6 +277,28 @@ bool AudioPathDocument::add_file_output(size_t buffer){
 bool AudioPathDocument::add_waves_reverb(size_t buffer){
     return add_default_effect(buffer,identity(guid_bytes(producer::compat::wavesReverbClass)));
 }
+std::optional<WavesReverbParameters> AudioPathDocument::waves_reverb_parameters(size_t buffer,size_t effect) const {
+    size_t b=0;for(const auto& item:root_.children)if(item.id=="LIST"&&item.type=="dbfl"&&b++==buffer){
+        const auto ds=item.find("RIFF","DSBC");const auto fx=ds?ds->find("LIST","fxls"):nullptr;if(!fx)return {};size_t index=0;
+        for(const auto& f:fx->children)if(f.id=="RIFF"&&f.type=="DSFX"&&index++==effect){
+            const auto header=f.find("fxhr");if(!header||identity(header->data,4)!=identity(guid_bytes(producer::compat::wavesReverbClass)))return {};
+            const auto data=unique(f,"data");return data?load_waves_reverb_parameters(data->data):std::optional<WavesReverbParameters>(WavesReverbParameters{});
+        }return {};
+    }return {};
+}
+bool AudioPathDocument::set_waves_reverb_parameters(size_t buffer,size_t effect,const WavesReverbParameters& parameters){
+    if(!valid_waves_reverb_parameters(parameters))return false;
+    const auto previous=waves_reverb_parameters(buffer,effect);if(!previous||*previous==parameters)return false;
+    // Serialize completely before starting the document transaction. Unsupported
+    // OS persistence or input leaves the original document/history untouched.
+    const auto data=save_waves_reverb_parameters(parameters);auto next=root_;size_t b=0;
+    for(auto& item:next.children)if(item.id=="LIST"&&item.type=="dbfl"&&b++==buffer){
+        auto fx=item.find("RIFF","DSBC")->find("LIST","fxls");size_t index=0;
+        for(auto& f:fx->children)if(f.id=="RIFF"&&f.type=="DSFX"&&index++==effect){
+            if(auto existing=f.find("data"))existing->data=data;else f.children.push_back(leaf("data",data));break;
+        }break;
+    }AudioPathDocument validated;validated.load(next.encode());return commit(std::move(next));
+}
 bool AudioPathDocument::add_default_effect(size_t buffer,const AudioBufferId& classId){
     return insert_effect(buffer,classId,{},std::nullopt,static_cast<size_t>(-1),false);
 }

@@ -45,3 +45,11 @@ in-place呼出しは残響を[公開DMO契約](https://learn.microsoft.com/en-us
 [最新hash検証](../../work/analysis/q3-send-environmental-reverb/20261008T154611123Z/candidate-1713-hash-verification-v1.json)、[同候補DSP比較](../../work/analysis/q3-send-environmental-reverb/20261008T154611123Z/candidate-1713-dsp-independent-comparison-v1.json)、[再開用本体protocol](../../work/analysis/q3-send-environmental-reverb/20261008T154611123Z/main-preparation-v1/protocol.json)へ結合する。停止後無音は既存Sendの0.0001 RMS、Stop後0.7〜1.7秒を維持して実本体で検証する。初期draftのFarm基準0.0003はGUI/録音前に訂正し旧draftを保持した。
 
 最新限定採用0735は維持。1713は専用/native検証候補で、本体GUI、native保存/別process復元/二通常終了、WASAPI、原版比較は未達。登録native91/driver164の全一巡は未実施で、全8は6作業中/2障害/0合格、fullAcceptance=false。全体・本単位を完了扱いにせず、計画メンテナンスのため中断する。今回のbuild/native/SDK CLIはすべて終了し、新GUI/recorderは起動していない。古い別processは操作していない。
+
+## 再開後の1713本体検証
+
+2026-10-09の人の再開指示に基づき、224保存/作業ソースと4生成物の一致を再照合した。同じ1713でAdd Env、既定Send宛先、−600、UndoRedo、native Project/Segment/AudioPath保存、別process復元、二通常exit0を限定確認した。native独立監査8項目は合格。宣言DSPは実ロードされたSysWOW64 XAudio2_9.dllで、単一GUI snapshotの128module解決/原版40hash一致0をQ2や全機能独立に転用しない。
+
+固定WASAPIは9/10監査成立、初回Play後の発音開始1.0127441秒が事前の最大1秒を超過し、音声全体は不合格。2回の発音中Stop後はendpointと両FileOutput tapのRMSが0、replayと両音高は限定成立。第3のEnv tapはなく、Send wet gain・旧原版DSP同等・tempoを確認済みにしない。最初の失敗と閾値を保持した。原版本体画面のread-only取得はapp approval timed out、StylePlayerとは別障害として同条件再試行を凍結した。単位未完・1713未採用・fullAcceptance=falseのまま、独立した原版Help基準/Project Tree単位へ進む。
+
+一次証拠は[再開後の単位記録](../../work/analysis/q3-send-environmental-reverb/20261008T154611123Z/main-20261008T180824898Z/unit-record.json)、同directoryのbinding-proof/native-proof/audio-proof-v2/module-provenance-v2/original-main-approval-obstacleに保存。

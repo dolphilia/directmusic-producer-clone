@@ -1,4 +1,95 @@
 #pragma once
+void waves_reverb_persistence_tests(const std::filesystem::path& dir){
+    const auto initialized=CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED);
+    require(SUCCEEDED(initialized),"Waves persistence COM apartment initializes");
+    struct Apartment{~Apartment(){CoUninitialize();}} apartment;
+    wchar_t id[40]{},registered[32768]{},expanded[32768]{},system[MAX_PATH]{},wow[MAX_PATH]{};
+    require(StringFromGUID2(producer::compat::wavesReverbClass,id,40)!=0,"Public Waves class formats");
+    const auto key=std::wstring(L"CLSID\\")+id+L"\\InprocServer32";DWORD bytes=sizeof(registered);
+    require(RegGetValueW(HKEY_CLASSES_ROOT,key.c_str(),nullptr,RRF_RT_REG_SZ|RRF_RT_REG_EXPAND_SZ,nullptr,registered,&bytes)==ERROR_SUCCESS,"Declared Waves registration reads");
+    const auto count=ExpandEnvironmentStringsW(registered,expanded,32768);
+    require(count&&count<=32768,"Declared Waves server path expands");
+    GetSystemDirectoryW(system,MAX_PATH);GetSystemWow64DirectoryW(wow,MAX_PATH);
+    const auto server=std::filesystem::path(expanded).lexically_normal();
+    require(CompareStringOrdinal(server.filename().c_str(),-1,L"dsdmo.dll",-1,TRUE)==CSTR_EQUAL&&
+        (CompareStringOrdinal(server.parent_path().c_str(),-1,system,-1,TRUE)==CSTR_EQUAL||CompareStringOrdinal(server.parent_path().c_str(),-1,wow,-1,TRUE)==CSTR_EQUAL),"Only declared Windows dsdmo implements persistence probe");
+    const auto release=[](auto* p){if(p)p->Release();};
+    IDirectSoundFXWavesReverb* raw=nullptr;
+    const auto created=CoCreateInstance(producer::compat::wavesReverbClass,nullptr,CLSCTX_INPROC_SERVER,producer::compat::wavesReverbInterface,reinterpret_cast<void**>(&raw));
+    std::unique_ptr<IDirectSoundFXWavesReverb,decltype(release)> effect(raw,release);
+    require(created==S_OK&&raw,"Declared OS Waves parameter interface creates");
+    DSFXWavesReverb defaults{};require(raw->GetAllParameters(&defaults)==S_OK,"Fresh Waves defaults read");
+    require(defaults.fInGain==0&&defaults.fReverbMix==0&&defaults.fReverbTime==1000&&defaults.fHighFreqRTRatio==0.001f,"Fresh OS Waves defaults match public SDK");
+    const DSFXWavesReverb expected{-6.0f,-12.0f,750.0f,0.5f};
+    const auto set=raw->SetAllParameters(&expected);DSFXWavesReverb actual{};const auto get=raw->GetAllParameters(&actual);
+    require(set==S_OK&&get==S_OK&&std::memcmp(&expected,&actual,sizeof(expected))==0,"Declared Waves accepts and returns all four custom values");
+    IPersistStream* persistRaw=nullptr;const auto query=raw->QueryInterface(IID_IPersistStream,reinterpret_cast<void**>(&persistRaw));
+    std::unique_ptr<IPersistStream,decltype(release)> persistence(persistRaw,release);
+    IStream* streamRaw=nullptr;const auto streamCreated=CreateStreamOnHGlobal(nullptr,TRUE,&streamRaw);
+    std::unique_ptr<IStream,decltype(release)> stream(streamRaw,release);
+    require(streamCreated==S_OK&&streamRaw,"Opaque Waves output memory stream creates");
+    const auto saved=query==S_OK&&persistRaw?persistRaw->Save(streamRaw,FALSE):query;
+    std::cout<<"{\"operation\":\"Waves opaque Save\",\"queryHResult\":"<<static_cast<unsigned long>(query)<<",\"saveHResult\":"<<static_cast<unsigned long>(saved)<<",\"inputGain\":-6,\"reverbMix\":-12,\"reverbTime\":750,\"highFrequencyRatio\":0.5}\n";
+    const auto diagnostic=std::string("{\"queryHResult\":")+std::to_string(static_cast<unsigned long>(query))+",\"saveHResult\":"+std::to_string(static_cast<unsigned long>(saved))+",\"fullAcceptance\":false}\n";
+    write_file_atomic((dir/L"persistence-capability.json").wstring(),Bytes(diagnostic.begin(),diagnostic.end()));
+    require(query==S_OK&&persistRaw&&saved==S_OK,"Declared Waves opaque public persistence Save succeeds");
+    STATSTG stat{};require(streamRaw->Stat(&stat,STATFLAG_NONAME)==S_OK&&stat.cbSize.QuadPart>0&&stat.cbSize.QuadPart<=65536,"Waves opaque persistence size is bounded");
+    LARGE_INTEGER zero{};require(streamRaw->Seek(zero,STREAM_SEEK_SET,nullptr)==S_OK,"Waves saved stream rewinds");
+    Bytes payload(static_cast<size_t>(stat.cbSize.QuadPart));ULONG read=0;
+    require(streamRaw->Read(payload.data(),static_cast<ULONG>(payload.size()),&read)==S_OK&&read==payload.size(),"Full opaque Waves saved payload reads");
+    write_file_atomic((dir/L"custom-waves.bin").wstring(),payload);
+    IDirectSoundFXWavesReverb* freshRaw=nullptr;
+    require(CoCreateInstance(producer::compat::wavesReverbClass,nullptr,CLSCTX_INPROC_SERVER,producer::compat::wavesReverbInterface,reinterpret_cast<void**>(&freshRaw))==S_OK&&freshRaw,"Distinct fresh Waves object creates");
+    std::unique_ptr<IDirectSoundFXWavesReverb,decltype(release)> fresh(freshRaw,release);
+    IPersistStream* freshPersistenceRaw=nullptr;
+    require(freshRaw->QueryInterface(IID_IPersistStream,reinterpret_cast<void**>(&freshPersistenceRaw))==S_OK&&freshPersistenceRaw,"Fresh Waves persistence interface queries");
+    std::unique_ptr<IPersistStream,decltype(release)> freshPersistence(freshPersistenceRaw,release);
+    require(streamRaw->Seek(zero,STREAM_SEEK_SET,nullptr)==S_OK&&freshPersistenceRaw->Load(streamRaw)==S_OK,"Fresh OS Waves loads the same opaque saved payload");
+    DSFXWavesReverb restored{};
+    require(freshRaw->GetAllParameters(&restored)==S_OK&&std::memcmp(&expected,&restored,sizeof(expected))==0,"Opaque persistence restores all four custom values exactly");
+}
+void waves_reverb_custom_tests(const std::filesystem::path& dir){
+    const WavesReverbParameters expected{-6,-12,750,0.5f};
+    AudioPathDocument document;require(document.add_file_output(0)&&document.add_waves_reverb(0),"Custom fixture distinguishes Waves index from preceding FileOutput");
+    auto original=Chunk::parse(document.save_bytes());auto fx=original.find("LIST","dbfl")->find("RIFF","DSBC")->find("LIST","fxls");
+    Chunk unknown;unknown.id="xFxo";unknown.data={1,3,5};unknown.padding=0xb7;fx->children[1].children.push_back(unknown);
+    document.load(original.encode());const auto baseline=document.save_bytes();
+    require(document.waves_reverb_parameters(0,1)==WavesReverbParameters{}&&!document.waves_reverb_parameters(0,0)&&!document.waves_reverb_parameters(99,1),"Absent data has SDK defaults while wrong class and buffer have no settings");
+    require(document.set_name(L"Redo fixture")&&document.undo(),"Custom invalid test has an existing Redo branch");
+    const WavesReverbParameters invalid[]={ {std::numeric_limits<float>::quiet_NaN(),-12,750,0.5f},{-97,-12,750,0.5f},{-6,1,750,0.5f},{-6,-12,0,0.5f},{-6,-12,750,1} };
+    for(const auto& p:invalid)require(!document.set_waves_reverb_parameters(0,1,p)&&document.save_bytes()==baseline&&!document.dirty(),"Invalid custom values preserve bytes and dirty state");
+    require(!document.set_waves_reverb_parameters(0,0,expected)&&!document.set_waves_reverb_parameters(99,1,expected)&&!document.undo()&&document.redo()&&document.undo(),"Wrong effect/index and invalid values preserve Undo and Redo");
+    require(document.set_waves_reverb_parameters(0,1,expected),"Four custom values commit in one owned document transaction");
+    const auto added=document.save_bytes();auto exact=original;Chunk data;data.id="data";data.data=read_file((dir/L"custom-waves.bin").wstring());
+    exact.find("LIST","dbfl")->find("RIFF","DSBC")->find("LIST","fxls")->children[1].children.push_back(data);
+    require(added==exact.encode()&&document.waves_reverb_parameters(0,1)==expected,"Only selected data changes and matches independent public OS Save bytes exactly");
+    require(!document.set_waves_reverb_parameters(0,1,expected)&&document.undo()&&document.save_bytes()==baseline&&!document.dirty()&&document.redo()&&document.save_bytes()==added,"No-op preserves single exact custom Undo and Redo");
+    auto unsupported=exact;auto payload=unsupported.find("LIST","dbfl")->find("RIFF","DSBC")->find("LIST","fxls")->children[1].find("data");payload->data.push_back(0x55);
+    AudioPathDocument imported;imported.load(unsupported.encode());const auto untouched=imported.save_bytes();
+    require(!imported.waves_reverb_parameters(0,1)&&!imported.set_waves_reverb_parameters(0,1,expected)&&imported.save_bytes()==untouched&&!imported.dirty()&&!imported.undo(),"Noncanonical imported opaque data rejects editing without discarding its bytes");
+    const auto limits=save_waves_reverb_parameters({-96,-96,0.001f,0.999f});
+    require(load_waves_reverb_parameters(limits)==WavesReverbParameters{-96,-96,0.001f,0.999f},"Public inclusive parameter boundaries survive fresh OS persistence");
+    Framework host;const auto ai=host.new_audio_path(),si=host.new_segment();host.audio_path_document(ai).load(added);host.document(si)=SegmentDocument::playback_test(69);
+    require(host.assign_audio_path(si,ai),"Native Segment owns custom Waves bytes");
+    const auto folder=dir/L"Custom";std::filesystem::create_directories(folder);
+    host.save_audio_path(ai,(folder/L"Custom.aup").wstring());host.save_segment(si,(folder/L"Custom.sgp").wstring());host.save_project((folder/L"Custom.pro").wstring());
+    Framework restored;restored.open_project((folder/L"Custom.pro").wstring());
+    require(restored.audio_path_document(0).save_bytes()==added&&restored.document(0).save_bytes()==host.document(si).save_bytes()&&!restored.dirty()&&restored.audio_path_document(0).waves_reverb_parameters(0,1)==expected,"Fresh native Project restores complete custom document and values");
+    host.save_runtime(RuntimeDocumentKind::AudioPath,ai,(folder/L"Custom.aud").wstring());
+    auto runtimeExpected=exact;runtimeExpected.find("LIST","dbfl")->find("RIFF","DSBC")->find("LIST","fxls")->children.erase(runtimeExpected.find("LIST","dbfl")->find("RIFF","DSBC")->find("LIST","fxls")->children.begin());
+    require(read_file((folder/L"Custom.aud").wstring())==runtimeExpected.encode(),"Runtime export removes only FileOutput and preserves standard custom Waves data");
+    Conductor player;
+    for(int replay=0;replay<2;++replay){
+        player.play(restored.document(0).save_bytes(),folder.wstring(),GetDesktopWindow());
+        const auto deadline=GetTickCount64()+5000;while(!player.position().playing&&GetTickCount64()<deadline)Sleep(10);
+        require(player.position().playing,"Custom Waves actual owned AudioPath starts");
+        const auto actual=player.waves_reverb_parameters(0,0);
+        require(actual==expected,"Actual owned OS DSP reads all four serialized custom values after disk reload/replay");
+        std::cout<<"{\"customReplay\":"<<replay<<",\"playbackId\":"<<player.current_playback_id()<<",\"inputGain\":"<<actual.inputGain<<",\"reverbMix\":"<<actual.reverbMix<<",\"reverbTime\":"<<actual.reverbTime<<",\"highFrequencyRatio\":"<<actual.highFrequencyRatio<<"}\n";
+        player.stop();require(!player.position().playing,"Custom playback stops normally");
+    }
+    require(restored.audio_path_document(0).save_bytes()==added&&!restored.dirty(),"Runtime custom retrieval and replay preserve owned source and history");
+}
 void waves_reverb_document_tests(const std::filesystem::path& dir){
     const auto leaf=[](const char* name,Bytes data){Chunk c;c.id=name;c.data=std::move(data);return c;};
     AudioBufferId waves{};std::memcpy(waves.data(),&producer::compat::wavesReverbClass,16);
@@ -71,8 +162,13 @@ void waves_reverb_runtime_tests(const std::filesystem::path& dir){
     AudioPathDocument diskPath;diskPath.load(read_file((dir/L"WavesInput.aup").wstring()));SegmentDocument diskSong;diskSong.load(read_file((dir/L"WavesInput.sgp").wstring()));
     require(diskPath.save_bytes()==path.save_bytes()&&diskSong.save_bytes()==source,"Fresh native disk reload preserves Waves effect and playable source");
     Conductor player;rejected([&]{player.waves_reverb_parameters(0,0);},"Uninitialized Waves query cannot create an alternate effect");
+    player.prepare(GetDesktopWindow());player.prepare(GetDesktopWindow());
+    const auto preparedCalls=player.calls();
+    require(player.playback_ids().empty()&&!player.position().playing&&std::count_if(preparedCalls.begin(),preparedCalls.end(),[](const RuntimeCall& call){return call.operation=="InitAudio";})==1,"Repeated preparation initializes audio once without a playback session");
     for(int replay=0;replay<2;++replay){
         player.play(replay?diskSong.save_bytes():source,dir.wstring(),GetDesktopWindow());const auto id=waitStarted(player,replay?"disk-replay":"source-play");
+        player.prepare(GetDesktopWindow());
+        require(player.current_playback_id()==id&&player.position(id).playing,"Preparing an active runtime preserves its owned playback");
         const auto snapshot=player.playback_bytes();
         const auto p=player.waves_reverb_parameters(0,0,0,id);
         require(p.inputGain==0.0f&&p.reverbMix==0.0f&&p.reverbTime==1000.0f&&p.highFrequencyRatio==0.001f,"Actual SDK Waves DMO GetAllParameters returns public defaults");
@@ -93,6 +189,15 @@ void waves_reverb_runtime_tests(const std::filesystem::path& dir){
     auto sustained=diskSong;auto sustainedRoot=Chunk::parse(sustained.save_bytes());put32(sustainedRoot.find("segh")->data,4,122880);sustained.load(sustainedRoot.encode());
     require(sustained.edit_note(0,{0,122880,0,69,100}),"Recording Waves fixture sustains through explicit Stop");
     const auto sustainedSource=sustained.save_bytes(),recordingPath=path.save_bytes();
+    player.play(sustainedSource,dir.wstring(),GetDesktopWindow());const auto normalPrimary=waitStarted(player,"normal-primary");
+    PlaybackOptions normalSecondary;normalSecondary.secondary=true;
+    player.play_extra(sustainedSource,GetDesktopWindow(),{},normalSecondary,normalPrimary);const auto normalShared=waitStarted(player,"normal-shared");
+    player.stop(normalPrimary);
+    require(player.position(normalShared).playing,"Normal shared AudioPath remains playing after its primary stops");
+    require(player.waves_reverb_parameters(0,0,0,normalShared).reverbTime==1000.0f,"Surviving normal shared path retains its actual Waves effect");
+    player.stop(normalShared);require(player.playback_ids().empty(),"Last normal shared session stops without retaining stale ownership");
+    player.play(sustainedSource,dir.wstring(),GetDesktopWindow());waitStarted(player,"normal-replay");
+    require(player.waves_reverb_parameters(0,0).reverbTime==1000.0f,"Normal replay creates an active path with unchanged Waves parameters");player.stop();
     player.start_file_output(recordingPath,(dir/L"WavesRecording.wav").wstring(),GetDesktopWindow());
     const auto flushes=[&]{return std::count_if(player.calls().begin(),player.calls().end(),[](const auto& c){return c.operation=="Flush retained recording Waves after last Stop"&&c.result==S_OK;});};
     player.play(sustainedSource,dir.wstring(),GetDesktopWindow());const auto primary=waitStarted(player,"recording-primary");

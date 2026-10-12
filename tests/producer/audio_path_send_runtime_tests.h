@@ -18,8 +18,16 @@ void capture_send_runtime_modules(){
             nullptr,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
         if(file==INVALID_HANDLE_VALUE){CloseHandle(snapshot);throw std::runtime_error("Send module disk identity");}
         wchar_t physical[32768]{};
-        const auto length=GetFinalPathNameByHandleW(file,physical,32768,FILE_NAME_NORMALIZED|VOLUME_NAME_DOS);CloseHandle(file);
-        if(!length||length>=32768){CloseHandle(snapshot);throw std::runtime_error("Send module physical path");}
+        SetLastError(ERROR_SUCCESS);
+        const auto length=GetFinalPathNameByHandleW(file,physical,32768,FILE_NAME_NORMALIZED|VOLUME_NAME_DOS);
+        const auto pathError=GetLastError();CloseHandle(file);
+        if(!length||length>=32768){
+            std::cerr<<"sendModuleIdentityErrorStage=GetFinalPathNameByHandleW\n"
+                     <<"sendModuleIdentityLogical="<<utf8(module.szExePath)<<"\n"
+                     <<"sendModuleIdentityError="<<pathError<<"\n"
+                     <<"sendModuleIdentityPathLength="<<length<<"\n";
+            CloseHandle(snapshot);throw std::runtime_error("Send module physical path");
+        }
         std::cout<<"loadedModuleLogical="<<utf8(module.szExePath)<<"\nloadedModule="<<utf8(physical)<<"\n";
     }while(Module32NextW(snapshot,&module));
     CloseHandle(snapshot);

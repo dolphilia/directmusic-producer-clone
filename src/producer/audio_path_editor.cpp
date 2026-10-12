@@ -1,17 +1,86 @@
 #include "audio_path_editor.h"
 #include "runtime_settings_editor.h"
+#include "compat/waves_reverb.h"
+#include "compat/directsound_send.h"
+#include "file_output_dmo.h"
+#include "environmental_reverb_dmo.h"
 #include <commdlg.h>
+#include <commctrl.h>
+#include <dsound.h>
 #include <filesystem>
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
+#include <locale>
 namespace producer::app {namespace {
-enum:UINT {Documents=10,New,Open,Save,Name,NameSet,Routes,Buffers,Connect,Undo,Redo,Segments,Embed,Remove,Status,PortBase,PortCount,RouteBase,RouteCount,PortSet,RouteSet,RuntimeSave,RuntimeSettings,FileOutput,MixinChannels,MixinAdd,Sends,SendDestinations,SendSet,WavesReverb,SendAdd,SendVolume,EnvironmentalAdd};
-struct Session{Framework& host;size_t selected=0;std::vector<std::pair<size_t,size_t>> routes,sends;std::vector<size_t> destinations;};
+enum:UINT {Documents=10,New,Open,Save,Name,NameSet,Routes,Buffers,Connect,Undo,Redo,Segments,Embed,Remove,Status,PortBase,PortCount,RouteBase,RouteCount,PortSet,RouteSet,RuntimeSave,RuntimeSettings,FileOutput,MixinChannels,MixinAdd,Sends,SendDestinations,SendSet,WavesReverb,SendAdd,SendVolume,EnvironmentalAdd,WavesEdit,EffectsList,EffectProperties};
+struct Session{Framework& host;size_t selected=0;std::vector<std::pair<size_t,size_t>> routes,sends;std::vector<size_t> destinations,effects;size_t refreshedDocument=static_cast<size_t>(-1);};
 HWND control(HWND w,const wchar_t* cls,const wchar_t* text,DWORD style,int x,int y,int a,int b,UINT id=0){const auto c=CreateWindowW(cls,text,WS_CHILD|WS_VISIBLE|style,x,y,a,b,w,reinterpret_cast<HMENU>(static_cast<UINT_PTR>(id)),nullptr,nullptr);if(!c)throw std::runtime_error("AudioPath control creation failed");SendMessageW(c,WM_SETFONT,reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)),TRUE);return c;}
 std::wstring value(HWND w,UINT id){const auto c=GetDlgItem(w,id);const auto n=GetWindowTextLengthW(c);std::wstring s(n+1,L'\0');GetWindowTextW(c,s.data(),n+1);s.resize(n);return s;}
 std::uint32_t number(HWND w,UINT id){const auto text=value(w,id);if(text.empty()||text.find_first_not_of(L"0123456789")!=std::wstring::npos)throw std::runtime_error("Enter an unsigned PChannel base or count");const auto n=std::stoull(text);if(n>UINT32_MAX)throw std::runtime_error("PChannel value exceeds 32 bits");return static_cast<std::uint32_t>(n);}
 std::wstring guid_label(const AudioBufferId& id){GUID guid{};std::memcpy(&guid,id.data(),16);wchar_t text[40]{};StringFromGUID2(guid,text,40);return text;}
+enum:UINT {WavesChoice=200,WavesGain,WavesMix,WavesTime,WavesRatio,WavesHint};
+struct WavesEditSession{AudioPathDocument& document;size_t buffer;std::vector<size_t> effects;};
+std::wstring decimal(float value){std::wostringstream s;s.imbue(std::locale::classic());s<<std::setprecision(9)<<value;return s.str();}
+float waves_number(HWND w,UINT id){
+    std::wistringstream input(value(w,id));input.imbue(std::locale::classic());float number=0;
+    if(!(input>>number)||!(input>>std::ws).eof())throw std::runtime_error("Enter a finite decimal number in each Waves field");return number;
+}
+void waves_fields(HWND w,WavesEditSession& session){
+    const auto row=SendDlgItemMessageW(w,WavesChoice,CB_GETCURSEL,0,0);
+    const auto p=row==CB_ERR?std::nullopt:session.document.waves_reverb_parameters(session.buffer,session.effects.at(row));
+    EnableWindow(GetDlgItem(w,IDOK),p.has_value());
+    const UINT ids[]={WavesGain,WavesMix,WavesTime,WavesRatio};
+    const float values[]={p?p->inputGain:0,p?p->reverbMix:0,p?p->reverbTime:0,p?p->highFrequencyRatio:0};
+    for(size_t i=0;i<4;++i){EnableWindow(GetDlgItem(w,ids[i]),p.has_value());SetWindowTextW(GetDlgItem(w,ids[i]),p?decimal(values[i]).c_str():L"");}
+    SetWindowTextW(GetDlgItem(w,WavesHint),p?L"Changes apply when you click OK.":L"The saved settings format cannot be edited.");
+}
+LRESULT CALLBACK waves_edit_proc(HWND w,UINT message,WPARAM wp,LPARAM lp){
+    auto session=reinterpret_cast<WavesEditSession*>(GetWindowLongPtrW(w,GWLP_USERDATA));
+    try{
+        if(message==WM_CREATE){
+            session=static_cast<WavesEditSession*>(reinterpret_cast<CREATESTRUCTW*>(lp)->lpCreateParams);SetWindowLongPtrW(w,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(session));
+            control(w,L"STATIC",L"Waves Reverb effect",0,16,16,530,20);
+            control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,16,40,530,180,WavesChoice);
+            for(const auto index:session->effects){const auto label=L"Waves Reverb — effect "+std::to_wstring(index+1);SendDlgItemMessageW(w,WavesChoice,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}
+            SendDlgItemMessageW(w,WavesChoice,CB_SETCURSEL,0,0);
+            const wchar_t* labels[]={L"Input gain (dB, -96 to 0)",L"Reverb mix (dB, -96 to 0)",L"Reverb time (ms, 0.001 to 3000)",L"High-frequency time ratio (0.001 to 0.999)"};
+            const UINT ids[]={WavesGain,WavesMix,WavesTime,WavesRatio};
+            for(int i=0;i<4;++i){control(w,L"STATIC",labels[i],0,16,88+i*40,364,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,390,84+i*40,156,26,ids[i]);SendDlgItemMessageW(w,ids[i],EM_SETLIMITTEXT,32,0);}
+            control(w,L"STATIC",L"",0,16,252,530,30,WavesHint);
+            control(w,L"BUTTON",L"OK",WS_TABSTOP|BS_DEFPUSHBUTTON,324,296,104,28,IDOK);control(w,L"BUTTON",L"Cancel",WS_TABSTOP,440,296,106,28,IDCANCEL);
+            waves_fields(w,*session);return 0;
+        }
+        if(message==WM_COMMAND&&session){
+            const auto id=LOWORD(wp);
+            if(id==WavesChoice&&HIWORD(wp)==CBN_SELCHANGE){waves_fields(w,*session);return 0;}
+            if(id==IDCANCEL){DestroyWindow(w);return 0;}
+            if(id==IDOK){
+                const WavesReverbParameters p{waves_number(w,WavesGain),waves_number(w,WavesMix),waves_number(w,WavesTime),waves_number(w,WavesRatio)};
+                if(!valid_waves_reverb_parameters(p))throw std::runtime_error("Waves values must be finite and within the displayed ranges");
+                const auto row=SendDlgItemMessageW(w,WavesChoice,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select a Waves Reverb effect");
+                const auto effect=session->effects.at(row);const auto before=session->document.waves_reverb_parameters(session->buffer,effect);
+                if(!before||(*before!=p&&!session->document.set_waves_reverb_parameters(session->buffer,effect,p)))throw std::runtime_error("These Waves settings cannot be edited");
+                DestroyWindow(w);return 0;
+            }
+        }
+        if(message==WM_CLOSE){DestroyWindow(w);return 0;}
+    }catch(const std::exception& e){MessageBoxA(w,e.what(),"Waves Reverb",MB_OK|MB_ICONERROR);if(message==WM_CREATE)return -1;}
+    return DefWindowProcW(w,message,wp,lp);
+}
+void show_waves_edit(HWND parent,AudioPathDocument& document,size_t buffer,std::optional<size_t> selectedEffect={}){
+    WavesEditSession session{document,buffer,{}};AudioBufferId waves{};std::memcpy(waves.data(),&producer::compat::wavesReverbClass,16);
+    for(const auto& effect:document.effects())if(effect.buffer==buffer&&effect.classId==waves&&(!selectedEffect||effect.index==*selectedEffect))session.effects.push_back(effect.index);
+    if(session.effects.empty())throw std::runtime_error("Select a buffer containing Waves Reverb");
+    const auto instance=GetModuleHandleW(nullptr);static bool registered=false;
+    if(!registered){WNDCLASSW c{};c.hInstance=instance;c.lpfnWndProc=waves_edit_proc;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerWavesEdit";if(!RegisterClassW(&c))throw std::runtime_error("Waves settings window registration failed");registered=true;}
+    RECT bounds{};GetWindowRect(parent,&bounds);const auto w=CreateWindowExW(WS_EX_APPWINDOW|WS_EX_DLGMODALFRAME|WS_EX_CONTROLPARENT,L"SourceProducerWavesEdit",L"Waves Reverb",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,bounds.left+(bounds.right-bounds.left-578)/2,bounds.top+(bounds.bottom-bounds.top-370)/2,578,370,parent,nullptr,instance,&session);
+    if(!w)throw std::runtime_error("Waves settings window creation failed");const bool enabled=IsWindowEnabled(parent)!=FALSE;EnableWindow(parent,FALSE);ShowWindow(w,SW_SHOW);UpdateWindow(w);SetActiveWindow(w);SetFocus(GetDlgItem(w,WavesGain));
+    MSG message{};BOOL result=1;while(IsWindow(w)&&(result=GetMessageW(&message,nullptr,0,0))>0)if(!IsDialogMessageW(w,&message)){TranslateMessage(&message);DispatchMessageW(&message);}
+    if(IsWindow(w))DestroyWindow(w);EnableWindow(parent,enabled);SetActiveWindow(parent);if(result==0)PostQuitMessage(static_cast<int>(message.wParam));if(result==-1)throw std::runtime_error("Waves settings message loop failed");
+}
 enum:UINT {SendSource=100,SendTarget,SendPosition,SendLevel,SendHint};
 struct SendEdit {
     AudioPathDocument& document;
@@ -146,6 +215,89 @@ void show_send_edit(HWND parent,AudioPathDocument& document,bool inserting,size_
     if(result==0)PostQuitMessage(static_cast<int>(message.wParam));
     if(result==-1)throw std::runtime_error("Send message loop failed");
 }
+bool effect_is(const AudioPathEffect& effect,const GUID& id){AudioBufferId bytes{};std::memcpy(bytes.data(),&id,16);return effect.classId==bytes;}
+std::wstring effect_type(const AudioPathEffect& effect){
+    if(effect_is(effect,producer::compat::wavesReverbClass))return L"Waves Reverb";
+    if(effect_is(effect,producer::compat::directSoundSendClass))return L"Send";
+    if(effect_is(effect,fileOutputClass))return L"FileOutput";
+    if(effect_is(effect,environmentalReverbRuntimeClass))return L"Env. Reverb";
+    return guid_label(effect.classId);
+}
+std::optional<size_t> selected_effect(HWND w,const Session& s){
+    const auto row=SendDlgItemMessageW(w,EffectsList,LB_GETCURSEL,0,0);
+    if(row==LB_ERR||static_cast<size_t>(row)>=s.effects.size())return {};
+    return s.effects[row];
+}
+void effect_selection(HWND w,const Session& s){EnableWindow(GetDlgItem(w,EffectProperties),selected_effect(w,s).has_value());}
+void refresh_effects(HWND w,Session& s,std::optional<size_t> restore={}){
+    SendDlgItemMessageW(w,EffectsList,LB_RESETCONTENT,0,0);s.effects.clear();
+    const auto buffer=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);
+    if(!s.host.audio_paths().empty()&&buffer!=CB_ERR)for(const auto& effect:s.host.audio_path_document(s.selected).effects())if(effect.buffer==static_cast<size_t>(buffer)){
+        const auto label=effect_type(effect)+L" — effect "+std::to_wstring(effect.index+1);
+        const auto row=SendDlgItemMessageW(w,EffectsList,LB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));
+        s.effects.push_back(effect.index);if(restore==effect.index)SendDlgItemMessageW(w,EffectsList,LB_SETCURSEL,row,0);
+    }
+    effect_selection(w,s);
+}
+enum:UINT {EffectTab=300,EffectSettingsEdit,EffectSoftware};
+struct EffectPropertySession{AudioPathDocument& document;AudioPathEffect effect;};
+LRESULT CALLBACK effect_property_proc(HWND w,UINT message,WPARAM wp,LPARAM lp){
+    auto s=reinterpret_cast<EffectPropertySession*>(GetWindowLongPtrW(w,GWLP_USERDATA));
+    try{
+        if(message==WM_CREATE){
+            s=static_cast<EffectPropertySession*>(reinterpret_cast<CREATESTRUCTW*>(lp)->lpCreateParams);SetWindowLongPtrW(w,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(s));
+            const auto tab=control(w,WC_TABCONTROLW,L"",WS_CLIPSIBLINGS,8,8,420,200,EffectTab);
+            TCITEMW item{};item.mask=TCIF_TEXT;item.pszText=const_cast<wchar_t*>(L"Effect");TabCtrl_InsertItem(tab,0,&item);
+            control(w,L"STATIC",L"Effect Type",0,24,44,132,20);
+            control(w,L"STATIC",effect_type(s->effect).c_str(),0,166,44,242,22);
+            control(w,L"BUTTON",L"Effect Settings",BS_GROUPBOX,20,80,390,108);
+            control(w,L"BUTTON",L"Edit Effect Properties...",WS_TABSTOP,40,106,344,28,EffectSettingsEdit);
+            const bool editable=(effect_is(s->effect,producer::compat::wavesReverbClass)&&s->document.waves_reverb_parameters(s->effect.buffer,s->effect.index).has_value())||
+                (effect_is(s->effect,producer::compat::directSoundSendClass)&&s->document.send_attenuation(s->effect.buffer,s->effect.index).has_value());
+            EnableWindow(GetDlgItem(w,EffectSettingsEdit),editable);
+            control(w,L"BUTTON",L"Always Process in Software",BS_AUTOCHECKBOX,40,148,344,24,EffectSoftware);
+            SendDlgItemMessageW(w,EffectSoftware,BM_SETCHECK,s->effect.flags&DSFX_LOCSOFTWARE?BST_CHECKED:BST_UNCHECKED,0);
+            // Display the real public creation flag. Editing it and Producer
+            // instance-name metadata require separate document contracts.
+            EnableWindow(GetDlgItem(w,EffectSoftware),FALSE);
+            control(w,L"BUTTON",L"Close",WS_TABSTOP,318,220,110,28,IDCANCEL);return 0;
+        }
+        if(message==WM_COMMAND&&s){
+            if(LOWORD(wp)==IDCANCEL){DestroyWindow(w);return 0;}
+            if(LOWORD(wp)==EffectSettingsEdit){
+                if(effect_is(s->effect,producer::compat::wavesReverbClass))show_waves_edit(w,s->document,s->effect.buffer,s->effect.index);
+                else if(effect_is(s->effect,producer::compat::directSoundSendClass))show_send_edit(w,s->document,false,s->effect.buffer,s->effect.index);
+                return 0;
+            }
+        }
+        if(message==WM_CLOSE){DestroyWindow(w);return 0;}
+    }catch(const std::exception& error){MessageBoxA(w,error.what(),"Effect Properties",MB_OK|MB_ICONERROR);if(message==WM_CREATE)return -1;}
+    return DefWindowProcW(w,message,wp,lp);
+}
+void show_effect_properties(HWND parent,Session& s){
+    const auto selected=selected_effect(parent,s);const auto buffer=SendDlgItemMessageW(parent,Buffers,CB_GETCURSEL,0,0);
+    if(!selected||buffer==CB_ERR)return;
+    auto& document=s.host.audio_path_document(s.selected);const auto effects=document.effects();
+    const auto found=std::find_if(effects.begin(),effects.end(),[&](const auto& effect){return effect.buffer==static_cast<size_t>(buffer)&&effect.index==*selected;});
+    if(found==effects.end())return;
+    static bool registered=false;const auto instance=GetModuleHandleW(nullptr);
+    if(!registered){WNDCLASSW c{};c.hInstance=instance;c.lpfnWndProc=effect_property_proc;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerEffectProperties";if(!RegisterClassW(&c))throw std::runtime_error("Effect Properties registration failed");registered=true;}
+    EffectPropertySession session{document,*found};RECT bounds{};GetWindowRect(parent,&bounds);
+    const auto w=CreateWindowExW(WS_EX_APPWINDOW|WS_EX_DLGMODALFRAME|WS_EX_CONTROLPARENT,L"SourceProducerEffectProperties",L"Effect Properties",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,bounds.left+(bounds.right-bounds.left-452)/2,bounds.top+(bounds.bottom-bounds.top-302)/2,452,302,parent,nullptr,instance,&session);
+    if(!w)throw std::runtime_error("Effect Properties creation failed");const bool enabled=IsWindowEnabled(parent)!=FALSE;EnableWindow(parent,FALSE);ShowWindow(w,SW_SHOW);UpdateWindow(w);SetActiveWindow(w);SetFocus(GetDlgItem(w,EffectSettingsEdit));
+    MSG message{};BOOL result=1;while(IsWindow(w)&&(result=GetMessageW(&message,nullptr,0,0))>0)if(!IsDialogMessageW(w,&message)){TranslateMessage(&message);DispatchMessageW(&message);}
+    if(IsWindow(w))DestroyWindow(w);EnableWindow(parent,enabled);SetActiveWindow(parent);SetFocus(GetDlgItem(parent,EffectsList));if(result==0)PostQuitMessage(static_cast<int>(message.wParam));if(result==-1)throw std::runtime_error("Effect Properties message loop failed");
+}
+void effect_context_menu(HWND w,Session& s,LPARAM coordinates){
+    POINT point{static_cast<short>(LOWORD(coordinates)),static_cast<short>(HIWORD(coordinates))};
+    const auto list=GetDlgItem(w,EffectsList);
+    if(point.x==-1&&point.y==-1){RECT rect{};const auto row=SendMessageW(list,LB_GETCURSEL,0,0);if(row!=LB_ERR)SendMessageW(list,LB_GETITEMRECT,row,reinterpret_cast<LPARAM>(&rect));point={rect.left+12,rect.bottom};ClientToScreen(list,&point);}
+    else{POINT client=point;ScreenToClient(list,&client);const auto item=SendMessageW(list,LB_ITEMFROMPOINT,0,MAKELPARAM(client.x,client.y));RECT rect{};const auto row=LOWORD(item);const bool hit=!HIWORD(item)&&SendMessageW(list,LB_GETITEMRECT,row,reinterpret_cast<LPARAM>(&rect))!=LB_ERR&&PtInRect(&rect,client);SendMessageW(list,LB_SETCURSEL,hit?row:static_cast<WPARAM>(-1),0);effect_selection(w,s);}
+    SetFocus(list);const auto menu=CreatePopupMenu();if(!menu)throw std::runtime_error("Effects menu creation failed");
+    AppendMenuW(menu,MF_STRING|(selected_effect(w,s)?MF_ENABLED:MF_GRAYED),EffectProperties,L"Properties\tF11");
+    const auto command=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_RIGHTBUTTON,point.x,point.y,0,w,nullptr);DestroyMenu(menu);
+    if(command==EffectProperties)show_effect_properties(w,s);
+}
 void send_selection(HWND w,Session& s){
     SendDlgItemMessageW(w,SendDestinations,CB_RESETCONTENT,0,0);s.destinations.clear();
     const auto row=SendDlgItemMessageW(w,Sends,CB_GETCURSEL,0,0);
@@ -161,14 +313,15 @@ void send_selection(HWND w,Session& s){
 }
 std::wstring file(HWND w,bool save,bool runtime=false){wchar_t path[32768]{};OPENFILENAMEW f{};f.lStructSize=sizeof(f);f.hwndOwner=w;f.lpstrFilter=runtime?L"Runtime AudioPath\0*.aud\0\0":L"AudioPath\0*.aup;*.aud\0\0";f.lpstrFile=path;f.nMaxFile=32768;f.lpstrDefExt=runtime?L"aud":L"aup";f.Flags=OFN_EXPLORER|OFN_NOCHANGEDIR|OFN_PATHMUSTEXIST|(save?OFN_OVERWRITEPROMPT:OFN_FILEMUSTEXIST);if(!(save?GetSaveFileNameW(&f):GetOpenFileNameW(&f)))return L"";return path;}
 void route_selection(HWND w,Session& s){if(s.host.audio_paths().empty())return;const auto row=SendDlgItemMessageW(w,Routes,CB_GETCURSEL,0,0);if(row==CB_ERR||static_cast<size_t>(row)>=s.routes.size())return;const auto [p,r]=s.routes[row];const auto ids=s.host.audio_path_document(s.selected).buffers();const auto port=s.host.audio_path_document(s.selected).ports().at(p);const auto route=port.routes.at(r);SetWindowTextW(GetDlgItem(w,PortBase),std::to_wstring(port.base).c_str());SetWindowTextW(GetDlgItem(w,PortCount),std::to_wstring(port.count).c_str());SetWindowTextW(GetDlgItem(w,RouteBase),std::to_wstring(route.base).c_str());SetWindowTextW(GetDlgItem(w,RouteCount),std::to_wstring(route.count).c_str());for(size_t i=0;i<ids.size();++i)if(!route.buffers.empty()&&ids[i]==route.buffers[0])SendDlgItemMessageW(w,Buffers,CB_SETCURSEL,i,0);}
-void refresh(HWND w,Session& s){SendDlgItemMessageW(w,Documents,CB_RESETCONTENT,0,0);const auto& owned=s.host.audio_paths();for(const auto& o:owned){const auto text=o.document->name()+(o.document->dirty()?L" *":L"")+L" — "+(o.path.empty()?L"unsaved":std::filesystem::path(o.path).filename().wstring());SendDlgItemMessageW(w,Documents,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text.c_str()));}
-    const bool present=!owned.empty();for(const auto id:{Save,Name,NameSet,Routes,Buffers,Connect,Undo,Redo,PortBase,PortCount,RouteBase,RouteCount,PortSet,RouteSet,RuntimeSave,RuntimeSettings,FileOutput,MixinChannels,MixinAdd,Sends,SendDestinations,SendSet,WavesReverb,SendAdd,SendVolume,EnvironmentalAdd})EnableWindow(GetDlgItem(w,id),present);SendDlgItemMessageW(w,Routes,CB_RESETCONTENT,0,0);SendDlgItemMessageW(w,Buffers,CB_RESETCONTENT,0,0);s.routes.clear();s.sends.clear();s.destinations.clear();SendDlgItemMessageW(w,Sends,CB_RESETCONTENT,0,0);SendDlgItemMessageW(w,SendDestinations,CB_RESETCONTENT,0,0);SendDlgItemMessageW(w,Segments,CB_RESETCONTENT,0,0);for(size_t i=0;i<s.host.documents().size();++i){const auto label=L"Segment "+std::to_wstring(i+1)+L" — "+std::filesystem::path(s.host.documents()[i].path).filename().wstring();SendDlgItemMessageW(w,Segments,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}SendDlgItemMessageW(w,Segments,CB_SETCURSEL,0,0);EnableWindow(GetDlgItem(w,Embed),present&&!s.host.documents().empty());EnableWindow(GetDlgItem(w,Remove),!s.host.documents().empty());if(!present){SetWindowTextW(GetDlgItem(w,Name),L"");return;}if(s.selected>=owned.size())s.selected=owned.size()-1;SendDlgItemMessageW(w,Documents,CB_SETCURSEL,s.selected,0);auto& document=s.host.audio_path_document(s.selected);SetWindowTextW(GetDlgItem(w,Name),document.name().c_str());const auto ports=document.ports();
+void refresh(HWND w,Session& s){const bool sameDocument=s.refreshedDocument==s.selected;const auto previousBuffer=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);const auto previousEffect=sameDocument?selected_effect(w,s):std::nullopt;s.refreshedDocument=s.selected;SendDlgItemMessageW(w,Documents,CB_RESETCONTENT,0,0);const auto& owned=s.host.audio_paths();for(const auto& o:owned){const auto text=o.document->name()+(o.document->dirty()?L" *":L"")+L" — "+(o.path.empty()?L"unsaved":std::filesystem::path(o.path).filename().wstring());SendDlgItemMessageW(w,Documents,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text.c_str()));}
+    const bool present=!owned.empty();for(const auto id:{Save,Name,NameSet,Routes,Buffers,Connect,Undo,Redo,PortBase,PortCount,RouteBase,RouteCount,PortSet,RouteSet,RuntimeSave,RuntimeSettings,FileOutput,MixinChannels,MixinAdd,Sends,SendDestinations,SendSet,WavesReverb,SendAdd,SendVolume,EnvironmentalAdd,WavesEdit,EffectsList,EffectProperties})EnableWindow(GetDlgItem(w,id),present);SendDlgItemMessageW(w,Routes,CB_RESETCONTENT,0,0);SendDlgItemMessageW(w,Buffers,CB_RESETCONTENT,0,0);s.routes.clear();s.sends.clear();s.destinations.clear();SendDlgItemMessageW(w,Sends,CB_RESETCONTENT,0,0);SendDlgItemMessageW(w,SendDestinations,CB_RESETCONTENT,0,0);SendDlgItemMessageW(w,Segments,CB_RESETCONTENT,0,0);for(size_t i=0;i<s.host.documents().size();++i){const auto label=L"Segment "+std::to_wstring(i+1)+L" — "+std::filesystem::path(s.host.documents()[i].path).filename().wstring();SendDlgItemMessageW(w,Segments,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}SendDlgItemMessageW(w,Segments,CB_SETCURSEL,0,0);EnableWindow(GetDlgItem(w,Embed),present&&!s.host.documents().empty());EnableWindow(GetDlgItem(w,Remove),!s.host.documents().empty());if(!present){SetWindowTextW(GetDlgItem(w,Name),L"");refresh_effects(w,s);return;}if(s.selected>=owned.size())s.selected=owned.size()-1;SendDlgItemMessageW(w,Documents,CB_SETCURSEL,s.selected,0);auto& document=s.host.audio_path_document(s.selected);SetWindowTextW(GetDlgItem(w,Name),document.name().c_str());const auto ports=document.ports();
     for(size_t p=0;p<ports.size();++p)for(size_t r=0;r<ports[p].routes.size();++r){const auto& route=ports[p].routes[r];s.routes.push_back({p,r});const auto label=L"Port "+std::to_wstring(p+1)+L", PChannel "+std::to_wstring(route.base)+L" count "+std::to_wstring(route.count)+L", buffers "+std::to_wstring(route.buffers.size());SendDlgItemMessageW(w,Routes,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}
     const auto details=document.buffer_details();for(size_t i=0;i<details.size();++i){const auto& d=details[i];const auto text=L"Buffer "+std::to_wstring(i+1)+(d.flags&8?L" (mix-in), ":L", ")+std::to_wstring(d.channels)+L" channels — "+guid_label(d.id);SendDlgItemMessageW(w,Buffers,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text.c_str()));}
-    for(const auto& effect:document.effects())if(effect.sendBuffer!=AudioBufferId{}){s.sends.push_back({effect.buffer,effect.index});const auto text=L"Buffer "+std::to_wstring(effect.buffer+1)+L", effect "+std::to_wstring(effect.index+1)+L" -> "+guid_label(effect.sendBuffer);SendDlgItemMessageW(w,Sends,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text.c_str()));}SendDlgItemMessageW(w,Sends,CB_SETCURSEL,0,0);send_selection(w,s);SendDlgItemMessageW(w,Routes,CB_SETCURSEL,0,0);route_selection(w,s);SetWindowTextW(GetDlgItem(w,Status),(L"Save AudioPath, then Project. Effects: "+std::to_wstring(document.effects().size())).c_str());
+    for(const auto& effect:document.effects())if(effect.sendBuffer!=AudioBufferId{}){s.sends.push_back({effect.buffer,effect.index});const auto text=L"Buffer "+std::to_wstring(effect.buffer+1)+L", effect "+std::to_wstring(effect.index+1)+L" -> "+guid_label(effect.sendBuffer);SendDlgItemMessageW(w,Sends,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(text.c_str()));}SendDlgItemMessageW(w,Sends,CB_SETCURSEL,0,0);send_selection(w,s);SendDlgItemMessageW(w,Routes,CB_SETCURSEL,0,0);route_selection(w,s);if(sameDocument&&previousBuffer!=CB_ERR&&static_cast<size_t>(previousBuffer)<details.size())SendDlgItemMessageW(w,Buffers,CB_SETCURSEL,previousBuffer,0);refresh_effects(w,s,previousEffect);SetWindowTextW(GetDlgItem(w,Status),(L"Save AudioPath, then Project. Effects: "+std::to_wstring(document.effects().size())).c_str());
 }
-LRESULT CALLBACK proc(HWND w,UINT msg,WPARAM wp,LPARAM lp){auto s=reinterpret_cast<Session*>(GetWindowLongPtrW(w,GWLP_USERDATA));try{if(msg==WM_CREATE){s=static_cast<Session*>(reinterpret_cast<CREATESTRUCTW*>(lp)->lpCreateParams);SetWindowLongPtrW(w,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(s));control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,16,16,620,250,Documents);control(w,L"BUTTON",L"New",WS_TABSTOP,16,56,100,28,New);control(w,L"BUTTON",L"Open...",WS_TABSTOP,126,56,100,28,Open);control(w,L"BUTTON",L"Save As...",WS_TABSTOP,236,56,110,28,Save);control(w,L"BUTTON",L"Undo",WS_TABSTOP,356,56,100,28,Undo);control(w,L"BUTTON",L"Redo",WS_TABSTOP,466,56,100,28,Redo);control(w,L"BUTTON",L"Runtime Save As...",WS_TABSTOP,430,90,200,28,RuntimeSave);control(w,L"STATIC",L"Name",0,16,98,100,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,16,124,400,26,Name);control(w,L"BUTTON",L"Set Name",WS_TABSTOP,430,124,136,28,NameSet);control(w,L"STATIC",L"PChannel route",0,16,172,180,22);control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,16,198,620,250,Routes);control(w,L"STATIC",L"Destination buffer",0,16,246,180,22);control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,16,272,620,250,Buffers);control(w,L"BUTTON",L"Connect to Selected Buffer",WS_TABSTOP,16,318,280,30,Connect);control(w,L"BUTTON",L"Runtime Properties...",WS_TABSTOP,310,318,280,30,RuntimeSettings);control(w,L"STATIC",L"Target Segment",0,16,352,180,22);control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,16,378,620,200,Segments);control(w,L"BUTTON",L"Copy into Selected Segment",WS_TABSTOP,16,420,280,30,Embed);control(w,L"BUTTON",L"Remove Embedded AudioPath",WS_TABSTOP,310,420,280,30,Remove);control(w,L"STATIC",L"Port base / count",0,16,466,190,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,210,462,110,26,PortBase);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,330,462,110,26,PortCount);control(w,L"BUTTON",L"Set Port Range",WS_TABSTOP,450,462,180,28,PortSet);control(w,L"STATIC",L"Route base / count",0,16,504,190,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,210,500,110,26,RouteBase);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,330,500,110,26,RouteCount);control(w,L"BUTTON",L"Set Route Range",WS_TABSTOP,450,500,180,28,RouteSet);control(w,L"STATIC",L"",0,16,542,620,30,Status);control(w,L"BUTTON",L"Add FileOutput to Selected Buffer",WS_TABSTOP,16,580,380,28,FileOutput);
-        control(w,L"BUTTON",L"Add Waves Reverb",WS_TABSTOP,410,580,225,28,WavesReverb);
+LRESULT CALLBACK proc(HWND w,UINT msg,WPARAM wp,LPARAM lp){auto s=reinterpret_cast<Session*>(GetWindowLongPtrW(w,GWLP_USERDATA));try{if(msg==WM_CREATE){s=static_cast<Session*>(reinterpret_cast<CREATESTRUCTW*>(lp)->lpCreateParams);SetWindowLongPtrW(w,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(s));control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,16,16,620,250,Documents);control(w,L"BUTTON",L"New",WS_TABSTOP,16,56,100,28,New);control(w,L"BUTTON",L"Open...",WS_TABSTOP,126,56,100,28,Open);control(w,L"BUTTON",L"Save",WS_TABSTOP,236,56,110,28,Save);control(w,L"BUTTON",L"Undo",WS_TABSTOP,356,56,100,28,Undo);control(w,L"BUTTON",L"Redo",WS_TABSTOP,466,56,100,28,Redo);control(w,L"BUTTON",L"Runtime Save As...",WS_TABSTOP,430,90,200,28,RuntimeSave);control(w,L"STATIC",L"Name",0,16,98,100,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,16,124,400,26,Name);control(w,L"BUTTON",L"Set Name",WS_TABSTOP,430,124,136,28,NameSet);control(w,L"STATIC",L"PChannel route",0,16,172,180,22);control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,16,198,620,250,Routes);control(w,L"STATIC",L"Destination buffer",0,16,246,180,22);control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,16,272,620,250,Buffers);control(w,L"BUTTON",L"Connect to Selected Buffer",WS_TABSTOP,16,318,280,30,Connect);control(w,L"BUTTON",L"Runtime Properties...",WS_TABSTOP,310,318,280,30,RuntimeSettings);control(w,L"STATIC",L"Target Segment",0,16,352,180,22);control(w,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,16,378,620,200,Segments);control(w,L"BUTTON",L"Copy into Selected Segment",WS_TABSTOP,16,420,280,30,Embed);control(w,L"BUTTON",L"Remove Embedded AudioPath",WS_TABSTOP,310,420,280,30,Remove);control(w,L"STATIC",L"Port base / count",0,16,466,190,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,210,462,110,26,PortBase);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,330,462,110,26,PortCount);control(w,L"BUTTON",L"Set Port Range",WS_TABSTOP,450,462,180,28,PortSet);control(w,L"STATIC",L"Route base / count",0,16,504,190,22);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,210,500,110,26,RouteBase);control(w,L"EDIT",L"",WS_BORDER|WS_TABSTOP,330,500,110,26,RouteCount);control(w,L"BUTTON",L"Set Route Range",WS_TABSTOP,450,500,180,28,RouteSet);control(w,L"STATIC",L"",0,16,542,620,30,Status);control(w,L"BUTTON",L"Add FileOutput",WS_TABSTOP,16,580,210,28,FileOutput);
+        control(w,L"BUTTON",L"Add Waves Reverb",WS_TABSTOP,236,580,165,28,WavesReverb);
+        control(w,L"BUTTON",L"Edit Effect Properties...",WS_TABSTOP,410,580,225,28,WavesEdit);
         control(w,L"STATIC",L"New mix-in audio channels",0,16,624,240,22);
         control(w,L"EDIT",L"2",WS_BORDER|WS_TABSTOP,260,620,70,26,MixinChannels);
         control(w,L"BUTTON",L"Add Mix-in",WS_TABSTOP,350,620,128,28,MixinAdd);
@@ -180,16 +333,20 @@ LRESULT CALLBACK proc(HWND w,UINT msg,WPARAM wp,LPARAM lp){auto s=reinterpret_ca
         control(w,L"BUTTON",L"Set Send Destination",WS_TABSTOP,16,788,220,28,SendSet);
         control(w,L"BUTTON",L"Insert Send...",WS_TABSTOP,246,788,190,28,SendAdd);
         control(w,L"BUTTON",L"Send Volume...",WS_TABSTOP,446,788,190,28,SendVolume);
+        control(w,L"STATIC",L"Effects List",0,652,16,300,22);
+        control(w,L"LISTBOX",L"",WS_BORDER|WS_TABSTOP|WS_VSCROLL|LBS_NOTIFY|LBS_NOINTEGRALHEIGHT,652,42,300,470,EffectsList);
+        control(w,L"BUTTON",L"Properties",WS_TABSTOP,652,526,300,28,EffectProperties);
         refresh(w,*s);return 0;}
-    if(msg==WM_COMMAND&&s){const auto id=LOWORD(wp);if(id==Documents&&HIWORD(wp)==CBN_SELCHANGE){s->selected=SendDlgItemMessageW(w,Documents,CB_GETCURSEL,0,0);refresh(w,*s);return 0;}if(id==Routes&&HIWORD(wp)==CBN_SELCHANGE){route_selection(w,*s);return 0;}if(id==Sends&&HIWORD(wp)==CBN_SELCHANGE){send_selection(w,*s);return 0;}if(HIWORD(wp)!=BN_CLICKED)return 0;
-        switch(id){case SendAdd:{const auto row=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select a source buffer");show_send_edit(w,s->host.audio_path_document(s->selected),true,static_cast<size_t>(row));break;}
+    if(msg==WM_CONTEXTMENU&&s&&reinterpret_cast<HWND>(wp)==GetDlgItem(w,EffectsList)){effect_context_menu(w,*s,lp);refresh(w,*s);return 0;}
+    if(msg==WM_COMMAND&&s){const auto id=LOWORD(wp);if(id==Documents&&HIWORD(wp)==CBN_SELCHANGE){s->selected=SendDlgItemMessageW(w,Documents,CB_GETCURSEL,0,0);refresh(w,*s);return 0;}if(id==Routes&&HIWORD(wp)==CBN_SELCHANGE){route_selection(w,*s);refresh_effects(w,*s);return 0;}if(id==Buffers&&HIWORD(wp)==CBN_SELCHANGE){refresh_effects(w,*s);return 0;}if(id==EffectsList&&HIWORD(wp)==LBN_SELCHANGE){effect_selection(w,*s);return 0;}if(id==Sends&&HIWORD(wp)==CBN_SELCHANGE){send_selection(w,*s);return 0;}if(HIWORD(wp)!=BN_CLICKED)return 0;
+        switch(id){case EffectProperties:show_effect_properties(w,*s);break;case WavesEdit:{const auto row=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select a buffer containing Waves Reverb");show_waves_edit(w,s->host.audio_path_document(s->selected),static_cast<size_t>(row));break;}case SendAdd:{const auto row=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select a source buffer");show_send_edit(w,s->host.audio_path_document(s->selected),true,static_cast<size_t>(row));break;}
         case SendVolume:{const auto row=SendDlgItemMessageW(w,Sends,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select an existing Send");const auto [buffer,effect]=s->sends.at(row);show_send_edit(w,s->host.audio_path_document(s->selected),false,buffer,effect);break;}
         case EnvironmentalAdd:{auto& document=s->host.audio_path_document(s->selected);if(!document.add_environmental_reverb_buffer())throw std::runtime_error("This AudioPath already contains Standard Env. Reverb");break;}
-        case MixinAdd:{const auto channels=number(w,MixinChannels);auto& document=s->host.audio_path_document(s->selected);if(!document.add_mixin_buffer(channels))throw std::runtime_error("Audio channel count must be 1 through 65535");refresh(w,*s);SendDlgItemMessageW(w,Buffers,CB_SETCURSEL,document.buffers().size()-1,0);return 0;}
+        case MixinAdd:{const auto channels=number(w,MixinChannels);auto& document=s->host.audio_path_document(s->selected);if(!document.add_mixin_buffer(channels))throw std::runtime_error("Audio channel count must be 1 through 65535");refresh(w,*s);SendDlgItemMessageW(w,Buffers,CB_SETCURSEL,document.buffers().size()-1,0);refresh_effects(w,*s);return 0;}
         case WavesReverb:{const auto selected=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(selected==CB_ERR||!s->host.audio_path_document(s->selected).add_waves_reverb(static_cast<size_t>(selected)))throw std::runtime_error("Select a supported buffer without Waves Reverb; stereo predefined buffers can be materialized");break;}
         case SendSet:{const auto row=SendDlgItemMessageW(w,Sends,CB_GETCURSEL,0,0),destination=SendDlgItemMessageW(w,SendDestinations,CB_GETCURSEL,0,0);if(row==CB_ERR||destination==CB_ERR)throw std::runtime_error("Select an existing Send effect and compatible destination");const auto [buffer,effect]=s->sends.at(row);if(!s->host.audio_path_document(s->selected).set_send_destination(buffer,effect,s->destinations.at(destination)))throw std::runtime_error("Send unchanged or invalid; destination must be a compatible mix-in without PChannels, buses or a local cycle");break;}
-        case RuntimeSettings:show_runtime_settings(w,s->host,RuntimeDocumentKind::AudioPath,s->selected);break;case FileOutput:{const auto selected=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(selected==CB_ERR||!s->host.audio_path_document(s->selected).add_file_output(static_cast<size_t>(selected)))throw std::runtime_error("Select a supported buffer without FileOutput; stereo predefined buffers can be materialized");break;}case RuntimeSave:{const auto path=file(w,true,true);if(path.empty())return 0;s->host.save_runtime_as(RuntimeDocumentKind::AudioPath,s->selected,path);break;}case PortSet:case RouteSet:{const auto row=SendDlgItemMessageW(w,Routes,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select a PChannel route");const auto [p,r]=s->routes.at(row);auto& doc=s->host.audio_path_document(s->selected);const auto changed=id==PortSet?doc.set_port_range(p,number(w,PortBase),number(w,PortCount)):doc.set_route_range(p,r,number(w,RouteBase),number(w,RouteCount));if(!changed)throw std::runtime_error("Range unchanged, overlapping, or outside its port; port resizing must retain all routes");break;}case Embed:{const auto target=SendDlgItemMessageW(w,Segments,CB_GETCURSEL,0,0);if(target==CB_ERR||!s->host.assign_audio_path(target,s->selected))throw std::runtime_error("Select a Segment; assignment must change its configuration");break;}case Remove:{const auto target=SendDlgItemMessageW(w,Segments,CB_GETCURSEL,0,0);if(target==CB_ERR||!s->host.document(target).remove_audio_path())throw std::runtime_error("Select a Segment containing an AudioPath");break;}case New:s->selected=s->host.new_audio_path();break;case Open:{const auto path=file(w,false);if(path.empty())return 0;s->selected=s->host.open_audio_path(path);break;}case Save:{const auto path=file(w,true);if(path.empty())return 0;s->host.save_audio_path(s->selected,path);break;}case NameSet:if(!s->host.audio_path_document(s->selected).set_name(value(w,Name)))throw std::runtime_error("Name unchanged or invalid");break;case Undo:s->host.audio_path_document(s->selected).undo();break;case Redo:s->host.audio_path_document(s->selected).redo();break;case Connect:{const auto row=SendDlgItemMessageW(w,Routes,CB_GETCURSEL,0,0),buffer=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(row==CB_ERR||buffer==CB_ERR)throw std::runtime_error("Select a route and buffer");const auto [p,r]=s->routes.at(row);if(!s->host.audio_path_document(s->selected).set_route_buffers(p,r,{s->host.audio_path_document(s->selected).buffers().at(buffer)}))throw std::runtime_error("Route unchanged or invalid");break;}default:return 0;}refresh(w,*s);return 0;
+        case RuntimeSettings:show_runtime_settings(w,s->host,RuntimeDocumentKind::AudioPath,s->selected);break;case FileOutput:{const auto selected=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(selected==CB_ERR||!s->host.audio_path_document(s->selected).add_file_output(static_cast<size_t>(selected)))throw std::runtime_error("Select a supported buffer without FileOutput; stereo predefined buffers can be materialized");break;}case RuntimeSave:{const auto path=file(w,true,true);if(path.empty())return 0;s->host.save_runtime_as(RuntimeDocumentKind::AudioPath,s->selected,path);break;}case PortSet:case RouteSet:{const auto row=SendDlgItemMessageW(w,Routes,CB_GETCURSEL,0,0);if(row==CB_ERR)throw std::runtime_error("Select a PChannel route");const auto [p,r]=s->routes.at(row);auto& doc=s->host.audio_path_document(s->selected);const auto changed=id==PortSet?doc.set_port_range(p,number(w,PortBase),number(w,PortCount)):doc.set_route_range(p,r,number(w,RouteBase),number(w,RouteCount));if(!changed)throw std::runtime_error("Range unchanged, overlapping, or outside its port; port resizing must retain all routes");break;}case Embed:{const auto target=SendDlgItemMessageW(w,Segments,CB_GETCURSEL,0,0);if(target==CB_ERR||!s->host.assign_audio_path(target,s->selected))throw std::runtime_error("Select a Segment; assignment must change its configuration");break;}case Remove:{const auto target=SendDlgItemMessageW(w,Segments,CB_GETCURSEL,0,0);if(target==CB_ERR||!s->host.document(target).remove_audio_path())throw std::runtime_error("Select a Segment containing an AudioPath");break;}case New:s->selected=s->host.new_audio_path();break;case Open:{const auto path=file(w,false);if(path.empty())return 0;s->selected=s->host.open_audio_path(path);break;}case Save:{auto path=s->host.audio_paths().at(s->selected).path;if(path.empty())path=file(w,true);if(path.empty())return 0;s->host.save_audio_path(s->selected,path);break;}case NameSet:if(!s->host.audio_path_document(s->selected).set_name(value(w,Name)))throw std::runtime_error("Name unchanged or invalid");break;case Undo:s->host.audio_path_document(s->selected).undo();break;case Redo:s->host.audio_path_document(s->selected).redo();break;case Connect:{const auto row=SendDlgItemMessageW(w,Routes,CB_GETCURSEL,0,0),buffer=SendDlgItemMessageW(w,Buffers,CB_GETCURSEL,0,0);if(row==CB_ERR||buffer==CB_ERR)throw std::runtime_error("Select a route and buffer");const auto [p,r]=s->routes.at(row);if(!s->host.audio_path_document(s->selected).set_route_buffers(p,r,{s->host.audio_path_document(s->selected).buffers().at(buffer)}))throw std::runtime_error("Route unchanged or invalid");break;}default:return 0;}refresh(w,*s);return 0;
     }if(msg==WM_CLOSE){DestroyWindow(w);return 0;}}catch(const std::exception& e){const std::string detail=e.what();MessageBoxW(w,std::wstring(detail.begin(),detail.end()).c_str(),L"AudioPath",MB_OK|MB_ICONERROR);if(msg==WM_CREATE)return -1;}return DefWindowProcW(w,msg,wp,lp);}
 }
-void show_audio_path_editor(HWND parent,Framework& host,size_t initialIndex){const auto instance=GetModuleHandleW(nullptr);static bool registered=false;if(!registered){WNDCLASSW c{};c.hInstance=instance;c.lpfnWndProc=proc;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerAudioPaths";if(!RegisterClassW(&c))throw std::runtime_error("AudioPath window registration failed");registered=true;}Session session{host};session.selected=initialIndex;const auto w=CreateWindowExW(WS_EX_APPWINDOW,L"SourceProducerAudioPaths",L"AudioPath Documents",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,CW_USEDEFAULT,CW_USEDEFAULT,680,880,nullptr,nullptr,instance,&session);if(!w)throw std::runtime_error("AudioPath window creation failed");const bool enabled=IsWindowEnabled(parent)!=FALSE;EnableWindow(parent,FALSE);ShowWindow(w,SW_SHOW);UpdateWindow(w);MSG msg{};BOOL result=1;while(IsWindow(w)&&(result=GetMessageW(&msg,nullptr,0,0))>0)if(!IsDialogMessageW(w,&msg)){TranslateMessage(&msg);DispatchMessageW(&msg);}if(IsWindow(w))DestroyWindow(w);EnableWindow(parent,enabled);SetActiveWindow(parent);if(result==0)PostQuitMessage(static_cast<int>(msg.wParam));if(result==-1)throw std::runtime_error("AudioPath message loop failed");}
+void show_audio_path_editor(HWND parent,Framework& host,size_t initialIndex){const auto instance=GetModuleHandleW(nullptr);static bool registered=false;if(!registered){WNDCLASSW c{};c.hInstance=instance;c.lpfnWndProc=proc;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerAudioPaths";if(!RegisterClassW(&c))throw std::runtime_error("AudioPath window registration failed");registered=true;}Session session{host};session.selected=initialIndex;const auto w=CreateWindowExW(WS_EX_APPWINDOW,L"SourceProducerAudioPaths",L"AudioPath Documents",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,CW_USEDEFAULT,CW_USEDEFAULT,1000,880,nullptr,nullptr,instance,&session);if(!w)throw std::runtime_error("AudioPath window creation failed");const bool enabled=IsWindowEnabled(parent)!=FALSE;EnableWindow(parent,FALSE);ShowWindow(w,SW_SHOW);UpdateWindow(w);MSG msg{};BOOL result=1;while(IsWindow(w)&&(result=GetMessageW(&msg,nullptr,0,0))>0){if(msg.message==WM_KEYDOWN&&msg.wParam==VK_F11&&msg.hwnd==GetDlgItem(w,EffectsList)){SendMessageW(w,WM_COMMAND,EffectProperties,0);continue;}if(!IsDialogMessageW(w,&msg)){TranslateMessage(&msg);DispatchMessageW(&msg);}}if(IsWindow(w))DestroyWindow(w);EnableWindow(parent,enabled);SetActiveWindow(parent);if(result==0)PostQuitMessage(static_cast<int>(msg.wParam));if(result==-1)throw std::runtime_error("AudioPath message loop failed");}
 }

@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <algorithm>
 #include <cstring>
+#include <cmath>
 #include <stdexcept>
 
 namespace producer::app {
@@ -44,14 +45,15 @@ std::vector<Note> sequence_notes(const Bytes& payload) {
     }
     return notes;
 }
-Bytes sequence_insert(const Bytes& payload,Note note) {
+Bytes sequence_insert(const Bytes& payload,Note note,size_t* resultingIndex) {
     if(note.time<0||note.duration<=0||note.pitch>127||!note.velocity||note.velocity>127||note.channel>=0xfffffffcu)throw std::runtime_error("Invalid Sequence note");
     auto p=parts(payload);auto& part=p.at(events_part(p));const auto size=stride(part);Bytes record(size);
     put32(record,0,note.time);put32(record,4,note.duration);put32(record,8,note.channel);record[14]=0x90;record[15]=note.pitch;record[16]=note.velocity;
     size_t insert=12;const auto end=8+read32(part.bytes,4);
     for(;insert<end;insert+=size)if(static_cast<std::int32_t>(read32(part.bytes,insert))>note.time)break;
+    size_t selected=0;for(size_t at=12;at<insert;at+=size)if((part.bytes[at+14]&0xf0)==0x90&&part.bytes[at+16])++selected;
     part.bytes.insert(part.bytes.begin()+insert,record.begin(),record.end());put32(part.bytes,4,read32(part.bytes,4)+size);
-    Bytes result;for(const auto& item:p)result.insert(result.end(),item.bytes.begin(),item.bytes.end());return result;
+    Bytes result;for(const auto& item:p)result.insert(result.end(),item.bytes.begin(),item.bytes.end());if(resultingIndex)*resultingIndex=selected;return result;
 }
 Bytes sequence_change(const Bytes& payload,size_t index,Note note,size_t* resultingIndex){
     if(note.time<0||note.duration<=0||note.pitch>127||!note.velocity||note.velocity>127||note.channel>=0xfffffffcu)throw std::runtime_error("Invalid Sequence note");
@@ -65,9 +67,88 @@ Bytes sequence_change(const Bytes& payload,size_t index,Note note,size_t* result
     if(resultingIndex){size_t count=0;for(size_t pos=12;pos<resultAt;pos+=size)if((part.bytes[pos+14]&0xf0)==0x90&&part.bytes[pos+16])++count;*resultingIndex=count;}
     return join(p);
 }
+Bytes sequence_change_timings(const Bytes& payload,const std::vector<SequenceTimingChange>& changes,std::vector<size_t>* resultingIndices){
+    auto p=parts(payload);auto& part=p.at(events_part(p));const auto size=stride(part);
+    struct Record {Bytes bytes;size_t note;};std::vector<Record> records;size_t noteIndex=0;
+    for(size_t at=12;at<8+read32(part.bytes,4);at+=size){const bool sounding=(part.bytes[at+14]&0xf0)==0x90&&part.bytes[at+16];records.push_back({Bytes(part.bytes.begin()+at,part.bytes.begin()+at+size),sounding?noteIndex++:SIZE_MAX});}
+    bool moved=false;
+    for(size_t i=0;i<changes.size();++i){const auto& e=changes[i];
+        if(e.note>=noteIndex||e.time<0||e.duration<=0)throw std::runtime_error("Invalid Sequence timing target");
+        for(size_t j=0;j<i;++j)if(changes[j].note==e.note)throw std::runtime_error("Duplicate Sequence timing target");
+        auto& record=std::find_if(records.begin(),records.end(),[&](const Record& r){return r.note==e.note;})->bytes;
+        const auto offset=static_cast<short>(record[12]|(record[13]<<8));const auto raw=std::int64_t(e.time)-offset;
+        if(raw<INT32_MIN||raw>INT32_MAX)throw std::runtime_error("Sequence raw time overflow");
+        moved|=static_cast<std::int32_t>(read32(record,0))!=raw;
+        put32(record,0,static_cast<std::uint32_t>(raw));put32(record,4,e.duration);
+    }
+    if(moved)std::stable_sort(records.begin(),records.end(),[](const Record& a,const Record& b){return static_cast<std::int32_t>(read32(a.bytes,0))<static_cast<std::int32_t>(read32(b.bytes,0));});
+    std::vector<size_t> mapping(noteIndex);size_t after=0;part.bytes.resize(12);
+    for(const auto& r:records){if(r.note!=SIZE_MAX)mapping[r.note]=after++;part.bytes.insert(part.bytes.end(),r.bytes.begin(),r.bytes.end());}
+    auto result=join(p);if(resultingIndices){std::vector<size_t> indices;for(const auto& e:changes)indices.push_back(mapping[e.note]);*resultingIndices=std::move(indices);}return result;
+}
 Bytes sequence_delete(const Bytes& payload,size_t index){
     auto p=parts(payload);auto& part=p.at(events_part(p));const auto size=stride(part);const auto at=note_record(part,size,index);
     part.bytes.erase(part.bytes.begin()+at,part.bytes.begin()+at+size);put32(part.bytes,4,read32(part.bytes,4)-size);return join(p);
+}
+namespace {
+size_t curves_part(const std::vector<Part>& parts){
+    size_t found=SIZE_MAX;for(size_t i=0;i<parts.size();++i)if(parts[i].id=="curl"){if(found!=SIZE_MAX)throw std::runtime_error("Ambiguous Curve data");found=i;}return found;
+}
+DWORD curve_stride(const Part& part){const auto count=read32(part.bytes,4);if(count<4)throw std::runtime_error("Curve record size missing");const auto size=read32(part.bytes,8);if(size<28||size>4096||size%4||(count-4)%size)throw std::runtime_error("Unsupported Curve record size");return size;}
+short curve_short(const Bytes& b,size_t at){return static_cast<short>(b.at(at)|(b.at(at+1)<<8));}
+void curve_short(Bytes& b,size_t at,int value){b.at(at)=static_cast<BYTE>(value);b.at(at+1)=static_cast<BYTE>(static_cast<unsigned>(value)>>8);}
+void write_curve(Bytes& record,const SequenceCurve& curve){
+    if(!valid_sequence_curve(curve))throw std::runtime_error("Invalid Sequence curve");
+    const auto raw=std::int64_t(curve.time)-curve_short(record,16);if(raw<INT32_MIN||raw>INT32_MAX)throw std::runtime_error("Curve raw time overflow");
+    if(record.size()<32&&(curve.controller.parameter||curve.merge))throw std::runtime_error("Legacy Curve record cannot hold DX8 parameters");
+    put32(record,0,static_cast<std::uint32_t>(raw));put32(record,4,curve.duration);put32(record,8,curve.resetDuration);put32(record,12,curve.channel);
+    const auto bias=curve.controller.type==3?8192:0;
+    curve_short(record,18,curve.start+bias);curve_short(record,20,curve.end+bias);curve_short(record,22,curve.reset+bias);
+    record[24]=curve.controller.type;record[25]=curve.shape;record[26]=curve.controller.data;record[27]=curve.flags;
+    if(record.size()>=32){curve_short(record,28,curve.controller.parameter);curve_short(record,30,curve.merge);}
+}
+size_t place_curve(Part& part,const Bytes& record,DWORD size){
+    size_t at=12;const auto time=static_cast<std::int32_t>(read32(record,0));for(;at<part.bytes.size();at+=size)if(static_cast<std::int32_t>(read32(part.bytes,at))>time)break;
+    part.bytes.insert(part.bytes.begin()+at,record.begin(),record.end());put32(part.bytes,4,static_cast<std::uint32_t>(part.bytes.size()-8));return (at-12)/size;
+}
+}
+int sequence_curve_minimum(SequenceController controller){return controller.type==3?-8192:0;}
+int sequence_curve_maximum(SequenceController controller){return controller.type==3?8191:controller.type==7||controller.type==8?16383:127;}
+bool valid_sequence_curve(const SequenceCurve& c){
+    if(c.time<0||c.duration<0||(!c.duration&&c.shape!=1)||c.resetDuration<0||c.channel>=0xfffffffcu||c.shape>4||c.controller.type<3||c.controller.type>8||c.controller.data>127||(c.controller.parameter&0x8080))return false;
+    if(c.controller.type!=7&&c.controller.type!=8&&c.controller.parameter)return false;
+    if(c.controller.type!=4&&c.controller.data)return false;
+    const auto low=sequence_curve_minimum(c.controller),high=sequence_curve_maximum(c.controller);return c.start>=low&&c.start<=high&&c.end>=low&&c.end<=high&&c.reset>=low&&c.reset<=high;
+}
+double sequence_curve_value(const SequenceCurve& c,double fraction){
+    // Display approximation; native playback evaluates the stored DX shape.
+    const auto t=std::clamp(fraction,0.,1.);double f=t;
+    switch(c.shape){case 1:f=1;break;case 2:f=t*t*t*t;break;case 3:f=1-std::pow(1-t,4);break;case 4:f=(1-std::cos(t*3.14159265358979323846))/2;break;default:break;}
+    return c.start+(c.end-c.start)*f;
+}
+std::vector<SequenceCurve> sequence_curves(const Bytes& payload){
+    const auto p=parts(payload);(void)events_part(p);const auto found=curves_part(p);if(found==SIZE_MAX)return {};
+    const auto& part=p[found];const auto size=curve_stride(part);std::vector<SequenceCurve> out;
+    for(size_t at=12;at<part.bytes.size();at+=size){const auto time=std::int64_t(static_cast<std::int32_t>(read32(part.bytes,at)))+curve_short(part.bytes,at+16);if(time<INT32_MIN||time>INT32_MAX)throw std::runtime_error("Curve time overflow");
+        SequenceCurve c;c.time=static_cast<std::int32_t>(time);c.duration=static_cast<std::int32_t>(read32(part.bytes,at+4));c.resetDuration=static_cast<std::int32_t>(read32(part.bytes,at+8));c.channel=read32(part.bytes,at+12);
+        const int bias=part.bytes[at+24]==3?8192:0;c.start=static_cast<short>(curve_short(part.bytes,at+18)-bias);c.end=static_cast<short>(curve_short(part.bytes,at+20)-bias);c.reset=static_cast<short>(curve_short(part.bytes,at+22)-bias);c.controller={part.bytes[at+24],part.bytes[at+26],size>=32?static_cast<std::uint16_t>(curve_short(part.bytes,at+28)):std::uint16_t(0)};c.shape=part.bytes[at+25];c.flags=part.bytes[at+27];if(size>=32)c.merge=static_cast<std::uint16_t>(curve_short(part.bytes,at+30));out.push_back(c);
+    }return out;
+}
+Bytes sequence_insert_curve(const Bytes& payload,const SequenceCurve& curve,size_t* resultingIndex){
+    if(!valid_sequence_curve(curve))throw std::runtime_error("Invalid Sequence curve");auto p=parts(payload);(void)events_part(p);auto found=curves_part(p);
+    if(found==SIZE_MAX){Bytes bytes(12);std::memcpy(bytes.data(),"curl",4);put32(bytes,4,4);put32(bytes,8,32);p.push_back({"curl",bytes});found=p.size()-1;}
+    auto& part=p[found];const auto size=curve_stride(part);Bytes record(size);write_curve(record,curve);const auto index=place_curve(part,record,size);if(resultingIndex)*resultingIndex=index;return join(p);
+}
+Bytes sequence_change_curve(const Bytes& payload,size_t index,const SequenceCurve& curve,size_t* resultingIndex){
+    auto p=parts(payload);const auto found=curves_part(p);if(found==SIZE_MAX)throw std::out_of_range("Sequence curve index");auto& part=p[found];const auto size=curve_stride(part);if(index>=(part.bytes.size()-12)/size)throw std::out_of_range("Sequence curve index");
+    const auto at=12+index*size;Bytes record(part.bytes.begin()+at,part.bytes.begin()+at+size);write_curve(record,curve);size_t after=index;
+    if(read32(record,0)==read32(part.bytes,at))std::copy(record.begin(),record.end(),part.bytes.begin()+at);
+    else{part.bytes.erase(part.bytes.begin()+at,part.bytes.begin()+at+size);after=place_curve(part,record,size);}
+    if(resultingIndex)*resultingIndex=after;return join(p);
+}
+Bytes sequence_delete_curve(const Bytes& payload,size_t index){
+    auto p=parts(payload);const auto found=curves_part(p);if(found==SIZE_MAX)throw std::out_of_range("Sequence curve index");auto& part=p[found];const auto size=curve_stride(part);if(index>=(part.bytes.size()-12)/size)throw std::out_of_range("Sequence curve index");
+    const auto at=12+index*size;part.bytes.erase(part.bytes.begin()+at,part.bytes.begin()+at+size);put32(part.bytes,4,static_cast<std::uint32_t>(part.bytes.size()-8));return join(p);
 }
 namespace {
 bool timed(const Part& p){return p.id=="evtl"||p.id=="curl";}

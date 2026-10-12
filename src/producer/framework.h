@@ -21,6 +21,7 @@ struct OpenScript {std::wstring path;std::unique_ptr<ScriptDocument> document;st
 struct OpenChordMap {std::wstring path;std::unique_ptr<ChordMapDocument> document;std::optional<size_t> projectReference;};
 enum class DocumentKind {Project,Segment,Style,Band,Collection,AudioPath,ChordMap,Wave,Script,Container,ToolGraph};
 struct OpenedDocument {DocumentKind kind;size_t index;};
+struct NewFileRequest;
 enum class RuntimeDocumentKind {Segment,Style,Band,Collection,AudioPath,Container};
 // Durable before/after evidence for a later explicit recovery operation.
 // This is a manifest, not permission to overwrite a changed external file.
@@ -72,6 +73,9 @@ public:
     // UI stores indexes, never raw pointers across document creation/deletion.
     void new_project();
     size_t new_segment();
+    // Prepare all native documents before replacing a project or appending any
+    // component. Callers release editor windows before replacing a project.
+    std::vector<OpenedDocument> create_files(const std::vector<NewFileRequest>&);
     size_t adopt_composed_segment(const Bytes&);
     size_t import_midi_segment(const std::wstring& path);
     size_t open_segment(const std::wstring& path);
@@ -129,12 +133,15 @@ public:
     const DlsDocument& collection_document(size_t index) const {return collections_.at(index).document;}
     std::vector<ResolvedCollection> band_collections(size_t index) const;
     std::vector<ResolvedCollection> playback_collections(size_t segmentIndex) const;
+    bool assign_sequence_collection_instrument(size_t segmentIndex,std::int32_t clock,std::uint32_t channel,size_t collectionIndex,size_t instrumentIndex);
+    bool assign_sequence_collection_patch(size_t segmentIndex,std::int32_t clock,std::uint32_t channel,size_t collectionIndex,std::uint32_t bank,std::uint32_t program);
     StyleCatalogEntry style_playback_snapshot(size_t styleIndex) const;
     std::vector<ResolvedCollection> style_playback_collections(size_t styleIndex) const;
     bool set_band_collection(size_t bandIndex,size_t instrumentIndex,size_t collectionIndex);
     bool set_band_collection_instrument(size_t bandIndex,size_t instrumentIndex,size_t collectionIndex,size_t dlsInstrumentIndex);
     const std::vector<OpenBandDocument>& band_documents() const {return bands_;}
     const BandDocument& band_document(size_t index) const {return *bands_.at(index).document;}
+    bool set_band_name(size_t index,const std::wstring& name){return bands_.at(index).document->set_name(name);}
     void save_style(size_t index,const std::wstring& path);
     bool set_style_tempo(size_t index,double tempo);
     bool set_style_name(size_t index,const std::wstring& name);

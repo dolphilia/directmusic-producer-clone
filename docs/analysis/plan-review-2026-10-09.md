@@ -32,3 +32,9 @@
 改訂前の計画は[10月9日改訂前の全文](../analysis-plan-history-2026-10-09.md)へバイト一致で保存。[10月7日プロンプト](continuation-prompt-2026-10-07.md)は変更せず履歴として保持する。`current.handoffReview`と受入JSONの方針入口を新しい改訂へ更新し、製品候補・latestUnit・専用試験結果・全8状態・executionPauseを維持する。UI台帳の基準設定は製品の合格証拠ではない。
 
 今回の改訂は計画・UI比較契約/台帳・継続指示・状態入口の文書整備。製品ソース、保存候補、既存run、回帰manifestを変更しない。文書間リンク、全40/全8対応、状態の不変、履歴とソース/生成物のhashを照合し、記録は`current.handoffReview.unit`から辿れる。goalはpausedのまま保持する。
+
+## 再開後の現行境界（2026-10-09）
+
+上記は計画改訂時点の判断として保持する。ユーザーの再開指示は`current.executionResume`に結び付け済み。1713のEnv限定保存/復元と二通常exit0後、Help由来の共通UIを実装した1922でTree文書切替・View/history・native保存/別process復元と三通常exit0を確認した。Enterキーの実装不足、Send module物理path監査失敗、WASAPI時計資格不成立/時間外closeは未達のまま保存。現行入口は[1922単位](../../work/analysis/ui-baseline/20261008T190934576Z/unit-record.json)と[Enter修正単位](../../work/analysis/ui-tree-enter/20261008T201444998Z/unit-record.json)。0735限定採用、原版/Q2/凍結Windows5、全40/全8未完を保持する。
+
+2015のEnter修正はbuild/install・関連9・実GUIのEnter/矢印/Tab/history/native保存/別process復元・三通常exit0・独立native7・固定WASAPI10まで限定成立した。原版比較は障害ありのため単位完了へ昇格しない。旧台帳入口の候補/source/test混在は一次証拠で訂正し、[訂正前の記録](../../work/analysis/ui-tree-enter/20261008T201444998Z/metadata-correction.json)を保持した。続く[2137 Properties単位](ui-properties-2026-10-09.md)は229source/4生成物、関連10、本体F11/context/選択追従・名前/history/native保存/別process復元・三通常exit0、native7/WASAPI10まで限定成立。2122の描画失敗を保持してタブの重なり順を修正した。節目の原始native92は54合格/37障害/既存三Band失敗1、原始driver164は24合格/23障害/117未実行。原版比較を単位未完として残し、既存pathのSave Projectとactive file保存メニューへ進む。

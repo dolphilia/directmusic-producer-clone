@@ -1,5 +1,31 @@
 // Included after the core test helpers, so these use the same check oracle.
+void chord_keyboard_tests(){
+    ChordEvent shared;shared.subchords[0].chordRoot=12;shared.subchords[0].scaleRoot=0;
+    require(chord_level(shared,0)==0&&chord_level(shared,3)==0&&!chord_level(shared,4),"Four Chord levels resolve shared native level bits without materialization");
+    auto split=shared;require(toggle_chord_tone(split,0,23)&&split.subchords.size()==2&&split.subchords[0].levels==14&&split.subchords[1].levels==1&&split.subchords[0].chordPattern==0x91&&split.subchords[1].chordPattern==0x891,"Chord tone click isolates one shared level and retains other three tones");
+    require(chord_level(split,0)==1&&chord_level(split,1)==0&&split.subchords[1].chordRoot==12&&split.subchords[1].scalePattern==0xab5,"Split base level remains addressable and keeps scale root and pattern");
+    require(toggle_chord_tone(split,0,10)&&split.subchords[1].chordRoot==10&&split.subchords[1].chordPattern==(0x891u<<2|1)&&split.subchords[1].scaleRoot==0,"Adding lower Chord tone rebases only its root-relative pattern");
+    auto scale=shared;require(toggle_chord_scale(scale,2,1)&&scale.subchords.size()==2&&scale.subchords[0].levels==11&&scale.subchords[1].levels==4&&scale.subchords[1].scalePattern==0xab7&&scale.subchords[0].scalePattern==0xab5,"Scale pitch click isolates native level without forcing seven notes or changing other levels");
+    scale.subchords[1].scalePattern=0x002002;require(toggle_chord_scale(scale,2,1)&&scale.subchords[1].scalePattern==0,"Scale class removal clears both native octave copies");
+    scale.subchords[1].scaleRoot=2;require(toggle_chord_scale(scale,2,1)&&scale.subchords[1].scalePattern==0x800,"Scale click is interpreted relative to its own root");
+    auto transposed=split;require(transpose_chord(transposed,1)&&transposed.subchords[0].chordRoot==13&&transposed.subchords[1].chordRoot==11&&transposed.subchords[0].scaleRoot==1&&transposed.subchords[1].scaleRoot==1&&transposed.subchords[1].chordPattern==split.subchords[1].chordPattern,"Root transpose moves all Chord and Scale roots while retaining relative patterns");
+    auto container=chord_track();auto cord=container.find("LIST","cord");require(set_chord_event(*cord,shared),"Keyboard fixture native Chord created");
+    auto body=cord->find("crdb");body->data.insert(body->data.begin()+44,{0xde,0xad,0xbe,0xef});put32(body->data,0,44);body->data.insert(body->data.end(),{0x12,0x34,0x56,0x78});put32(body->data,52,24);body->data[74]=0xaa;body->data[75]=0xbb;
+    const auto old=body->data;auto event=chord_events(*cord)[0];require(toggle_chord_tone(event,0,23)&&change_chord_event(*cord,0,event),"Keyboard split edits extended imported SubChord");
+    auto expected=old;expected.resize(old.size()+24);put32(expected,48,2);std::copy_n(old.begin()+56,24,expected.begin()+80);put32(expected,68,14);put32(expected,80,0x891);put32(expected,92,1);
+    require(cord->find("crdb")->data==expected,"Split preserves every old SubChord reserved/extended byte and copies provenance to new level");
+    const auto refused=[&](ChordEvent original,unsigned level,unsigned note,bool isScale){auto before=chord_track();set_chord_event(*before.find("LIST","cord"),original);const auto bytes=before.encode();auto candidate=original;const bool changed=isScale?toggle_chord_scale(candidate,level,note):toggle_chord_tone(candidate,level,note);auto after=chord_track();set_chord_event(*after.find("LIST","cord"),candidate);require(!changed&&after.encode()==bytes,"Rejected keyboard operation preserves entire native event");};
+    refused(shared,0,48,false);refused(shared,4,12,false);refused(shared,0,12,true);
+    auto single=shared;single.subchords[0].chordPattern=1;refused(single,0,12,false);
+    auto wide=shared;wide.subchords[0].chordRoot=0;wide.subchords[0].chordPattern=0x800001;refused(wide,0,24,false);
+    auto full=shared;full.subchords.resize(8);for(size_t i=1;i<8;++i)full.subchords[i].levels=0;refused(full,0,23,false);
+    auto ambiguous=shared;ambiguous.subchords.push_back(shared.subchords[0]);require(!chord_level(ambiguous,0),"Ambiguous native level assignments are not silently normalized");refused(ambiguous,0,23,false);
+    auto boundary=shared;boundary.subchords[0].chordRoot=23;const auto root=boundary.subchords[0].chordRoot;require(!transpose_chord(boundary,1)&&boundary.subchords[0].chordRoot==root&&boundary.subchords[0].scaleRoot==0&&!transpose_chord(boundary,-1)&&!transpose_chord(boundary,0),"Invalid global transpose refuses all roots atomically instead of wrapping or clipping");
+    SegmentDocument doc;require(doc.set_chord(shared),"Keyboard history fixture inserted");const auto before=doc.save_bytes();auto updated=doc.chords()[0];require(toggle_chord_tone(updated,1,23)&&doc.edit_chord(0,updated),"Keyboard level edit is one document transaction");const auto after=doc.save_bytes();require(doc.undo()&&doc.save_bytes()==before&&doc.redo()&&doc.save_bytes()==after,"Keyboard split uses full-document Undo and Redo");
+    SegmentDocument reload;reload.load(after);require(reload.save_bytes()==after&&chord_level(reload.chords()[0],1)==1&&reload.chords()[0].subchords[1].chordPattern==0x891&&!reload.dirty(),"Native reload retains level split and independent root-relative pattern");
+}
 void chord_track_tests(const std::filesystem::path& dir){
+    chord_keyboard_tests();
     SegmentDocument doc;ChordEvent c;c.name=L"CM7";c.time=800;
     require(doc.set_chord(c)&&doc.chords().size()==1&&doc.chords()[0].time==768&&doc.chords()[0].beat==1,"Chord owned insert snaps to Timeline beat");const auto inserted=doc.save_bytes();
     c.time=900;c.name=L"Dm";c.subchords[0].chordRoot=2;require(doc.set_chord(c)&&doc.chords().size()==1&&doc.chords()[0].name==L"Dm","Chord same beat replaces event");const auto replaced=doc.save_bytes();
@@ -15,5 +41,21 @@ void chord_track_tests(const std::filesystem::path& dir){
     const auto malformed=[&](Bytes bytes){auto broken=*cord;broken.find("crdb")->data=std::move(bytes);const auto before=broken.encode();bool refused=false;try{(void)set_chord_event(broken,e);}catch(const std::exception&){refused=true;}require(refused&&broken.encode()==before,"Malformed Chord refuses transactional mutation");};auto bytes=edited;put32(bytes,0,UINT32_MAX);malformed(bytes);bytes=edited;put32(bytes,48,UINT32_MAX);malformed(bytes);bytes=edited;put32(bytes,52,19);malformed(bytes);bytes=edited;bytes.pop_back();malformed(bytes);
     doc.select_track_group(2);require(doc.chords().empty(),"Chord group isolates existing track");c.time=0;c.name=L"Group2";require(doc.set_chord(c)&&doc.chords()[0].name==L"Group2","Chord new track owns selected group");doc.select_track_group(1);require(doc.chords().size()==2&&doc.save_bytes()!=two,"Chord group selection preserves other group bytes");require(doc.delete_chord(0)&&doc.chords().size()==1&&doc.undo()&&doc.chords().size()==2,"Chord delete and Undo");
     auto boundary=doc.chords()[0];boundary.name=std::wstring(16,L'x');boundary.subchords.resize(8);boundary.subchords.back().chordRoot=23;boundary.subchords.back().scaleRoot=23;require(doc.edit_chord(0,boundary)&&doc.chords()[0].name==boundary.name&&doc.chords()[0].subchords.size()==8,"Chord fixed WCHAR16 and SDK maximum eight subchords round trip");boundary.subchords.push_back(SubChord{});rejected(boundary);
+    {
+        auto fixture=Chunk::parse(two);auto tracks=fixture.find("LIST","trkl");tracks->children.back()=track;
+        put32(tracks->children.back().find("trkh")->data,20,3);
+        tracks->children.insert(tracks->children.begin(),chord_track());auto group2=chord_track();put32(group2.find("trkh")->data,20,2);tracks->children.push_back(group2);
+        SegmentDocument multiple;multiple.load(fixture.encode());const auto original=multiple.save_bytes();
+        require(multiple.chord_track_count()==2&&multiple.chords(0).empty()&&multiple.chords(1).size()==2,"Chord track count includes an empty track before populated overlapping-group track");
+        multiple.select_track_group(2);require(multiple.chord_track_count()==2&&multiple.chords(0).size()==2&&multiple.chords(1).empty(),"Chord track count and nth index follow intersecting groups in native order");
+        multiple.select_track_group(4);require(multiple.chord_track_count()==0&&multiple.chords().empty()&&multiple.save_bytes()==original&&!multiple.dirty()&&!multiple.can_undo(),"Absent Chord group and count never materialize a default chord or history");
+        multiple.select_track_group(1);auto event=multiple.chords(1)[0];event.name=L"M9 (#11)";size_t selected=999;
+        require(multiple.edit_chord(0,event,1,&selected)&&selected==0,"Chord type edit targets populated nth track after empty first track");
+        auto after=Chunk::parse(multiple.save_bytes());auto body=after.find("LIST","trkl")->children[tracks->children.size()-2].find("LIST","cord")->find("crdb");
+        const auto oldBody=track.find("LIST","cord")->find("crdb");std::copy_n(oldBody->data.begin()+4,32,body->data.begin()+4);
+        require(after.encode()==original,"Chord type edit changes only WCHAR16 name field and retains extended SubChord bytes flags unknown chunks and other groups");
+        const auto renamed=multiple.save_bytes();require(multiple.undo()&&multiple.save_bytes()==original&&!multiple.dirty(),"Chord type edit one complete-byte Undo restores clean checkpoint");
+        const auto unchanged=multiple.chords(1)[0];selected=999;require(!multiple.edit_chord(0,unchanged,1,&selected)&&selected==999&&multiple.can_redo()&&multiple.redo()&&multiple.save_bytes()==renamed,"No-op Chord type preserves bytes output index and pending Redo");
+    }
     Framework host;const auto owned=host.open_segment((base/L"authored.sgp").wstring());require(host.document(owned).edit_chord(0,doc.chords()[0]),"Chord edit owned by Framework Segment");host.save_segment(owned,(base/L"project-song.sgp").wstring());host.save_project((base/L"chord-track.pro").wstring());Framework reopened;reopened.open_project((base/L"chord-track.pro").wstring());require(reopened.document(0).chords().size()==2&&reopened.document(0).chords()[0].subchords.size()==8&&reopened.document(0).save_bytes()==host.document(owned).save_bytes()&&Chunk::parse(read_file((base/L"chord-track.pro").wstring())).type=="JAZP","Chord native JAZP Project reload resolves saved owned Segment");
 }

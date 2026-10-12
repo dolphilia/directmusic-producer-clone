@@ -1,4 +1,45 @@
 void timeline_range_tests(const std::filesystem::path& dir){
+    Timeline ruler;
+    const auto ticks=ruler.beat_ticks(0,3073);
+    require(ticks.size()==5&&ticks.front().clocks==0&&ticks.front().measure==0&&ticks.front().beat==0&&ticks.back().clocks==3072&&ticks.back().measure==1&&ticks.back().beat==0,"Ruler contains exact 4/4 beats and next measure boundary");
+    const auto cropped=ruler.beat_ticks(769,2304);
+    require(cropped.size()==1&&cropped[0].clocks==1536&&cropped[0].beat==2,"Ruler crop is half-open and never invents a beat at scroll start");
+    require(ruler.beat_ticks(10,10).empty(),"Empty ruler interval is empty");
+    Bytes rulerMeters{'t','i','m','s',20,0,0,0,8,0,0,0,0,0,0,0,4,4,4,0,0,12,0,0,3,8,5,0};ruler.load_meter(rulerMeters);
+    const auto mixed=ruler.beat_ticks(2304,5000);
+    require(mixed.size()==7&&mixed[1].clocks==3072&&mixed[1].measure==1&&mixed[1].beat==0&&mixed[2].clocks==3456&&mixed[4].clocks==4224&&mixed[4].measure==2&&mixed.back().clocks==4992&&mixed.back().beat==2,"Ruler follows 4/4 to 3/8 transition without duplicate boundaries; fractional grids do not alter beat clocks");
+    rejected([&]{ruler.beat_ticks(-1,3072);},"Negative ruler start rejected");
+    rejected([&]{ruler.beat_ticks(3072,0);},"Reversed ruler interval rejected");
+    rejected([&]{ruler.beat_ticks(0,3072,0);},"Zero ruler bound rejected");
+    rejected([&]{ruler.beat_ticks(2304,5000,2);},"Dense ruler has a bounded allocation");
+    require(ruler.clocks({2,2,0})==4992,"Rejected ruler requests preserve loaded musical map");
+    require(ruler.beat_ticks(INT32_MAX-1,INT32_MAX).empty(),"Ruler near LONG limit does not overflow while finding next beat");
+    // The main Tempo list can select disjoint objects as well as a range.
+    // Selection is transient, and malformed clipboard/selection must leave
+    // the complete native document and existing redo checkpoint intact.
+    SegmentDocument selection;
+    require(selection.add_tempo(768,90)&&selection.add_tempo(1536,180)&&selection.add_tempo(2304,100)&&selection.add_note({900,384,16,60,90}),"Tempo selection fixture with unrelated DWORD Sequence");
+    auto selectionRoot=Chunk::parse(selection.save_bytes());Chunk selectionUnknown;selectionUnknown.id="xSel";selectionUnknown.data={7,6,5};selectionUnknown.padding=0xa5;selectionRoot.children.push_back(selectionUnknown);
+    const auto selectionBaseline=selectionRoot.encode();selection.load(selectionBaseline);
+    selection.select(std::vector<size_t>{1,3});
+    require(selection.tempos()[1].selected&&selection.tempos()[3].selected&&!selection.tempos()[0].selected&&!selection.tempos()[2].selected,"Disjoint Tempo selection affects exactly requested objects");
+    require(selection.save_bytes()==selectionBaseline&&!selection.dirty()&&!selection.can_undo(),"Multiple selection changes no bytes, dirty state or history");
+    rejected([&]{selection.select(std::vector<size_t>{0,999});},"Mixed valid/invalid Tempo selection rejected atomically");
+    require(selection.tempos()[1].selected&&selection.tempos()[3].selected&&!selection.tempos()[0].selected&&selection.save_bytes()==selectionBaseline,"Invalid selection retains previous selected objects and bytes");
+    const auto selectedCopy=selection.copy();std::vector<producer::tempo::Event> selectedEvents;
+    require(producer::tempo::decode_copy(selectedCopy,selectedEvents)==producer::tempo::LoadResult::ok&&selectedEvents.size()==2&&selectedEvents[0].time==0&&selectedEvents[1].time==1536&&selectedEvents[0].bpm==90&&selectedEvents[1].bpm==100,"Copy includes every selected Tempo and preserves relative spacing");
+    require(selection.delete_selected()&&selection.tempos().size()==2&&selection.tempos()[0].time==0&&selection.tempos()[1].time==1536&&selection.notes()[0].channel==16,"Delete removes disjoint selection and preserves unselected events plus Sequence");
+    require(selection.undo()&&selection.save_bytes()==selectionBaseline&&!selection.dirty()&&selection.can_redo(),"One Undo restores complete native selection deletion");
+    selection.select(std::vector<size_t>{});
+    require(selection.copy().empty()&&!selection.delete_selected()&&selection.save_bytes()==selectionBaseline&&!selection.dirty()&&selection.can_redo(),"Empty selection copy/delete preserves redo checkpoint and exact bytes");
+    auto selectedCorrupt=selectedCopy;selectedCorrupt.pop_back();
+    require(!selection.paste(selectedCorrupt,0)&&selection.can_redo()&&selection.save_bytes()==selectionBaseline,"Malformed object clipboard retains redo without editing");
+    selection.select_all();
+    require(std::all_of(selection.tempos().begin(),selection.tempos().end(),[](const auto& e){return e.selected;})&&selection.can_redo()&&!selection.dirty(),"Select All includes each Tempo without replacing redo history");
+    require(selection.redo()&&selection.tempos().size()==2,"Transient multiple selection does not replace the undone transaction");
+    require(selection.paste(selectedCopy,768)&&selection.save_bytes()==selectionBaseline&&selectedCopy==selection.copy(),"Owned clipboard restores cut objects at their original positions without modifying payload");
+    selection.save((dir/L"TempoSelection.sgp").wstring());SegmentDocument selectionReload;selectionReload.load(read_file((dir/L"TempoSelection.sgp").wstring()));
+    require(selectionReload.save_bytes()==selectionBaseline&&selectionReload.notes()[0].channel==16&&!selectionReload.can_undo(),"Selection clipboard edit saves and reloads exact native data with no process history");
     SegmentDocument d;d.add_tempo(768,90);d.add_tempo(1536,180);d.add_tempo(2304,100);d.add_note({900,384,16,60,90});d.add_note({1800,384,0,64,80});d.add_note({2304,384,0,67,70});const auto baseline=d.save_bytes();d.load(baseline);
     require(d.select_range({768,2304,3})&&d.save_bytes()==baseline&&!d.dirty(),"Shared range selection changes no document bytes");const auto clipboard=d.copy_range();auto decoded=decode_timeline_clipboard(clipboard);require(decoded.span==1536&&decoded.strips==3,"Shared clipboard retains selected strips and blank range bounds");
     require(sequence_notes(decoded.sequence).size()==2&&sequence_notes(decoded.sequence)[0].time==132&&sequence_notes(decoded.sequence)[0].channel==16,"Range excludes exclusive end and retains leading space plus DWORD PChannel");

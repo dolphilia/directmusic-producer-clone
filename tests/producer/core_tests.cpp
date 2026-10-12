@@ -1,4 +1,6 @@
 #include "producer/wave_playback.h"
+#include "producer/wave_viewport.h"
+#include "producer/wave_property_values.h"
 #include "compat/playback_runtime.h"
 #include "compat/waves_reverb.h"
 #include "compat/directsound_send.h"
@@ -13,10 +15,18 @@
 #include "producer/articulation_units.h"
 #include "producer/envelope_parameters.h"
 #include "producer/framework.h"
+#include "producer/new_files.h"
+#include "producer/embedded_band_target.h"
+#include "producer/band_mixer.h"
+#include "producer/metronome.h"
+#include "producer/sequence_strip_model.h"
+#include "producer/sequence_parts.h"
+#include "producer/gm_instruments.h"
 #include "producer/tool_graph_runtime.h"
 #include "producer/source_tools.h"
 #include "producer/conductor.h"
 #include <dmerror.h>
+#include <dsound.h>
 #include <medparam.h>
 #include <cmath>
 #include <cwchar>
@@ -53,10 +63,19 @@ template<class F> void rejected(F action,const char* name) {bool failed=false;tr
 #include "source_tool_tests.h"
 #include "script_runtime_tests.h"
 #include "script_dependencies_tests.h"
+#include "script_ansi_descriptor_tests.h"
 #include "timeline_range_tests.h"
 #include "style_player_tests.h"
 #include "style_player_default_tests.h"
 #include "style_player_band_tests.h"
+#include "component_name_tests.h"
+#include "segment_creation_tests.h"
+#include "sequence_strip_tests.h"
+#include "sequence_curve_tests.h"
+#include "sequence_parts_tests.h"
+#include "sequence_audition_runtime_tests.h"
+#include "metronome_tests.h"
+#include "metronome_runtime_tests.h"
 
 void common_open_tests(const std::filesystem::path& dir){
     const auto base=dir/L"CommonOpen";std::filesystem::create_directories(base);
@@ -89,6 +108,7 @@ void common_open_tests(const std::filesystem::path& dir){
 }
 
 void transport_audio_path_tests(const std::filesystem::path& dir){
+    metronome_model_tests(dir);
     AudioPathDocument path;const auto config=path.save_bytes();SegmentDocument segment;
     const auto source=segment.save_bytes();
     write_file_atomic((dir/L"source.sgp").wstring(),source);write_file_atomic((dir/L"default.aup").wstring(),config);
@@ -614,6 +634,9 @@ void command_track_tests(const std::filesystem::path& dir,const std::wstring& re
         require(ref.undo()&&ref.save_bytes()==bytes&&ref.redo()&&ref.save_bytes()==modified,"Command original unknown repeat exact UndoRedo");event.repeat=0xe5;require(!ref.edit_command(0,event)&&ref.save_bytes()==modified,"Command original invalid new repeat atomic");}
 }
 void sequence_crud_tests(const std::filesystem::path& dir){
+    sequence_strip_tests(dir);
+    sequence_curve_tests(dir);
+    sequence_parts_tests(dir);
     const auto base=dir/L"sequence-crud";std::filesystem::create_directories(base);SegmentDocument seed;auto tree=Chunk::parse(seed.save_bytes());
     auto track=sequence_track();auto& payload=track.find("seqt")->data;
     Chunk evtl;evtl.id="evtl";evtl.data=Bytes(4);put32(evtl.data,0,24);
@@ -1557,21 +1580,28 @@ void playback_monitor_tests(){
 #include "container_document_tests.h"
 #include "container_embed_tests.h"
 #include "midi_import_tests.h"
+#include "tempo_properties_tests.h"
+#include "meter_properties_tests.h"
 int wmain(int argc,wchar_t** argv) {
     try {
         const auto dir=argc>1?std::filesystem::absolute(argv[1]):std::filesystem::temp_directory_path()/(L"producer-core-"+std::to_wstring(GetCurrentProcessId()));
         std::filesystem::create_directories(dir);
+        if(argc==3&&std::wstring(argv[2])==L"--meter-properties"){traceChecks=true;meter_properties_tests(dir);meter_batch_tests(dir);group_selection_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Atomic meter marker relocation/signature/group/style/history/native reload plus existing batch reanchor/group guards; GUI/audio/original separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--tempo-properties"){traceChecks=true;tempo_properties_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Tempo property movement/native history/range/meter/group isolation; GUI and original parity separate\"}\n";return 0;}
         if((argc==3||argc==4)&&std::wstring(argv[2])==L"--midi-import"){traceChecks=true;midi_import_tests(dir);if(argc==4)midi_import_reference_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--component-name"){traceChecks=true;component_name_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"native Segment/Style internal name payload history rejection and Project reload; GUI/original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--common-open"){traceChecks=true;common_open_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"typed Common Open catalogs native Project malformed input; GUI and original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--container-document"){traceChecks=true;container_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--container-embed"){traceChecks=true;container_embed_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--timeline-range"){traceChecks=true;timeline_range_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--segment-creation"){traceChecks=true;segment_creation_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--script-track-document"){traceChecks=true;script_track_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&(std::wstring(argv[2])==L"--script-track-owned"||std::wstring(argv[2])==L"--script-track-runtime")){traceChecks=true;script_track_owned_tests(dir,std::wstring(argv[2])==L"--script-track-runtime");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<"}\n";return 0;}
         if(argc==3&&(std::wstring(argv[2])==L"--segment-trigger-owned"||std::wstring(argv[2])==L"--segment-trigger-runtime")){traceChecks=true;segment_trigger_owned_tests(dir,std::wstring(argv[2])==L"--segment-trigger-runtime");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned recursive Segment Trigger snapshots native Project and optional actual runtime; GUI PCM original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--segment-trigger-document"){traceChecks=true;segment_trigger_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"SDK Segment Trigger owned model history native Project; main runtime audio original comparison unfinished\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--waves-reverb-document"){traceChecks=true;waves_reverb_document_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Waves default document history materialization and export; GUI DSP audio original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--waves-reverb-runtime"){traceChecks=true;waves_reverb_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Actual owned OS Waves DMO readonly defaults replay and cleanup; GUI PCM original separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--waves-reverb-persistence"){traceChecks=true;waves_reverb_persistence_tests(dir);waves_reverb_custom_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Declared OS Waves opaque Save/Load and custom native document/history/export/actual DSP replay; main GUI PCM original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--audio-path-send-authoring"){traceChecks=true;audio_path_send_runtime_tests(dir,false);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual Send native CRUD/private order/recording lookup; product GUI PCM original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--audio-path-send-runtime"){traceChecks=true;audio_path_send_runtime_tests(dir,true);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual Send/source FileOutput global controls lifecycle; no audible PCM GUI original parity\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--audio-path-send"){traceChecks=true;audio_path_send_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Send destination native editing/history/mix-in/materialization; synthetic effect class not instantiated; GUI audio original separate\"}\n";return 0;}
@@ -1580,11 +1610,12 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==3&&std::wstring(argv[2])==L"--file-output"){traceChecks=true;file_output_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source FileOutput writer DMO negotiation passthrough lifecycle AudioPath history; actual buffer GUI audio original separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--script-runtime"){traceChecks=true;script_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Script source routine number and error runtime; GUI/audio/original separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--script-dependencies"){traceChecks=true;script_dependency_tests::owned(dir,std::filesystem::absolute(argv[3])/L"FarmMusic.spt");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Owned Farm nested snapshots and negative inputs; runtime GUI audio original separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--script-ansi-descriptors"){traceChecks=true;script_ansi_tests::run(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Independent declared OS DLS/Wave ANSI descriptors vs owned Script binding/native bytes; GUI/audio/original separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--farm-script-runtime"){traceChecks=true;script_dependency_tests::runtime(std::filesystem::absolute(argv[3])/L"FarmMusic.spt");std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Actual Farm Script initialization12calls variables release; PCM timing GUI native restore original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--tool-graph-runtime"){traceChecks=true;tool_graph_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"source Tool generated-message routing; GUI/audio/original comparison unverified\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--tool-graph"){traceChecks=true;tool_graph_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"ToolGraph order channels native Project; main/runtime/original comparison separate\"}\n";return 0;}
         if(argc==5&&std::wstring(argv[2])==L"--script-document"){traceChecks=true;script_document_tests(dir,argv[3],argv[4]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Script typed source properties history; main native Project runtime original dynamic separate\"}\n";return 0;}
-        if(argc==4&&std::wstring(argv[2])==L"--mute-document"){traceChecks=true;mute_document_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Mute DWORD channels clocks CRUD clipboard history original inputs native Project; GUI audio separate\"}\n";return 0;}
+        if(argc==4&&std::wstring(argv[2])==L"--mute-document"){traceChecks=true;mute_document_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Mute DWORD channels clocks CRUD beat intervals clipboard history original inputs native Project; GUI audio separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--script-sender-diagnostic"){traceChecks=true;script_sender_diagnostic_tests(dir);std::cout<<"{\"diagnosticsPassed\":true,\"checks\":"<<checks<<",\"traceAcceptance\":false,\"scope\":\"ASCII/Unicode sender observation and independent SDK diagnostic invariance; exact Trace acceptance remains separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--script-messages"){traceChecks=true;script_message_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual Script Trace type14 and SDK diagnostics; GUI/original/PCM separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--lyric-runtime"){traceChecks=true;lyric_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"actual OS Lyric delivery forward Unicode saved snapshot replay; Main and original timing comparison separate\"}\n";return 0;}
@@ -1642,6 +1673,9 @@ int wmain(int argc,wchar_t** argv) {
         if(argc==3&&std::wstring(argv[2])==L"--signpost-track"){traceChecks=true;signpost_track_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned SignPost CRUD history native reload; GUI composition original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--chord-track"){traceChecks=true;chord_track_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"owned Chord track CRUD history save reload; GUI audio original comparison separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--sequence-crud"){traceChecks=true;sequence_crud_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"targeted Sequence CRUD core; no UI or audio acceptance\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--metronome-runtime"){traceChecks=true;metronome_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Private click delivery, accent, live gating, routing, Stop and native preservation; PCM separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--metronome-countin-runtime"){traceChecks=true;metronome_countin_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Private count-in clock handoff, seek meter and tempo modifier, Stop before authored start and native preservation; Main PCM original separate\"}\n";return 0;}
+        if(argc==3&&std::wstring(argv[2])==L"--sequence-audition-runtime"){traceChecks=true;sequence_audition_runtime_tests(dir);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"Silent note preparation, resource ownership and independent Transport; main PCM separate\"}\n";return 0;}
         if(argc==3&&std::wstring(argv[2])==L"--playback-monitor"){traceChecks=true;playback_monitor_tests();std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"per-instance playback monitor core; no GUI/audio acceptance\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--wave-pcm"){traceChecks=true;wave_pcm_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"PCM frame edit and position metadata transactions; GUI audio original separate\"}\n";return 0;}
         if(argc==4&&std::wstring(argv[2])==L"--wave-sample-loop"){traceChecks=true;wave_sample_loop_tests(dir,argv[3]);std::cout<<"{\"passed\":true,\"checks\":"<<checks<<",\"scope\":\"standalone Wave WSMP loops history and Project restore; runtime and original comparison separate\"}\n";return 0;}

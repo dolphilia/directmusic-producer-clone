@@ -7,6 +7,9 @@
 // docs/analysis/sdk-reference-sources.json. These are interface prefixes: no
 // implementation, guessed slots, or Producer COM interfaces are used here.
 namespace producer::runtime {
+// Frozen dmusici.h GUID_PerfMasterTempo and DMUS_MASTERTEMPO_MIN/MAX.
+inline constexpr GUID masterTempo={0xd2ac28b0,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
+inline constexpr float masterTempoMin=0.01f,masterTempoMax=100.0f;
 // Frozen public dmusici.h: DMUS_SEGF_AFTERPREPARETIME (1 << 10).
 inline constexpr DWORD playAfterPrepareTime=0x400;
 inline constexpr DWORD playSecondary=0x80,playGrid=0x800,playBeat=0x1000,playMeasure=0x2000,playDefault=0x4000;
@@ -30,7 +33,11 @@ inline constexpr GUID performance8Id={0x679c4137,0xc62e,0x4147,{0xb2,0xb4,0x9d,0
 inline constexpr GUID loader8Id={0x19e7c08c,0x0a44,0x4e6a,{0xa1,0x16,0x59,0x5a,0x7c,0xd5,0xde,0x8c}};
 inline constexpr GUID segment8Id={0xc6784488,0x41a3,0x418f,{0xaa,0x15,0xb3,0x50,0x93,0xba,0x42,0xd4}};
 struct Music;struct Sound;struct Track;struct Graph;struct Port;struct Instrument;struct DownloadedInstrument;
-struct Message;struct NotificationMessage;struct NoteRange;struct ChordKey;struct TimeSignature;struct AudioParams;
+struct Message;struct NotificationMessage;struct NoteRange;struct ChordKey;struct TimeSignature;
+// Frozen dmusici.h DMUS_AUDIOPARAMS. The runtime returns allocated values when
+// initNow is TRUE; callers must distinguish them from requested preferences.
+struct AudioParams {DWORD size;BOOL initNow;DWORD valid,features,voices,sampleRate;CLSID defaultSynth;};
+static_assert(sizeof(AudioParams)==40 && offsetof(AudioParams,defaultSynth)==24);
 struct Performance;struct Segment;struct SegmentState;
 inline constexpr GUID bandParam={0x02bb1938,0xcb8b,0x11d2,{0x8b,0xb9,0,0x60,8,0x93,0xb1,0xb6}};
 inline constexpr GUID bandTrackClass={0xd2ac2894,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
@@ -50,10 +57,13 @@ struct NoteMessage {
     BYTE beat,grid,velocity,noteFlags,timeRange,durationRange,velocityRange,playMode,subChord,midiValue;
     char transpose;
 };
+// Frozen dmusici.h DMUS_MIDI_PMSG (Win32, default SDK pack8).
+struct MidiMessage {Message message;BYTE status,byte1,byte2,pad;};
 #pragma pack(pop)
 static_assert(sizeof(Message)==56 && offsetof(Message,referenceTime)==8 && offsetof(Message,user)==52);
 static_assert(sizeof(NotificationMessage)==88 && offsetof(NotificationMessage,notificationType)==56 && offsetof(NotificationMessage,option)==72);
 static_assert(sizeof(NoteMessage)==80 && offsetof(NoteMessage,duration)==56 && offsetof(NoteMessage,midiValue)==75);
+static_assert(sizeof(MidiMessage)==64 && offsetof(MidiMessage,status)==56 && offsetof(MidiMessage,byte2)==58);
 inline constexpr GUID graphClass={0xd2ac2884,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};
 inline constexpr GUID graphId={0x2befc277,0x5497,0x11d2,{0xbc,0xcb,0,0xa0,0xc9,0x22,0xe6,0xeb}};
 inline constexpr GUID toolId={0xd2ac28ba,0xb39b,0x11d1,{0x87,4,0,0x60,8,0x93,0xb1,0xbd}};

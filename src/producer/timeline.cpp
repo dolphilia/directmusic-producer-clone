@@ -2,6 +2,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <algorithm>
 
 namespace producer::app {
 Bytes encode_timeline_clipboard(const TimelineClipboard& value){
@@ -73,8 +74,47 @@ std::int32_t Timeline::clocks(Position p) const {
     const auto beatLength=3072/active.denominator;if(static_cast<unsigned>(p.beat)>=active.beats||p.tick>=static_cast<int>(beatLength))throw std::runtime_error("Beat or tick out of range");
     return checked(active.time+(std::int64_t(p.measure)-measure)*beatLength*active.beats+std::int64_t(p.beat)*beatLength+p.tick);
 }
+namespace {
+int grid_step(const std::vector<meter::Event>& events,std::int32_t measure){
+    if(measure<0||events.empty())throw std::runtime_error("Invalid grid measure");
+    const meter::Event* active=&events.front();
+    for(const auto& e:events)if(e.measure<=measure)active=&e;else break;
+    const int beat=3072/active->denominator;
+    if(!active->grids||beat%active->grids)throw std::runtime_error("Fractional-clock grid positions are unsupported");
+    return beat/active->grids;
+}
+}
+GridPosition Timeline::grid_position(std::int32_t time)const{
+    const auto p=position(time);const auto step=grid_step(meters_.events(),p.measure);
+    return {p.measure,p.beat,p.tick/step,p.tick%step};
+}
+std::int32_t Timeline::grid_clocks(GridPosition p)const{
+    const auto step=grid_step(meters_.events(),p.measure);
+    if(p.grid<0||p.tick<0||p.tick>=step)throw std::runtime_error("Grid or tick out of range");
+    const auto tick=std::int64_t(p.grid)*step+p.tick;
+    if(tick>INT32_MAX)throw std::runtime_error("Grid position overflow");
+    return clocks({p.measure,p.beat,static_cast<std::int32_t>(tick)});
+}
 int Timeline::pixel(std::int32_t time,double zoom,int scroll) const {
     if(!std::isfinite(zoom)||zoom<=0)throw std::runtime_error("Invalid zoom");const double result=std::round(time*zoom)-scroll;
     if(result<INT32_MIN||result>INT32_MAX)throw std::runtime_error("Pixel out of range");return static_cast<int>(result);
+}
+std::vector<TimelineBeatTick> Timeline::beat_ticks(std::int32_t begin,std::int32_t end,size_t maximum) const {
+    if(begin<0||end<begin||!maximum)throw std::runtime_error("Invalid Timeline ruler interval");
+    std::vector<TimelineBeatTick> result;
+    const auto r=records(meters_);
+    for(size_t i=0;i<r.size();++i){
+        const auto lo=std::max<std::int64_t>(begin,r[i].time);
+        const auto hi=std::min<std::int64_t>(end,i+1<r.size()?r[i+1].time:end);
+        if(lo>=hi)continue;
+        const auto step=3072/r[i].denominator;
+        const auto first=std::int64_t(r[i].time)+((lo-r[i].time+step-1)/step)*step;
+        for(auto time=first;time<hi;time+=step){
+            if(result.size()==maximum)throw std::runtime_error("Timeline beat ruler is too dense");
+            const auto p=position(static_cast<std::int32_t>(time));
+            result.push_back({static_cast<std::int32_t>(time),p.measure,p.beat});
+        }
+    }
+    return result;
 }
 }

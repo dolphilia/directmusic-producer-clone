@@ -4,3 +4,6 @@
 # Local analysis copies and tool-generated working data.
 /work/
 
+# User-provided original UI reference screenshots; keep local originals.
+/screenshot/
+

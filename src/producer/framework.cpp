@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "chord_composition.h"
 #include "midi_import.h"
+#include "sequence_strip_model.h"
 #include "file_output_dmo.h"
 #include <filesystem>
 #include <stdexcept>
@@ -243,6 +244,8 @@ void refresh_native_metadata(Chunk& entry,const std::filesystem::path& path){
         StyleDocument saved;saved.load(document.encode());const auto display=saved.name().empty()?path.stem().wstring():saved.name();
         if(!info->find("nnam")){Chunk node;node.id="nnam";info->children.push_back(node);}
         info->find("nnam")->data=utf16(display);
+    }else if(document.type=="DMBD"){
+        BandDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name().empty()?path.stem().wstring():saved.name());
     }else if(document.type=="DMAP"){
         AudioPathDocument saved;saved.load(document.encode());if(!entry.find("LIST","UNFO")){Chunk info;info.id="LIST";info.type="UNFO";entry.children.push_back(info);}auto info=entry.find("LIST","UNFO");if(!info->find("nnam")){Chunk name;name.id="nnam";info->children.push_back(name);}info->find("nnam")->data=utf16(saved.name().empty()?path.stem().wstring():saved.name());
     }else if(document.type=="DMPR"){
@@ -445,6 +448,19 @@ bool Framework::set_band_collection_instrument(size_t index,size_t instrument,si
     (void)resolve_collections(next.collection_references(),std::filesystem::path(owned.path).parent_path().wstring(),catalog);*bands_.at(index).document=std::move(next);return true;
 }
 std::vector<ResolvedCollection> Framework::playback_collections(size_t index) const{std::vector<CollectionEntry> catalog;for(const auto& c:collections_)catalog.push_back({c.path,c.document.save_bytes()});const auto& owned=documents_.at(index);auto result=resolve_collections(document_collection_references(owned.document->save_bytes()),std::filesystem::path(owned.path).parent_path().wstring(),catalog,runtime_references(owned.path));for(const auto& style:owned.document->styles()){auto dependencies=resolve_collections(document_collection_references(style.bytes),std::filesystem::path(style.path).parent_path().wstring(),catalog,runtime_references(style.path));result.insert(result.end(),dependencies.begin(),dependencies.end());}return result;}
+bool Framework::assign_sequence_collection_instrument(size_t segment,std::int32_t clock,std::uint32_t channel,size_t collection,size_t instrument){
+    if(segment>=documents_.size()||collection>=collections_.size())return false;const auto locales=collections_[collection].document.instruments();if(instrument>=locales.size())return false;
+    return assign_sequence_collection_patch(segment,clock,channel,collection,locales[instrument].bank,locales[instrument].program);
+}
+bool Framework::assign_sequence_collection_patch(size_t segment,std::int32_t clock,std::uint32_t channel,size_t collection,std::uint32_t bank,std::uint32_t program){
+    if(segment>=documents_.size()||collection>=collections_.size()||(bank&~0x80007f7fu)||program>127)return false;const auto& owned=documents_[segment];const auto& target=collections_[collection];
+    CollectionReference reference;reference.objectId=collection_identity(target.document.save_bytes());
+    if(!reference.objectId){if(owned.path.empty()||target.path.empty())throw std::runtime_error("Save the Segment and DLS collection before assigning a collection without an identity");reference.filename=relative_to(target.path,std::filesystem::path(owned.path).parent_path());}
+    auto next=*owned.document;if(!assign_sequence_dls_patch(next,clock,channel,reference,bank,program,target.document.instruments().empty()))return false;
+    std::vector<CollectionEntry> catalog;for(const auto& c:collections_)catalog.push_back({c.path,c.document.save_bytes()});
+    (void)resolve_collections(document_collection_references(next.save_bytes()),std::filesystem::path(owned.path).parent_path().wstring(),catalog,runtime_references(owned.path));
+    *documents_[segment].document=std::move(next);return true;
+}
 StyleCatalogEntry Framework::style_playback_snapshot(size_t index) const{const auto& owned=styles_.at(index);return {owned.path,owned.document->save_bytes()};}
 std::vector<ResolvedCollection> Framework::style_playback_collections(size_t index) const{std::vector<CollectionEntry> catalog;for(const auto& c:collections_)catalog.push_back({c.path,c.document.save_bytes()});const auto owned=style_playback_snapshot(index);return resolve_collections(document_collection_references(owned.bytes),std::filesystem::path(owned.path).parent_path().wstring(),catalog,runtime_references(owned.path));}
 bool Framework::assign_audio_path(size_t segmentIndex,size_t audioPathIndex){return document(segmentIndex).set_audio_path(audio_path_document(audioPathIndex).save_bytes());}

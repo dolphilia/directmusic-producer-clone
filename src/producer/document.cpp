@@ -1,4 +1,5 @@
 #include "document.h"
+#include "sequence_parts.h"
 #include "audio_path.h"
 #include "tool_graph.h"
 #include "compat/producer_ids.h"
@@ -80,6 +81,22 @@ void SegmentDocument::select_track_group(std::uint32_t groups,size_t tempoIndex,
     if(!groups)throw std::runtime_error("Track group mask must be nonzero");auto next=*this;next.selectedGroups_=groups;next.tempoIndex_=tempoIndex;next.meterIndex_=meterIndex;next.sequenceIndex_=sequenceIndex;next.bandIndex_=bandIndex;next.import(save_bytes());(void)next.notes();(void)next.band_events();if(next.range_.strips&TimelineLyric){try{(void)next.lyrics(next.range_.lyricTrack);}catch(const std::exception&){next.range_.lyricTrack=0;}}if(!next.styles_.empty())(void)next.timeline();*this=std::move(next);
 }
 std::int32_t SegmentDocument::length() const { return static_cast<std::int32_t>(read32(root_.find("segh")->data,4)); }
+std::wstring SegmentDocument::name() const {
+    if(std::count_if(root_.children.begin(),root_.children.end(),[](const Chunk& c){return c.id=="LIST"&&c.type=="UNFO";})>1)throw std::runtime_error("Ambiguous Segment name container");
+    const auto info=root_.find("LIST","UNFO");if(!info)return L"";
+    if(std::count_if(info->children.begin(),info->children.end(),[](const Chunk& c){return c.id=="UNAM";})>1)throw std::runtime_error("Ambiguous Segment name");
+    const auto value=info->find("UNAM");return value?decode_utf16(value->data):L"";
+}
+bool SegmentDocument::set_name(const std::wstring& value){
+    if(value.empty()||value.size()>255||value.find(L'\0')!=std::wstring::npos)return false;
+    if(name()==value)return false;
+    const auto before=save_bytes();auto next=*this;
+    auto info=next.root_.find("LIST","UNFO");
+    if(!info){next.root_.children.push_back(list("LIST","UNFO",{}));info=&next.root_.children.back();}
+    auto label=info->find("UNAM");
+    if(!label){info->children.push_back(leaf("UNAM",{}));label=&info->children.back();}
+    label->data=utf16(value);next.record_edit(before);*this=std::move(next);return true;
+}
 void SegmentDocument::save(const std::wstring& path) { const auto b=save_bytes(); write_file_atomic(path,b);saved_=b;dirty_=false; }
 void SegmentDocument::relocate_context(const std::wstring& oldDirectory,const std::wstring& newDirectory,const std::vector<StyleCatalogEntry>& styles,const std::vector<CollectionEntry>& collections){
     auto rebase=[&](const Bytes& bytes){
@@ -104,7 +121,13 @@ bool SegmentDocument::relocate_collections(const std::vector<ResolvedCollection>
     const auto before=save_bytes(),after=relocate_collection_references(before,dependencies,directory);if(before==after)return false;
     auto next=*this;next.import(after);next.record_edit(before);*this=std::move(next);return true;
 }
-void SegmentDocument::select(size_t index) { auto events=tempo_.events(); if(index>=events.size())throw std::out_of_range("Tempo selection");for(size_t i=0;i<events.size();++i)events[i].selected=i==index;tempo_.replace_events(std::move(events)); }
+void SegmentDocument::select(size_t index) { select(std::vector<size_t>{index}); }
+void SegmentDocument::select(const std::vector<size_t>& indexes) {
+    auto events=tempo_.events();
+    for(const auto index:indexes)if(index>=events.size())throw std::out_of_range("Tempo selection");
+    for(size_t i=0;i<events.size();++i)events[i].selected=std::find(indexes.begin(),indexes.end(),i)!=indexes.end();
+    tempo_.replace_events(std::move(events));
+}
 void SegmentDocument::select_all() { tempo_.select_all(); }
 void SegmentDocument::commit_tempo(const Bytes& before) {
     auto stream=tempo_.save();
@@ -127,6 +150,26 @@ bool SegmentDocument::change_selected(double bpm) {
     if(!std::isfinite(bpm)||bpm<1||bpm>1000)return false;
     const auto before=save_bytes();auto next=*this;if(!next.tempo_.change_selected_tempo(bpm))return false;next.commit_tempo(before);const bool changed=before!=next.save_bytes();*this=std::move(next);return changed;
 }
+std::optional<double> SegmentDocument::tempo_at(std::int32_t time) const {
+    if(time<0||time>=length()||!hasTempo_)return {};
+    const auto value=tempo_.query(time);return value.found?std::optional<double>(value.bpm):std::nullopt;
+}
+bool SegmentDocument::change_current_tempo(std::int32_t time,double bpm) {
+    if(!valid_tempo(time,bpm,length())||!hasTempo_)return false;
+    const auto before=save_bytes();auto next=*this;
+    if(!next.tempo_.change_tempo_at(time,bpm))return false;
+    next.commit_tempo(before);*this=std::move(next);return true;
+}
+bool SegmentDocument::move_selected_tempo(std::int32_t time) {
+    const auto selected=tempo_.first_selected();
+    if(!selected||!valid_tempo(time,selected->bpm,length())||time==selected->time)return false;
+    const auto position=timeline().position(time);
+    const auto before=save_bytes();auto next=*this;
+    // TempoManager::SetData moves only the first selected node and inserts
+    // after equal-time nodes. Keep that ordering and every other selection.
+    if(!next.tempo_.move_first_selected(time,{position.measure,position.beat,position.tick}))return false;
+    next.commit_tempo(before);*this=std::move(next);return true;
+}
 bool SegmentDocument::delete_selected() {
     const auto before=save_bytes();auto next=*this;next.tempo_.delete_selected();next.commit_tempo(before);const bool changed=before!=next.save_bytes();*this=std::move(next);return changed;
 }
@@ -139,9 +182,15 @@ bool SegmentDocument::paste(const Bytes& bytes,std::int32_t at) {
     for(auto& e:events) {const auto time=std::int64_t(e.time)+at;if(time>INT32_MAX||time<0||!valid_tempo(static_cast<std::int32_t>(time),e.bpm,length()))return false;e.time=static_cast<std::int32_t>(time);e.selected=true;}
     const auto before=save_bytes();auto next=*this;next.tempo_.clear_selection();for(const auto& e:events)next.tempo_.replace_event(e);next.commit_tempo(before);const bool changed=before!=next.save_bytes();*this=std::move(next);return changed;
 }
+void SegmentDocument::restore_history(const Bytes& bytes){
+    const auto oldTempo=tempoIndex_,oldMeter=meterIndex_,oldSequence=sequenceIndex_,oldBand=bandIndex_;
+    tempoIndex_=meterIndex_=sequenceIndex_=bandIndex_=0;import(bytes);
+    const auto available=tracks();const auto bounded=[&](SegmentTrackKind kind,size_t old){size_t count=0;for(const auto& track:available)if(track.kind==kind)++count;return count?std::min(old,count-1):size_t(0);};
+    tempoIndex_=bounded(SegmentTrackKind::tempo,oldTempo);meterIndex_=bounded(SegmentTrackKind::meter,oldMeter);sequenceIndex_=bounded(SegmentTrackKind::sequence,oldSequence);bandIndex_=bounded(SegmentTrackKind::band,oldBand);import(bytes);
+}
 bool SegmentDocument::undo() {
     if(undo_.empty())return false;
-    auto next=*this; next.import(undo_.back());next.resolve_style_history(*this);next.redo_.push_back(save_bytes());next.undo_.pop_back();next.dirty_=next.save_bytes()!=saved_;*this=std::move(next);return true;
+    auto next=*this; next.restore_history(undo_.back());next.resolve_style_history(*this);next.redo_.push_back(save_bytes());next.undo_.pop_back();next.dirty_=next.save_bytes()!=saved_;*this=std::move(next);return true;
 }
 bool SegmentDocument::select_range(TimelineSelection value){
     if(value.begin<0||value.end<=value.begin||value.end>length()||!value.strips||(value.strips&~TimelineAll))return false;try{if(value.strips&TimelineLyric)(void)lyrics(value.lyricTrack);if(value.strips&TimelineMarker)(void)markers(value.markerTrack);if(value.strips&TimelineMute)(void)mutes(value.muteTrack);}catch(const std::exception&){return false;}range_=value;return true;
@@ -199,7 +248,7 @@ bool SegmentDocument::move_range(std::int32_t at) {
 }
 bool SegmentDocument::redo() {
     if(redo_.empty())return false;
-    auto next=*this;next.import(redo_.back());next.resolve_style_history(*this);next.undo_.push_back(save_bytes());next.redo_.pop_back();next.dirty_=next.save_bytes()!=saved_;*this=std::move(next);return true;
+    auto next=*this;next.restore_history(redo_.back());next.resolve_style_history(*this);next.undo_.push_back(save_bytes());next.redo_.pop_back();next.dirty_=next.save_bytes()!=saved_;*this=std::move(next);return true;
 }
 void SegmentDocument::resolve_style_history(const SegmentDocument& previous){
     const auto a=previous.style_references(),b=style_references();bool same=a.size()==b.size();for(size_t i=0;same&&i<a.size();++i)same=a[i].time==b[i].time&&a[i].groups==b[i].groups&&a[i].hasId==b[i].hasId&&a[i].objectId==b[i].objectId&&a[i].filename==b[i].filename&&a[i].name==b[i].name;
@@ -339,6 +388,21 @@ bool SegmentDocument::set_meter(std::int32_t measure,unsigned beats,unsigned den
     if(found!=events.end()&&found->measure==measure)*found=event;else events.insert(found,event);
     return update_meters(std::move(events));
 }
+bool SegmentDocument::can_edit_meter() const {
+    const auto selected=selected_track(root_,meter_header(),selectedGroups_,meterIndex_);if(!selected)return false;
+    const auto affected=read32(selected->find("trkh")->data,20)|selectedGroups_;
+    if(const auto tracks=root_.find("LIST","trkl"))for(const auto& track:tracks->children)if(track.find("LIST","sttr")&&(read32(track.find("trkh")->data,20)&affected))return false;
+    return true;
+}
+bool SegmentDocument::edit_meter(size_t index,std::int32_t measure,unsigned beats,unsigned denominator,unsigned grids,size_t* selected) {
+    if(!can_edit_meter()||measure<0||beats<1||beats>255||denominator<1||denominator>128||(denominator&(denominator-1))||grids<1||grids>65535)return false;
+    auto events=timeline().meters();if(index>=events.size()||(events[index].measure==0&&measure!=0))return false;
+    for(size_t i=0;i<events.size();++i)if(i!=index&&events[i].measure==measure)return false;
+    events[index]={measure,static_cast<BYTE>(beats),static_cast<BYTE>(denominator),static_cast<WORD>(grids)};
+    std::sort(events.begin(),events.end(),[](const auto& a,const auto& b){return a.measure<b.measure;});
+    const auto newIndex=static_cast<size_t>(std::find_if(events.begin(),events.end(),[=](const auto& e){return e.measure==measure;})-events.begin());
+    const bool changed=update_meters(std::move(events));if(selected)*selected=newIndex;return changed;
+}
 bool SegmentDocument::delete_meter(std::int32_t measure) {
     if(measure<=0)return false;auto events=timeline().meters();const auto found=std::find_if(events.begin(),events.end(),[=](const meter::Event& e){return e.measure==measure;});
     if(found==events.end())return false;events.erase(found);return update_meters(std::move(events));
@@ -347,14 +411,47 @@ std::vector<Note> SegmentDocument::notes() const {
     const auto expected=sequence_track();const auto track=selected_track(root_,expected.find("trkh")->data,selectedGroups_,sequenceIndex_);if(!track)return {};
     const auto data=track->find("seqt");if(!data||std::count_if(track->children.begin(),track->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1)throw std::runtime_error("Sequence payload missing or ambiguous");return sequence_notes(data->data);
 }
-bool SegmentDocument::add_note(Note note) {
+namespace {
+template<class C> auto selected_curve_data(C& root,std::uint32_t groups,size_t index)->decltype(root.find("seqt")){
+    const auto expected=sequence_track();const auto track=selected_track(root,expected.find("trkh")->data,groups,index);if(!track)return nullptr;
+    const auto data=track->find("seqt");if(!data||std::count_if(track->children.begin(),track->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1)throw std::runtime_error("Sequence payload missing or ambiguous");return data;
+}
+}
+std::vector<SequenceCurve> SegmentDocument::curves() const {const auto data=selected_curve_data(root_,selectedGroups_,sequenceIndex_);return data?sequence_curves(data->data):std::vector<SequenceCurve>{};}
+std::vector<SequenceController> SegmentDocument::cc_lanes(std::uint32_t channel) const {
+    std::vector<SequenceController> result;const auto expected=sequence_track();const auto track=selected_track(root_,expected.find("trkh")->data,selectedGroups_,sequenceIndex_);if(!track)return result;
+    for(const auto& lane:sequence_design_lanes(*track))if(lane.channel==channel)result.push_back(lane.controller);
+    for(const auto& curve:curves())if(curve.channel==channel&&valid_sequence_curve(curve))result.push_back(curve.controller);
+    std::sort(result.begin(),result.end());result.erase(std::unique(result.begin(),result.end()),result.end());return result;
+}
+bool SegmentDocument::add_cc_lane(std::uint32_t channel,SequenceController controller){
+    SequenceCurve probe;probe.channel=channel;probe.controller=controller;if(!valid_sequence_curve(probe))return false;
+    const auto expected=sequence_track();auto next=*this;const auto track=selected_track(next.root_,expected.find("trkh")->data,selectedGroups_,sequenceIndex_);if(!track)return false;
+    const auto channels=sequence_part_channels(*track);if(!std::binary_search(channels.begin(),channels.end(),channel))return false;
+    const auto existing=cc_lanes(channel);if(std::find(existing.begin(),existing.end(),controller)!=existing.end())return false;
+    const auto before=save_bytes();if(!sequence_add_design_lane(*track,channel,controller))return false;next.record_edit(before);*this=std::move(next);return true;
+}
+bool SegmentDocument::add_curve(const SequenceCurve& curve,size_t* resultingIndex){
+    if(!valid_sequence_curve(curve)||std::int64_t(curve.time)+curve.duration>length())return false;
+    auto next=*this;const auto data=selected_curve_data(next.root_,selectedGroups_,sequenceIndex_);if(!data)return false;const auto before=save_bytes();size_t index=0;
+    data->data=sequence_insert_curve(data->data,curve,&index);next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=index;return true;
+}
+bool SegmentDocument::edit_curve(size_t index,const SequenceCurve& curve,size_t* resultingIndex){
+    if(!valid_sequence_curve(curve)||std::int64_t(curve.time)+curve.duration>length())return false;
+    auto next=*this;const auto data=selected_curve_data(next.root_,selectedGroups_,sequenceIndex_);if(!data||index>=sequence_curves(data->data).size())return false;const auto before=save_bytes();size_t after=0;
+    data->data=sequence_change_curve(data->data,index,curve,&after);if(before==next.save_bytes())return false;next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=after;return true;
+}
+bool SegmentDocument::delete_curve(size_t index){
+    auto next=*this;const auto data=selected_curve_data(next.root_,selectedGroups_,sequenceIndex_);if(!data||index>=sequence_curves(data->data).size())return false;const auto before=save_bytes();data->data=sequence_delete_curve(data->data,index);next.record_edit(before);*this=std::move(next);return true;
+}
+bool SegmentDocument::add_note(Note note,size_t* resultingIndex) {
     if(note.time<0||note.duration<=0||std::int64_t(note.time)+note.duration>length()||note.pitch>127||note.velocity<1||note.velocity>127||note.channel>=0xfffffffcu)return false;
     const auto before=save_bytes();auto next=*this;auto tracks=next.root_.find("LIST","trkl");
     if(!tracks){next.root_.children.push_back(list("LIST","trkl",{}));tracks=&next.root_.children.back();}
     auto fresh=sequence_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,sequenceIndex_);
     if(!target){put32(fresh.find("trkh")->data,20,selectedGroups_);append_position(fresh,*tracks);tracks->children.push_back(std::move(fresh));target=&tracks->children.back();}
     auto data=target->find("seqt");if(!data||std::count_if(target->children.begin(),target->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1)throw std::runtime_error("Sequence payload missing or ambiguous");
-    data->data=sequence_insert(data->data,note);next.record_edit(before);*this=std::move(next);return true;
+    size_t selected=0;data->data=sequence_insert(data->data,note,&selected);next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=selected;return true;
 }
 SegmentDocument SegmentDocument::playback_test(unsigned firstPitch) {
     if(firstPitch>115)throw std::runtime_error("Playback test pitch range exceeds MIDI notes");
@@ -369,6 +466,30 @@ bool SegmentDocument::edit_note(size_t index,Note note,size_t* resultingIndex){
     const auto expected=sequence_track();auto next=*this;auto target=selected_track(next.root_,expected.find("trkh")->data,selectedGroups_,sequenceIndex_);
     if(!target)return false;auto data=target->find("seqt");if(!data||std::count_if(target->children.begin(),target->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1)throw std::runtime_error("Sequence payload missing or ambiguous");
     if(index>=sequence_notes(data->data).size())return false;const auto before=save_bytes();size_t afterIndex=0;data->data=sequence_change(data->data,index,note,&afterIndex);if(before==next.save_bytes())return false;next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=afterIndex;return true;
+}
+bool SegmentDocument::edit_note_velocities(const std::vector<SequenceVelocityEdit>& edits){
+    if(edits.empty())return false;auto next=*this;const auto before=save_bytes();
+    for(size_t i=0;i<edits.size();++i){const auto& e=edits[i];if(!e.groups||!e.velocity||e.velocity>127)return false;
+        for(size_t j=0;j<i;++j)if(edits[j].groups==e.groups&&edits[j].track==e.track&&edits[j].note==e.note)return false;
+        const auto expected=sequence_track();auto target=selected_track(next.root_,expected.find("trkh")->data,e.groups,e.track);if(!target)return false;
+        auto data=target->find("seqt");if(!data||std::count_if(target->children.begin(),target->children.end(),[](const Chunk& c){return c.id=="seqt";})!=1)throw std::runtime_error("Sequence payload missing or ambiguous");
+        auto notes=sequence_notes(data->data);if(e.note>=notes.size())return false;auto note=notes[e.note];note.velocity=static_cast<std::uint8_t>(e.velocity);data->data=sequence_change(data->data,e.note,note);
+    }
+    if(before==next.save_bytes())return false;next.record_edit(before);*this=std::move(next);return true;
+}
+bool SegmentDocument::edit_note_timings(const std::vector<SequenceTimingEdit>& edits,std::vector<size_t>* resultingIndices){
+    if(edits.empty())return false;auto next=*this;const auto before=save_bytes();
+    struct Pending {Chunk* data;std::vector<SequenceTimingChange> changes;std::vector<size_t> slots;};std::vector<Pending> pending;
+    for(size_t i=0;i<edits.size();++i){const auto& e=edits[i];if(!e.groups||e.time<0||e.duration<=0||std::int64_t(e.time)+e.duration>length())return false;
+        auto data=selected_curve_data(next.root_,e.groups,e.track);if(!data)return false;const auto notes=sequence_notes(data->data);
+        if(e.note>=notes.size()||notes[e.note].channel>=0xfffffffcu||notes[e.note].pitch>127||notes[e.note].velocity>127)return false;
+        auto at=std::find_if(pending.begin(),pending.end(),[&](const Pending& p){return p.data==data;});
+        if(at==pending.end()){pending.push_back({data,{},{}});at=pending.end()-1;}
+        if(std::any_of(at->changes.begin(),at->changes.end(),[&](const auto& c){return c.note==e.note;}))return false;
+        at->changes.push_back({e.note,e.time,e.duration});at->slots.push_back(i);
+    }
+    std::vector<size_t> indices(edits.size());for(auto& p:pending){std::vector<size_t> local;p.data->data=sequence_change_timings(p.data->data,p.changes,&local);for(size_t i=0;i<local.size();++i)indices[p.slots[i]]=local[i];}
+    if(before==next.save_bytes())return false;next.record_edit(before);*this=std::move(next);if(resultingIndices)*resultingIndices=std::move(indices);return true;
 }
 bool SegmentDocument::delete_note(size_t index){
     const auto expected=sequence_track();auto next=*this;auto target=selected_track(next.root_,expected.find("trkh")->data,selectedGroups_,sequenceIndex_);
@@ -411,6 +532,16 @@ bool prepare_chord(const SegmentDocument& doc,ChordEvent& event,const ChordEvent
     const auto view=doc.timeline();const auto p=view.position(event.time);if(p.measure>UINT16_MAX||p.beat>UINT8_MAX)return false;
     event.time=view.clocks({p.measure,p.beat,0});event.measure=static_cast<std::uint16_t>(p.measure);event.beat=static_cast<std::uint8_t>(p.beat);return true;
 }
+}
+size_t SegmentDocument::chord_track_count() const {
+    const auto tracks=root_.find("LIST","trkl");if(!tracks)return 0;
+    const auto expected=chord_track().find("trkh")->data;size_t count=0;
+    for(const auto& track:tracks->children)if(track.id=="RIFF"&&track.type=="DMTK"){
+        const auto h=track.find("trkh");if(!h||h->data.size()<32||std::count_if(track.children.begin(),track.children.end(),[](const Chunk& c){return c.id=="trkh";})!=1)throw std::runtime_error("Track header missing, ambiguous or truncated");
+        if(!std::equal(expected.begin(),expected.begin()+16,h->data.begin()))continue;
+        const auto bits=read32(h->data,20);if(!bits)throw std::runtime_error("Track has no groups");
+        if(bits&selectedGroups_)++count;
+    }return count;
 }
 std::vector<ChordEvent> SegmentDocument::chords(size_t trackIndex) const {const auto data=chord_data(root_,selectedGroups_,trackIndex);return data?chord_events(*data):std::vector<ChordEvent>{};}
 bool SegmentDocument::replace_composed_chords(const Chunk& cord,size_t trackIndex){
@@ -497,6 +628,17 @@ std::vector<MuteEvent> SegmentDocument::mutes(size_t trackIndex) const{const aut
 bool SegmentDocument::add_mute(MuteEvent e,size_t trackIndex,size_t* resultingIndex){if(!prepare_mute(*this,e))return false;const auto before=save_bytes();auto next=*this;size_t after=0;if(!add_mute_event(*ensure_mute(next.root_,selectedGroups_,trackIndex),e,&after))return false;next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=after;return true;}
 bool SegmentDocument::edit_mute(size_t i,MuteEvent e,size_t trackIndex,size_t* resultingIndex){if(!prepare_mute(*this,e))return false;const auto before=save_bytes();auto next=*this;auto t=mute_selected(next.root_,selectedGroups_,trackIndex);size_t after=0;if(!t||!change_mute_event(*t,i,e,&after))return false;next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=after;return true;}
 bool SegmentDocument::delete_mute(size_t i,size_t trackIndex){const auto before=save_bytes();auto next=*this;auto t=mute_selected(next.root_,selectedGroups_,trackIndex);if(!t||!delete_mute_event(*t,i))return false;next.record_edit(before);*this=std::move(next);return true;}
+bool SegmentDocument::toggle_mute_beat(std::uint32_t channel,std::int32_t at,size_t trackIndex){
+    if(channel>=0xfffffffcu||at<0||at>=length())return false;
+    const auto axis=timeline();const auto position=axis.position(at);
+    const auto begin=axis.clocks({position.measure,position.beat,0});
+    unsigned denominator=4;for(const auto& meter:axis.meters())if(meter.measure<=position.measure)denominator=meter.denominator;
+    const auto end=static_cast<std::int32_t>(std::min<std::int64_t>(length(),std::int64_t(begin)+3072/denominator));
+    std::uint32_t map=channel;for(const auto& e:mutes(trackIndex))if(e.channel==channel&&e.time<=begin)map=e.map;
+    const auto before=save_bytes();auto next=*this;
+    if(!set_mute_interval(*ensure_mute(next.root_,selectedGroups_,trackIndex),channel,begin,end,map!=mute_channel_silent))return false;
+    next.record_edit(before);*this=std::move(next);return true;
+}
 Bytes SegmentDocument::copy_mute(size_t i,size_t trackIndex) const{const auto t=mute_selected(root_,selectedGroups_,trackIndex);if(!t)throw std::runtime_error("Mute track missing");return copy_mute_event(*t,i);}
 bool SegmentDocument::paste_mute(const Bytes& bytes,std::int32_t at,size_t trackIndex,size_t* resultingIndex){if(at<0||at>length())return false;const auto before=save_bytes();auto next=*this;size_t after=0;if(!paste_mute_event(*ensure_mute(next.root_,selectedGroups_,trackIndex),bytes,at,&after))return false;next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=after;return true;}
 std::vector<WaveItem> SegmentDocument::waves(size_t trackIndex) const {
@@ -512,6 +654,12 @@ bool SegmentDocument::edit_wave(size_t part,size_t item,const WavePlacement& e,s
     const auto before=save_bytes();auto next=*this;auto header=wave_track_identity();header.resize(32);
     auto track=selected_track(next.root_,header,selectedGroups_,trackIndex);
     if(!track||!edit_wave_placement(*track,part,item,e))return false;
+    next.record_edit(before);*this=std::move(next);return true;
+}
+bool SegmentDocument::edit_wave_loop(size_t part,size_t item,const WaveItemLoop& loop,size_t trackIndex){
+    const auto before=save_bytes();auto next=*this;auto header=wave_track_identity();header.resize(32);
+    auto track=selected_track(next.root_,header,selectedGroups_,trackIndex);
+    if(!track||!edit_wave_item_loop(*track,part,item,loop))return false;
     next.record_edit(before);*this=std::move(next);return true;
 }
 Bytes SegmentDocument::copy_wave(size_t part,size_t item,size_t trackIndex) const{
@@ -548,6 +696,28 @@ bool SegmentDocument::set_band(std::int32_t time,const Bytes& band){
     auto fresh=make_band_track();auto target=selected_track(next.root_,fresh.find("trkh")->data,selectedGroups_,bandIndex_);
     if(!target){put32(fresh.find("trkh")->data,20,selectedGroups_);append_position(fresh,*tracks);tracks->children.push_back(std::move(fresh));target=&tracks->children.back();}
     if(!set_band_track_event(*target,time,band))return false;next.record_edit(before);*this=std::move(next);return true;
+}
+bool SegmentDocument::insert_default_band(std::int32_t beat,size_t* resultingIndex){
+    if(beat<0||beat>=length())return false;const auto axis=timeline();const auto p=axis.position(beat);
+    if(p.tick!=0)return false;const auto events=band_events();
+    for(const auto& e:events){if(e.logicalTime<0)return false;const auto at=axis.position(e.logicalTime);if(at.measure==p.measure&&at.beat==p.beat)return false;}
+    const auto before=save_bytes();auto next=*this;const auto expected=make_band_track();
+    auto target=selected_track(next.root_,expected.find("trkh")->data,selectedGroups_,bandIndex_);if(!target)return false;
+    size_t suffix=1;std::wstring name;for(;;){name=L"Band"+std::to_wstring(suffix++);bool occupied=false;for(const auto& e:events){BandDocument b;b.load(e.band);if(b.name()==name){occupied=true;break;}}if(!occupied)break;}
+    const auto band=BandDocument::inactive_default(name).save_bytes();if(!set_band_track_event(*target,beat,band))return false;
+    const auto inserted=band_track_events(*target);const auto found=std::find_if(inserted.begin(),inserted.end(),[&](const auto& e){return e.logicalTime==beat;});
+    const auto index=static_cast<size_t>(found-inserted.begin());if(found==inserted.end()||!move_band_track_event(*target,index,beat,beat-1))throw std::runtime_error("Band insertion timing failed");
+    const auto finalEvents=band_track_events(*target);const auto finalFound=std::find_if(finalEvents.begin(),finalEvents.end(),[&](const auto& e){return e.logicalTime==beat;});const auto finalIndex=static_cast<size_t>(finalFound-finalEvents.begin());
+    next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=finalIndex;return true;
+}
+bool SegmentDocument::update_band(size_t index,std::int32_t logical,std::int32_t physical,const Bytes& band,size_t* resultingIndex){
+    if(logical<0||logical>=length()||physical>=length())return false;const auto events=band_events();if(index>=events.size())return false;
+    for(size_t i=0;i<events.size();++i)if(i!=index&&events[i].logicalTime==logical)return false;
+    BandDocument validated;validated.load(band);const auto before=save_bytes();auto next=*this;const auto expected=make_band_track();
+    auto target=selected_track(next.root_,expected.find("trkh")->data,selectedGroups_,bandIndex_);if(!target)return false;
+    const bool content=set_band_track_event(*target,events[index].logicalTime,band);const bool timing=move_band_track_event(*target,index,logical,physical);if(!content&&!timing)return false;
+    const auto edited=band_track_events(*target);const auto found=std::find_if(edited.begin(),edited.end(),[&](const auto& e){return e.logicalTime==logical;});if(found==edited.end())throw std::runtime_error("Updated Band selection missing");
+    const auto after=static_cast<size_t>(found-edited.begin());next.record_edit(before);*this=std::move(next);if(resultingIndex)*resultingIndex=after;return true;
 }
 bool SegmentDocument::move_band(size_t index,std::int32_t logical,std::int32_t physical){
     if(logical<0||logical>=length()||physical>=length())return false;(void)band_events();const auto before=save_bytes();auto next=*this;

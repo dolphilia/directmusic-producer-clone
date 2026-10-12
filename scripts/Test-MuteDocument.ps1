@@ -17,8 +17,18 @@ try {$process=Start-Process -FilePath $exe -ArgumentList $arguments -WindowStyle
 catch {$launchError=$_.Exception.Message}
 $unchanged=@($inputs|Where-Object {(Hash $_.path) -ne $_.sha256}).Count -eq 0
 $passed=$unchanged -and $null -eq $launchError -and -not $timeout -and $exit -eq 0
-$checks=$null;if($passed){$result=Get-Content -LiteralPath (Join-Path $run 'stdout.txt') -Raw|ConvertFrom-Json;$passed=$result.passed -and $result.scope -eq 'owned Mute DWORD channels clocks CRUD clipboard history original inputs native Project; GUI audio separate';$checks=$result.checks}
+$checks=$null;$nativeScope=$null
+if($passed){
+    $result=Get-Content -LiteralPath (Join-Path $run 'stdout.txt') -Raw|ConvertFrom-Json
+    $nativeScope=$result.scope
+    $knownScopes=@(
+        'owned Mute DWORD channels clocks CRUD clipboard history original inputs native Project; GUI audio separate',
+        'owned Mute DWORD channels clocks CRUD beat intervals clipboard history original inputs native Project; GUI audio separate'
+    )
+    $passed=$result.passed -and $nativeScope -in $knownScopes
+    $checks=$result.checks
+}
 $files=@();$fixtureDirectory=Join-Path $run 'core/mute-document';if(Test-Path -LiteralPath $fixtureDirectory){$files=@(Get-ChildItem -LiteralPath $fixtureDirectory -File -Recurse | ForEach-Object {[ordered]@{name=[IO.Path]::GetRelativePath($fixtureDirectory,$_.FullName);sha256=(Hash $_.FullName);bytes=$_.Length}})}
-[ordered]@{schema=1;createdUtc=[DateTime]::UtcNow.ToString('o');buildSummary=$summaryPath;buildSummarySha256=(Hash $summaryPath);executable=$exe;executableSha256=$identity[0].sha256;driverSha256=$driverHash;arguments=$arguments;exitCode=$exit;launchError=$launchError;timedOut=$timeout;processId=if($process){$process.Id}else{$null};passed=$passed;checks=$checks;files=$files;inputs=$inputs;inputsUnchanged=$unchanged;stdoutSha256=if(-not $timeout -and (Test-Path -LiteralPath (Join-Path $run 'stdout.txt'))){Hash (Join-Path $run 'stdout.txt')}else{$null};scope='Only targeted Mute CRUD native checks; standard host/core regression, GUI, audio, original comparison unexecuted for this build';fullAcceptance=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $run 'run.json') -Encoding UTF8
+[ordered]@{schema=1;createdUtc=[DateTime]::UtcNow.ToString('o');buildSummary=$summaryPath;buildSummarySha256=(Hash $summaryPath);executable=$exe;executableSha256=$identity[0].sha256;driverSha256=$driverHash;arguments=$arguments;exitCode=$exit;launchError=$launchError;timedOut=$timeout;processId=if($process){$process.Id}else{$null};passed=$passed;checks=$checks;nativeScope=$nativeScope;files=$files;inputs=$inputs;inputsUnchanged=$unchanged;stdoutSha256=if(-not $timeout -and (Test-Path -LiteralPath (Join-Path $run 'stdout.txt'))){Hash (Join-Path $run 'stdout.txt')}else{$null};scope='Only targeted Mute CRUD/beat interval native checks; standard host/core regression, GUI, audio, original comparison separate';fullAcceptance=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $run 'run.json') -Encoding UTF8
 Write-Output ('Evidence: '+$run)
 if(-not $passed){throw 'Targeted Mute CRUD failed; evidence retained'}

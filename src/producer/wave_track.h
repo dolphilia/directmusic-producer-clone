@@ -10,6 +10,15 @@ struct WavePlacement {
     std::int64_t time=0,startOffset=0,duration=1;
     std::int32_t volume=0,pitch=0;
 };
+// Segment item endpoints are independent of the source Wave's WSMP loops.
+// The editor exposes the last sample as described by Producer's Loop tab.
+// Zero/zero disables this supported explicit loop; one-frame loops remain
+// outside this authoring contract until their native encoding is established.
+struct WaveItemLoop {
+    std::uint32_t start=0,end=0;
+    bool enabled()const{return end>start;}
+    bool operator==(const WaveItemLoop& other)const{return start==other.start&&end==other.end;}
+};
 struct WaveItem {
     size_t part=0,index=0;
     std::uint32_t pchannel=0,variations=0;
@@ -17,11 +26,13 @@ struct WaveItem {
     std::wstring filename;
     bool clockTime=false;
     std::optional<std::array<std::uint8_t,16>> objectId;
+    WaveItemLoop loop;
 };
 std::vector<WaveItem> wave_items(const Chunk&);
 struct WaveReference { std::wstring filename; std::optional<std::array<std::uint8_t,16>> objectId; };
 bool insert_wave_reference(Chunk&,size_t part,const WaveReference&,const WavePlacement&,std::uint32_t variations,size_t* resultingIndex=nullptr);
 bool edit_wave_placement(Chunk&,size_t part,size_t index,const WavePlacement&);
+bool edit_wave_item_loop(Chunk&,size_t part,size_t index,const WaveItemLoop&);
 Bytes copy_wave_event(const Chunk&,size_t part,size_t index);
 bool paste_wave_event(Chunk&,const Bytes&,size_t part,std::int64_t time,size_t* resultingIndex=nullptr);
 bool delete_wave_event(Chunk&,size_t part,size_t index);

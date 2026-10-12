@@ -49,6 +49,32 @@ std::vector<MuteEvent> mute_events(const Chunk& t){std::vector<MuteEvent> out;fo
 bool add_mute_event(Chunk& t,MuteEvent e,size_t* selected){if(!valid_mute(e))return false;auto r=records(t);if(collision(r,e))return false;Bytes b(stride(t));encode(b,e);r.push_back({b,e,true});return commit(t,std::move(r),selected);}
 bool change_mute_event(Chunk& t,size_t i,MuteEvent e,size_t* selected){if(!valid_mute(e))return false;auto r=records(t);if(i>=r.size()||same(r[i].event,e)||collision(r,e,i))return false;r[i].event=e;r[i].selected=true;return commit(t,std::move(r),selected);}
 bool delete_mute_event(Chunk& t,size_t i){auto r=records(t);if(i>=r.size())return false;r.erase(r.begin()+i);return commit(t,std::move(r),nullptr);}
+bool set_mute_interval(Chunk& t,std::uint32_t channel,std::int32_t begin,std::int32_t end,bool silent){
+    if(channel>=0xfffffffcu||begin<0||end<=begin)return false;
+    auto r=records(t);
+    const auto ordered=[](const Record& a,const Record& b){return a.event.channel!=b.event.channel?a.event.channel<b.event.channel:a.event.time<b.event.time;};
+    if(!std::is_sorted(r.begin(),r.end(),ordered))return false;
+    std::set<std::pair<std::uint32_t,std::int32_t>> keys;
+    std::uint32_t before=channel,atEnd=channel;
+    for(const auto& v:r){
+        if(!keys.emplace(v.event.channel,v.event.time).second)return false;
+        if(v.event.channel!=channel)continue;
+        if(v.event.time>begin&&v.event.time<end)return false;
+        if(v.event.time<begin)before=v.event.map;
+        if(v.event.time<=end)atEnd=v.event.map;
+    }
+    const auto desired=silent?mute_channel_silent:channel;
+    const auto boundary=[&](std::int32_t time,std::uint32_t map,bool needed){
+        auto found=std::find_if(r.begin(),r.end(),[&](const Record& v){return v.event.channel==channel&&v.event.time==time;});
+        if(!needed){if(found!=r.end())r.erase(found);return;}
+        if(found!=r.end()){found->event.map=map;return;}
+        MuteEvent e{time,channel,map};Bytes bytes(stride(t));encode(bytes,e);r.push_back({std::move(bytes),e});
+    };
+    boundary(begin,desired,desired!=before);
+    boundary(end,atEnd,atEnd!=desired);
+    if(r.empty()&&!payload(t))return false;
+    return commit(t,std::move(r),nullptr);
+}
 Bytes copy_mute_event(const Chunk& t,size_t i){auto r=records(t);if(i>=r.size())throw std::runtime_error("Mute selection out of range");Chunk c;c.id="mute";c.data=Bytes(4);put32(c.data,0,static_cast<std::uint32_t>(r[i].bytes.size()));c.data.insert(c.data.end(),r[i].bytes.begin(),r[i].bytes.end());Chunk clipboard;clipboard.id="LIST";clipboard.type="MUTC";clipboard.children={c};return clipboard.encode();}
 bool paste_mute_event(Chunk& t,const Bytes& bytes,std::int32_t at,size_t* selected){auto clipboard=Chunk::parse_list(bytes);if(clipboard.type!="MUTC")throw std::runtime_error("Expected Mute clipboard");auto incoming=records(clipboard);if(incoming.size()!=1)throw std::runtime_error("Expected one Mute clipboard record");auto v=incoming.front();v.event.time=at;if(!valid_mute(v.event))return false;auto r=records(t);if(collision(r,v.event))return false;const auto n=stride(t);if(v.bytes.size()>n)throw std::runtime_error("Mute clipboard extension cannot fit destination stride");v.bytes.resize(n);v.selected=true;r.push_back(v);return commit(t,std::move(r),selected);}
 Chunk mute_track(){Chunk t;t.id="RIFF";t.type="DMTK";Chunk h;h.id="trkh";h.data=Bytes(32);const Bytes id={0x98,0x28,0xac,0xd2,0x9b,0xb3,0xd1,0x11,0x87,0x04,0x00,0x60,0x08,0x93,0xb1,0xbd};std::copy(id.begin(),id.end(),h.data.begin());put32(h.data,20,1);std::memcpy(h.data.data()+24,"mute",4);Chunk x;x.id="trkx";x.data=Bytes(8);put32(x.data,0,8);t.children={h,x};return t;}

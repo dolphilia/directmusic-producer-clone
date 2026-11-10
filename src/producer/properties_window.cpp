@@ -17,6 +17,12 @@ constexpr UINT LyricValue=3340,LyricSpin=3350,LyricTiming=3360;
 constexpr UINT MarkerValue=3370,MarkerSpin=3380;
 constexpr UINT BandValue=3470,BandSpin=3480;
 constexpr UINT SequenceValue=3500,SequenceSpin=3520;
+constexpr UINT LoopValue=3550,LoopSpin=3570,LoopInfinite=3590,LoopReset=3591,LoopClock=3592,LoopClockStart=3593,LoopClockEnd=3594;
+constexpr UINT SegmentStartValue=3600,SegmentStartSpin=3610,SegmentTimeSigGroup=3620,SegmentTimeSigGroupSpin=3621,SegmentExtendTimeSig=3622,SegmentEmbeddedAudioPath=3623;
+constexpr UINT SegmentInfoValue=3630,SegmentInfoGuid=3638;
+constexpr UINT BoundaryMarker=3650,BoundaryList=3651,BoundaryQuick=3652,BoundaryPrepare=3653;
+constexpr UINT BoundaryInvalidation=3654;
+constexpr UINT BoundaryAlignment=3657;
 constexpr UINT WaveValue=3390,WaveCheck=3400,WaveSpin=3410;
 constexpr UINT MeterButton=3420,MeterMeasure=3421,MeterSpin=3422;
 constexpr UINT MeterBeats=3430,MeterBeat=3431,MeterGrid=3432;
@@ -86,6 +92,17 @@ std::wstring PropertiesWindow::target_name()const{
     if(target_->kind==DocumentKind::Wave)return framework_->wave_document(target_->index).name();
     return target_->kind==DocumentKind::Segment?framework_->document(target_->index).name():framework_->style_document(target_->index).name();
 }
+void PropertiesWindow::clear_page_background(){
+    if(!window_||!tabs_)return;
+    // WS_CLIPCHILDREN and the Tab's sibling clipping prevent the parent from
+    // erasing pixels underneath a newly visible transparent group box. Clear
+    // the old page while all overlapping controls are hidden, then lay out and
+    // show the selected page. Focus loss during this layout cannot commit edits.
+    const bool wasUpdating=updating_;updating_=true;
+    for(auto control=GetWindow(window_,GW_CHILD);control;control=GetWindow(control,GW_HWNDNEXT))if(control!=tabs_)ShowWindow(control,SW_HIDE);
+    RedrawWindow(window_,nullptr,nullptr,RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN|RDW_UPDATENOW);
+    updating_=wasUpdating;
+}
 void PropertiesWindow::synchronize(bool selectionChanged){
     if(!window_)return;
     struct Guard {bool& value;bool previous;explicit Guard(bool& flag):value(flag),previous(flag){value=true;}~Guard(){value=previous;}} guard(updating_);
@@ -94,17 +111,24 @@ void PropertiesWindow::synchronize(bool selectionChanged){
     const bool tempoPage=tempoDocument_.has_value(),lyricPage=lyricTarget_.has_value(),markerPage=markerTarget_.has_value(),meterPage=meterTarget_.has_value();
     const bool tempoSupported=tempoPage&&supports_tempo(*tempoDocument_);
     const bool wavePage=supported&&target_->kind==DocumentKind::Wave;
-    const bool segmentPage=supported&&target_->kind==DocumentKind::Segment;
-    const int tabCount=wavePage?2:1;
-    if(TabCtrl_GetItemCount(tabs_)!=tabCount){TabCtrl_DeleteAllItems(tabs_);for(int i=0;i<tabCount;++i){TCITEMW item{};item.mask=TCIF_TEXT;item.pszText=const_cast<wchar_t*>(i?L"Info":L"Wave");TabCtrl_InsertItem(tabs_,i,&item);}TabCtrl_SetCurSel(tabs_,0);}
+    const bool segmentDocument=supported&&target_->kind==DocumentKind::Segment;
+    const int tabFamily=wavePage?1:segmentDocument?2:0,tabCount=segmentDocument?4:wavePage?2:1;
+    if(TabCtrl_GetItemCount(tabs_)!=tabCount||tabFamily_!=tabFamily){clear_page_background();TabCtrl_DeleteAllItems(tabs_);for(int i=0;i<tabCount;++i){TCITEMW item{};item.mask=TCIF_TEXT;item.pszText=const_cast<wchar_t*>(segmentDocument?(i==3?L"Boundary":i==2?L"Info":i?L"Loop":L"Segment"):(i?L"Info":L"Wave"));TabCtrl_InsertItem(tabs_,i,&item);}TabCtrl_SetCurSel(tabs_,0);tabFamily_=tabFamily;}
+    const bool loopPage=segmentDocument&&TabCtrl_GetCurSel(tabs_)==1;
+    const bool segmentInfo=segmentDocument&&TabCtrl_GetCurSel(tabs_)==2;
+    const bool segmentBoundary=segmentDocument&&TabCtrl_GetCurSel(tabs_)==3;
+    const bool segmentPage=segmentDocument&&TabCtrl_GetCurSel(tabs_)==0;
     const bool waveInfo=wavePage&&TabCtrl_GetCurSel(tabs_)==1;
-    const auto tabStyle=GetWindowLongPtrW(tabs_,GWL_STYLE);SetWindowLongPtrW(tabs_,GWL_STYLE,(tabStyle&~WS_TABSTOP)|(wavePage?WS_TABSTOP:0));
-    RECT client{};GetClientRect(window_,&client);const int width=wavePage||chordPage?396:segmentPage||sequencePage?389:380;
-    const int height=segmentPage||sequencePage?168:210;
+    const auto tabStyle=GetWindowLongPtrW(tabs_,GWL_STYLE);SetWindowLongPtrW(tabs_,GWL_STYLE,(tabStyle&~WS_TABSTOP)|(tabFamily?WS_TABSTOP:0));
+    RECT client{};GetClientRect(window_,&client);const int width=wavePage||chordPage?396:segmentDocument||sequencePage?389:380;
+    const int height=sequencePage?200:segmentDocument?212:210;
     if(client.right!=width||client.bottom!=height){RECT rect{0,0,width,height};AdjustWindowRectEx(&rect,WS_POPUP|WS_CAPTION|WS_SYSMENU|WS_BORDER,FALSE,0);SetWindowPos(window_,nullptr,0,0,rect.right-rect.left,rect.bottom-rect.top,SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE);}
     MoveWindow(tabs_,8,6,width-16,height-14,TRUE);
     if(!supported)target_.reset();
-    ShowWindow(tabs_,supported||tempoPage||lyricPage||markerPage||meterPage||chordPage||bandPage||sequencePage?SW_SHOW:SW_HIDE);ShowWindow(label_,supported&&(!wavePage||waveInfo)?SW_SHOW:SW_HIDE);ShowWindow(name_,supported&&(!wavePage||waveInfo)?SW_SHOW:SW_HIDE);
+    ShowWindow(tabs_,supported||tempoPage||lyricPage||markerPage||meterPage||chordPage||bandPage||sequencePage?SW_SHOW:SW_HIDE);ShowWindow(label_,supported&&!loopPage&&!segmentInfo&&!segmentBoundary&&(!wavePage||waveInfo)?SW_SHOW:SW_HIDE);ShowWindow(name_,supported&&!loopPage&&!segmentInfo&&!segmentBoundary&&(!wavePage||waveInfo)?SW_SHOW:SW_HIDE);
+    for(const auto control:loopControls_)ShowWindow(control,loopPage?SW_SHOW:SW_HIDE);
+    for(const auto control:segmentInfoControls_)ShowWindow(control,segmentInfo?SW_SHOW:SW_HIDE);
+    for(const auto control:segmentBoundaryControls_)if(control!=segmentBoundaryFallback_||!segmentBoundary)ShowWindow(control,segmentBoundary?SW_SHOW:SW_HIDE);
     for(size_t i=0;i<8;++i){const bool show=wavePage&&(i<5?!waveInfo:waveInfo);ShowWindow(waveFields_[i],show?SW_SHOW:SW_HIDE);ShowWindow(waveLabels_[i],show?SW_SHOW:SW_HIDE);}
     for(auto check:waveChecks_)ShowWindow(check,wavePage&&!waveInfo?SW_SHOW:SW_HIDE);
     for(auto spin:waveSpins_)ShowWindow(spin,wavePage&&!waveInfo?SW_SHOW:SW_HIDE);
@@ -115,9 +139,16 @@ void PropertiesWindow::synchronize(bool selectionChanged){
     for(size_t i=0;i<5;++i){ShowWindow(markerFields_[i],markerPage?SW_SHOW:SW_HIDE);ShowWindow(markerLabels_[i],markerPage?SW_SHOW:SW_HIDE);}
     for(auto spin:markerSpins_)ShowWindow(spin,markerPage?SW_SHOW:SW_HIDE);
     ShowWindow(segmentLengthLabel_,segmentPage?SW_SHOW:SW_HIDE);ShowWindow(segmentLengthButton_,segmentPage?SW_SHOW:SW_HIDE);
+    for(const auto control:segmentStartControls_)ShowWindow(control,segmentPage?SW_SHOW:SW_HIDE);
     if(segmentPage){
         SetWindowTextW(segmentLengthLabel_,L"Length");MoveWindow(segmentLengthLabel_,256,36,40,20,TRUE);MoveWindow(segmentLengthButton_,296,34,78,18,TRUE);
         try{const auto value=framework_->document(target_->index).length_settings();const auto caption=value.clockTime?std::to_wstring(value.milliseconds/1000)+L" s...":std::to_wstring(value.measures)+L" Bars";SetWindowTextW(segmentLengthButton_,caption.c_str());EnableWindow(segmentLengthButton_,TRUE);}catch(const std::exception&){SetWindowTextW(segmentLengthButton_,L"Unavailable");EnableWindow(segmentLengthButton_,FALSE);}
+        try{
+            const auto& d=framework_->document(target_->index);const auto start=d.play_start();if(start<0||start>=d.length())throw std::runtime_error("Segment start unavailable");
+            auto context=d;context.select_track_group(1);const auto point=context.timeline().grid_position(start);const auto loop=d.loop_settings();const bool editable=loop.music_time();
+            const std::int32_t values[]={point.measure+1,point.beat+1,point.grid+1,point.tick};
+            for(unsigned i=0;i<4;++i){const auto value=std::to_wstring(values[i]);if((selectionChanged||finalizing_||GetFocus()!=segmentStartFields_[i])&&text(segmentStartFields_[i])!=value)SetWindowTextW(segmentStartFields_[i],value.c_str());EnableWindow(segmentStartFields_[i],editable);EnableWindow(segmentStartSpins_[i],editable);}
+        }catch(const std::exception&){for(unsigned i=0;i<4;++i){SetWindowTextW(segmentStartFields_[i],L"");EnableWindow(segmentStartFields_[i],FALSE);EnableWindow(segmentStartSpins_[i],FALSE);}}
     }
     for(auto control:{meterButton_,meterMeasure_,meterLabel_,meterSpin_})ShowWindow(control,meterPage?SW_SHOW:SW_HIDE);
     ShowWindow(chordType_,chordPage?SW_SHOW:SW_HIDE);ShowWindow(chordLabel_,SW_HIDE);
@@ -128,16 +159,55 @@ void PropertiesWindow::synchronize(bool selectionChanged){
     for(auto edit:sequenceFields_)ShowWindow(edit,sequencePage?SW_SHOW:SW_HIDE);
     for(auto label:sequenceLabels_)ShowWindow(label,sequencePage?SW_SHOW:SW_HIDE);
     for(auto spin:sequenceSpins_)ShowWindow(spin,sequencePage?SW_SHOW:SW_HIDE);
+    if(segmentBoundary){
+        const auto& d=framework_->document(target_->index);SetWindowTextW(window_,(d.name()+L" Segment Properties").c_str());SetWindowTextW(segmentBoundaryName_,d.name().c_str());
+        const auto raw=d.default_resolution();const auto boundary=d.performance_boundary();
+        SendMessageW(segmentBoundaryList_,CB_SETCURSEL,boundary?static_cast<WPARAM>(*boundary):static_cast<WPARAM>(-1),0);EnableWindow(segmentBoundaryList_,boundary.has_value());
+        const bool markerAvailable=(raw&0x10100u)==0;EnableWindow(segmentBoundaryMarker_,markerAvailable);
+        SendMessageW(segmentBoundaryMarker_,BM_SETCHECK,markerAvailable&&(raw&0x1000000)?BST_CHECKED:BST_UNCHECKED,0);SendMessageW(segmentBoundaryDefault_,BM_SETCHECK,(raw&0x4000)?BST_CHECKED:BST_UNCHECKED,0);
+        const auto alignment=d.alignment();EnableWindow(segmentAlignmentDescription_,alignment.has_value());
+        for(unsigned i=0;i<4;++i){EnableWindow(segmentAlignment_[i],alignment.has_value());SendMessageW(segmentAlignment_[i],BM_SETCHECK,alignment&&static_cast<unsigned>(*alignment)==i?BST_CHECKED:BST_UNCHECKED,0);}
+        const bool showFallback=markerAvailable&&(raw&0x1000000)!=0;const bool fallbackVisibilityChanged=(IsWindowVisible(segmentBoundaryFallback_)!=FALSE)!=showFallback;
+        if(fallbackVisibilityChanged)ShowWindow(segmentBoundaryFallback_,showFallback?SW_SHOW:SW_HIDE);
+        for(unsigned i=0;i<2;++i)SendMessageW(segmentBoundaryTiming_[i],BM_SETCHECK,((raw&0x400)!=0)==(i==1)?BST_CHECKED:BST_UNCHECKED,0);
+        const auto invalidation=d.invalidation();
+        for(unsigned i=0;i<3;++i){SendMessageW(segmentInvalidation_[i],BM_SETCHECK,invalidation&&static_cast<unsigned>(*invalidation)==i?BST_CHECKED:BST_UNCHECKED,0);EnableWindow(segmentInvalidation_[i],invalidation.has_value());}
+        // The tab and group boxes overlap the label; redraw their background
+        // when it is hidden instead of leaving the old static text behind.
+        if(fallbackVisibilityChanged)RedrawWindow(window_,nullptr,nullptr,RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN|RDW_UPDATENOW);
+        return;
+    }
+    if(segmentInfo){
+        const auto& d=framework_->document(target_->index);SetWindowTextW(window_,(d.name()+L" Segment Properties").c_str());
+        const SegmentInfoField kinds[]={SegmentInfoField::subject,SegmentInfoField::author,SegmentInfoField::copyright,SegmentInfoField::information};
+        for(unsigned i=0;i<4;++i){try{const auto value=d.info_text(kinds[i]);if(selectionChanged||finalizing_||GetFocus()!=segmentInfoFields_[i])if(text(segmentInfoFields_[i])!=value)SetWindowTextW(segmentInfoFields_[i],value.c_str());EnableWindow(segmentInfoFields_[i],TRUE);}catch(const std::exception&){SetWindowTextW(segmentInfoFields_[i],L"");EnableWindow(segmentInfoFields_[i],FALSE);}}
+        try{const auto version=d.info_version();for(unsigned i=0;i<4;++i){const auto value=std::to_wstring(version[i]);if(selectionChanged||finalizing_||GetFocus()!=segmentInfoFields_[i+4])if(text(segmentInfoFields_[i+4])!=value)SetWindowTextW(segmentInfoFields_[i+4],value.c_str());EnableWindow(segmentInfoFields_[i+4],TRUE);}}
+        catch(const std::exception&){for(unsigned i=4;i<8;++i){SetWindowTextW(segmentInfoFields_[i],L"");EnableWindow(segmentInfoFields_[i],FALSE);}}return;
+    }
+    if(loopPage){
+        const auto& d=framework_->document(target_->index);const auto loop=d.loop_settings();const bool editable=loop.music_time(),infinite=loop.repeats==UINT32_MAX;
+        SetWindowTextW(window_,(d.name()+L" Segment Properties").c_str());CheckDlgButton(window_,LoopInfinite,infinite?BST_CHECKED:BST_UNCHECKED);CheckDlgButton(window_,LoopClock,(loop.flags&2u)?BST_CHECKED:BST_UNCHECKED);
+        if(!infinite)finiteLoopRepeats_[target_->index]=loop.repeats;
+        auto context=d;context.select_track_group(1);const auto axis=context.timeline();
+        std::wstring values[9];values[0]=std::to_wstring(finiteLoopRepeats_[target_->index]);
+        const GridPosition points[]={axis.grid_position(std::max(0,loop.start)),axis.grid_position(loop.end?std::max(0,loop.end):d.length())};
+        for(unsigned row=0;row<2;++row){const auto p=points[row];values[1+row*4]=std::to_wstring(p.measure+1);values[2+row*4]=std::to_wstring(p.beat+1);values[3+row*4]=std::to_wstring(p.grid+1);values[4+row*4]=std::to_wstring(p.tick);}
+        for(unsigned i=0;i<9;++i){if((selectionChanged||finalizing_||GetFocus()!=loopFields_[i])&&text(loopFields_[i])!=values[i])SetWindowTextW(loopFields_[i],values[i].c_str());EnableWindow(loopFields_[i],editable&&(i||!infinite));EnableWindow(loopSpins_[i],editable&&(i||!infinite));}
+        EnableWindow(loopInfinite_,editable);EnableWindow(loopReset_,editable);EnableWindow(loopClock_,FALSE);
+        const auto header=Chunk::parse(d.save_bytes());const auto& h=header.find("segh")->data;
+        for(unsigned i=0;i<2;++i){const size_t at=40+i*8;const auto reference=h.size()>=at+8?(std::uint64_t(read32(h,at))|(std::uint64_t(read32(h,at+4))<<32)):0;SetWindowTextW(loopClockFields_[i],std::to_wstring(reference/10000).c_str());EnableWindow(loopClockFields_[i],FALSE);}return;
+    }
     if(sequencePage){
         SetWindowTextW(window_,L"Sequence Properties");TCITEMW item{};item.mask=TCIF_TEXT;item.pszText=const_cast<wchar_t*>(L"Sequence");TabCtrl_SetItem(tabs_,0,&item);
         const bool valid=supports_sequence(*sequenceTarget_);for(auto edit:sequenceFields_)EnableWindow(edit,valid);for(auto spin:sequenceSpins_)EnableWindow(spin,valid);
         if(!valid){for(auto edit:sequenceFields_)SetWindowTextW(edit,L"");return;}
-        const auto& d=framework_->document(sequenceTarget_->document);const auto n=d.notes().at(sequenceTarget_->event);const auto axis=d.timeline();
+        const auto& d=framework_->document(sequenceTarget_->document);const auto position=d.note_positions().at(sequenceTarget_->event);const auto n=position.note;const auto axis=d.timeline();
         const wchar_t* names[]={L"C",L"C#",L"D",L"D#",L"E",L"F",L"F#",L"G",L"G#",L"A",L"A#",L"B"};
-        std::wstring values[15];values[0]=names[n.pitch%12];values[1]=std::to_wstring(n.pitch/12);values[2]=std::to_wstring(n.velocity);
+        std::wstring values[17];values[0]=names[n.pitch%12];values[1]=std::to_wstring(n.pitch/12);values[2]=std::to_wstring(n.velocity);
         const GridPosition positions[]={sequence_property_position(axis,n.time),sequence_property_position(axis,n.time+n.duration),sequence_property_duration(axis,n)};
         for(unsigned row=0;row<3;++row){const auto p=positions[row];const int base=row==2?0:1;values[3+row*4]=std::to_wstring(p.measure+base);values[4+row*4]=std::to_wstring(p.beat+base);values[5+row*4]=std::to_wstring(p.grid+base);values[6+row*4]=std::to_wstring(p.tick);}
-        for(unsigned i=0;i<15;++i)if((selectionChanged||finalizing_||GetFocus()!=sequenceFields_[i])&&text(sequenceFields_[i])!=values[i])SetWindowTextW(sequenceFields_[i],values[i].c_str());return;
+        const auto belongs=axis.position(position.logicalTime);values[15]=std::to_wstring(belongs.measure+1);values[16]=std::to_wstring(belongs.beat+1);
+        for(unsigned i=0;i<17;++i)if((selectionChanged||finalizing_||GetFocus()!=sequenceFields_[i])&&text(sequenceFields_[i])!=values[i])SetWindowTextW(sequenceFields_[i],values[i].c_str());return;
     }
     if(bandPage){
         SetWindowTextW(window_,L"Band Properties");TCITEMW item{};item.mask=TCIF_TEXT;item.pszText=const_cast<wchar_t*>(L"Band");TabCtrl_SetItem(tabs_,0,&item);
@@ -251,7 +321,7 @@ void PropertiesWindow::show_tempo(size_t index){if(!supports_tempo(index))return
 void PropertiesWindow::show(std::optional<OpenedDocument> target){sequenceTarget_.reset();bandTarget_.reset();
     if(!supports(target))return;
     tempoDocument_.reset();lyricTarget_.reset();markerTarget_.reset();meterTarget_.reset();chordTarget_.reset();target_=target;ensure_window();
-    synchronize(true);ShowWindow(window_,SW_SHOWNORMAL);SetForegroundWindow(window_);SetFocus(target_->kind==DocumentKind::Wave&&TabCtrl_GetCurSel(tabs_)==0?waveFields_[0]:name_);
+    synchronize(true);ShowWindow(window_,SW_SHOWNORMAL);SetForegroundWindow(window_);(void)focus_existing();
 }
 bool PropertiesWindow::supports_lyric(const LyricPropertiesTarget& target)const{
     if(!framework_||target.document>=framework_->documents().size())return false;
@@ -309,7 +379,7 @@ bool PropertiesWindow::supports_sequence(const SequenceNotePropertiesTarget& tar
     if(!framework_||target.document>=framework_->documents().size())return false;
     const auto& d=framework_->document(target.document);
     if(d.selected_groups()!=target.groups||d.selected_sequence_index()!=target.track)return false;
-    try{const auto notes=d.notes();if(target.event>=notes.size())return false;const auto n=notes[target.event];return n.time>=0&&n.duration>0&&std::int64_t(n.time)+n.duration<=INT32_MAX&&n.pitch<=127&&n.velocity>0&&n.velocity<=127;}catch(const std::exception&){return false;}
+    try{const auto positions=d.note_positions();if(target.event>=positions.size())return false;const auto& p=positions[target.event];const auto& n=p.note;return p.logicalTime>=0&&p.logicalTime<d.length()&&n.time>=0&&n.duration>0&&std::int64_t(n.time)+n.duration<=d.length()&&n.pitch<=127&&n.velocity>0&&n.velocity<=127;}catch(const std::exception&){return false;}
 }
 void PropertiesWindow::follow_sequence(SequenceNotePropertiesTarget target,std::function<void(size_t)> selected){
     const bool switched=!sequenceTarget_||sequenceTarget_->document!=target.document||sequenceTarget_->track!=target.track||sequenceTarget_->event!=target.event||sequenceTarget_->groups!=target.groups;
@@ -319,13 +389,19 @@ void PropertiesWindow::show_sequence(SequenceNotePropertiesTarget target,std::fu
     if(!supports_sequence(target))return;follow_sequence(target,std::move(selected));ensure_window();synchronize(true);ShowWindow(window_,SW_SHOWNORMAL);SetForegroundWindow(window_);SetFocus(sequenceFields_[0]);
 }
 void PropertiesWindow::edit_sequence(UINT field,int delta){
-    if(updating_||finalizing_||!sequenceTarget_||!supports_sequence(*sequenceTarget_)||field<SequenceValue||field>=SequenceValue+15)return;
+    if(updating_||finalizing_||!sequenceTarget_||!supports_sequence(*sequenceTarget_)||field<SequenceValue||field>=SequenceValue+17)return;
     auto& d=framework_->document(sequenceTarget_->document);auto note=d.notes().at(sequenceTarget_->event);const auto index=field-SequenceValue;finalizing_=true;
     try{
-        if(!index){const auto pitch=static_cast<int>(note.pitch)+delta;if(pitch<0||pitch>127)throw std::runtime_error("Invalid MIDI note");note.pitch=static_cast<std::uint8_t>(pitch);}
-        else {const auto input=text(sequenceFields_[index]);size_t end=0;const auto parsed=std::stoll(input,&end);if(end!=input.size()||parsed<INT32_MIN||parsed>INT32_MAX)throw std::runtime_error("Invalid Sequence value");note=sequence_property_edit(d.timeline(),d.length(),note,index,parsed+delta);}
-        size_t selected=sequenceTarget_->event;
-        if(d.edit_note(selected,note,&selected)){sequenceTarget_->event=selected;if(sequenceSelectionChanged_)sequenceSelectionChanged_(selected);if(changed_)changed_();}
+        size_t selected=sequenceTarget_->event;bool edited=false;
+        if(index>=15){
+            const auto input=text(sequenceFields_[index]);size_t end=0;const auto parsed=std::stoll(input,&end);if(end!=input.size()||parsed<INT32_MIN||parsed>INT32_MAX)throw std::runtime_error("Invalid Sequence logical value");
+            const auto logical=sequence_property_logical_time(d.timeline(),d.length(),d.note_positions().at(selected),index-15,parsed+delta);edited=d.edit_note_logical_time(selected,logical,&selected);
+        }else{
+            if(!index){const auto pitch=static_cast<int>(note.pitch)+delta;if(pitch<0||pitch>127)throw std::runtime_error("Invalid MIDI note");note.pitch=static_cast<std::uint8_t>(pitch);}
+            else {const auto input=text(sequenceFields_[index]);size_t end=0;const auto parsed=std::stoll(input,&end);if(end!=input.size()||parsed<INT32_MIN||parsed>INT32_MAX)throw std::runtime_error("Invalid Sequence value");note=sequence_property_edit(d.timeline(),d.length(),note,index,parsed+delta);}
+            edited=d.edit_note(selected,note,&selected);
+        }
+        if(edited){sequenceTarget_->event=selected;if(sequenceSelectionChanged_)sequenceSelectionChanged_(selected);if(changed_)changed_();}
     }catch(const std::exception&){MessageBeep(MB_ICONWARNING);}
     synchronize();finalizing_=false;
 }
@@ -432,7 +508,9 @@ void PropertiesWindow::ensure_window(){
         if(!RegisterClassW(&c)&&GetLastError()!=ERROR_CLASS_ALREADY_EXISTS)throw std::runtime_error("Properties registration failed");
         RECT rect{0,0,380,210};AdjustWindowRectEx(&rect,WS_POPUP|WS_CAPTION|WS_SYSMENU|WS_BORDER,FALSE,0);
         RECT ownerRect{};GetWindowRect(owner_,&ownerRect);const int width=rect.right-rect.left,height=rect.bottom-rect.top;
-        window_=CreateWindowW(c.lpszClassName,L"Properties",WS_POPUP|WS_CAPTION|WS_SYSMENU|WS_BORDER|WS_CLIPCHILDREN,ownerRect.right-width-16,ownerRect.top+80,width,height,owner_,nullptr,c.hInstance,this);
+        // Group boxes do not erase their interiors. Let the owner erase the
+        // background beneath them when a contained sibling label is hidden.
+        window_=CreateWindowW(c.lpszClassName,L"Properties",WS_POPUP|WS_CAPTION|WS_SYSMENU|WS_BORDER,ownerRect.right-width-16,ownerRect.top+80,width,height,owner_,nullptr,c.hInstance,this);
         if(!window_)throw std::runtime_error("Properties window creation failed");
     }
 }
@@ -491,28 +569,113 @@ void PropertiesWindow::edit_wave(UINT field,int delta){
     }catch(const std::exception&){MessageBeep(MB_ICONWARNING);}
     synchronize(true);finalizing_=false;
 }
+void PropertiesWindow::edit_segment_info(UINT field){
+    if(updating_||finalizing_||!supports(target_)||target_->kind!=DocumentKind::Segment||field<SegmentInfoValue||field>=SegmentInfoValue+8)return;
+    const auto index=field-SegmentInfoValue;auto& d=framework_->document(target_->index);finalizing_=true;
+    try{
+        bool changed=false;const auto value=text(segmentInfoFields_[index]);
+        if(index<4){const SegmentInfoField kinds[]={SegmentInfoField::subject,SegmentInfoField::author,SegmentInfoField::copyright,SegmentInfoField::information};changed=d.set_info_text(kinds[index],value);}
+        else{if(value.empty()||value.size()>4||value.find_first_not_of(L"0123456789")!=std::wstring::npos)throw std::runtime_error("Version requires up to four digits");auto version=d.info_version();version[index-4]=static_cast<std::uint16_t>(std::stoul(value));changed=d.set_info_version(version);}
+        if(changed&&changed_)changed_();
+    }catch(const std::exception&){MessageBeep(MB_ICONWARNING);}
+    synchronize();finalizing_=false;
+}
+void PropertiesWindow::edit_segment_boundary(UINT field){
+    if(updating_||finalizing_||!supports(target_)||target_->kind!=DocumentKind::Segment||TabCtrl_GetCurSel(tabs_)!=3)return;
+    auto& d=framework_->document(target_->index);finalizing_=true;
+    try{
+        bool changed=false;
+        if(field==BoundaryList){const auto selected=SendMessageW(segmentBoundaryList_,CB_GETCURSEL,0,0);if(selected<0||selected>8)throw std::runtime_error("Boundary selection missing");changed=d.set_performance_boundary(static_cast<SegmentPerformanceBoundary>(selected));}
+        else if(field==BoundaryMarker)changed=d.set_boundary_marker(SendMessageW(segmentBoundaryMarker_,BM_GETCHECK,0,0)==BST_CHECKED);
+        else if(field==BoundaryQuick||field==BoundaryPrepare)changed=d.set_boundary_after_prepare(field==BoundaryPrepare);
+        else if(field>=BoundaryInvalidation&&field<BoundaryInvalidation+3)changed=d.set_invalidation(static_cast<SegmentInvalidation>(field-BoundaryInvalidation));
+        else if(field>=BoundaryAlignment&&field<BoundaryAlignment+4)changed=d.set_alignment(static_cast<SegmentAlignment>(field-BoundaryAlignment));
+        if(changed&&changed_)changed_();
+    }catch(const std::exception&){MessageBeep(MB_ICONWARNING);}
+    synchronize();finalizing_=false;
+}
+void PropertiesWindow::edit_segment_start(UINT field,int delta){
+    if(updating_||finalizing_||!supports(target_)||target_->kind!=DocumentKind::Segment||field<SegmentStartValue||field>=SegmentStartValue+4)return;
+    auto& d=framework_->document(target_->index);if(!d.loop_settings().music_time())return;finalizing_=true;
+    try{
+        const auto column=field-SegmentStartValue;const auto input=text(segmentStartFields_[column]);
+        if(input.empty()||input.find_first_not_of(L"0123456789")!=std::wstring::npos)throw std::runtime_error("Start values require nonnegative integers");
+        const auto parsed=std::stoull(input);if(parsed>INT32_MAX)throw std::runtime_error("Start position out of range");const auto value=static_cast<std::int64_t>(parsed)+delta;
+        if(value<0||value>INT32_MAX||(column!=3&&value<1))throw std::runtime_error("Start bars beats and grids start at1");
+        auto context=d;context.select_track_group(1);const auto axis=context.timeline();auto point=axis.grid_position(d.play_start());const auto n=static_cast<std::int32_t>(value-(column==3?0:1));
+        if(column==0)point.measure=n;else if(column==1)point.beat=n;else if(column==2)point.grid=n;else point.tick=n;
+        const auto clock=axis.grid_clocks(point);const auto roundTrip=axis.grid_position(clock);
+        if(point.measure!=roundTrip.measure||point.beat!=roundTrip.beat||point.grid!=roundTrip.grid||point.tick!=roundTrip.tick)throw std::runtime_error("Start position is outside its measure beat or grid");
+        if(d.set_music_start(clock)&&changed_)changed_();
+    }catch(const std::exception&){MessageBeep(MB_ICONWARNING);}
+    synchronize();finalizing_=false;
+}
+void PropertiesWindow::edit_segment_loop(UINT field,int delta){
+    if(updating_||finalizing_||!supports(target_)||target_->kind!=DocumentKind::Segment)return;
+    if((field<LoopValue||field>=LoopValue+9)&&field!=LoopInfinite&&field!=LoopReset)return;
+    auto& d=framework_->document(target_->index);auto loop=d.loop_settings();if(!loop.music_time())return;finalizing_=true;
+    try{
+        if(field==LoopInfinite){
+            if(loop.repeats!=UINT32_MAX)finiteLoopRepeats_[target_->index]=loop.repeats;
+            loop.repeats=IsDlgButtonChecked(window_,LoopInfinite)==BST_CHECKED?UINT32_MAX:finiteLoopRepeats_[target_->index];
+        }else if(field==LoopReset){loop.start=0;loop.end=0;}
+        else{
+            const auto index=field-LoopValue;const auto input=text(loopFields_[index]);
+            if(input.empty()||input.find_first_not_of(L"0123456789")!=std::wstring::npos)throw std::runtime_error("Loop values require nonnegative integers");
+            const auto parsed=std::stoull(input);if(parsed>UINT32_MAX)throw std::runtime_error("Loop value exceeds DWORD");const auto value=static_cast<std::int64_t>(parsed)+delta;
+            if(value<0||value>UINT32_MAX)throw std::runtime_error("Loop value out of range");
+            if(!index){if(value==UINT32_MAX)throw std::runtime_error("Use Infinite for unlimited repetitions");loop.repeats=static_cast<std::uint32_t>(value);}
+            else{
+                if(value>INT32_MAX)throw std::runtime_error("Loop position out of range");const auto row=(index-1)/4,column=(index-1)%4;if(column!=3&&value<1)throw std::runtime_error("Loop bars beats and grids start at1");
+                auto context=d;context.select_track_group(1);const auto axis=context.timeline();auto position=axis.grid_position(row?(loop.end?loop.end:d.length()):loop.start);const auto n=static_cast<std::int32_t>(value-(column==3?0:1));
+                if(column==0)position.measure=n;else if(column==1)position.beat=n;else if(column==2)position.grid=n;else position.tick=n;
+                const auto clock=axis.grid_clocks(position);const auto roundTrip=axis.grid_position(clock);
+                if(position.measure!=roundTrip.measure||position.beat!=roundTrip.beat||position.grid!=roundTrip.grid||position.tick!=roundTrip.tick)throw std::runtime_error("Loop position is outside its measure beat or grid");
+                if(!row)loop.start=clock;else if(loop.end||clock!=d.length())loop.end=clock;
+            }
+        }
+        if(d.set_music_loop(loop.repeats,loop.start,loop.end)&&changed_)changed_();
+    }catch(const std::exception&){MessageBeep(MB_ICONWARNING);}
+    synchronize();finalizing_=false;
+}
 bool PropertiesWindow::focus_existing()const{
     if(!window_||!IsWindowVisible(window_)||!IsWindowEnabled(window_))return false;
-    const auto field=sequenceTarget_?sequenceFields_[0]:bandTarget_?bandFields_[0]:chordTarget_?chordType_:meterTarget_?meterMeasure_:markerTarget_?markerFields_[1]:lyricTarget_?lyricFields_[0]:tempoDocument_?tempoFields_[0]:target_&&target_->kind==DocumentKind::Wave&&TabCtrl_GetCurSel(tabs_)==0?waveFields_[0]:name_;
+    const auto boundaryField=IsWindowEnabled(segmentBoundaryMarker_)?segmentBoundaryMarker_:segmentBoundaryList_;
+    const auto field=sequenceTarget_?sequenceFields_[0]:bandTarget_?bandFields_[0]:chordTarget_?chordType_:meterTarget_?meterMeasure_:markerTarget_?markerFields_[1]:lyricTarget_?lyricFields_[0]:tempoDocument_?tempoFields_[0]:target_&&target_->kind==DocumentKind::Segment&&TabCtrl_GetCurSel(tabs_)==3?boundaryField:target_&&target_->kind==DocumentKind::Segment&&TabCtrl_GetCurSel(tabs_)==2?segmentInfoFields_[0]:target_&&target_->kind==DocumentKind::Segment&&TabCtrl_GetCurSel(tabs_)==1?loopFields_[1]:target_&&target_->kind==DocumentKind::Wave&&TabCtrl_GetCurSel(tabs_)==0?waveFields_[0]:name_;
     const auto target=field&&IsWindowVisible(field)&&IsWindowEnabled(field)?field:window_;
     SetForegroundWindow(window_);SetFocus(target);return GetFocus()==target;
 }
 bool PropertiesWindow::translate(MSG& message){
     if(!owns(message.hwnd))return false;
     const auto id=GetDlgCtrlID(message.hwnd);
-    if(message.message==WM_KEYDOWN&&message.wParam==VK_TAB&&(GetKeyState(VK_CONTROL)&0x8000)&&!(GetKeyState(VK_MENU)&0x8000)&&supports(target_)&&target_->kind==DocumentKind::Wave){
+    if(message.message==WM_KEYDOWN&&message.wParam==VK_TAB&&(GetKeyState(VK_CONTROL)&0x8000)&&!(GetKeyState(VK_MENU)&0x8000)&&supports(target_)&&(target_->kind==DocumentKind::Wave||target_->kind==DocumentKind::Segment)){
         // Commit the current sample field before changing pages, just as a
         // mouse focus change does. The same modeless window remains active.
         if(id==WaveValue||(id>=WaveValue+2&&id<=WaveValue+4))edit_wave(id);
-        TabCtrl_SetCurSel(tabs_,TabCtrl_GetCurSel(tabs_)==0?1:0);synchronize(true);
-        SetFocus(TabCtrl_GetCurSel(tabs_)==0?waveFields_[0]:name_);return true;
+        if(id>=LoopValue&&id<LoopValue+9)edit_segment_loop(id);
+        if(id>=SegmentStartValue&&id<SegmentStartValue+4)edit_segment_start(id);
+        if(id>=SegmentInfoValue&&id<SegmentInfoValue+8)edit_segment_info(id);
+        const auto count=TabCtrl_GetItemCount(tabs_),direction=(GetKeyState(VK_SHIFT)&0x8000)?-1:1;
+        TabCtrl_SetCurSel(tabs_,(TabCtrl_GetCurSel(tabs_)+direction+count)%count);clear_page_background();synchronize(true);
+        RedrawWindow(window_,nullptr,nullptr,RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN|RDW_UPDATENOW);
+        if(target_->kind==DocumentKind::Segment)(void)focus_existing();else SetFocus(TabCtrl_GetCurSel(tabs_)==0?waveFields_[0]:name_);return true;
+    }
+    if(message.message==WM_KEYDOWN&&message.wParam==VK_TAB&&!(GetKeyState(VK_CONTROL)&0x8000)&&!(GetKeyState(VK_MENU)&0x8000)&&id>=SegmentInfoValue&&id<SegmentInfoValue+8){
+        // Information is multiline, but Tab navigates the property form.
+        // Use the native visible/enabled tab order for both directions.
+        edit_segment_info(id);
+        if(const auto next=GetNextDlgTabItem(window_,message.hwnd,(GetKeyState(VK_SHIFT)&0x8000)!=0)){SetFocus(next);SendMessageW(next,EM_SETSEL,0,-1);}
+        return true;
     }
     if(message.message==WM_KEYDOWN&&message.wParam=='A'&&(GetKeyState(VK_CONTROL)&0x8000)&&!(GetKeyState(VK_MENU)&0x8000)&&
-       ((id>=SequenceValue&&id<SequenceValue+15)||(id>=BandValue&&id<BandValue+6)||id==Name||id==ChordType||id==MeterMeasure||(id>=TempoValue&&id<TempoValue+4)||(id>=LyricValue&&id<LyricValue+6)||(id>MarkerValue&&id<MarkerValue+5)||(id>=WaveValue&&id<WaveValue+8))){
+       ((id>=SegmentInfoValue&&id<SegmentInfoValue+8)||(id>=SegmentStartValue&&id<SegmentStartValue+4)||(id>=LoopValue&&id<LoopValue+9)||(id>=SequenceValue&&id<SequenceValue+17)||(id>=BandValue&&id<BandValue+6)||id==Name||id==ChordType||id==MeterMeasure||(id>=TempoValue&&id<TempoValue+4)||(id>=LyricValue&&id<LyricValue+6)||(id>MarkerValue&&id<MarkerValue+5)||(id>=WaveValue&&id<WaveValue+8))){
         SendMessageW(message.hwnd,EM_SETSEL,0,-1);return true;
     }
-    if(message.message==WM_KEYDOWN&&message.wParam==VK_RETURN){if(sequenceTarget_&&id>=SequenceValue&&id<SequenceValue+15){edit_sequence(id);return true;}if(bandTarget_&&id>=BandValue&&id<BandValue+6){edit_band(id);return true;}if(chordTarget_&&id==ChordType){edit_chord_type();return true;}if(meterTarget_&&id==MeterMeasure){edit_meter_measure();return true;}if(tempoDocument_&&id>=TempoValue&&id<TempoValue+4){edit_tempo(id,true);return true;}if(lyricTarget_&&id>=LyricValue&&id<LyricValue+6){edit_lyric(id);return true;}if(markerTarget_&&id>MarkerValue&&id<MarkerValue+5){edit_marker(id);return true;}}
+    if(message.message==WM_KEYDOWN&&message.wParam==VK_RETURN){if(sequenceTarget_&&id>=SequenceValue&&id<SequenceValue+17){edit_sequence(id);return true;}if(bandTarget_&&id>=BandValue&&id<BandValue+6){edit_band(id);return true;}if(chordTarget_&&id==ChordType){edit_chord_type();return true;}if(meterTarget_&&id==MeterMeasure){edit_meter_measure();return true;}if(tempoDocument_&&id>=TempoValue&&id<TempoValue+4){edit_tempo(id,true);return true;}if(lyricTarget_&&id>=LyricValue&&id<LyricValue+6){edit_lyric(id);return true;}if(markerTarget_&&id>MarkerValue&&id<MarkerValue+5){edit_marker(id);return true;}}
     if(message.message==WM_KEYDOWN&&message.wParam==VK_RETURN&&(id==WaveValue||(id>=WaveValue+2&&id<=WaveValue+4))){edit_wave(id);return true;}
+    if(message.message==WM_KEYDOWN&&message.wParam==VK_RETURN&&id>=LoopValue&&id<LoopValue+9){edit_segment_loop(id);return true;}
+    if(message.message==WM_KEYDOWN&&message.wParam==VK_RETURN&&id>=SegmentStartValue&&id<SegmentStartValue+4){edit_segment_start(id);return true;}
+    if(message.message==WM_KEYDOWN&&message.wParam==VK_RETURN&&id>=SegmentInfoValue&&id<SegmentInfoValue+8){if(id==SegmentInfoValue+3&&!(GetKeyState(VK_CONTROL)&0x8000))return false;edit_segment_info(id);return true;}
     return IsDialogMessageW(window_,&message);
 }
 void PropertiesWindow::release(){sequenceTarget_.reset();sequenceSelectionChanged_={};bandTarget_.reset();bandSelectionChanged_={};chordTarget_.reset();chordSelectionChanged_={};if(window_)DestroyWindow(window_);target_.reset();tempoDocument_.reset();lyricTarget_.reset();lyricSelectionChanged_={};markerTarget_.reset();markerSelectionChanged_={};}
@@ -527,12 +690,67 @@ LRESULT CALLBACK PropertiesWindow::proc(HWND window,UINT message,WPARAM w,LPARAM
             self->name_=child(window,L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,64,42,292,24,Name);SendMessageW(self->name_,EM_SETLIMITTEXT,255,0);
             self->segmentLengthLabel_=child(window,L"STATIC",L"Length:",0,255,45,44,22);
             self->segmentLengthButton_=child(window,L"BUTTON",L"",WS_TABSTOP|BS_PUSHBUTTON,300,42,62,24,SegmentLengthButton);
-            const wchar_t* sequenceLabels[]={L"MIDI Note",L"",L"Velocity:",L"Bar",L"Beat",L"Grid",L"Tick",L"Start Time:",L"End Time",L"Duration"};
+            // The compact English Start Time labels use the classic dialog
+            // face; DEFAULT_GUI_FONT can select wider locale-dependent glyphs.
+            self->segmentStartFont_=CreateFontW(-MulDiv(8,static_cast<int>(GetDpiForWindow(window)),72),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,ANSI_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH|FF_SWISS,L"MS Sans Serif");
+            if(!self->segmentStartFont_)throw std::runtime_error("Start Time font creation failed");
+            const auto startControl=[&](const wchar_t* type,const wchar_t* title,DWORD style,int x,int y,int width,int height,UINT id=0){const auto control=child(window,type,title,style,x,y,width,height,id);SendMessageW(control,WM_SETFONT,reinterpret_cast<WPARAM>(self->segmentStartFont_),TRUE);self->segmentStartControls_.push_back(control);return control;};
+            startControl(L"BUTTON",L"Start Time",BS_GROUPBOX,20,88,352,66);
+            const wchar_t* startColumns[]={L"Bar",L"Beat",L"Grid",L"Tick"};for(unsigned i=0;i<4;++i)startControl(L"STATIC",startColumns[i],0,98+static_cast<int>(i)*60,94,50,16);
+            startControl(L"STATIC",L"Start at:",0,40,111,56,18);
+            for(unsigned i=0;i<4;++i){self->segmentStartFields_[i]=startControl(L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,98+static_cast<int>(i)*60,109,52,18,SegmentStartValue+i);SendMessageW(self->segmentStartFields_[i],EM_SETLIMITTEXT,11,0);self->segmentStartSpins_[i]=startControl(UPDOWN_CLASSW,L"",UDS_ARROWKEYS|UDS_ALIGNRIGHT|UDS_NOTHOUSANDS,0,0,16,18,SegmentStartSpin+i);SendMessageW(self->segmentStartSpins_[i],UDM_SETBUDDY,reinterpret_cast<WPARAM>(self->segmentStartFields_[i]),0);SendMessageW(self->segmentStartSpins_[i],UDM_SETRANGE32,i==3?0:1,INT32_MAX);}
+            startControl(L"STATIC",L"Use TimeSig of Track Group",0,40,136,144,18);const auto timeSigGroup=startControl(L"EDIT",L"1",WS_BORDER|ES_READONLY,182,133,36,18,SegmentTimeSigGroup);EnableWindow(timeSigGroup,FALSE);
+            const auto timeSigSpin=startControl(UPDOWN_CLASSW,L"",UDS_ALIGNRIGHT|UDS_NOTHOUSANDS,0,0,16,18,SegmentTimeSigGroupSpin);SendMessageW(timeSigSpin,UDM_SETBUDDY,reinterpret_cast<WPARAM>(timeSigGroup),0);EnableWindow(timeSigSpin,FALSE);
+            EnableWindow(startControl(L"BUTTON",L"Extend Primary TimeSig",BS_AUTOCHECKBOX,234,134,134,18,SegmentExtendTimeSig),FALSE);
+            EnableWindow(startControl(L"BUTTON",L"Play on new instance of embedded audiopath",BS_AUTOCHECKBOX,20,170,340,18,SegmentEmbeddedAudioPath),FALSE);
+            const auto infoControl=[&](const wchar_t* type,const wchar_t* title,DWORD style,int x,int y,int width,int height,UINT id=0){const auto control=child(window,type,title,style,x,y,width,height,id);SendMessageW(control,WM_SETFONT,reinterpret_cast<WPARAM>(self->segmentStartFont_),TRUE);self->segmentInfoControls_.push_back(control);return control;};
+            const wchar_t* infoLabels[]={L"Subject:",L"Author:",L"Copyright:"};
+            for(unsigned i=0;i<3;++i){const int y=34+static_cast<int>(i)*24;infoControl(L"STATIC",infoLabels[i],0,16,y+2,58,16);self->segmentInfoFields_[i]=infoControl(L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,76,y,298,18,SegmentInfoValue+i);SendMessageW(self->segmentInfoFields_[i],EM_SETLIMITTEXT,32767,0);}
+            infoControl(L"STATIC",L"Version:",0,16,110,58,16);
+            for(unsigned i=0;i<4;++i){self->segmentInfoFields_[i+4]=infoControl(L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,76+static_cast<int>(i)*36,108,32,18,SegmentInfoValue+i+4);SendMessageW(self->segmentInfoFields_[i+4],EM_SETLIMITTEXT,4,0);}
+            EnableWindow(infoControl(L"BUTTON",L"Edit GUID...",BS_PUSHBUTTON,248,106,76,22,SegmentInfoGuid),FALSE);
+            infoControl(L"STATIC",L"Information:",0,16,134,58,16);self->segmentInfoFields_[3]=infoControl(L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN|WS_VSCROLL,76,132,298,62,SegmentInfoValue+3);SendMessageW(self->segmentInfoFields_[3],EM_SETLIMITTEXT,32767,0);
+            const auto boundaryControl=[&](const wchar_t* type,const wchar_t* title,DWORD style,int x,int y,int width,int height,UINT id=0){const auto control=child(window,type,title,style,x,y,width,height,id);SendMessageW(control,WM_SETFONT,reinterpret_cast<WPARAM>(self->segmentStartFont_),TRUE);self->segmentBoundaryControls_.push_back(control);return control;};
+            self->segmentBoundaryName_=boundaryControl(L"STATIC",L"",0,16,31,360,16);
+            boundaryControl(L"BUTTON",L"Performance Boundary",BS_GROUPBOX,16,48,188,103);
+            self->segmentBoundaryMarker_=boundaryControl(L"BUTTON",L"&Start at next marker",WS_TABSTOP|BS_AUTOCHECKBOX,26,68,170,18,BoundaryMarker);
+            self->segmentBoundaryFallback_=boundaryControl(L"STATIC",L"If no markers, start:",0,26,89,168,16);
+            self->segmentBoundaryDefault_=boundaryControl(L"BUTTON",L"Use Segment's &Default",BS_AUTOCHECKBOX,26,106,170,18);EnableWindow(self->segmentBoundaryDefault_,FALSE);
+            self->segmentBoundaryList_=boundaryControl(WC_COMBOBOXW,L"",WS_TABSTOP|CBS_DROPDOWNLIST|WS_VSCROLL,26,127,168,180,BoundaryList);
+            for(const auto caption:{L"Immediate",L"Grid",L"Beat",L"Barline",L"Align to Beat",L"Align to Barline",L"Align to Segment",L"End of Segment",L"End of Segment Queue"})SendMessageW(self->segmentBoundaryList_,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(caption));
+            boundaryControl(L"BUTTON",L"Align Options",BS_GROUPBOX,212,48,165,103);
+            self->segmentAlignmentDescription_=boundaryControl(L"STATIC",L"If no enter switchpoints\r\n(destination), switch:",0,222,62,146,24);
+            const wchar_t* alignCaptions[]={L"at an&y Time",L"&on any Grid",L"o&n any Beat",L"on any &Barline"};
+            for(unsigned i=0;i<4;++i)self->segmentAlignment_[i]=boundaryControl(L"BUTTON",alignCaptions[i],WS_TABSTOP|BS_AUTORADIOBUTTON|(i?0:WS_GROUP),234,86+static_cast<int>(i)*16,136,16,BoundaryAlignment+i);
+            const wchar_t* invalidationCaptions[]={L"&Don't Cut Off",L"Do&n't Cut Off Secondary Segs",L"Cut Off (Regenerate &2ndary Segs)"};
+            for(unsigned i=0;i<3;++i)self->segmentInvalidation_[i]=boundaryControl(L"BUTTON",invalidationCaptions[i],WS_TABSTOP|BS_AUTORADIOBUTTON|(i?0:WS_GROUP),16,154+static_cast<int>(i)*16,190,16,BoundaryInvalidation+i);
+            boundaryControl(L"BUTTON",L"Timing",BS_GROUPBOX,212,155,165,46);
+            for(unsigned i=0;i<2;++i)self->segmentBoundaryTiming_[i]=boundaryControl(L"BUTTON",i?L"After &Prepare Time":L"&Quick Response",WS_TABSTOP|BS_AUTORADIOBUTTON|(i?0:WS_GROUP),234,168+static_cast<int>(i)*16,138,16,i?BoundaryPrepare:BoundaryQuick);
+            const auto loopControl=[&](const wchar_t* type,const wchar_t* title,DWORD style,int x,int y,int width,int height,UINT id=0){const auto control=child(window,type,title,style,x,y,width,height,id);self->loopControls_.push_back(control);return control;};
+            loopControl(L"BUTTON",L"",BS_GROUPBOX,18,42,142,48);
+            loopControl(L"BUTTON",L"Clock Time Looping (Mls)",BS_GROUPBOX,170,42,200,48);
+            loopControl(L"BUTTON",L"Music Time Looping",BS_GROUPBOX,18,96,352,104);
+            const auto loopField=[&](unsigned i,int x,int y,int width){
+                self->loopFields_[i]=loopControl(L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,x,y,width,20,LoopValue+i);SendMessageW(self->loopFields_[i],EM_SETLIMITTEXT,10,0);
+                self->loopSpins_[i]=loopControl(UPDOWN_CLASSW,L"",UDS_ARROWKEYS|UDS_ALIGNRIGHT|UDS_NOTHOUSANDS,0,0,16,20,LoopSpin+i);SendMessageW(self->loopSpins_[i],UDM_SETBUDDY,reinterpret_cast<WPARAM>(self->loopFields_[i]),0);SendMessageW(self->loopSpins_[i],UDM_SETRANGE32,static_cast<WPARAM>(INT32_MIN),INT32_MAX);
+            };
+            // Stock Edit accessibility uses the immediately preceding label.
+            // The Repeat label also supplies the group caption in the same place.
+            loopControl(L"STATIC",L"Repeat",0,26,42,43,16);loopField(0,34,61,52);
+            self->loopInfinite_=loopControl(L"BUTTON",L"Infinite",WS_TABSTOP|BS_AUTOCHECKBOX,96,62,62,20,LoopInfinite);
+            self->loopClock_=loopControl(L"BUTTON",L"",BS_AUTOCHECKBOX,180,63,18,18,LoopClock);
+            for(unsigned i=0;i<2;++i){loopControl(L"STATIC",i?L"End":L"Start",0,i?278:200,64,i?28:30,18);self->loopClockFields_[i]=loopControl(L"EDIT",L"0",WS_BORDER|ES_READONLY,230+static_cast<int>(i)*78,62,i?50:44,20,LoopClockStart+i);}
+            const wchar_t* loopColumns[]={L"Bar",L"Beat",L"Grid",L"Tick"};
+            for(unsigned i=0;i<4;++i)loopControl(L"STATIC",loopColumns[i],0,116+static_cast<int>(i)*60,108,50,18);
+            for(unsigned row=0;row<2;++row){loopControl(L"STATIC",row?L"Loop End":L"Loop Start",0,30,132+static_cast<int>(row)*24,82,18);for(unsigned column=0;column<4;++column)loopField(1+row*4+column,116+static_cast<int>(column)*60,130+static_cast<int>(row)*24,56);}
+            self->loopReset_=loopControl(L"BUTTON",L"Reset Loop to Entire Segment",WS_TABSTOP|BS_PUSHBUTTON,146,177,212,20,LoopReset);
+            const wchar_t* sequenceLabels[]={L"MIDI Note",L"",L"Velocity:",L"Bar",L"Beat",L"Grid",L"Tick",L"Start Time:",L"End Time",L"Duration",L"Belongs to Beat"};
             for(unsigned i=3;i<7;++i)self->sequenceLabels_[i]=child(window,L"STATIC",sequenceLabels[i],0,100+static_cast<int>(i-3)*60,74,54,18);
-            for(unsigned i=0;i<15;++i){const int x=i==0?108:i==1?154:i==2?270:100+static_cast<int>((i-3)%4)*60;const int y=i<3?36:94+static_cast<int>((i-3)/4)*22;
+            for(unsigned i=0;i<17;++i){const int x=i>=15?100+static_cast<int>(i-15)*60:i==0?108:i==1?154:i==2?270:100+static_cast<int>((i-3)%4)*60;const int y=i>=15?160:i<3?36:94+static_cast<int>((i-3)/4)*22;
                 // The preceding label supplies the stock Edit accessible name.
                 if(i<3)self->sequenceLabels_[i]=child(window,L"STATIC",sequenceLabels[i],0,i==0?24:i==1?154:222,y+2,72,18);
-                else if((i-3)%4==0){const auto label=7+(i-3)/4;self->sequenceLabels_[label]=child(window,L"STATIC",sequenceLabels[label],0,16,y,72,18);}
+                else if(i==15)self->sequenceLabels_[10]=child(window,L"STATIC",sequenceLabels[10],0,16,y,84,18);
+                else if(i<15&&(i-3)%4==0){const auto label=7+(i-3)/4;self->sequenceLabels_[label]=child(window,L"STATIC",sequenceLabels[label],0,16,y,72,18);}
                 self->sequenceFields_[i]=child(window,L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL|(i?0:ES_READONLY),x,y,i<3?44:56,20,SequenceValue+i);SendMessageW(self->sequenceFields_[i],EM_SETLIMITTEXT,11,0);
                 self->sequenceSpins_[i]=child(window,UPDOWN_CLASSW,L"",UDS_ARROWKEYS|UDS_ALIGNRIGHT|UDS_NOTHOUSANDS,0,0,16,20,SequenceSpin+i);SendMessageW(self->sequenceSpins_[i],UDM_SETBUDDY,reinterpret_cast<WPARAM>(self->sequenceFields_[i]),0);SendMessageW(self->sequenceSpins_[i],UDM_SETRANGE32,static_cast<WPARAM>(INT32_MIN),INT32_MAX);
             }
@@ -592,8 +810,8 @@ LRESULT CALLBACK PropertiesWindow::proc(HWND window,UINT message,WPARAM w,LPARAM
             return 0;
         }
         if(message==WM_COMMAND&&self&&LOWORD(w)==SegmentLengthButton&&HIWORD(w)==BN_CLICKED){self->edit_segment_length();return 0;}
-        if(message==WM_COMMAND&&self&&LOWORD(w)>=SequenceValue&&LOWORD(w)<SequenceValue+15&&HIWORD(w)==EN_KILLFOCUS){self->edit_sequence(LOWORD(w));return 0;}
-        if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=SequenceSpin&&spin->hdr.idFrom<SequenceSpin+15){self->edit_sequence(SequenceValue+static_cast<UINT>(spin->hdr.idFrom)-SequenceSpin,spin->iDelta);return 1;}}
+        if(message==WM_COMMAND&&self&&LOWORD(w)>=SequenceValue&&LOWORD(w)<SequenceValue+17&&HIWORD(w)==EN_KILLFOCUS){self->edit_sequence(LOWORD(w));return 0;}
+        if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=SequenceSpin&&spin->hdr.idFrom<SequenceSpin+17){self->edit_sequence(SequenceValue+static_cast<UINT>(spin->hdr.idFrom)-SequenceSpin,spin->iDelta);return 1;}}
         if(message==WM_COMMAND&&self&&LOWORD(w)>=BandValue&&LOWORD(w)<BandValue+6&&HIWORD(w)==EN_KILLFOCUS){self->edit_band(LOWORD(w));return 0;}
         if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=BandSpin&&spin->hdr.idFrom<BandSpin+5){self->edit_band(BandValue+1+static_cast<UINT>(spin->hdr.idFrom)-BandSpin,spin->iDelta);return 1;}}
         if(message==WM_COMMAND&&self&&LOWORD(w)==ChordType&&HIWORD(w)==EN_KILLFOCUS){self->edit_chord_type();return 0;}
@@ -601,6 +819,13 @@ LRESULT CALLBACK PropertiesWindow::proc(HWND window,UINT message,WPARAM w,LPARAM
         if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom==ChordSpin){self->transpose_chord_root(spin->iDelta);return 1;}}
         if(message==WM_COMMAND&&self&&LOWORD(w)==MeterMeasure&&HIWORD(w)==EN_KILLFOCUS){self->edit_meter_measure();return 0;}
         if(message==WM_COMMAND&&self&&LOWORD(w)==MeterButton&&HIWORD(w)==BN_CLICKED){self->edit_meter_signature();return 0;}
+        if(message==WM_COMMAND&&self&&LOWORD(w)>=LoopValue&&LOWORD(w)<LoopValue+9&&HIWORD(w)==EN_KILLFOCUS){self->edit_segment_loop(LOWORD(w));return 0;}
+        if(message==WM_COMMAND&&self&&LOWORD(w)>=SegmentStartValue&&LOWORD(w)<SegmentStartValue+4&&HIWORD(w)==EN_KILLFOCUS){self->edit_segment_start(LOWORD(w));return 0;}
+        if(message==WM_COMMAND&&self&&((LOWORD(w)==BoundaryList&&HIWORD(w)==CBN_SELCHANGE)||((LOWORD(w)==BoundaryMarker||LOWORD(w)==BoundaryQuick||LOWORD(w)==BoundaryPrepare||(LOWORD(w)>=BoundaryInvalidation&&LOWORD(w)<BoundaryInvalidation+3)||(LOWORD(w)>=BoundaryAlignment&&LOWORD(w)<BoundaryAlignment+4))&&HIWORD(w)==BN_CLICKED))){self->edit_segment_boundary(LOWORD(w));return 0;}
+        if(message==WM_COMMAND&&self&&LOWORD(w)>=SegmentInfoValue&&LOWORD(w)<SegmentInfoValue+8&&HIWORD(w)==EN_KILLFOCUS){self->edit_segment_info(LOWORD(w));return 0;}
+        if(message==WM_COMMAND&&self&&(LOWORD(w)==LoopInfinite||LOWORD(w)==LoopReset)&&HIWORD(w)==BN_CLICKED){self->edit_segment_loop(LOWORD(w));return 0;}
+        if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=LoopSpin&&spin->hdr.idFrom<LoopSpin+9){self->edit_segment_loop(LoopValue+static_cast<UINT>(spin->hdr.idFrom)-LoopSpin,spin->iDelta);return 1;}}
+        if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=SegmentStartSpin&&spin->hdr.idFrom<SegmentStartSpin+4){self->edit_segment_start(SegmentStartValue+static_cast<UINT>(spin->hdr.idFrom)-SegmentStartSpin,spin->iDelta);return 1;}}
         if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom==MeterSpin){self->edit_meter_measure(spin->iDelta);return 1;}}
         if(message==WM_COMMAND&&self&&LOWORD(w)>=TempoValue&&LOWORD(w)<TempoValue+4){if(HIWORD(w)==EN_KILLFOCUS||(LOWORD(w)==TempoValue&&HIWORD(w)==EN_CHANGE)){self->edit_tempo(LOWORD(w),HIWORD(w)==EN_KILLFOCUS);return 0;}}
         if(message==WM_COMMAND&&self&&LOWORD(w)>=LyricValue&&LOWORD(w)<LyricValue+6&&HIWORD(w)==EN_KILLFOCUS){self->edit_lyric(LOWORD(w));return 0;}
@@ -608,7 +833,7 @@ LRESULT CALLBACK PropertiesWindow::proc(HWND window,UINT message,WPARAM w,LPARAM
         if(message==WM_COMMAND&&self&&LOWORD(w)>MarkerValue&&LOWORD(w)<MarkerValue+5&&HIWORD(w)==EN_KILLFOCUS){self->edit_marker(LOWORD(w));return 0;}
         if(message==WM_COMMAND&&self&&(LOWORD(w)==WaveValue||(LOWORD(w)>=WaveValue+2&&LOWORD(w)<=WaveValue+4))&&HIWORD(w)==EN_KILLFOCUS){self->edit_wave(LOWORD(w));return 0;}
         if(message==WM_COMMAND&&self&&LOWORD(w)>=WaveCheck&&LOWORD(w)<WaveCheck+4&&HIWORD(w)==BN_CLICKED){self->edit_wave(LOWORD(w));return 0;}
-        if(message==WM_NOTIFY&&self&&l){const auto header=reinterpret_cast<NMHDR*>(l);if(header->hwndFrom==self->tabs_&&header->code==TCN_SELCHANGE){self->synchronize(true);return 0;}const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(header->code==UDN_DELTAPOS&&header->idFrom>=WaveSpin&&header->idFrom<WaveSpin+4){const auto offset=static_cast<UINT>(header->idFrom)-WaveSpin;self->edit_wave(WaveValue+(offset?offset+1:0),spin->iDelta);return 1;}}
+        if(message==WM_NOTIFY&&self&&l){const auto header=reinterpret_cast<NMHDR*>(l);if(header->hwndFrom==self->tabs_&&header->code==TCN_SELCHANGE){self->clear_page_background();self->synchronize(true);RedrawWindow(window,nullptr,nullptr,RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN|RDW_UPDATENOW);if(self->target_&&self->target_->kind==DocumentKind::Segment)(void)self->focus_existing();return 0;}const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(header->code==UDN_DELTAPOS&&header->idFrom>=WaveSpin&&header->idFrom<WaveSpin+4){const auto offset=static_cast<UINT>(header->idFrom)-WaveSpin;self->edit_wave(WaveValue+(offset?offset+1:0),spin->iDelta);return 1;}}
         if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=MarkerSpin&&spin->hdr.idFrom<MarkerSpin+4){self->edit_marker(MarkerValue+1+static_cast<UINT>(spin->hdr.idFrom)-MarkerSpin,spin->iDelta);return 1;}}
         if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=TempoSpin&&spin->hdr.idFrom<TempoSpin+4){self->edit_tempo(TempoValue+static_cast<UINT>(spin->hdr.idFrom)-TempoSpin,true,spin->iDelta);return 1;}}
         if(message==WM_NOTIFY&&self&&l){const auto spin=reinterpret_cast<NMUPDOWN*>(l);if(spin->hdr.code==UDN_DELTAPOS&&spin->hdr.idFrom>=LyricSpin&&spin->hdr.idFrom<LyricSpin+5){self->edit_lyric(LyricValue+1+static_cast<UINT>(spin->hdr.idFrom)-LyricSpin,spin->iDelta);return 1;}}
@@ -625,6 +850,10 @@ LRESULT CALLBACK PropertiesWindow::proc(HWND window,UINT message,WPARAM w,LPARAM
         }
         if(message==WM_CLOSE){DestroyWindow(window);return 0;}
         if(message==WM_NCDESTROY&&self){self->sequenceTarget_.reset();self->sequenceSelectionChanged_={};for(auto& edit:self->sequenceFields_)edit=nullptr;for(auto& label:self->sequenceLabels_)label=nullptr;for(auto& spin:self->sequenceSpins_)spin=nullptr;self->bandTarget_.reset();self->bandSelectionChanged_={};for(size_t i=0;i<6;++i)self->bandFields_[i]=self->bandLabels_[i]=nullptr;for(auto& spin:self->bandSpins_)spin=nullptr;}
+        if(message==WM_NCDESTROY&&self){self->loopControls_.clear();for(auto& field:self->loopFields_)field=nullptr;for(auto& spin:self->loopSpins_)spin=nullptr;for(auto& field:self->loopClockFields_)field=nullptr;self->loopInfinite_=self->loopReset_=self->loopClock_=nullptr;self->finiteLoopRepeats_.clear();self->tabFamily_=0;}
+        if(message==WM_NCDESTROY&&self){self->segmentStartControls_.clear();for(auto& field:self->segmentStartFields_)field=nullptr;for(auto& spin:self->segmentStartSpins_)spin=nullptr;if(self->segmentStartFont_){DeleteObject(self->segmentStartFont_);self->segmentStartFont_=nullptr;}}
+        if(message==WM_NCDESTROY&&self){self->segmentInfoControls_.clear();for(auto& field:self->segmentInfoFields_)field=nullptr;}
+        if(message==WM_NCDESTROY&&self){self->segmentBoundaryControls_.clear();self->segmentBoundaryName_=self->segmentBoundaryMarker_=self->segmentBoundaryFallback_=self->segmentBoundaryDefault_=self->segmentBoundaryList_=self->segmentAlignmentDescription_=nullptr;for(auto& field:self->segmentBoundaryTiming_)field=nullptr;for(auto& field:self->segmentInvalidation_)field=nullptr;for(auto& field:self->segmentAlignment_)field=nullptr;}
         if(message==WM_NCDESTROY&&self){for(size_t i=0;i<8;++i)self->waveFields_[i]=self->waveLabels_[i]=nullptr;for(size_t i=0;i<4;++i)self->waveChecks_[i]=self->waveSpins_[i]=nullptr;self->disabledWaveLoops_.clear();self->waveLoopLocked_=false;self->chordRoot_=self->chordSpin_=nullptr;for(auto& control:self->chordNotation_)control=nullptr;for(auto& control:self->chordLevels_)control=nullptr;for(unsigned i=0;i<4;++i){self->chordKeys_[i].release();self->scaleKeys_[i].release();}}
         if(message==WM_NCDESTROY&&self){self->window_=self->tabs_=self->name_=self->label_=nullptr;self->segmentLengthLabel_=self->segmentLengthButton_=nullptr;self->chordType_=self->chordLabel_=nullptr;self->chordSelectionChanged_={};self->meterButton_=self->meterMeasure_=self->meterLabel_=self->meterSpin_=nullptr;self->meterTarget_.reset();self->chordTarget_.reset();self->meterSelectionChanged_={};self->target_.reset();self->tempoDocument_.reset();self->lyricTarget_.reset();self->lyricSelectionChanged_={};self->markerTarget_.reset();self->markerSelectionChanged_={};for(auto& edit:self->markerFields_)edit=nullptr;for(auto& label:self->markerLabels_)label=nullptr;for(auto& spin:self->markerSpins_)spin=nullptr;for(size_t i=0;i<4;++i)self->tempoFields_[i]=self->tempoLabels_[i]=self->tempoSpins_[i]=nullptr;for(size_t i=0;i<6;++i)self->lyricFields_[i]=self->lyricLabels_[i]=nullptr;for(auto& spin:self->lyricSpins_)spin=nullptr;for(auto& radio:self->lyricTiming_)radio=nullptr;self->lyricTimingGroup_=nullptr;SetWindowLongPtrW(window,GWLP_USERDATA,0);}
     }catch(const std::exception& e){if(message==WM_CREATE)return -1;MessageBoxA(window,e.what(),"Properties operation failed",MB_OK|MB_ICONERROR);return 0;}

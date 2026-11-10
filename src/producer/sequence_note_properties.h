@@ -9,16 +9,32 @@ inline bool sequence_property_same_note(Note a,Note b){return a.time==b.time&&a.
 // Native history may reorder records. Keep a uniquely identifiable note, or
 // the sole replacement in a one-note field edit. Ambiguous/bulk edits clear
 // the UI selection rather than silently assigning Properties to another note.
-inline std::optional<size_t> sequence_property_history_selection(const std::vector<Note>& before,const std::vector<Note>& after,size_t selected){
+template<class Value,class Equal> inline std::optional<size_t> sequence_property_history_match(const std::vector<Value>& before,const std::vector<Value>& after,size_t selected,Equal same){
     if(selected>=before.size())return {};const auto note=before[selected];
-    const auto count=[&](const auto& notes,Note n){return std::count_if(notes.begin(),notes.end(),[&](Note other){return sequence_property_same_note(n,other);});};
+    const auto count=[&](const auto& notes,const Value& n){return std::count_if(notes.begin(),notes.end(),[&](const Value& other){return same(n,other);});};
     if(count(before,note)!=1)return {};
-    if(count(after,note)==1){for(size_t i=0;i<after.size();++i)if(sequence_property_same_note(note,after[i]))return i;}
+    if(count(after,note)==1){for(size_t i=0;i<after.size();++i)if(same(note,after[i]))return i;}
     if(before.size()!=after.size()||count(after,note))return {};
     std::vector<bool> matched(after.size());std::vector<size_t> removed,added;
-    for(size_t i=0;i<before.size();++i){size_t j=0;for(;j<after.size();++j)if(!matched[j]&&sequence_property_same_note(before[i],after[j])){matched[j]=true;break;}if(j==after.size())removed.push_back(i);}
+    for(size_t i=0;i<before.size();++i){size_t j=0;for(;j<after.size();++j)if(!matched[j]&&same(before[i],after[j])){matched[j]=true;break;}if(j==after.size())removed.push_back(i);}
     for(size_t i=0;i<after.size();++i)if(!matched[i])added.push_back(i);
-    if(removed.size()!=1||removed[0]!=selected||added.size()!=1||after[added[0]].channel!=note.channel||count(after,after[added[0]])!=1)return {};return added[0];
+    if(removed.size()!=1||removed[0]!=selected||added.size()!=1||count(after,after[added[0]])!=1)return {};return added[0];
+}
+inline std::optional<size_t> sequence_property_history_selection(const std::vector<Note>& before,const std::vector<Note>& after,size_t selected){
+    const auto mapped=sequence_property_history_match(before,after,selected,sequence_property_same_note);
+    return mapped&&after[*mapped].channel==before[selected].channel?mapped:std::optional<size_t>{};
+}
+inline std::optional<size_t> sequence_property_position_history_selection(const std::vector<SequenceNotePosition>& before,const std::vector<SequenceNotePosition>& after,size_t selected){
+    const auto mapped=sequence_property_history_match(before,after,selected,[](const auto& a,const auto& b){return a.logicalTime==b.logicalTime&&sequence_property_same_note(a.note,b.note);});
+    return mapped&&after[*mapped].note.channel==before[selected].note.channel?mapped:std::optional<size_t>{};
+}
+// The UI exposes measure/beat while retaining any hidden native tick. Editing
+// ownership must not move the physical onset or truncate its signed offset.
+inline std::int32_t sequence_property_logical_time(const Timeline& axis,std::int32_t length,const SequenceNotePosition& position,unsigned field,std::int64_t value){
+    if(field>1||value<1||value>INT32_MAX)throw std::runtime_error("Invalid Sequence logical field");
+    auto p=axis.position(position.logicalTime);if(!field)p.measure=static_cast<std::int32_t>(value-1);else p.beat=static_cast<std::int32_t>(value-1);
+    const auto logical=axis.clocks(p);const auto offset=std::int64_t(position.note.time)-logical;
+    if(logical<0||logical>=length||offset<INT16_MIN||offset>INT16_MAX)throw std::runtime_error("Invalid Sequence logical offset");return logical;
 }
 // Sequence Properties uses the nearest grid and signed ticks (the original
 // shows 2784 as 1:4:4:-96 at 4/4, rather than 1:4:3:96).

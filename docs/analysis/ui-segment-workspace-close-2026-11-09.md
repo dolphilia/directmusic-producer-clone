@@ -1,0 +1,15 @@
+# Segment編集窓Closeとgray workspace — 2026-11-09
+
+111021は最後のSegment/埋め込みBand窓CloseやWindow Close Allで、文書・primary・Tempoを保ちgray workspaceへ戻す修正。native MDI表示中のlegacyフォーム103件とTab対象を隠す。File NewStyle/NewBandは従来フォームへ復帰。関連4件238検査、空19288/作者11068/復元16244の三通常exit0。CtrlF4/再Open/マウスClose/複数CloseAll/Bandだけ最後Close/NewCancel/Tab/既存CtrlF11/View/窓を閉じた後の保存先を確認。両Segmentは初期/作者/復元の全bytes一致、NoTempo20小節TimeSig-only/Seed132.25と17音符を保持。2参照ProjectはFILETIME以外同一、292ソース/4出力一致。表示・focusのみの変更で新PCM不要、過去音声受入は転用しない。
+
+native MDI clientの可視状態をframeが参照し、表示中は旧フォームを隠してCOLOR_APPWORKSPACEで作業面を描く。個別Segment/embeddedBandのWM_NCDESTROYでclientを隠さず、Window Close Allは子だけを解放する。Project置換・終了の既存releaseは既定でclientも隠す。Style/Band編集モードではSegment clientを非表示にし、従来フォームを復帰させる。文書・Transport選択・再生コードは変更していない。
+
+最初の110449 buildは成功したが、File NewStyle/NewBandがactivate_documentを通らない点を実行前レビューで補正し、保存ソース/出力を保全して本体未実行のまま残した。補正済み111021だけで本体・native保存復元を実行。103640から4ソース変更・288ソース同一。
+
+原版比較は15872の固定TimeSig-only open/lastClose gray・primary/Play/空欄保持を使った。候補は埋め込みBandを最後に閉じる経路も通したが、その原版動的比較やStyle/Band全機能、厳密なwindow形状/font/dockingの一致は未達。繰り返し再OpenによるMDI cascadeの画面外端も記録し、全外観の合格に含めない。
+
+検証プロトコルのCtrlF6は誤りで無効だった観測を保全し、既存CtrlF11でフォーカス循環を確認。read-only inspector v1のconsole表示は総数をhiddenと表示していたが保存JSONのhidden/visible値は正しく、v2でconsoleラベルを補正した。いずれも製品変更や隠れた合格の根拠にはしない。空起動の未保存Segment/Style/Bandだけを明示破棄し、作者と復元は両native文書を保存して通常終了した。
+
+一次入口：`work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json`、`gui-proof-v1.json`、`native-proof-v2.json`。新候補で全native100を再実行したとはしない。直前103640の50/2855・49凍結・匿名Band1は別候補の節目記録として保持。
+
+SSP01の初期primary登録を継続。正式原版15872の固定契約ではProjectを読んだだけではprimaryなし/Play無効/Tempo120で、Segmentを開いてから登録され、最後Close後は登録を保持する。候補111021はProject初期に全owned Segmentを自動登録しlegacyフォームを出す差が残る。次はowned文書と登録済みtransportのUI状態を分け、明示Segment活性化/SaveAsコピー/Close後保持/Project置換を照合して実装→保存build/関連回帰→本体/保存/通常終了/別復元/必要PCMへ進む。TimeSig-only再Open AddTracks prompt・他component登録・全外観/全40/全8/Q2/Style015244は未達。fullAcceptance=false、49native/30driver凍結・匿名Band同条件再試行なし。 goal active。

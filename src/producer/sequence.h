@@ -26,6 +26,11 @@ Bytes sequence_insert_curve(const Bytes&,const SequenceCurve&,size_t* resultingI
 Bytes sequence_change_curve(const Bytes&,size_t,const SequenceCurve&,size_t* resultingIndex=nullptr);
 Bytes sequence_delete_curve(const Bytes&,size_t);
 struct Note {std::int32_t time,duration;std::uint32_t channel;std::uint8_t pitch,velocity;};
+// Note.time is the physical onset. The native raw time is logical ownership;
+// its signed offset can place that onset before or after the owning beat.
+struct SequenceNotePosition {Note note;std::int32_t logicalTime;std::int16_t offset;};
+std::vector<SequenceNotePosition> sequence_note_positions(const Bytes& payload);
+Bytes sequence_change_logical_time(const Bytes&,size_t index,std::int32_t logicalTime,size_t* resultingIndex=nullptr);
 // Existing MIDI/controller/curve records are retained when inserting notes.
 // This is the first Sequence connection, not the full Sequence strip editor.
 std::vector<Note> sequence_notes(const Bytes& payload);

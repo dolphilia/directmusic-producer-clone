@@ -1,0 +1,15 @@
+# Project読込とTransport登録の分離 — 2026-11-09
+
+114031はProjectの所有catalogとsession内Transport登録を分離し、初期はgray/登録なし/list・Play・SaveFile無効/Tempo120、明示Segment活性化後だけ登録、Close後は保持する。SaveAsコピーは新GUID/3件目として登録し元Seed編集窓を保持、コピー120の確定/コピー自身のUndo132.25・Redo120/保存、Project置換resetを確認。空13628/作者6576/復元16816は通常exit0。両既存Segment全bytes、コピーの新GUID+Tempo120以外の全bytes・17音符、2→3参照Projectの既存情報とFILETIME以外を保持し、音声後/終了後もnative4ファイル不変。新PCMは132.25再生中のコピー選択でも132.25を保ち、次Playコピー120、両17発音/音程/activeStop/quietが成立。中央値0.455/0.500秒、負例6とclock4拒否。292ソース/4出力一致。関連回帰は3合格168検査、component-nameは67検査後Names.pro置換Windows5で新規凍結。全4合格238/単位終了条件完了とはしない。
+
+変更はmain.cppだけ、111021と291ソース同一。UI内の登録はowned indexと文書identityで保持し、保存形式・Framework所有・再生runtimeは変更しない。読込catalogだけを編集中ownerにせず、明示活性化で登録する。SaveAs新コピーの登録、Import/PlaybackTest/StylePlayer採用の明示経路、Project置換時clear、未登録時のSaveFile/Space/再生キー、非表示legacy Tempo hitを扱う。他component全体や各明示経路の全GUI比較は未達。
+
+原版15872の固定初期/開閉証拠と、CHMの編集窓を開いた時の登録契約を参照。原版19404のSaveAs新GUID/元editor保持/新primary選択の例外も維持。元Seed132.25を編集中にprimaryをNoTempoへ変更し、その状態のSaveAsでもSeedからコピーを作成した。コピー120変更後のSave Fileはmtimeで元Seedだけを書き、コピーのUndo/Redoはコピー自身を開いてから実施した。
+
+114031のcomponent-name専用CLIは67検査まで通った後、Names/Names.proのatomic replaceをWindows5で拒否されexit1。出力を保存し同条件再試行や保存先を替えた代替合格は行わない。manifestは新規凍結50件へ更新し、旧49件の障害objectとdriver一覧を同一に保持。専用GUIの3参照Project検証を、このCLI回帰の代替合格へ転用しない。関連終了条件はfalseのまま。
+
+音声の最初の120秒captureはStop51.598秒で固定35〜45秒を超え、後半再生も未実施。合格に使わず全記録を保全した。新しいcaptureは閾値/検出器/時刻範囲を変えず、ComboのDown一回選択と各tool cell一回の予定時刻Stopで40.006/14.012秒。132.25/120の実音声と負例を通した。runtimeの3Load/Play/Stopは最初の不合格capture1回+合格capture2回を含み、原版PCM比較や全体音声受入ではない。native監査v1は全bytes検査後の参照pathメタデータ生成で失敗し、同じhelperを絶対pathへ解決するv2で記録を出した。音楽条件は変更していない。
+
+一次入口：`work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json`、`gui-proof-v1.json`、`native-proof-v2.json`、`audio-summary-v2.json`、`component-name-os-refusal-v1.json`。
+
+SSP02 TimeSig-only Segmentのopen/reopen AddNewTracks promptを継続。原版15872の固定証拠ではTimeSigのみのSegmentを開くたびにAddNewTracksを出し、Cancel後も文書/primary/grayCloseを保持する。114031ではpromptなしが残る。次は編集窓を新規openした時だけ条件判定し、NewFiles既存の初回promptと二重化しない独立修正→保存build→凍結50を再試行しない関連3回帰→本体/Cancel/再Open/既存窓再活性化/保存/通常終了/別復元・全bytesまで進む。component-name OS拒否の解消・他component登録・全外観/Recording/Transition/全40/全8/Q2/Style015244は未達。native凍結50/driver30、匿名Band同条件再試行なし、fullAcceptance=false。 goal active。

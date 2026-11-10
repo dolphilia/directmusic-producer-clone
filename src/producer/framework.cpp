@@ -400,6 +400,35 @@ void Framework::save_segment(size_t index,const std::wstring& path) {
     auto nextProject=after_document_save(projectRoot_,d.projectReference);const bool metadataDirty=nextProject.find("mupd")&&!nextProject.find("mupd")->data.empty();
     next.save(full);*d.document=std::move(next);projectRoot_=std::move(nextProject);if(!same_path(d.path,full)||metadataDirty)projectDirty_=true;d.path=std::move(destination);
 }
+size_t Framework::save_segment_copy(size_t index,const std::wstring& path){
+    const auto& source=documents_.at(index);
+    const auto full=std::filesystem::absolute(path).lexically_normal().wstring();
+    if(!components_.is_segment_path(full))throw std::runtime_error("Save Segment copy as .sgp or .sgt");
+    const auto collision=[&](const auto& entries){return std::any_of(entries.begin(),entries.end(),[&](const auto& item){return !item.path.empty()&&same_path(item.path,full);});};
+    if(collision(documents_)||collision(styles_)||collision(bands_)||collision(collections_)||collision(audioPaths_)||collision(chordMaps_)||collision(waves_)||collision(scripts_)||collision(containers_)||collision(toolGraphs_))
+        throw std::runtime_error("An owned document already uses the Segment copy destination");
+    auto root=Chunk::parse(source.document->save_bytes());
+    const auto count=std::count_if(root.children.begin(),root.children.end(),[](const Chunk& c){return c.id=="guid";});
+    if(count>1||(count==1&&root.find("guid")->data.size()!=16))throw std::runtime_error("Segment copy source identity is malformed or ambiguous");
+    GUID identity{};if(FAILED(CoCreateGuid(&identity)))throw std::runtime_error("Cannot create copied Segment identity");
+    if(!count){Chunk guid;guid.id="guid";root.children.push_back(std::move(guid));}
+    auto& guid=root.find("guid")->data;const auto bytes=reinterpret_cast<const unsigned char*>(&identity);guid.assign(bytes,bytes+16);
+    auto next=components_.create_document("DMSG");next->load(root.encode());
+    const auto directory=std::filesystem::path(full).parent_path().wstring();
+    const auto oldDirectory=source.path.empty()?directory:std::filesystem::path(source.path).parent_path().wstring();
+    const auto catalog=style_catalog();next->resolve_style_context(oldDirectory,catalog,runtime_references(source.path));
+    if(!same_path(oldDirectory,directory)){
+        std::vector<CollectionEntry> collections;for(const auto& item:collections_)collections.push_back({item.path,item.document.save_bytes()});
+        next->relocate_context(oldDirectory,directory,catalog,collections);
+    }
+    OpenDocument opened{full,std::move(next),std::nullopt};
+    // Allocate all catalog storage before publishing the new file. Failure
+    // before save leaves every existing owner, history and project unchanged.
+    documents_.reserve(documents_.size()+1);
+    opened.document->save(full);
+    documents_.push_back(std::move(opened));projectDirty_=true;
+    return documents_.size()-1;
+}
 std::vector<StyleCatalogEntry> Framework::style_catalog() const {std::vector<StyleCatalogEntry> catalog;for(const auto& style:styles_)if(!style.path.empty())catalog.push_back({style.path,style.document->save_bytes()});return catalog;}
 void Framework::refresh_styles() {
     const auto catalog=style_catalog();std::vector<SegmentDocument> next;next.reserve(documents_.size());

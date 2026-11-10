@@ -7,7 +7,7 @@ SegmentDocument selected(const Framework& host,size_t document,std::uint32_t gro
     auto d=*host.documents().at(document).document;d.select_track_group(groups,0,0,0,track);return d;
 }
 EmbeddedBandView view(SegmentDocument& d,EmbeddedBandTarget target,const std::vector<BandEvent>& events,size_t at){
-    target.event=at;target.logical=events[at].logicalTime;target.identity=identity(events[at].band);target.lastBytes=events[at].band;
+    target.event=at;target.logical=events[at].logicalTime;target.physical=events[at].physicalTime;target.identity=identity(events[at].band);target.lastBytes=events[at].band;target.ownerBytes=d.save_bytes();
     BandDocument band;band.load(events[at].band);return {std::move(target),events[at],std::move(band),d.timeline()};
 }
 }
@@ -18,7 +18,9 @@ EmbeddedBandTarget make_embedded_band_target(const Framework& host,size_t docume
 std::optional<EmbeddedBandView> read_embedded_band(const Framework& host,const EmbeddedBandTarget& target){
     try{auto d=selected(host,target.document,target.groups,target.track);const auto events=d.band_events();
         const auto matches=[&](const BandEvent& e){return target.identity.empty()?e.band==target.lastBytes:identity(e.band)==target.identity;};
-        for(size_t i=0;i<events.size();++i)if(events[i].logicalTime==target.logical&&matches(events[i]))return view(d,target,events,i);
+        // An explicit selection remains exact even for identical native copies,
+        // but its array index cannot be trusted after an independent edit.
+        if(d.save_bytes()==target.ownerBytes&&target.event<events.size()&&matches(events[target.event])&&events[target.event].band==target.lastBytes)return view(d,target,events,target.event);
         // An independent native identity follows reordering/Undo. Ambiguous
         // copies are disabled until explicitly reselected, never guessed by index.
         size_t found=0,count=0;for(size_t i=0;i<events.size();++i)if(matches(events[i])){found=i;++count;}
@@ -39,7 +41,7 @@ bool embedded_band_is_playing(const Bytes& snapshot,const EmbeddedBandTarget& ta
         song.select_track_group(target.groups,0,0,0,target.track);
         const auto events=song.band_events();const BandEvent* active=nullptr;
         for(const auto& event:events)if(event.physicalTime<=clocks&&(!active||event.physicalTime>active->physicalTime))active=&event;
-        if(!active||active->logicalTime!=target.logical)return false;
+        if(!active||active->logicalTime!=target.logical||active->physicalTime!=target.physical)return false;
         if(std::count_if(events.begin(),events.end(),[&](const auto& e){return e.physicalTime==active->physicalTime;})!=1)return false;
         return target.identity.empty()?active->band==target.lastBytes:identity(active->band)==target.identity;
     }catch(const std::exception&){return false;}

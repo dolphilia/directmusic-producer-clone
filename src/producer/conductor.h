@@ -23,7 +23,7 @@ struct RuntimeCall { std::string operation; HRESULT result; };
 struct PlaybackPosition { bool playing; LONG clocks,start; double tempo;bool tempoAvailable=false,countingIn=false; };
 struct CommandParameterSample { HRESULT result; LONG next; CommandEvent event; };
 using PlaybackId=std::uint64_t;
-struct PlaybackNotification { GUID type; DWORD option,field1,field2,group; LONG clocks; bool currentSegment; PlaybackId playbackId=0; };
+struct PlaybackNotification { GUID type; DWORD option,field1,field2,group; LONG clocks; bool currentSegment; PlaybackId playbackId=0;DWORD timeFlags=0;std::int64_t referenceTime=0;std::optional<LONG> resolvedClocks; };
 struct PlaybackNote { LONG clocks,duration;DWORD channel,group;WORD musicValue;BYTE midiValue,velocity,flags,playMode; };
 struct PlaybackMidi {LONG clocks;DWORD channel;BYTE status,byte1,byte2;};
 struct MotifSelection {size_t styleIndex;std::wstring name;};
@@ -36,12 +36,19 @@ struct PlaybackOptions {
     std::optional<Timeline> metronomeTimeline;
 };
 struct PlaybackRequest {DWORD flags=0;LONG submittedClocks=0,requestedClocks=0;DWORD runtimeDefaultResolution=0;LONG actualStart=0;LONG startPoint=0;LONG countInStart=0,countInClocks=0;};
+struct PerformanceClockSnapshot {
+    LONGLONG nowReference=0,latencyReference=0,queueReference=0;
+    LONG now=0,latency=0,queue=0;
+    std::array<LONG,3> boundariesAtLatency{}; // native Grid, Beat, Measure
+};
 struct PlaybackSessionView {PlaybackId id;std::wstring name;bool secondary;PlaybackPosition position;bool stoppingAtBoundary=false;};
 struct PerformanceSynthesizer {GUID id{};std::wstring name;DWORD flags=0,maxVoices=0,maxPChannels=0;};
 struct PerformanceRuntimeState {DWORD voices=0,sampleRate=0,portSampleRate=0;std::optional<DWORD> latencyMs;GUID port{};std::wstring portName;};
 // Private playback copy: an embedded Segment AudioPath takes precedence.
 // An empty Segment produces a Motif configuration carrier only.
 Bytes prepare_transport_audio_path(const Bytes& segment,const Bytes& audioPath);
+// Event lookahead is independent of a prepared immediate primary start.
+DWORD source_playback_prepare_milliseconds(const Bytes& segment,bool responsive);
 // All COM interfaces, the memory descriptor backing bytes and downloads have
 // one owner and are released before CoUninitialize on the calling UI thread.
 class Conductor {
@@ -136,6 +143,9 @@ public:
     bool file_output_active() const;
     void stop();void shutdown() noexcept;
     PlaybackPosition position();
+    // Read-only current/earliest-renderable/queue clocks and native boundaries.
+    // This never schedules playback or changes an owned Segment's defaults.
+    PerformanceClockSnapshot performance_clocks();
     // Value copies only; the runtime message and its COM references never
     // escape the UI-thread owner. Empty queue (S_FALSE) is not an error.
     std::vector<PlaybackNotification> notifications();

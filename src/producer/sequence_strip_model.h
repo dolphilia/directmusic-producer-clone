@@ -2,7 +2,26 @@
 #include "document.h"
 #include "sequence_note_properties.h"
 #include <optional>
+#include <cmath>
+#include <utility>
 namespace producer::app {
+// View state only. The fixed note area leaves CC lanes in place when zooming.
+struct SequencePitchView {
+    static constexpr int areaHeight=216;
+    int rowHeight=12,topPitch=70;
+    int visible_rows()const{return (areaHeight+rowHeight-1)/rowHeight;}
+    void normalize(){rowHeight=std::clamp(rowHeight,2,32);topPitch=std::clamp(topPitch,visible_rows()-1,127);}
+    void scroll(int semitones){topPitch=static_cast<int>(std::clamp<std::int64_t>(std::int64_t(topPitch)+semitones,visible_rows()-1,127));}
+    void zoom(int pixels){rowHeight=static_cast<int>(std::clamp<std::int64_t>(std::int64_t(rowHeight)+pixels,2,32));normalize();}
+    int scroll_position()const{return 127-topPitch;}
+    void set_scroll_position(int position){topPitch=127-std::clamp(position,0,128-visible_rows());}
+    void follow(unsigned pitch){const int p=static_cast<int>(std::min(pitch,127u));if(p>topPitch)topPitch=p;else if(p<=topPitch-visible_rows())topPitch=p+visible_rows()-1;normalize();}
+    std::optional<unsigned> pitch_at(int y)const{if(y<0||y>=areaHeight)return {};return static_cast<unsigned>(topPitch-y/rowHeight);}
+    std::pair<int,int> note_bounds(unsigned pitch,unsigned velocity)const{const int bottom=(topPitch-static_cast<int>(pitch)+1)*rowHeight;return {bottom-std::max(2,static_cast<int>(velocity)*rowHeight/127),bottom-1};}
+    int drag_pitch(int pixels)const{return static_cast<int>(std::lround(double(pixels)/rowHeight));}
+    int drag_velocity(int pixels)const{return static_cast<int>(std::lround(pixels*127./rowHeight/5))*5;}
+};
+
 enum class SequenceSnap {none,grid,beat,bar};
 struct SequenceCursor {std::int32_t clock=0;unsigned pitch=60;SequenceSnap snap=SequenceSnap::grid;};
 std::int32_t sequence_snap_clock(const Timeline&,std::int32_t raw,std::int32_t length,SequenceSnap);

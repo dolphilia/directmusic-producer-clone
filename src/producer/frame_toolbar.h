@@ -26,22 +26,28 @@ public:
     void refresh(bool canSaveFile,bool projectTreeVisible,bool canTile);
     POINT new_menu_position()const;
 };
-struct TransportToolbarCommands {UINT play,stop,tempoModifier,fromStart,boundaryStop,tempoEdit,tempoSpin,tempoCommit,tempoCancel;};
+struct TransportToolbarCommands {UINT play,stop,tempoModifier,fromStart,boundaryStop,tempoEdit,tempoSpin,tempoCommit,tempoCancel,primaryList;};
 class TransportToolbar {
-    HWND window_=nullptr,tempo_=nullptr,tempoSpin_=nullptr;
+    HWND window_=nullptr,tempo_=nullptr,tempoSpin_=nullptr,primaryList_=nullptr;
+    std::vector<std::wstring> primaryLabels_;
     std::optional<double> displayedTempo_;
+    bool noPrimary_=true;
     int top_=0;
     int playImage_=0,stopImage_=0;
     TransportToolbarCommands commands_{};
     bool visible_=true;
+    void layout_tempo();
 public:
     void create(HWND parent,UINT controlId,const TransportToolbarCommands&);
     int height()const{return window_&&visible_?30:0;}
     bool visible()const{return visible_;}
-    bool owns(HWND child)const{return child&&(child==tempo_||child==tempoSpin_||(window_&&(child==window_||IsChild(window_,child))));}
+    bool owns(HWND child)const{return child&&(child==tempo_||child==tempoSpin_||child==primaryList_||(window_&&(child==window_||IsChild(window_,child))));}
     void show(bool);
     void layout(int width,int top);
-    void refresh(bool canPlay,bool playing,bool modifierEnabled,unsigned percent,std::optional<double> tempo);
+    void refresh(bool canPlay,bool playing,bool modifierEnabled,unsigned percent,std::optional<double> tempo,bool restorePending=false);
+    void refresh_primary_list(const std::vector<std::wstring>&,std::optional<size_t> selected,bool enabled);
+    std::optional<size_t> primary_selection()const;
+    bool tempo_focused()const{return tempo_&&GetFocus()==tempo_;}
     bool modifier_context(const NMHDR&)const;
     bool translate(const MSG&)const;
     bool spin(const NMHDR&);

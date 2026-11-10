@@ -1,4 +1,106 @@
+void length_primary_tempo_tests(){
+    auto source=SegmentDocument::create_empty({},L"Global Length");source.add_tracks({SegmentTrackKind::tempo});source.select(0);source.change_selected(60);source.add_tempo(3072,120);
+    auto root=Chunk::parse(source.save_bytes());auto& h=root.find("segh")->data;h.resize(73);h[72]=0x91;put32(h,32,0x20);
+    auto meter=root.find("LIST","trkl")->children.front();auto first=root.find("LIST","trkl")->children.back();first.find("trkh")->data.resize(36,0xa7);put32(first.find("trkh")->data,16,10);put32(first.find("trkh")->data,20,2);
+    for(size_t at=8;at<first.find("tetr")->data.size();at+=16)put32(first.find("tetr")->data,at,0x12ab34cdu);
+    Chunk opaque;opaque.id="lt??";opaque.data={9,5,3};opaque.padding=0xbc;first.children.push_back(opaque);root.children.push_back(opaque);
+    auto later=first;put32(later.find("trkh")->data,16,90);put32(later.find("trkh")->data,20,1);const double bpm=180;for(size_t at=12;at<later.find("tetr")->data.size();at+=16)std::memcpy(later.find("tetr")->data.data()+at,&bpm,8);
+    root.find("LIST","trkl")->children={meter,later,first};const auto input=root.encode();SegmentDocument d;d.load(input);d.select(0);d.select_range({0,768,TimelineTempo});
+    auto map=d.primary_tempos();require(map.size()==2&&map[0].time==0&&map[0].bpm==60&&map[1].time==3072&&map[1].bpm==120&&!map[0].selected&&!map[1].selected&&d.tempo_at(0)==180,"Controlling Tempo map is a validated copy from the earlier disjoint-group track while the editor selects later180");
+    map[0].bpm=999;require(d.primary_tempo_at(0)==60&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo(),"Changing the returned map cannot mutate raw native bytes cache or history");
+    SegmentCreationLength bars;bars.measures=2;SegmentCreationLength clock;clock.clockTime=true;clock.milliseconds=4500;
+    require(d.preview_length(bars).clocks==6144&&d.preview_length(bars).milliseconds==6000&&d.preview_length(clock).clocks==3840&&d.length_settings().milliseconds==42000,"Segment Length integrates the first60 and120 map across groups and ignores later180 in both conversion directions");
+    const auto range=d.selected_range();require(d.selected_groups()==1&&d.selected_tempo_index()==0&&d.tempos()[0].bpm==180&&d.tempos()[0].selected&&range.begin==0&&range.end==768&&d.save_bytes()==input,"Length conversion preserves editor Tempo selection Timeline range and every native byte");
+    d.select_track_group(8);require(d.tempos().empty()&&d.preview_length(bars).milliseconds==6000&&d.preview_length(clock).clocks==3840&&d.selected_groups()==8,"Length remains controlled by the same map from an editor group with no Tempo");
+    bars.measures=24;require(d.set_length(bars)&&d.length()==73728&&d.length_settings().milliseconds==50000,"Musical Length extension uses the controlling map for its elapsed time");
+    auto expected=root;put32(expected.find("segh")->data,4,73728);const auto extended=d.save_bytes();require(extended==expected.encode(),"Global-map Length extension changes only the musical header DWORD retaining every track reserved byte imported mask header tail opaque chunk and pad");
+    require(d.undo()&&d.save_bytes()==input&&!d.dirty()&&d.can_redo(),"Global Length Undo restores complete clean initial native bytes");
+    clock.milliseconds=0;rejected([&]{d.set_length(clock);},"Invalid clock Length is rejected with a disjoint controlling map");require(d.save_bytes()==input&&!d.dirty()&&d.can_redo(),"Invalid global-map Length preserves exact native bytes dirty state and pending Redo");
+    require(d.redo()&&d.save_bytes()==extended,"Global Length Redo restores the exact musical header edit");
+    clock.milliseconds=50000;require(d.set_length(clock)&&d.length()==73728&&d.length_settings().clockTime&&d.length_settings().milliseconds==50000,"Clock Length uses the same first-created map when retaining the musical endpoint");
+    auto clockExpected=expected;put32(clockExpected.find("segh")->data,24,500000000);put32(clockExpected.find("segh")->data,32,0x21);const auto timed=d.save_bytes();require(timed==clockExpected.encode(),"Clock Length changes only reference duration and its mode flag while preserving unrelated header flags and all tracks");
+    require(d.undo()&&d.save_bytes()==extended&&d.redo()&&d.save_bytes()==timed,"Clock mode is one independent exact UndoRedo transaction");
+    SegmentDocument reload;reload.load(timed);require(reload.primary_tempo_at(0)==60&&reload.tempo_at(0)==180&&reload.length_settings().milliseconds==50000&&reload.length()==73728&&reload.save_bytes()==timed&&!reload.dirty()&&!reload.can_undo(),"Independent native reload restores global-map clock Length and separate editor Tempo without session history");
+    auto noTempo=SegmentDocument::create_empty({},L"NoTempo Length");bars.measures=2;require(noTempo.primary_tempos().empty()&&noTempo.preview_length(bars).milliseconds==4000,"No controlling track keeps the existing120 fallback for Length conversion without inventing markers");
+    auto missing=root;auto& raw=missing.find("LIST","trkl")->children[2].find("tetr")->data;raw.erase(raw.begin()+4,raw.begin()+20);const double sixty=60;std::memcpy(raw.data()+12,&sixty,8);d.load(missing.encode());require(!d.primary_tempo_at(0)&&d.preview_length(bars).milliseconds==6000,"Length uses120 before the first controlling marker then the actual60 map rather than a later editor track");
+    auto unsorted=root;auto& order=unsorted.find("LIST","trkl")->children[2].find("tetr")->data;const auto original=order;order.resize(4);order.insert(order.end(),original.begin()+20,original.end());order.insert(order.end(),original.begin()+4,original.begin()+20);d.load(unsorted.encode());require(d.preview_length(bars).milliseconds==6000&&d.save_bytes()==unsorted.encode(),"Length sorts a validated read copy without rewriting imported raw Tempo order");
+    auto duplicate=root;put32(duplicate.find("LIST","trkl")->children[2].find("tetr")->data,20,0);d.load(duplicate.encode());const auto duplicateBytes=d.save_bytes();rejected([&]{d.preview_length(bars);},"Ambiguous equal-time controlling map retains the existing strict Length conversion refusal");require(d.save_bytes()==duplicateBytes&&!d.dirty()&&!d.can_undo(),"Rejected duplicate-map preview leaves the full document and clean history untouched");
+    auto malformed=root;put32(malformed.find("LIST","trkl")->children[2].find("tetr")->data,0,24);d.load(malformed.encode());const auto malformedBytes=d.save_bytes();rejected([&]{d.primary_tempos();},"Unsupported controlling map is not replaced by supported later editor180");rejected([&]{d.set_length(bars);},"Length refuses unsupported controlling data before mutation");require(d.save_bytes()==malformedBytes&&!d.dirty()&&!d.can_undo(),"Unsupported controlling-map Length retains complete native bytes and history");
+}
+void editor_tempo_creation_tests(){
+    auto empty=SegmentDocument::create_empty({},L"Editor global Tempo");auto root=Chunk::parse(empty.save_bytes());
+    auto& meter=root.find("LIST","trkl")->children.front();meter.find("trkh")->data.resize(36,0xa7);put32(meter.find("trkh")->data,16,7);
+    Chunk opaque;opaque.id="gt??";opaque.data={3,7,9};opaque.padding=0xbc;meter.children.push_back(opaque);root.children.push_back(opaque);
+    const auto input=root.encode();SegmentDocument d;d.load(input);d.select_track_group(8);d.select_range({0,768,TimelineTempo});
+    require(!d.primary_tempo_at(0)&&!d.add_editor_tracks({})&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo(),"Empty editor creation leaves the no-Tempo document and clean history intact");
+    require(d.add_editor_tracks({SegmentTrackKind::sequence,SegmentTrackKind::tempo,SegmentTrackKind::band}),"Editor supports one atomic mixed track creation from a disjoint selected group");
+    const auto created=d.save_bytes();auto expected=root;auto& tracks=expected.find("LIST","trkl")->children;
+    for(const auto kind:{SegmentTrackKind::sequence,SegmentTrackKind::tempo,SegmentTrackKind::band}){auto t=make_segment_track(kind);put32(t.find("trkh")->data,16,static_cast<std::uint32_t>(tracks.size()+7));put32(t.find("trkh")->data,20,kind==SegmentTrackKind::tempo?UINT32_MAX:8);tracks.push_back(t);}
+    require(created==expected.encode(),"Mixed editor creation appends exactly the requested tracks while retaining extended existing headers opaque chunks odd padding and order");
+    const auto parsed=Chunk::parse(created);const auto& added=parsed.find("LIST","trkl")->children;
+    require(read32(added[1].find("trkh")->data,20)==8&&read32(added[2].find("trkh")->data,20)==UINT32_MAX&&read32(added[3].find("trkh")->data,20)==8,"Only newly created editor Tempo receives all32 groups while Sequence and Band use the selected group");
+    require(read32(added[1].find("trkh")->data,16)==8&&read32(added[2].find("trkh")->data,16)==9&&read32(added[3].find("trkh")->data,16)==10&&d.primary_tempo_at(0)==120,"Appended creation positions follow the previous maximum and global Tempo starts at120");
+    const auto range=d.selected_range();require(d.selected_groups()==8&&d.selected_tempo_index()==0&&d.selected_meter_index()==0&&d.selected_sequence_index()==0&&d.selected_band_index()==0&&range.begin==0&&range.end==768&&range.strips==TimelineTempo,"Mixed creation preserves editor group indexes and Timeline selection context");
+    require(d.undo()&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo()&&d.can_redo(),"One mixed creation Undo restores all initial native bytes and clean history");
+    require(!d.add_editor_tracks({})&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo()&&d.can_redo(),"An empty editor request preserves a pending creation Redo");
+    rejected([&]{d.add_editor_tracks({SegmentTrackKind::sequence,SegmentTrackKind::sequence});},"Duplicate editor kinds reject the complete batch after a supported first member");
+    require(d.save_bytes()==input&&!d.dirty()&&!d.can_undo()&&d.can_redo(),"Duplicate rejection retains every byte and pending Redo");
+    rejected([&]{d.add_editor_tracks({SegmentTrackKind::tempo,SegmentTrackKind::pattern});},"Unsupported later kind rejects the entire editor batch including the preceding global Tempo");
+    require(d.save_bytes()==input&&!d.dirty()&&!d.can_undo()&&d.can_redo(),"Unsupported batch rejection retains every byte and pending Redo");
+    require(d.redo()&&d.save_bytes()==created&&d.primary_tempo_at(0)==120&&!d.can_redo(),"Mixed creation Redo restores exact appended native containers and default Tempo");
+    SegmentDocument reload;reload.load(created);reload.select_track_group(2);require(reload.primary_tempo_at(0)==120&&reload.tempos().size()==1&&reload.tempos()[0].bpm==120&&reload.save_bytes()==created&&!reload.dirty()&&!reload.can_undo(),"New global Tempo is available in another editor group after independent native reload");
+    SegmentDocument legacy;legacy.load(input);legacy.select_track_group(8);require(legacy.add_tracks({SegmentTrackKind::tempo}),"Existing lowlevel group-scoped creation API remains available");
+    const auto legacyBytes=legacy.save_bytes();auto legacyRoot=Chunk::parse(legacyBytes);const auto older=legacyRoot.find("LIST","trkl")->children.back().encode();
+    require(read32(legacyRoot.find("LIST","trkl")->children.back().find("trkh")->data,20)==8,"Lowlevel creation keeps its selected-group native header without rewriting imported content");
+    legacy.select_track_group(2);require(legacy.add_editor_tracks({SegmentTrackKind::tempo})&&legacy.primary_tempo_at(0)==120,"A later editor Tempo may be global while the earlier group-scoped track remains controlling");
+    const auto later=Chunk::parse(legacy.save_bytes());require(later.find("LIST","trkl")->children[1].encode()==older&&read32(later.find("LIST","trkl")->children[2].find("trkh")->data,20)==UINT32_MAX,"Adding a later global Tempo preserves the complete older Tempo header payload and position");
+    require(legacy.undo()&&legacy.save_bytes()==legacyBytes,"Later global creation is one independent Undo without normalizing the earlier track");
+    auto exhausted=root;put32(exhausted.find("LIST","trkl")->children.front().find("trkh")->data,16,UINT32_MAX);d.load(exhausted.encode());const auto exhaustedBytes=d.save_bytes();
+    rejected([&]{d.add_editor_tracks({SegmentTrackKind::tempo});},"Editor global Tempo rejects exhausted native creation positions");
+    require(d.save_bytes()==exhaustedBytes&&!d.dirty()&&!d.can_undo(),"Position exhaustion preserves complete native bytes and clean history");
+}
+void primary_tempo_tests(){
+    SegmentDocument source;source.add_tempo(768,137.25);source.add_tempo(3072,160);auto root=Chunk::parse(source.save_bytes());
+    auto first=root.find("LIST","trkl")->children.front();first.find("trkh")->data.resize(36,0xab);put32(first.find("trkh")->data,16,10);put32(first.find("trkh")->data,20,2);
+    for(size_t at=8;at<first.find("tetr")->data.size();at+=16)put32(first.find("tetr")->data,at,0xa17f32c9u);
+    Chunk opaque;opaque.id="pt??";opaque.data={7,3,1};opaque.padding=0xbe;first.children.push_back(opaque);root.children.push_back(opaque);
+    auto later=first;put32(later.find("trkh")->data,16,90);put32(later.find("trkh")->data,20,8);
+    const auto setBpm=[](Chunk& track,size_t marker,double bpm){auto& b=track.find("tetr")->data;std::memcpy(b.data()+12+marker*16,&bpm,8);};
+    setBpm(later,0,180);setBpm(later,1,200);setBpm(later,2,220);root.find("LIST","trkl")->children={later,first};
+    const auto input=root.encode();SegmentDocument d;d.load(input);d.select_track_group(8);d.select(std::vector<size_t>{0,2});d.select_range({0,1536,TimelineTempo});
+    require(d.tempo_at(0)==180&&d.primary_tempo_at(0)==120&&d.primary_tempo_at(767)==120&&d.primary_tempo_at(768)==137.25&&d.primary_tempo_at(3072)==160,"Controlling Tempo follows the lowest stored creation position across groups independently of the later editor track");
+    require(!d.primary_tempo_at(-1)&&!d.primary_tempo_at(d.length())&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo(),"Global Tempo queries and invalid cursors leave complete native bytes and history unchanged");
+    require(d.change_primary_tempo(1536,132.25),"Current Tempo changes the preceding marker in the controlling track across a disjoint selected group");
+    auto expected=root;setBpm(expected.find("LIST","trkl")->children[1],1,132.25);
+    require(d.save_bytes()==expected.encode(),"Global Tempo edit changes only one raw DOUBLE preserving reserved DWORDs native order extended headers groups opaque chunks and padding");
+    const auto range=d.selected_range();require(d.selected_groups()==8&&d.selected_tempo_index()==0&&d.tempos()[0].bpm==180&&d.tempos()[1].bpm==200&&d.tempos()[2].bpm==220&&d.tempos()[0].selected&&!d.tempos()[1].selected&&d.tempos()[2].selected&&range.begin==0&&range.end==1536&&range.strips==TimelineTempo,"Controlling-track commit leaves the later editor cache selection group index and Timeline range intact");
+    const auto edited=d.save_bytes();require(d.undo()&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo()&&d.can_redo()&&d.selected_groups()==8&&d.tempo_at(0)==180,"One controlling Tempo edit undoes the entire native document while retaining its later editor group");
+    for(const auto invalid:std::vector<std::pair<int,double>>{{-1,133},{d.length(),133},{1536,137.25},{1536,.99},{1536,1000.01},{1536,std::numeric_limits<double>::quiet_NaN()},{1536,std::numeric_limits<double>::infinity()}})
+        require(!d.change_primary_tempo(invalid.first,invalid.second)&&d.save_bytes()==input&&!d.dirty()&&!d.can_undo()&&d.can_redo(),"Invalid or unchanged controlling Tempo preserves all bytes dirty state and existing Redo");
+    require(d.redo()&&d.save_bytes()==edited&&d.primary_tempo_at(1536)==132.25&&!d.can_redo(),"Controlling Tempo Redo restores the exact raw DOUBLE mutation");
+    d.select_track_group(4);require(d.tempos().empty()&&!d.tempo_at(0)&&d.primary_tempo_at(1536)==132.25&&d.save_bytes()==edited,"A view with no local Tempo still reads the same controlling track without selecting a different group");
+    d.select_track_group(2);d.select(std::vector<size_t>{0,2});require(d.change_primary_tempo(0,121)&&d.tempo_at(0)==121&&d.tempos()[0].selected&&!d.tempos()[1].selected&&d.tempos()[2].selected,"Controlling-track edits also synchronize their own selected cache without dropping other marker selections");
+    auto ownExpected=expected;setBpm(ownExpected.find("LIST","trkl")->children[1],0,121);require(d.save_bytes()==ownExpected.encode(),"Updating the selected controlling cache does not canonicalize raw reserved bytes");
+    SegmentDocument reload;reload.load(d.save_bytes());require(reload.primary_tempo_at(0)==121&&reload.primary_tempo_at(1536)==132.25&&!reload.dirty()&&!reload.can_undo(),"A clean independent native load retains global Tempo values even with an empty default editor group");
+    auto noTempo=SegmentDocument::create_empty({},L"No global Tempo");const auto empty=noTempo.save_bytes();require(!noTempo.primary_tempo_at(0)&&!noTempo.change_primary_tempo(0,133)&&noTempo.save_bytes()==empty&&!noTempo.dirty()&&!noTempo.can_undo(),"Global Tempo APIs never invent a missing controlling track");
+    auto missing=root;auto& missingData=missing.find("LIST","trkl")->children[1].find("tetr")->data;missingData.erase(missingData.begin()+4,missingData.begin()+20);d.load(missing.encode());const auto missingBytes=d.save_bytes();
+    require(!d.primary_tempo_at(0)&&!d.change_primary_tempo(0,133)&&d.save_bytes()==missingBytes&&d.primary_tempo_at(768)==137.25,"A later track cannot supply a missing earlier marker in the controlling track");
+    auto duplicates=root;put32(duplicates.find("LIST","trkl")->children[1].find("tetr")->data,36,768);d.load(duplicates.encode());
+    require(d.primary_tempo_at(800)==160&&d.change_primary_tempo(800,133),"Global query and commit agree on the last effective equal-time native Tempo marker");
+    auto duplicateExpected=duplicates;setBpm(duplicateExpected.find("LIST","trkl")->children[1],2,133);require(d.save_bytes()==duplicateExpected.encode(),"Equal-time global edit preserves the earlier peer complete bytes and reserved padding");
+    auto unsorted=root;auto& raw=unsorted.find("LIST","trkl")->children[1].find("tetr")->data;const auto ordered=raw;raw.resize(4);for(const size_t index:{2u,0u,1u})raw.insert(raw.end(),ordered.begin()+4+index*16,ordered.begin()+20+index*16);d.load(unsorted.encode());
+    require(d.primary_tempo_at(1000)==137.25&&d.change_primary_tempo(1000,134),"Global query accepts supported imported raw order and resolves the effective marker by time");
+    auto unsortedExpected=unsorted;setBpm(unsortedExpected.find("LIST","trkl")->children[1],2,134);require(d.save_bytes()==unsortedExpected.encode(),"Value-only controlling Tempo commit retains unsorted native record order rather than saving the sorted query model");
+    auto tied=root;put32(tied.find("LIST","trkl")->children[0].find("trkh")->data,16,10);d.load(tied.encode());require(d.primary_tempo_at(0)==180,"Source policy uses stable native order for imported creation-position ties; exact original tie parity remains separate");
+    auto malformed=root;put32(malformed.find("LIST","trkl")->children[1].find("tetr")->data,0,24);d.load(malformed.encode());const auto malformedBytes=d.save_bytes();
+    rejected([&]{d.primary_tempo_at(0);},"Unsupported global primary data cannot be replaced by an unrelated supported editor track");
+    rejected([&]{d.change_primary_tempo(0,133);},"Unsupported controlling data is refused before publishing a mutation");
+    require(d.save_bytes()==malformedBytes&&!d.dirty()&&!d.can_undo(),"Rejected controlling data retains the complete native document and history");
+}
 void tempo_properties_tests(const std::filesystem::path& dir){
+    length_primary_tempo_tests();
+    editor_tempo_creation_tests();
+    primary_tempo_tests();
     SegmentDocument d;require(d.add_tempo(768,137.25)&&d.add_tempo(3072,180),"Tempo properties fixture");
     auto tree=Chunk::parse(d.save_bytes());Chunk opaque;opaque.id="zzzz";opaque.data={0x71,0x92,0x13};opaque.padding=0xb4;tree.children.push_back(opaque);
     d.load(tree.encode());const auto before=d.save_bytes();d.select(1);

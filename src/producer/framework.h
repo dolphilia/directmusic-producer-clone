@@ -195,6 +195,9 @@ public:
     bool set_runtime_filename(RuntimeDocumentKind,size_t,const std::wstring&);
     void save_runtime_default(RuntimeDocumentKind,size_t) const;
     void save_segment(size_t index,const std::wstring& path);
+    // File Save As creates another native component. The ordinary save API
+    // above retains its existing path/relocation contract.
+    size_t save_segment_copy(size_t index,const std::wstring& path);
     const std::vector<OpenDocument>& documents() const { return documents_; }
     SegmentDocument& document(size_t index) { return *documents_.at(index).document; }
     const std::vector<std::wstring>& warnings() const { return warnings_; }

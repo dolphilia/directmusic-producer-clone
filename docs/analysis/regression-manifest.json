@@ -3,7 +3,7 @@
   "createdUtc": "2026-10-10T09:43:42.670Z",
   "sourceDispatcher": {
     "path": "tests/producer/core_tests.cpp",
-    "sha256": "bd914d64d384e1072761e577f4ad6193675a98132ed7e3add22b3ffa2fb53fbe"
+    "sha256": "01ffa3f306dc7093ce95c3fb51ed2e24730451eb4faad117c875b2cf728fdcdd"
   },
   "environment": "Windows Win32 Release; current host has Microsoft DirectMusic Producer 5.3.0.900 installed outside repository; prior execution results retain their original environments; preserve individual OS-denied cases",
   "passRule": "exit 0 AND parsed passed=true AND unchanged candidate/input hashes; expected rejection requires a separate explicit oracle",
@@ -1344,6 +1344,31 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "midi-import",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\DemoMIDI.mid",
+              "sha256": "895cfe8ac0111ca0756ce92f845c837c1fc9719e1e11f8c5b66426e17f81fea8"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\midi-import\\core\"",
+            "--midi-import",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\DemoMIDI.mid\""
+          ],
+          "processId": 15508,
+          "processStartUtc": "2026-11-09T13:52:17.4668817Z",
+          "invocationUtc": "2026-11-09T13:52:17.4447329Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 67,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\midi-import"
         }
       ],
       "resultHistory": [
@@ -2551,7 +2576,38 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "midi-import",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\DemoMIDI.mid",
+              "sha256": "895cfe8ac0111ca0756ce92f845c837c1fc9719e1e11f8c5b66426e17f81fea8"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\midi-import\\core\"",
+            "--midi-import",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\DemoMIDI.mid\""
+          ],
+          "processId": 15508,
+          "processStartUtc": "2026-11-09T13:52:17.4668817Z",
+          "invocationUtc": "2026-11-09T13:52:17.4447329Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 67,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\midi-import"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "common-open",
@@ -2562,9 +2618,9 @@
       "inputs": [],
       "originalExecutableRequired": false,
       "originalDataRequired": false,
-      "scope": "dedicated native mode; GUI/audio/dynamic original comparison separate",
+      "scope": "dedicated native mode; GUI/audio/dynamic original comparison separate; saved Segment UI-copy API: newGUID/independent source history/opaque bytes/collision and publication-failure/native Project restore; private empty optional UNFO omission and native/nonempty/otherempty-list preservation",
       "workflow": null,
-      "status": "合格",
+      "status": "検証待ち",
       "history": [
         {
           "id": "common-open",
@@ -2712,6 +2768,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "common-open",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\common-open\\core\"",
+            "--common-open"
+          ],
+          "processId": 3200,
+          "processStartUtc": "2026-11-09T13:52:18.2980952Z",
+          "invocationUtc": "2026-11-09T13:52:18.2859720Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 78,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\common-open"
         }
       ],
       "resultHistory": [
@@ -4473,7 +4548,45 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "scopeHistory": [
+        {
+          "scope": "dedicated native mode; GUI/audio/dynamic original comparison separate",
+          "status": "合格",
+          "updatedUtc": "2026-11-09T07:45:14.989325+00:00"
+        },
+        {
+          "scope": "dedicated native mode; GUI/audio/dynamic original comparison separate; saved Segment UI-copy API: newGUID/independent source history/opaque bytes/collision and publication-failure/native Project restore",
+          "status": "検証待ち",
+          "updatedUtc": "2026-11-09T08:14:53.754101+00:00"
+        }
+      ],
+      "pendingCandidate": "20261109T081250588Z",
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "common-open",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\common-open\\core\"",
+            "--common-open"
+          ],
+          "processId": 3200,
+          "processStartUtc": "2026-11-09T13:52:18.2980952Z",
+          "invocationUtc": "2026-11-09T13:52:18.2859720Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 78,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\common-open"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "container-document",
@@ -6880,6 +6993,25 @@
             "fullAcceptance": false
           },
           "scope": "Preserved preceding candidate result before111522 related supplement"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "timeline-range",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\timeline-range\\core\"",
+            "--timeline-range"
+          ],
+          "processId": 19552,
+          "processStartUtc": "2026-11-09T13:52:19.0212785Z",
+          "invocationUtc": "2026-11-09T13:52:19.0099244Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 117,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\timeline-range"
         }
       ],
       "resultHistory": [
@@ -8964,7 +9096,32 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "timeline-range",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\timeline-range\\core\"",
+            "--timeline-range"
+          ],
+          "processId": 19552,
+          "processStartUtc": "2026-11-09T13:52:19.0212785Z",
+          "invocationUtc": "2026-11-09T13:52:19.0099244Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 117,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\timeline-range"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "script-track-document",
@@ -9083,6 +9240,25 @@
             "path": "work/acceptance/regression/20261007T160824868Z/run.json",
             "sha256": "cfbdfba6607f6ddb641a2a91d8bb1c9d069e7d9ba4a2045f04bc3d1287574130"
           }
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-track-document",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-document\\core\"",
+            "--script-track-document"
+          ],
+          "processId": 12120,
+          "processStartUtc": "2026-11-09T13:52:19.8419245Z",
+          "invocationUtc": "2026-11-09T13:52:19.8271525Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 23,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-document"
         }
       ],
       "resultHistory": [
@@ -10296,7 +10472,32 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-track-document",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-document\\core\"",
+            "--script-track-document"
+          ],
+          "processId": 12120,
+          "processStartUtc": "2026-11-09T13:52:19.8419245Z",
+          "invocationUtc": "2026-11-09T13:52:19.8271525Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 23,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-document"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "segment-trigger-document",
@@ -11590,6 +11791,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "audio-path-send",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send\\core\"",
+            "--audio-path-send"
+          ],
+          "processId": 11880,
+          "processStartUtc": "2026-11-09T13:52:20.3149347Z",
+          "invocationUtc": "2026-11-09T13:52:20.3079365Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 54,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send"
         }
       ],
       "resultHistory": [
@@ -12930,7 +13150,32 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "audio-path-send",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send\\core\"",
+            "--audio-path-send"
+          ],
+          "processId": 11880,
+          "processStartUtc": "2026-11-09T13:52:20.3149347Z",
+          "invocationUtc": "2026-11-09T13:52:20.3079365Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 54,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "file-output-multi",
@@ -14283,6 +14528,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "file-output-buffer",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\file-output-buffer\\core\"",
+            "--file-output-buffer"
+          ],
+          "processId": 19172,
+          "processStartUtc": "2026-11-09T13:52:20.8549293Z",
+          "invocationUtc": "2026-11-09T13:52:20.8428350Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 7,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\file-output-buffer"
         }
       ],
       "resultHistory": [
@@ -16159,7 +16423,32 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "file-output-buffer",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\file-output-buffer\\core\"",
+            "--file-output-buffer"
+          ],
+          "processId": 19172,
+          "processStartUtc": "2026-11-09T13:52:20.8549293Z",
+          "invocationUtc": "2026-11-09T13:52:20.8428350Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 7,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\file-output-buffer"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "file-output",
@@ -18366,6 +18655,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-runtime\\core\"",
+            "--script-runtime"
+          ],
+          "processId": 4804,
+          "processStartUtc": "2026-11-09T13:52:23.2327516Z",
+          "invocationUtc": "2026-11-09T13:52:23.2219281Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 74,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-runtime"
         }
       ],
       "resultHistory": [
@@ -19965,7 +20273,32 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-runtime\\core\"",
+            "--script-runtime"
+          ],
+          "processId": 4804,
+          "processStartUtc": "2026-11-09T13:52:23.2327516Z",
+          "invocationUtc": "2026-11-09T13:52:23.2219281Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 74,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "script-dependencies",
@@ -20047,6 +20380,31 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-dependencies",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs",
+              "sha256": "f4b893d01bc12f19b29b239f1972ea0498582a9bc1df0ea7c36a85221fc99e88"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-dependencies\\core\"",
+            "--script-dependencies",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs\""
+          ],
+          "processId": 15996,
+          "processStartUtc": "2026-11-09T13:52:27.9626464Z",
+          "invocationUtc": "2026-11-09T13:52:27.9516984Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 200,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-dependencies"
         }
       ],
       "resultHistory": [
@@ -21344,7 +21702,38 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-dependencies",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs",
+              "sha256": "f4b893d01bc12f19b29b239f1972ea0498582a9bc1df0ea7c36a85221fc99e88"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-dependencies\\core\"",
+            "--script-dependencies",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs\""
+          ],
+          "processId": 15996,
+          "processStartUtc": "2026-11-09T13:52:27.9626464Z",
+          "invocationUtc": "2026-11-09T13:52:27.9516984Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 200,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-dependencies"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "farm-script-runtime",
@@ -21427,6 +21816,31 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "farm-script-runtime",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs",
+              "sha256": "f4b893d01bc12f19b29b239f1972ea0498582a9bc1df0ea7c36a85221fc99e88"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-script-runtime\\core\"",
+            "--farm-script-runtime",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs\""
+          ],
+          "processId": 7544,
+          "processStartUtc": "2026-11-09T13:52:28.8684577Z",
+          "invocationUtc": "2026-11-09T13:52:28.8630954Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-script-runtime"
         }
       ],
       "resultHistory": [
@@ -22841,7 +23255,38 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "farm-script-runtime",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs",
+              "sha256": "f4b893d01bc12f19b29b239f1972ea0498582a9bc1df0ea7c36a85221fc99e88"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-script-runtime\\core\"",
+            "--farm-script-runtime",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-player\\20261007T085530733Z\\native-inputs\""
+          ],
+          "processId": 7544,
+          "processStartUtc": "2026-11-09T13:52:28.8684577Z",
+          "invocationUtc": "2026-11-09T13:52:28.8630954Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-script-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "tool-graph-runtime",
@@ -23138,6 +23583,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "tool-graph-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tool-graph-runtime\\core\"",
+            "--tool-graph-runtime"
+          ],
+          "processId": 17288,
+          "processStartUtc": "2026-11-09T13:52:30.1730639Z",
+          "invocationUtc": "2026-11-09T13:52:30.1609860Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 27,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tool-graph-runtime"
         }
       ],
       "resultHistory": [
@@ -24726,7 +25190,32 @@
           "savedUtc": "2026-10-11T08:43:05.691Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "tool-graph-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tool-graph-runtime\\core\"",
+            "--tool-graph-runtime"
+          ],
+          "processId": 17288,
+          "processStartUtc": "2026-11-09T13:52:30.1730639Z",
+          "invocationUtc": "2026-11-09T13:52:30.1609860Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 27,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tool-graph-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "tool-graph",
@@ -28290,6 +28779,31 @@
             "fullAcceptance": false
           },
           "scope": "Preserved preceding candidate result before111522 related supplement"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "mute-document",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-mute\\20261004T222600Z",
+              "sha256": "17373a2acc49a0d2bd330d3a2166583ba7bc43e693ce2c694703d5028132abf9"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\mute-document\\core\"",
+            "--mute-document",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-mute\\20261004T222600Z\""
+          ],
+          "processId": 5836,
+          "processStartUtc": "2026-11-09T13:52:44.5247047Z",
+          "invocationUtc": "2026-11-09T13:52:44.5186471Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 99,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\mute-document"
         }
       ],
       "resultHistory": [
@@ -29932,7 +30446,38 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "mute-document",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-mute\\20261004T222600Z",
+              "sha256": "17373a2acc49a0d2bd330d3a2166583ba7bc43e693ce2c694703d5028132abf9"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\mute-document\\core\"",
+            "--mute-document",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-mute\\20261004T222600Z\""
+          ],
+          "processId": 5836,
+          "processStartUtc": "2026-11-09T13:52:44.5247047Z",
+          "invocationUtc": "2026-11-09T13:52:44.5186471Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 99,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\mute-document"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "script-sender-diagnostic",
@@ -30061,6 +30606,27 @@
             "path": "work/acceptance/regression/20261007T160824868Z/run.json",
             "sha256": "cfbdfba6607f6ddb641a2a91d8bb1c9d069e7d9ba4a2045f04bc3d1287574130"
           }
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-sender-diagnostic",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-sender-diagnostic\\core\"",
+            "--script-sender-diagnostic"
+          ],
+          "processId": 17844,
+          "processStartUtc": "2026-11-09T13:52:45.9780936Z",
+          "invocationUtc": "2026-11-09T13:52:45.9650189Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 27,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-sender-diagnostic",
+          "scope": "Sender diagnostic and SDK invariance only; exact Trace acceptance false",
+          "traceAcceptance": false
         }
       ],
       "resultHistory": [
@@ -30998,7 +31564,34 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-sender-diagnostic",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-sender-diagnostic\\core\"",
+            "--script-sender-diagnostic"
+          ],
+          "processId": 17844,
+          "processStartUtc": "2026-11-09T13:52:45.9780936Z",
+          "invocationUtc": "2026-11-09T13:52:45.9650189Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 27,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-sender-diagnostic",
+          "scope": "Sender diagnostic and SDK invariance only; exact Trace acceptance false",
+          "traceAcceptance": false
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "script-messages",
@@ -31154,6 +31747,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-messages",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-messages\\core\"",
+            "--script-messages"
+          ],
+          "processId": 5176,
+          "processStartUtc": "2026-11-09T13:52:48.3726261Z",
+          "invocationUtc": "2026-11-09T13:52:48.3622673Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 27,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-messages"
         }
       ],
       "resultHistory": [
@@ -32448,7 +33060,32 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-messages",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-messages\\core\"",
+            "--script-messages"
+          ],
+          "processId": 5176,
+          "processStartUtc": "2026-11-09T13:52:48.3726261Z",
+          "invocationUtc": "2026-11-09T13:52:48.3622673Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 27,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-messages"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "lyric-runtime",
@@ -32592,6 +33229,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "lyric-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-runtime\\core\"",
+            "--lyric-runtime"
+          ],
+          "processId": 2428,
+          "processStartUtc": "2026-11-09T13:53:03.8984170Z",
+          "invocationUtc": "2026-11-09T13:53:03.8885894Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 31,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-runtime"
         }
       ],
       "resultHistory": [
@@ -33861,7 +34517,32 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "lyric-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-runtime\\core\"",
+            "--lyric-runtime"
+          ],
+          "processId": 2428,
+          "processStartUtc": "2026-11-09T13:53:03.8984170Z",
+          "invocationUtc": "2026-11-09T13:53:03.8885894Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 31,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "lyric-document",
@@ -34250,6 +34931,31 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "lyric-document",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-lyric\\20261004T212600Z",
+              "sha256": "3a360644ed72c297d3c05d020d52254073a7227c9025105f1be7ef5225d15f90"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-document\\core\"",
+            "--lyric-document",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-lyric\\20261004T212600Z\""
+          ],
+          "processId": 5408,
+          "processStartUtc": "2026-11-09T13:53:13.0941627Z",
+          "invocationUtc": "2026-11-09T13:53:13.0892982Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 48,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-document"
         }
       ],
       "resultHistory": [
@@ -35992,7 +36698,38 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "lyric-document",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-lyric\\20261004T212600Z",
+              "sha256": "3a360644ed72c297d3c05d020d52254073a7227c9025105f1be7ef5225d15f90"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-document\\core\"",
+            "--lyric-document",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-lyric\\20261004T212600Z\""
+          ],
+          "processId": 5408,
+          "processStartUtc": "2026-11-09T13:53:13.0941627Z",
+          "invocationUtc": "2026-11-09T13:53:13.0892982Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 48,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\lyric-document"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "marker-document",
@@ -36381,6 +37118,31 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "marker-document",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-marker\\20261004T204000Z",
+              "sha256": "634aabd25bf4c770546f4dc4df8e9f32f5ca4bb16f5f3b27264adfc827cc8765"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\marker-document\\core\"",
+            "--marker-document",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-marker\\20261004T204000Z\""
+          ],
+          "processId": 20564,
+          "processStartUtc": "2026-11-09T13:53:13.6218109Z",
+          "invocationUtc": "2026-11-09T13:53:13.6139874Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 85,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\marker-document"
         }
       ],
       "resultHistory": [
@@ -38052,7 +38814,38 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "marker-document",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-marker\\20261004T204000Z",
+              "sha256": "634aabd25bf4c770546f4dc4df8e9f32f5ca4bb16f5f3b27264adfc827cc8765"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\marker-document\\core\"",
+            "--marker-document",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-marker\\20261004T204000Z\""
+          ],
+          "processId": 20564,
+          "processStartUtc": "2026-11-09T13:53:13.6218109Z",
+          "invocationUtc": "2026-11-09T13:53:13.6139874Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 85,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\marker-document"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "runtime-recovery-record",
@@ -38312,6 +39105,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "runtime-recovery-record",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\runtime-recovery-record\\core\"",
+            "--runtime-recovery-record"
+          ],
+          "processId": 7772,
+          "processStartUtc": "2026-11-09T13:53:14.1686218Z",
+          "invocationUtc": "2026-11-09T13:53:14.1563535Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 7,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\runtime-recovery-record"
         }
       ],
       "resultHistory": [
@@ -39466,7 +40278,32 @@
           "savedUtc": "2026-10-11T08:43:05.692Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "runtime-recovery-record",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\runtime-recovery-record\\core\"",
+            "--runtime-recovery-record"
+          ],
+          "processId": 7772,
+          "processStartUtc": "2026-11-09T13:53:14.1686218Z",
+          "invocationUtc": "2026-11-09T13:53:14.1563535Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 7,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\runtime-recovery-record"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "runtime-recovery-inspect",
@@ -66544,6 +67381,25 @@
             "path": "work/acceptance/regression/20261007T160824868Z/run.json",
             "sha256": "cfbdfba6607f6ddb641a2a91d8bb1c9d069e7d9ba4a2045f04bc3d1287574130"
           }
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "dls-sample-policy",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-sample-policy\\core\"",
+            "--dls-sample-policy"
+          ],
+          "processId": 12436,
+          "processStartUtc": "2026-11-09T13:53:14.6356270Z",
+          "invocationUtc": "2026-11-09T13:53:14.6220125Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 28,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-sample-policy"
         }
       ],
       "resultHistory": [
@@ -67273,7 +68129,32 @@
           "savedUtc": "2026-10-11T08:43:05.693Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "dls-sample-policy",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-sample-policy\\core\"",
+            "--dls-sample-policy"
+          ],
+          "processId": 12436,
+          "processStartUtc": "2026-11-09T13:53:14.6356270Z",
+          "invocationUtc": "2026-11-09T13:53:14.6220125Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 28,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-sample-policy"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "dls-runtime-export",
@@ -68380,6 +69261,36 @@
             "path": "work/acceptance/regression/20261007T160824868Z/run.json",
             "sha256": "cfbdfba6607f6ddb641a2a91d8bb1c9d069e7d9ba4a2045f04bc3d1287574130"
           }
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "dls-articulation",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\normal-style-dls\\20261004T025021534Z\\core\\owned.dls",
+              "sha256": "ae530bbb29430cd900c2a9210ce992a2b9957f80ec549367ee1931de873b6449"
+            },
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\dls-instrument-original\\20261003T231831Z\\after-instrument.dlp",
+              "sha256": "174586553f50a796417cdd59fbced81918477ec46494cdb101c36bc16c910bed"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-articulation\\core\"",
+            "--dls-articulation",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\normal-style-dls\\20261004T025021534Z\\core\\owned.dls\"",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\dls-instrument-original\\20261003T231831Z\\after-instrument.dlp\""
+          ],
+          "processId": 12788,
+          "processStartUtc": "2026-11-09T13:53:15.1236902Z",
+          "invocationUtc": "2026-11-09T13:53:15.1129314Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 43,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-articulation"
         }
       ],
       "resultHistory": [
@@ -70155,7 +71066,43 @@
           "savedUtc": "2026-10-11T08:43:05.693Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "dls-articulation",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\normal-style-dls\\20261004T025021534Z\\core\\owned.dls",
+              "sha256": "ae530bbb29430cd900c2a9210ce992a2b9957f80ec549367ee1931de873b6449"
+            },
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\dls-instrument-original\\20261003T231831Z\\after-instrument.dlp",
+              "sha256": "174586553f50a796417cdd59fbced81918477ec46494cdb101c36bc16c910bed"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-articulation\\core\"",
+            "--dls-articulation",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\normal-style-dls\\20261004T025021534Z\\core\\owned.dls\"",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\dls-instrument-original\\20261003T231831Z\\after-instrument.dlp\""
+          ],
+          "processId": 12788,
+          "processStartUtc": "2026-11-09T13:53:15.1236902Z",
+          "invocationUtc": "2026-11-09T13:53:15.1129314Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 43,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\dls-articulation"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "dls-create-instrument",
@@ -80843,6 +81790,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.626Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "param-control-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control-runtime\\core\"",
+            "--param-control-runtime"
+          ],
+          "processId": 18456,
+          "processStartUtc": "2026-11-09T13:53:16.1343216Z",
+          "invocationUtc": "2026-11-09T13:53:16.1272387Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 15,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control-runtime"
         }
       ],
       "resultHistory": [
@@ -82521,7 +83487,32 @@
           "savedUtc": "2026-10-11T08:43:05.693Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "param-control-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control-runtime\\core\"",
+            "--param-control-runtime"
+          ],
+          "processId": 18456,
+          "processStartUtc": "2026-11-09T13:53:16.1343216Z",
+          "invocationUtc": "2026-11-09T13:53:16.1272387Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 15,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "param-control",
@@ -82781,6 +83772,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "param-control",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control\\core\"",
+            "--param-control"
+          ],
+          "processId": 10288,
+          "processStartUtc": "2026-11-09T13:53:25.4116497Z",
+          "invocationUtc": "2026-11-09T13:53:25.4062433Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 53,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control"
         }
       ],
       "resultHistory": [
@@ -83935,7 +84945,32 @@
           "savedUtc": "2026-10-11T08:43:05.693Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "param-control",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control\\core\"",
+            "--param-control"
+          ],
+          "processId": 10288,
+          "processStartUtc": "2026-11-09T13:53:25.4116497Z",
+          "invocationUtc": "2026-11-09T13:53:25.4062433Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 53,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\param-control"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "transport-audiopath",
@@ -84244,6 +85279,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "transport-audiopath",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\transport-audiopath\\core\"",
+            "--transport-audiopath"
+          ],
+          "processId": 18276,
+          "processStartUtc": "2026-11-09T13:53:25.8689726Z",
+          "invocationUtc": "2026-11-09T13:53:25.8597195Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 57,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\transport-audiopath"
         }
       ],
       "resultHistory": [
@@ -86006,7 +87060,32 @@
           "savedUtc": "2026-10-11T08:43:05.693Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "transport-audiopath",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\transport-audiopath\\core\"",
+            "--transport-audiopath"
+          ],
+          "processId": 18276,
+          "processStartUtc": "2026-11-09T13:53:25.8689726Z",
+          "invocationUtc": "2026-11-09T13:53:25.8597195Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 57,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\transport-audiopath"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "motif-band-edit",
@@ -96967,6 +98046,36 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "pattern-clipboard",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\selection.sgp",
+              "sha256": "51237528b240c2659a9b463cb6238de1f96fe86a373ac77c47d7d13b64065572"
+            },
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\Heartlnd.stp",
+              "sha256": "f2d9da38745e08756b31de6fa6ba8b11fc730a316b4a87a6f161a8c26869e0bb"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\pattern-clipboard\\core\"",
+            "--pattern-clipboard",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\selection.sgp\"",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\Heartlnd.stp\""
+          ],
+          "processId": 4660,
+          "processStartUtc": "2026-11-09T13:53:26.3264892Z",
+          "invocationUtc": "2026-11-09T13:53:26.3168372Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\pattern-clipboard"
         }
       ],
       "resultHistory": [
@@ -99056,7 +100165,43 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "pattern-clipboard",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\selection.sgp",
+              "sha256": "51237528b240c2659a9b463cb6238de1f96fe86a373ac77c47d7d13b64065572"
+            },
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\Heartlnd.stp",
+              "sha256": "f2d9da38745e08756b31de6fa6ba8b11fc730a316b4a87a6f161a8c26869e0bb"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\pattern-clipboard\\core\"",
+            "--pattern-clipboard",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\selection.sgp\"",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\pattern-clipboard\\20261003T113437815Z\\core\\pattern-clipboard\\Heartlnd.stp\""
+          ],
+          "processId": 4660,
+          "processStartUtc": "2026-11-09T13:53:26.3264892Z",
+          "invocationUtc": "2026-11-09T13:53:26.3168372Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\pattern-clipboard"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "pattern-crud",
@@ -102993,6 +104138,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "command-track",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\command-track\\core\"",
+            "--command-track"
+          ],
+          "processId": 5144,
+          "processStartUtc": "2026-11-09T13:53:26.8986421Z",
+          "invocationUtc": "2026-11-09T13:53:26.8885515Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 31,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\command-track"
         }
       ],
       "resultHistory": [
@@ -104516,7 +105680,32 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "command-track",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\command-track\\core\"",
+            "--command-track"
+          ],
+          "processId": 5144,
+          "processStartUtc": "2026-11-09T13:53:26.8986421Z",
+          "invocationUtc": "2026-11-09T13:53:26.8885515Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 31,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\command-track"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "style-player-default",
@@ -106031,6 +107220,36 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "style-player",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\Heartlnd.stp",
+              "sha256": "00600efd7ce8cb7133b327115fe961f4ff825d2d1f56840b2c86206eea17b0a5"
+            },
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\style-library\\BOOGIE.CDM",
+              "sha256": "8db344cad635cbfe3deb2e123082dde13a557d8b99192001f7104795b0615622"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-player\\core\"",
+            "--style-player",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\Heartlnd.stp\"",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\style-library\\BOOGIE.CDM\""
+          ],
+          "processId": 18384,
+          "processStartUtc": "2026-11-09T13:53:27.3407794Z",
+          "invocationUtc": "2026-11-09T13:53:27.3311414Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 103,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-player"
         }
       ],
       "resultHistory": [
@@ -107500,7 +108719,43 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "style-player",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\Heartlnd.stp",
+              "sha256": "00600efd7ce8cb7133b327115fe961f4ff825d2d1f56840b2c86206eea17b0a5"
+            },
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\style-library\\BOOGIE.CDM",
+              "sha256": "8db344cad635cbfe3deb2e123082dde13a557d8b99192001f7104795b0615622"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-player\\core\"",
+            "--style-player",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\QuickStart\\Heartlnd.stp\"",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\style-library\\BOOGIE.CDM\""
+          ],
+          "processId": 18384,
+          "processStartUtc": "2026-11-09T13:53:27.3407794Z",
+          "invocationUtc": "2026-11-09T13:53:27.3311414Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 103,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-player"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "chord-composition",
@@ -107607,6 +108862,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "chord-composition",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition\\core\"",
+            "--chord-composition"
+          ],
+          "processId": 8092,
+          "processStartUtc": "2026-11-09T13:53:35.1806265Z",
+          "invocationUtc": "2026-11-09T13:53:35.1713239Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 19,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition"
         }
       ],
       "resultHistory": [
@@ -108557,7 +109831,32 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "chord-composition",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition\\core\"",
+            "--chord-composition"
+          ],
+          "processId": 8092,
+          "processStartUtc": "2026-11-09T13:53:35.1806265Z",
+          "invocationUtc": "2026-11-09T13:53:35.1713239Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 19,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "chord-composition-runtime",
@@ -108701,6 +110000,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "chord-composition-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition-runtime\\core\"",
+            "--chord-composition-runtime"
+          ],
+          "processId": 15092,
+          "processStartUtc": "2026-11-09T13:53:35.4849124Z",
+          "invocationUtc": "2026-11-09T13:53:35.4779909Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 30,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition-runtime"
         }
       ],
       "resultHistory": [
@@ -110020,7 +111338,32 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "chord-composition-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition-runtime\\core\"",
+            "--chord-composition-runtime"
+          ],
+          "processId": 15092,
+          "processStartUtc": "2026-11-09T13:53:35.4849124Z",
+          "invocationUtc": "2026-11-09T13:53:35.4779909Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 30,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-composition-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "chordmap-reference",
@@ -111078,6 +112421,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "chordmap-reference-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-reference-runtime\\core\"",
+            "--chordmap-reference-runtime"
+          ],
+          "processId": 11472,
+          "processStartUtc": "2026-11-09T13:53:35.9072009Z",
+          "invocationUtc": "2026-11-09T13:53:35.8960465Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 6,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-reference-runtime"
         }
       ],
       "resultHistory": [
@@ -112439,7 +113801,32 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "chordmap-reference-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-reference-runtime\\core\"",
+            "--chordmap-reference-runtime"
+          ],
+          "processId": 11472,
+          "processStartUtc": "2026-11-09T13:53:35.9072009Z",
+          "invocationUtc": "2026-11-09T13:53:35.8960465Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 6,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-reference-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "chordmap-palette",
@@ -112578,6 +113965,31 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "chordmap-palette",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-chordmap\\20261004T191300Z\\OriginalEmpty.cdp",
+              "sha256": "c33bc5e3d10ffe1486559e4af1b00442fe982ddb507b9142ab5c667b00196d9f"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-palette\\core\"",
+            "--chordmap-palette",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-chordmap\\20261004T191300Z\\OriginalEmpty.cdp\""
+          ],
+          "processId": 9288,
+          "processStartUtc": "2026-11-09T13:53:36.2983916Z",
+          "invocationUtc": "2026-11-09T13:53:36.2922859Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 135,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-palette"
         }
       ],
       "resultHistory": [
@@ -113831,7 +115243,38 @@
           "savedUtc": "2026-10-11T08:43:05.694Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "chordmap-palette",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-chordmap\\20261004T191300Z\\OriginalEmpty.cdp",
+              "sha256": "c33bc5e3d10ffe1486559e4af1b00442fe982ddb507b9142ab5c667b00196d9f"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-palette\\core\"",
+            "--chordmap-palette",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-chordmap\\20261004T191300Z\\OriginalEmpty.cdp\""
+          ],
+          "processId": 9288,
+          "processStartUtc": "2026-11-09T13:53:36.2983916Z",
+          "invocationUtc": "2026-11-09T13:53:36.2922859Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 135,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chordmap-palette"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "chordmap-document",
@@ -115872,6 +117315,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "signpost-track",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\signpost-track\\core\"",
+            "--signpost-track"
+          ],
+          "processId": 1828,
+          "processStartUtc": "2026-11-09T13:53:37.0652236Z",
+          "invocationUtc": "2026-11-09T13:53:37.0581228Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 45,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\signpost-track"
         }
       ],
       "resultHistory": [
@@ -117060,7 +118522,32 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "signpost-track",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\signpost-track\\core\"",
+            "--signpost-track"
+          ],
+          "processId": 1828,
+          "processStartUtc": "2026-11-09T13:53:37.0652236Z",
+          "invocationUtc": "2026-11-09T13:53:37.0581228Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 45,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\signpost-track"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "chord-track",
@@ -117320,6 +118807,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "chord-track",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-track\\core\"",
+            "--chord-track"
+          ],
+          "processId": 9524,
+          "processStartUtc": "2026-11-09T13:53:37.5407503Z",
+          "invocationUtc": "2026-11-09T13:53:37.5302917Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 67,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-track"
         }
       ],
       "resultHistory": [
@@ -118636,7 +120142,32 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "chord-track",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-track\\core\"",
+            "--chord-track"
+          ],
+          "processId": 9524,
+          "processStartUtc": "2026-11-09T13:53:37.5407503Z",
+          "invocationUtc": "2026-11-09T13:53:37.5302917Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 67,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\chord-track"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "sequence-crud",
@@ -118647,7 +120178,7 @@
       "inputs": [],
       "originalExecutableRequired": false,
       "originalDataRequired": false,
-      "scope": "dedicated native mode; GUI/audio/dynamic original comparison separate",
+      "scope": "dedicated native mode; GUI/audio/dynamic original comparison separate; same-logical Band indexed collision/occurrence history/opaque bytes, Sequence patch owner, copied-identity stale-target and physical live guard (in-memory new contract); frozen core/segment-creation acceptance unchanged; perPart vertical pitch viewport boundaries/scroll/zoom/hit and drag scales/native note Undo contract, no GUI/fullappearance acceptance",
       "workflow": null,
       "status": "合格",
       "history": [
@@ -118978,6 +120509,25 @@
             "fullAcceptance": false
           },
           "scope": "Preserved preceding candidate result before111522 related supplement"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "sequence-crud",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-crud\\core\"",
+            "--sequence-crud"
+          ],
+          "processId": 12112,
+          "processStartUtc": "2026-11-09T13:53:37.9667315Z",
+          "invocationUtc": "2026-11-09T13:53:37.9538348Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 259,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-crud"
         }
       ],
       "resultHistory": [
@@ -121154,7 +122704,32 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "sequence-crud",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-crud\\core\"",
+            "--sequence-crud"
+          ],
+          "processId": 12112,
+          "processStartUtc": "2026-11-09T13:53:37.9667315Z",
+          "invocationUtc": "2026-11-09T13:53:37.9538348Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 259,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-crud"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "playback-monitor",
@@ -121451,6 +123026,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "playback-monitor",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\playback-monitor\\core\"",
+            "--playback-monitor"
+          ],
+          "processId": 1636,
+          "processStartUtc": "2026-11-09T13:53:39.1445666Z",
+          "invocationUtc": "2026-11-09T13:53:39.1377478Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 15,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\playback-monitor"
         }
       ],
       "resultHistory": [
@@ -123255,7 +124849,32 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "playback-monitor",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\playback-monitor\\core\"",
+            "--playback-monitor"
+          ],
+          "processId": 1636,
+          "processStartUtc": "2026-11-09T13:53:39.1445666Z",
+          "invocationUtc": "2026-11-09T13:53:39.1377478Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 15,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\playback-monitor"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "wave-pcm",
@@ -123371,6 +124990,31 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "wave-pcm",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp",
+              "sha256": "42f15043bd0f4b6bfc716fa8ce14186700a9d488ca419c8468ee732805aa9bb9"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-pcm\\core\"",
+            "--wave-pcm",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp\""
+          ],
+          "processId": 1436,
+          "processStartUtc": "2026-11-09T13:53:39.6223970Z",
+          "invocationUtc": "2026-11-09T13:53:39.6144862Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 146,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-pcm"
         }
       ],
       "resultHistory": [
@@ -124334,7 +125978,38 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "wave-pcm",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp",
+              "sha256": "42f15043bd0f4b6bfc716fa8ce14186700a9d488ca419c8468ee732805aa9bb9"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-pcm\\core\"",
+            "--wave-pcm",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp\""
+          ],
+          "processId": 1436,
+          "processStartUtc": "2026-11-09T13:53:39.6223970Z",
+          "invocationUtc": "2026-11-09T13:53:39.6144862Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 146,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-pcm"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "wave-sample-loop",
@@ -124473,6 +126148,31 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "wave-sample-loop",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp",
+              "sha256": "42f15043bd0f4b6bfc716fa8ce14186700a9d488ca419c8468ee732805aa9bb9"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-sample-loop\\core\"",
+            "--wave-sample-loop",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp\""
+          ],
+          "processId": 9960,
+          "processStartUtc": "2026-11-09T13:53:40.5233467Z",
+          "invocationUtc": "2026-11-09T13:53:40.5111050Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 38,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-sample-loop"
         }
       ],
       "resultHistory": [
@@ -125396,7 +127096,38 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "wave-sample-loop",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp",
+              "sha256": "42f15043bd0f4b6bfc716fa8ce14186700a9d488ca419c8468ee732805aa9bb9"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-sample-loop\\core\"",
+            "--wave-sample-loop",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.wvp\""
+          ],
+          "processId": 9960,
+          "processStartUtc": "2026-11-09T13:53:40.5233467Z",
+          "invocationUtc": "2026-11-09T13:53:40.5111050Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 38,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-sample-loop"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "wave-document",
@@ -127564,6 +129295,31 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "wave-track",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.sgp",
+              "sha256": "16ffe9e34863a0eb5be5c3d2e59acca1f52205f20f9086458912431900a2d2bb"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-track\\core\"",
+            "--wave-track",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.sgp\""
+          ],
+          "processId": 19732,
+          "processStartUtc": "2026-11-09T13:53:41.1259542Z",
+          "invocationUtc": "2026-11-09T13:53:41.1135695Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 103,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-track"
         }
       ],
       "resultHistory": [
@@ -129498,7 +131254,38 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "wave-track",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.sgp",
+              "sha256": "16ffe9e34863a0eb5be5c3d2e59acca1f52205f20f9086458912431900a2d2bb"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-track\\core\"",
+            "--wave-track",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\producer\\samples\\Tutorial\\FinishedProject\\SfxCow.sgp\""
+          ],
+          "processId": 19732,
+          "processStartUtc": "2026-11-09T13:53:41.1259542Z",
+          "invocationUtc": "2026-11-09T13:53:41.1135695Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 103,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\wave-track"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "style-reference-authoring",
@@ -129758,6 +131545,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "style-reference-authoring",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-reference-authoring\\core\"",
+            "--style-reference-authoring"
+          ],
+          "processId": 13892,
+          "processStartUtc": "2026-11-09T13:53:41.8947797Z",
+          "invocationUtc": "2026-11-09T13:53:41.8875212Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 22,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-reference-authoring"
         }
       ],
       "resultHistory": [
@@ -130984,7 +132790,32 @@
           "savedUtc": "2026-10-11T08:43:05.695Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "style-reference-authoring",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-reference-authoring\\core\"",
+            "--style-reference-authoring"
+          ],
+          "processId": 13892,
+          "processStartUtc": "2026-11-09T13:53:41.8947797Z",
+          "invocationUtc": "2026-11-09T13:53:41.8875212Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 22,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\style-reference-authoring"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "script-track-owned",
@@ -132233,6 +134064,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-track-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-runtime\\core\"",
+            "--script-track-runtime"
+          ],
+          "processId": 14468,
+          "processStartUtc": "2026-11-09T13:53:42.3321106Z",
+          "invocationUtc": "2026-11-09T13:53:42.3219017Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 40,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-runtime"
         }
       ],
       "resultHistory": [
@@ -133853,7 +135703,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-track-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-runtime\\core\"",
+            "--script-track-runtime"
+          ],
+          "processId": 14468,
+          "processStartUtc": "2026-11-09T13:53:42.3321106Z",
+          "invocationUtc": "2026-11-09T13:53:42.3219017Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 40,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-track-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "segment-trigger-owned",
@@ -133977,6 +135852,25 @@
         {
           "candidate": "20261007T160307258Z",
           "status": "未実行"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "segment-trigger-owned",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-owned\\core\"",
+            "--segment-trigger-owned"
+          ],
+          "processId": 21352,
+          "processStartUtc": "2026-11-09T13:54:01.6339644Z",
+          "invocationUtc": "2026-11-09T13:54:01.6295214Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 21,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-owned"
         }
       ],
       "resultHistory": [
@@ -135131,7 +137025,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "segment-trigger-owned",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-owned\\core\"",
+            "--segment-trigger-owned"
+          ],
+          "processId": 21352,
+          "processStartUtc": "2026-11-09T13:54:01.6339644Z",
+          "invocationUtc": "2026-11-09T13:54:01.6295214Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 21,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-owned"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "segment-trigger-runtime",
@@ -135292,6 +137211,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "segment-trigger-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-runtime\\core\"",
+            "--segment-trigger-runtime"
+          ],
+          "processId": 10292,
+          "processStartUtc": "2026-11-09T13:54:02.1103638Z",
+          "invocationUtc": "2026-11-09T13:54:02.1009765Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-runtime"
         }
       ],
       "resultHistory": [
@@ -136853,7 +138791,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "segment-trigger-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-runtime\\core\"",
+            "--segment-trigger-runtime"
+          ],
+          "processId": 10292,
+          "processStartUtc": "2026-11-09T13:54:02.1103638Z",
+          "invocationUtc": "2026-11-09T13:54:02.1009765Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\segment-trigger-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "waves-reverb-document",
@@ -138091,6 +140054,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "waves-reverb-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\waves-reverb-runtime\\core\"",
+            "--waves-reverb-runtime"
+          ],
+          "processId": 21224,
+          "processStartUtc": "2026-11-09T13:54:17.5643172Z",
+          "invocationUtc": "2026-11-09T13:54:17.5577144Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 49,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\waves-reverb-runtime"
         }
       ],
       "candidate": "20261011T080641928Z",
@@ -139333,7 +141315,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "waves-reverb-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\waves-reverb-runtime\\core\"",
+            "--waves-reverb-runtime"
+          ],
+          "processId": 21224,
+          "processStartUtc": "2026-11-09T13:54:17.5643172Z",
+          "invocationUtc": "2026-11-09T13:54:17.5577144Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 49,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\waves-reverb-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "audio-path-send-authoring",
@@ -140260,6 +142267,25 @@
             "sha256": "a053d69c2c41a60ade0f045abebdcadc6213c0144db17b2ff883f2970885f49e"
           },
           "savedUtc": "2026-10-09T08:48:21.627Z"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "audio-path-send-authoring",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send-authoring\\core\"",
+            "--audio-path-send-authoring"
+          ],
+          "processId": 6584,
+          "processStartUtc": "2026-11-09T13:54:22.6555133Z",
+          "invocationUtc": "2026-11-09T13:54:22.6504740Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 57,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send-authoring"
         }
       ],
       "currentResultHistory": [
@@ -140637,7 +142663,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "audio-path-send-authoring",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send-authoring\\core\"",
+            "--audio-path-send-authoring"
+          ],
+          "processId": 6584,
+          "processStartUtc": "2026-11-09T13:54:22.6555133Z",
+          "invocationUtc": "2026-11-09T13:54:22.6504740Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 57,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\audio-path-send-authoring"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "audio-path-send-runtime",
@@ -142760,7 +144811,65 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "history": [
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "farm-descriptor-runtime",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-descriptor\\20261008T072556077Z\\runtime-inputs-v1",
+              "sha256": "a0f196ae311ca46fb1aa7d61400a5ece9670eb92d0c19ecc6ffd0d7b9a290b30"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-descriptor-runtime\\core\"",
+            "--farm-script-runtime",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-descriptor\\20261008T072556077Z\\runtime-inputs-v1\""
+          ],
+          "processId": 19016,
+          "processStartUtc": "2026-11-09T13:54:23.0597691Z",
+          "invocationUtc": "2026-11-09T13:54:23.0538531Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-descriptor-runtime"
+        }
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "farm-descriptor-runtime",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-descriptor\\20261008T072556077Z\\runtime-inputs-v1",
+              "sha256": "a0f196ae311ca46fb1aa7d61400a5ece9670eb92d0c19ecc6ffd0d7b9a290b30"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-descriptor-runtime\\core\"",
+            "--farm-script-runtime",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-farm-descriptor\\20261008T072556077Z\\runtime-inputs-v1\""
+          ],
+          "processId": 19016,
+          "processStartUtc": "2026-11-09T13:54:23.0597691Z",
+          "invocationUtc": "2026-11-09T13:54:23.0538531Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 32,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\farm-descriptor-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "style-player-bands",
@@ -143260,7 +145369,7 @@
       "originalDataRequired": false,
       "scope": "Segment/Style internal name UNAM exact preservation, history/dirty/malformed rejection and native Project reload; independent Segment/Style/Band histories, save/no-op preserves Undo/Redo and own branch invalidates only own Redo; GUI/modeless/original parity separate",
       "workflow": null,
-      "status": "合格",
+      "status": "障害あり",
       "resultHistory": [
         {
           "id": "component-name",
@@ -144088,6 +146197,28 @@
             "fullAcceptance": false
           },
           "status": "合格"
+        },
+        {
+          "id": "component-name",
+          "status": "失敗",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T114908138Z\\component-name\\core\"",
+            "--component-name"
+          ],
+          "processId": 19492,
+          "processStartUtc": "2026-11-09T11:49:11.0032719Z",
+          "invocationUtc": "2026-11-09T11:49:10.9977218Z",
+          "exitCode": 1,
+          "timedOut": false,
+          "checks": null,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T114908138Z\\component-name",
+          "candidate": "20261109T114031247Z",
+          "run": {
+            "path": "work/acceptance/regression/20261109T114908138Z/run.json",
+            "sha256": "813cef54702eaba668d2ef53e6b6c7debbd83bd4f87deb00e2cc97d78831bdbf"
+          }
         }
       ],
       "latest": {
@@ -144552,7 +146683,7 @@
         }
       ],
       "pendingWorkingSource": null,
-      "currentStatusScope": "080641原始native100一巡。専用/GUI補足と旧候補は別判定",
+      "currentStatusScope": "New nativeCLI Windows5 atomic Names.pro replacement after67 checks; no same-condition retry. Historical70check passes not transferred.",
       "primaryRoundResultHistory": [
         {
           "savedUtc": "2026-10-11T04:49:55.770Z",
@@ -144733,7 +146864,22 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "blockedByKnownOsRefusal": {
+        "evidence": "work/acceptance/regression/20261109T114908138Z/component-name/stderr.txt",
+        "candidate": "20261109T114031247Z",
+        "firstObservedUtc": "2026-11-09T11:51:20.451500+00:00",
+        "reason": "114031 component-name nativeCLI: after67 checks, atomic Names/Names.pro replacement Windows error5; destination retained. Same publication condition frozen; no unchanged retry or relocated substitute. Prior successful70-check runs retained as historical evidence, not transferred.",
+        "proof": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+          "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+        }
+      },
+      "latestRefusal": {
+        "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+        "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+      },
+      "latestTrialCandidate": "20261109T114031247Z"
     },
     {
       "id": "waves-reverb-persistence",
@@ -146115,6 +148261,25 @@
             "fullAcceptance": false
           },
           "scope": "Preserved preceding candidate result before111522 related supplement"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "tempo-properties",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tempo-properties\\core\"",
+            "--tempo-properties"
+          ],
+          "processId": 17896,
+          "processStartUtc": "2026-11-09T13:54:24.3260231Z",
+          "invocationUtc": "2026-11-09T13:54:24.3132462Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 33,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tempo-properties"
         }
       ],
       "currentResultHistory": [
@@ -146613,7 +148778,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "tempo-properties",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tempo-properties\\core\"",
+            "--tempo-properties"
+          ],
+          "processId": 17896,
+          "processStartUtc": "2026-11-09T13:54:24.3260231Z",
+          "invocationUtc": "2026-11-09T13:54:24.3132462Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 33,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\tempo-properties"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "meter-properties",
@@ -146709,6 +148899,25 @@
             "fullAcceptance": false
           },
           "scope": "Preserved preceding candidate result before111522 related supplement"
+        },
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "meter-properties",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\meter-properties\\core\"",
+            "--meter-properties"
+          ],
+          "processId": 19060,
+          "processStartUtc": "2026-11-09T13:54:24.7470172Z",
+          "invocationUtc": "2026-11-09T13:54:24.7355720Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 65,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\meter-properties"
         }
       ],
       "resultHistory": [
@@ -147318,7 +149527,32 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "meter-properties",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\meter-properties\\core\"",
+            "--meter-properties"
+          ],
+          "processId": 19060,
+          "processStartUtc": "2026-11-09T13:54:24.7470172Z",
+          "invocationUtc": "2026-11-09T13:54:24.7355720Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 65,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\meter-properties"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "script-ansi-descriptors",
@@ -147828,7 +150062,65 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "history": [
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "script-ansi-descriptors",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-script-ansi-name\\20261009T211806287Z\\probe-inputs-v3",
+              "sha256": "69ed5d93f54ee5a6eeaa9481c794c991d739909c14c9c52e40a13acec19b1413"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-ansi-descriptors\\core\"",
+            "--script-ansi-descriptors",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-script-ansi-name\\20261009T211806287Z\\probe-inputs-v3\""
+          ],
+          "processId": 19824,
+          "processStartUtc": "2026-11-09T13:54:25.3961182Z",
+          "invocationUtc": "2026-11-09T13:54:25.3901776Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 145,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-ansi-descriptors"
+        }
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "script-ansi-descriptors",
+          "status": "合格",
+          "inputs": [
+            {
+              "path": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-script-ansi-name\\20261009T211806287Z\\probe-inputs-v3",
+              "sha256": "69ed5d93f54ee5a6eeaa9481c794c991d739909c14c9c52e40a13acec19b1413"
+            }
+          ],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-ansi-descriptors\\core\"",
+            "--script-ansi-descriptors",
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\analysis\\q3-script-ansi-name\\20261009T211806287Z\\probe-inputs-v3\""
+          ],
+          "processId": 19824,
+          "processStartUtc": "2026-11-09T13:54:25.3961182Z",
+          "invocationUtc": "2026-11-09T13:54:25.3901776Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 145,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\script-ansi-descriptors"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "segment-creation",
@@ -149116,7 +151408,53 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "history": [
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "sequence-audition-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-audition-runtime\\core\"",
+            "--sequence-audition-runtime"
+          ],
+          "processId": 11160,
+          "processStartUtc": "2026-11-09T13:54:26.5533923Z",
+          "invocationUtc": "2026-11-09T13:54:26.5472579Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 30,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-audition-runtime"
+        }
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "sequence-audition-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-audition-runtime\\core\"",
+            "--sequence-audition-runtime"
+          ],
+          "processId": 11160,
+          "processStartUtc": "2026-11-09T13:54:26.5533923Z",
+          "invocationUtc": "2026-11-09T13:54:26.5472579Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 30,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\sequence-audition-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "metronome-runtime",
@@ -149511,7 +151849,53 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "history": [
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "metronome-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-runtime\\core\"",
+            "--metronome-runtime"
+          ],
+          "processId": 8156,
+          "processStartUtc": "2026-11-09T13:54:31.2895163Z",
+          "invocationUtc": "2026-11-09T13:54:31.2777837Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 12,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-runtime"
+        }
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "metronome-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-runtime\\core\"",
+            "--metronome-runtime"
+          ],
+          "processId": 8156,
+          "processStartUtc": "2026-11-09T13:54:31.2895163Z",
+          "invocationUtc": "2026-11-09T13:54:31.2777837Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 12,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-runtime"
+        },
+        "fullAcceptance": false
+      }
     },
     {
       "id": "metronome-countin-runtime",
@@ -149892,7 +152276,53 @@
           "savedUtc": "2026-10-11T08:43:05.696Z",
           "value": "071630原始一巡。専用/GUI補足と旧候補は別判定"
         }
-      ]
+      ],
+      "history": [
+        {
+          "candidate": "20261109T131516936Z",
+          "run": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "id": "metronome-countin-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-countin-runtime\\core\"",
+            "--metronome-countin-runtime"
+          ],
+          "processId": 9960,
+          "processStartUtc": "2026-11-09T13:54:39.2499686Z",
+          "invocationUtc": "2026-11-09T13:54:39.2438229Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 19,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-countin-runtime"
+        }
+      ],
+      "latest131516NativeResult": {
+        "candidate": "20261109T131516936Z",
+        "run": {
+          "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+          "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+        },
+        "result": {
+          "id": "metronome-countin-runtime",
+          "status": "合格",
+          "inputs": [],
+          "arguments": [
+            "\"C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-countin-runtime\\core\"",
+            "--metronome-countin-runtime"
+          ],
+          "processId": 9960,
+          "processStartUtc": "2026-11-09T13:54:39.2499686Z",
+          "invocationUtc": "2026-11-09T13:54:39.2438229Z",
+          "exitCode": 0,
+          "timedOut": false,
+          "checks": 19,
+          "error": null,
+          "evidence": "C:\\Users\\dolph\\OneDrive\\ドキュメント\\GitHub\\directmusic-producer-clone\\work\\acceptance\\regression\\20261109T135217235Z\\metronome-countin-runtime"
+        },
+        "fullAcceptance": false
+      }
     }
   ],
   "drivers": [
@@ -292210,7 +294640,7 @@
       "fullAcceptance": false
     }
   ],
-  "updatedUtc": "2026-10-12T00:59:03.662Z",
+  "updatedUtc": "2026-11-09T16:53:03.489968+00:00",
   "sourceDispatcherHistory": [
     {
       "path": "tests/producer/core_tests.cpp",
@@ -292346,6 +294776,10 @@
       "savedUtc": "2026-10-11T03:13:52.221Z",
       "path": "tests/producer/core_tests.cpp",
       "sha256": "57c12fb467804c2b57adbec1ed9c4b2dd2286e608d85a097799cba68dca9bca4"
+    },
+    {
+      "path": "tests/producer/core_tests.cpp",
+      "sha256": "bd914d64d384e1072761e577f4ad6193675a98132ed7e3add22b3ffa2fb53fbe"
     }
   ],
   "q1ScenarioAuditorSupplements": [
@@ -302442,5 +304876,82 @@
       "path": "work/acceptance/regression/20261012T005547643Z/run.json",
       "sha256": "ab6403d084079a00a292ce8fee5d0bf6b48f2d9625406b81dbeb38300c492f76"
     }
+  },
+  "latestNativeMilestoneHistory": [
+    null
+  ],
+  "latestNativeMilestone": {
+    "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "report": {
+      "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+      "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+    },
+    "run": {
+      "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+      "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+    },
+    "proof": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+      "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "registeredNative": 100,
+    "passedModes": 49,
+    "passedChecks": 2785,
+    "nativeFrozenWithoutExecution": 50,
+    "knownWorkflowWithoutRetry": "style-player-bands",
+    "inputs": 30,
+    "inputDirectories": 7,
+    "sources": 292,
+    "outputs": 4,
+    "driverRegistered": 172,
+    "driverExecutedThisRound": 0,
+    "driverFrozenCountCarried": 30,
+    "newFailureCount": 0,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latest131516NativeMilestone": {
+    "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "report": {
+      "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+      "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+    },
+    "run": {
+      "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+      "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+    },
+    "proof": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+      "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "registeredNative": 100,
+    "passedModes": 49,
+    "passedChecks": 2785,
+    "nativeFrozenWithoutExecution": 50,
+    "knownWorkflowWithoutRetry": "style-player-bands",
+    "inputs": 30,
+    "inputDirectories": 7,
+    "sources": 292,
+    "outputs": 4,
+    "driverRegistered": 172,
+    "driverExecutedThisRound": 0,
+    "driverFrozenCountCarried": 30,
+    "newFailureCount": 0,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
   }
 }

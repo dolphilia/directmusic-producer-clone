@@ -99,7 +99,16 @@ NativeScriptTrackRuntime::~NativeScriptTrackRuntime()=default;
 void NativeScriptTrackRuntime::cancel(){impl_->close();}
 std::vector<NativeScriptCall> NativeScriptTrackRuntime::calls()const{std::lock_guard<std::mutex> guard(impl_->state->lock);return impl_->state->calls;}
 bool NativeScriptTrackRuntime::overflow()const{std::lock_guard<std::mutex> guard(impl_->state->lock);return impl_->state->overflow;}
-Bytes NativeScriptTrackRuntime::loader_bytes(const Bytes& bytes){if(bytes.empty())return {};auto root=Chunk::parse(bytes);if(auto tracks=root.find("LIST","trkl"))tracks->children.erase(std::remove_if(tracks->children.begin(),tracks->children.end(),[](const Chunk& track){if(!track.find("LIST","scrt"))return false;(void)script_events(track);return true;}),tracks->children.end());return root.encode();}
+Bytes NativeScriptTrackRuntime::loader_bytes(const Bytes& bytes){
+    if(bytes.empty())return {};auto root=Chunk::parse(bytes);
+    // The Windows Segment loader fails to create an object for a zero-child
+    // optional UNFO list. Keep authored bytes intact and omit only that empty
+    // container from the private runtime copy, just as Script tracks below
+    // are attached through the owned runtime implementation instead.
+    root.children.erase(std::remove_if(root.children.begin(),root.children.end(),[](const Chunk& c){return c.id=="LIST"&&c.type=="UNFO"&&c.children.empty();}),root.children.end());
+    if(auto tracks=root.find("LIST","trkl"))tracks->children.erase(std::remove_if(tracks->children.begin(),tracks->children.end(),[](const Chunk& track){if(!track.find("LIST","scrt"))return false;(void)script_events(track);return true;}),tracks->children.end());
+    return root.encode();
+}
 void NativeScriptTrackRuntime::attach(runtime::Segment* segment,const Bytes& bytes){
  const auto root=Chunk::parse(bytes);const auto tracks=root.find("LIST","trkl");if(!tracks)return;size_t index=0;
  for(const auto& track:tracks->children)if(track.find("LIST","scrt")){

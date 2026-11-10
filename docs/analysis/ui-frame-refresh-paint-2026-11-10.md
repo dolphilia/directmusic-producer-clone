@@ -1,0 +1,11 @@
+# Frame refresh paint checkpoint
+
+031819499はframe refresh末尾をInvalidateRect予約から既存layout_frameと同じ同期RedrawWindow(INVALIDATE|ERASE|ALLCHILDREN|UPDATENOW)へ変更し、旧control非表示後のframe/子control描画を完了させる候補。main1source変更291同一/292saved-working4outputs。音源/native/toolbar/Loop意味論は変更なし。関連7/988合格。初回選択名style-part-notesは未登録で6モードだけ実行されたため、正式style-playerのみ追加実行し先の6は繰り返していない。両runと訂正を保全。
+
+作者16976の初期Tree、再生前保存とPropertiesclose、cold Playと13.850/24.011/36.011秒後の三frame、Cursoroff二観測5686固定/on再開/Stop4720、停止後保存とPropertiescloseを確認。別新設定2444でInfiniteと2:1:1:0〜3:2:1:0/Tempo120復元再保存、第三のPropertiescloseも確認。三保存close直後の親灰色域に白矩形は見られず、観測したtimeline内の二C6notes/Band1/grid/rulerを保持。GDI91→92（事前+8内）。二通常exit0、3SGP全byte/ProjectFILETIME以外と292source4outputs完全保持。
+
+別起動の初期Treeは白く、Segment openで復帰したため全描画修復は未受入。新240s PCMは試聴二回/本再生一回/Stopの4actionsで、first Stop86.585秒となり不合格。各Play/Stop直後UIA応答欠落と別read-only復帰観測を保全。compact UIA/text/短い事前保存tool要求でも発生し、遅延原因は未確定。同条件の再録音は凍結し、基準緩和・旧WAV流用・欠落restart/finalStop補作なし。positive auditorはrequired actions不足でexit1、negative controlsは未実行。WAV 8c20dc6a3017a9f75114314b95396f2c277f4ff8d5472e5b8e821e8463519e5f。新PCM終了条件はfalse、単位boundedFinished=false。原版同入力動的/全geometry/全時間描画/StartTime/clock-time/InfoBoundary/全40全8も未達。既知OS50native30driverと全旧失敗を保全し6working/2blocked/0pass/fullAcceptance=false。
+
+一次入口：`work/analysis/ui-frame-refresh-paint/20261110T031700000Z/unit-record-v3.json`。
+
+031819499の新PCMは実行条件が変わるまで未達として保持し、同条件再録音をしない。独立するSegment StartTimeの原版CHM/保存DWORD8/PlayFromStart明示0とnative既定開始点を監査し、model/native依存から実装・関連検証を続行する。後続GUI保存通常終了/別復元/必要新PCMも未達を明記し、音声条件を緩和しない。全40全8/fullAcceptance=false、goal active。

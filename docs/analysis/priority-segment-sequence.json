@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedUtc": "2026-10-12T00:59:03.662Z",
+  "updatedUtc": "2026-11-10T12:15:40.675251+00:00",
   "plan": "docs/analysis/priority-segment-sequence-2026-10-10.md",
   "scope": "User-prioritized toolbar/Segment/Sequence flow; additional to all40 responsibilities and all8 acceptance criteria.",
   "source": "User numbered description and47 local PNGs, visually inspected. Dynamic behaviors are user reports; agent product reproduction pending.",
@@ -61,16 +61,16 @@
         3,
         4
       ],
-      "status": "20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。",
+      "status": "103640はprimaryなしの無効120、Tempoなしprimaryの無効空欄、Tempoあり132.25の編集可能表示を原版の契約に合わせた。関連4件238検査。空2676/作者6452/復元21216は通常exit0。primaryだけ切替えても編集文書/空履歴を保持し、Save Fileは編集中Seedだけを書いた。Transport再表示とNoTempo編集窓Close後も空欄を保持。2文書native保存/別復元/再保存を通し、両Segment全bytesとSeed17音符、Projectの既存参照を保持。native100は50合格2855検査、既知OS49件と匿名Band1件はPIDなし。入力30（7directory）/292ソース/4出力一致。表示修正なので新PCMなし・過去音声合格の転用なし。",
       "completed": false,
-      "latestTrialCandidate": "20261011T161437597Z",
+      "latestTrialCandidate": "20261109T114031247Z",
       "unit": {
-        "path": "work/analysis/ui-transport-options-icons/20261011T161113801Z/unit-record-v1.json",
-        "sha256": "9539a111ca96a3ced12c4521220bbf8c406f812f993b8dfdff6b76c58a6b5ca8"
+        "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/unit-record-v2.json",
+        "sha256": "7073fc4bee626aaf1ce45ee15f64ecf514a7953ed6e85587c302f6fdfe41ccb9"
       },
       "report": {
-        "path": "docs/analysis/ui-transport-options-icons-2026-10-12.md",
-        "sha256": "f8006a601962e7d0cce8001129458afce8ff3171db53ca76e0a3ab684cbe50df"
+        "path": "docs/analysis/ui-tempo-target-display-2026-11-09.md",
+        "sha256": "154b9819eb13ca473c1a854cea36e17bd351e9981c91fcee958535c55ec388e3"
       },
       "history": [
         {
@@ -339,6 +339,42 @@
           "report": {
             "path": "docs/analysis/ui-metronome-countin-2026-10-11.md",
             "sha256": "33fe6d6eee0877665c7860cd921898255698ce8a5411282c7d26d404c6d3d4f5"
+          }
+        },
+        {
+          "status": "20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。",
+          "latestTrialCandidate": "20261011T161437597Z",
+          "unit": {
+            "path": "work/analysis/ui-transport-options-icons/20261011T161113801Z/unit-record-v1.json",
+            "sha256": "9539a111ca96a3ced12c4521220bbf8c406f812f993b8dfdff6b76c58a6b5ca8"
+          },
+          "report": {
+            "path": "docs/analysis/ui-transport-options-icons-2026-10-12.md",
+            "sha256": "f8006a601962e7d0cce8001129458afce8ff3171db53ca76e0a3ab684cbe50df"
+          }
+        },
+        {
+          "status": "050149同一候補で停止中SegmentのCurrent Tempo入力/Enter/文書UndoRedo/spin/原版Escape保留とfocus-loss確定/1..1000正規化/空欄/Peer追加直後の表示と編集所有権を確認。関連5件496検査、native14状態+Peer5状態、作者14160/別12000の二通常exit0、別起動保存復元成立。132.25/120 BPMの実PCMは各17発音・音程・発音中Stop・無音・replay成立、間隔中央値0.455/0.500秒、負例5件拒否。全登録native100は50合格2830検査/49既知OS凍結/匿名Band1保留、新実行失敗なし。driver172は一覧参照のみで新一巡ではない。",
+          "latestTrialCandidate": "20261109T050149058Z",
+          "unit": {
+            "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v3.json",
+            "sha256": "b105500e72bc96e01af896e04bb82d8b598b75869b825e237b80e7db382ce4c5"
+          },
+          "report": {
+            "path": "docs/analysis/ui-current-tempo-resume-2026-11-09.md",
+            "sha256": "7c208b3a5e7b20a3dc190fe3d1b62ae2ec986bed6b69c605d364d3f1a6f92b5a"
+          }
+        },
+        {
+          "status": "055400でCurrent Tempo→Modifierの順序、FromStart/PlayとImmediateStop/BoundaryStopのglyph識別、Standard非表示/再表示後の入力・CtrlS、最大1000.00、UndoRedo/spinを確認。関連5/496、8Seed+8Peer native状態、291保存/作業ソース・4出力一致。作者6156/別2868の二通常exit0、別起動復元/再保存成立。2つのPlay入口の固定132.25 PCMは17発音/音程/Stop/無音/replay合格。",
+          "latestTrialCandidate": "20261109T055400398Z",
+          "unit": {
+            "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v3.json",
+            "sha256": "568f10b907e4418cf333854770fad72959bca8a0d5dd4be5ddc9b436ab589569"
+          },
+          "report": {
+            "path": "docs/analysis/ui-transport-controls-order-2026-11-09.md",
+            "sha256": "a126797fa9c9bb04f75f76dced5510da9badb2709f5b5365a15cc7f247322b26"
           }
         }
       ],
@@ -1116,6 +1152,106 @@
         "boundedFinished": false,
         "completed": false,
         "fullAcceptance": false
+      },
+      "latestWorkspaceCloseTrial": {
+        "updatedUtc": "2026-11-09T11:35:12.843104+00:00",
+        "candidate": "20261109T111021505Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+          "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-workspace-close-2026-11-09.md",
+          "sha256": "f7c12ea82815c02293482cebf84952335e1481e97d6890fea2307a89c9cf380b"
+        },
+        "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestRegistrationTrial": {
+        "updatedUtc": "2026-11-09T12:22:38.633161+00:00",
+        "candidate": "20261109T114031247Z",
+        "unit": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json",
+          "sha256": "b8aa9bec840b9ea2127e6fe5c96eca1c6c377d29ba81e47f7c8756d747a43e7a"
+        },
+        "report": {
+          "path": "docs/analysis/ui-transport-registration-2026-11-09.md",
+          "sha256": "790703fe0eacc0489a6299b73b300c191de61f234ddd495a15904b31c87b2f3b"
+        },
+        "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 168,
+        "relatedBlocked": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+          "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+        },
+        "candidateUiNativeAudioVerified": true,
+        "functionalBoundedFinished": false,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestMdiCloseKeyDiagnostic": {
+        "updatedUtc": "2026-11-09T13:49:42.298447+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-mdi-close-key/20261109T133909247Z/unit-record-v2.json",
+          "sha256": "2203a48263465e0f64090f25663afb9d0f615881244ce6824ed3b7b2f173de20"
+        },
+        "report": {
+          "path": "docs/analysis/ui-mdi-close-key-2026-11-09.md",
+          "sha256": "07d879c14df98a71d80ac41f12a6b83a8d45516eae7db231ee80f537f2cc4533"
+        },
+        "status": "Same131516 menu-state diagnostic bounded: GUI_INMENUMODE4 vs0 controls CtrlF4 result; no code fix;2normalexit0/native exact",
+        "sourceChanged": false,
+        "newBuild": false,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "sourceDefectFixed": false,
+        "originalMenuParity": false,
+        "audioExecuted": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestCurrentTempoPrimaryTrackTrial": {
+        "updatedUtc": "2026-11-09T19:12:22.653829+00:00",
+        "candidate": "20261109T184801667Z",
+        "unit": {
+          "path": "work/analysis/ui-current-tempo-primary-track/20261109T184300000Z/unit-record-v3.json",
+          "sha256": "3fa08779a8bb8ea00b601556c4ab4238dfeb96f3adf485324ffc1b4f6b287b35"
+        },
+        "report": {
+          "path": "docs/analysis/ui-current-tempo-primary-track-2026-11-10.md",
+          "sha256": "de5d73bb0c001a7b1485e7208349ae451289cae96aa38a1299b09861e33e1092"
+        },
+        "status": "CurrentTempo controlling-track ownership/native/separate reload verified;related5/627 incl28new;freshPCM19of19+7negative4clock;2normalexit0/292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 627,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -1137,17 +1273,17 @@
         46,
         47
       ],
-      "status": "New Files/Add TracksとSegment PropertiesのName/Length入口を限定修正。原版同入力20小節初期値/OK/Cancel、製品24小節UndoRedo/保存復元成立。残欄/全操作/厳密外観未完",
+      "status": "091437同一候補でTree右クリックNew→最初Segment1のLength未確定30→Cancel→AddTracks→Cancelを本体確認。作成済み20小節/TimeSig4/4のみ・空UndoRedoが残り、作者20272/別復元20904は二通常exit0。native全Segment bytes/Project FILETIME以外と292ソース/4出力一致。ソース変更/新build/新PCMなし。関連4/238は同じ候補の既存2run参照で新実行ではない。原版契約は110746時の正式原版観測を参照し、新しい同入力比較とはしない。",
       "completed": false,
       "dependencyPolicy": "Standard Newと既存Frameworkを利用できるため独立着手可。SSP01の完了を宣言せず残件を保持する。",
-      "latestTrialCandidate": "20261011T130456757Z",
+      "latestTrialCandidate": "20261109T122735870Z",
       "unit": {
-        "path": "work\\analysis\\ui-segment-properties\\20261011T125300443Z\\unit-record-v1.json",
-        "sha256": "a1423c5a1ccfcfc18384b01f3990b794f1e033714818591c0f28a8e97d3dd55e"
+        "path": "work/analysis/ui-segment-length-cancel/20261109T093620584Z/unit-record-v2.json",
+        "sha256": "68ca4f5149f966e6a7f99cc3405e77e666e93967d18d531a0fd700b0eb8fb373"
       },
       "report": {
-        "path": "docs/analysis/ui-segment-properties-2026-10-11.md",
-        "sha256": "5798f9a8a1eed6fe2e2ed3ebc0379a4841afe55f16a6e3a8af9b95d855110afb"
+        "path": "docs/analysis/ui-segment-length-cancel-2026-11-09.md",
+        "sha256": "d2c93a4a81efc1158bec36207b566382366b3507ad75fae74ceb2b064ec5d598"
       },
       "fullAcceptance": false,
       "latestBandIntegration": {
@@ -1525,6 +1661,294 @@
         "boundedFinished": false,
         "completed": false,
         "fullAcceptance": false
+      },
+      "latestWorkspaceCloseTrial": {
+        "updatedUtc": "2026-11-09T11:35:12.843104+00:00",
+        "candidate": "20261109T111021505Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+          "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-workspace-close-2026-11-09.md",
+          "sha256": "f7c12ea82815c02293482cebf84952335e1481e97d6890fea2307a89c9cf380b"
+        },
+        "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestReopenTracksTrial": {
+        "updatedUtc": "2026-11-09T12:54:45.394569+00:00",
+        "candidate": "20261109T122735870Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-reopen-tracks/20261109T122451800Z/unit-record-v2.json",
+          "sha256": "bdb2f139876cdce52fb5cb45498ba3147092343ce4a5818da5406634de7c92df"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-reopen-tracks-2026-11-09.md",
+          "sha256": "28c22040404d36d7fd8e057a1a2147c9147e71e65bfae64c5b3152f28dc3be5f"
+        },
+        "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 168,
+        "carriedRelatedBlocker": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+          "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+        },
+        "carriedRelatedBlockerResolved": false,
+        "functionalBoundedFinished": true,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestAddBandTempoTrial": {
+        "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+        "candidate": "20261109T122735870Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+          "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+          "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+        },
+        "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+        "sourceChanged": false,
+        "newBuild": false,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedFreshChecks": 117,
+        "relatedExistingSameCandidateChecks": 168,
+        "carriedRelatedBlockerResolved": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandCycleTrial": {
+        "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+          "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+          "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+        },
+        "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 285,
+        "keyboardResidual": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+          "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+        },
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandCycleTicksTrial": {
+        "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+          "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+          "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+        },
+        "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandLogicalCollisionTrial": {
+        "updatedUtc": "2026-11-09T16:21:13.368833+00:00",
+        "candidate": "20261109T153816119Z",
+        "unit": {
+          "path": "work/analysis/ui-band-logical-collision/20261109T153138000Z/unit-record-v3.json",
+          "sha256": "f890a59f8c41cb734ac3c1fcc726c0ceb84ca1b937ca1badf4f5780c5d3bfa01"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-logical-collision-2026-11-10.md",
+          "sha256": "411b658ba0119fe781bdaeeb98ff73049de1e65338ced6659f6c816dc403804b"
+        },
+        "status": "Same-logical Band support verified:4related508checks; GUI B/C overlap,selected rename/Cchild/Breloadchild/UndoRedo;2normalexit0/native only declared fields/292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 508,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestTimelineOrderTrial": {
+        "updatedUtc": "2026-11-09T16:42:41.874458+00:00",
+        "candidate": "20261109T162522992Z",
+        "unit": {
+          "path": "work/analysis/ui-timeline-order/20261109T162156000Z/unit-record-v3.json",
+          "sha256": "ce1c4c12507075b8e468035655cf7072eab8cf5f198f4bd810d63955d2f0d7be"
+        },
+        "report": {
+          "path": "docs/analysis/ui-timeline-order-2026-11-10.md",
+          "sha256": "94c0478ee653739cc0baeb64b70302005cb6331b551dbc2eb51b70639a2b9ff6"
+        },
+        "status": "Timeline known4strip order/actualmask ranges/labels verified;3related478;4row Properties owners;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 478,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandOwnerTitleTrial": {
+        "updatedUtc": "2026-11-09T17:44:00.680892+00:00",
+        "candidate": "20261109T172245420Z",
+        "unit": {
+          "path": "work/analysis/ui-band-owner-title/20261109T171721000Z/unit-record-v3.json",
+          "sha256": "2bc10c90c202e8d2ca1e7a7b0bcc6ec04764c253588a8d17584c6857af445afd"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-owner-title-2026-11-10.md",
+          "sha256": "c38cb751189fda7ee20a36c9273294b72504c9740bb668878997b741c3ec7eb8"
+        },
+        "status": "Owner title/live unchangedBand fastpath/Undo original verified;related3/494;2normalexit0/separate reload/native preservation292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 494,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandGraphPositionTrial": {
+        "updatedUtc": "2026-11-09T18:00:21.942669+00:00",
+        "candidate": "20261109T174532050Z",
+        "unit": {
+          "path": "work/analysis/ui-band-graph-position/20261109T174400000Z/unit-record-v3.json",
+          "sha256": "a13f2ee45961b4766d95338ba2c26a871a2b0657043becd27f2a2e7225518e86"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-graph-position-2026-11-10.md",
+          "sha256": "3bf8da0215c2c62b75f2a5a1a0e019bcc7953a18cd3524c278eb93c76b610f96"
+        },
+        "status": "Stored pan-volume graph overlap/selection/resize verified;related3/501 incl7new;2normalexit0/separate reload/native preservation292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 501,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestTempoGlobalCreationTrial": {
+        "updatedUtc": "2026-11-09T20:12:45.443043+00:00",
+        "candidate": "20261109T194909234Z",
+        "unit": {
+          "path": "work/analysis/ui-tempo-global-creation/20261109T191400000Z/unit-record-v3.json",
+          "sha256": "92cf22281df57fc2af609aa0e2d7c51433c313e3f3dd30c9a590941a0a2cafe5"
+        },
+        "report": {
+          "path": "docs/analysis/ui-tempo-global-creation-2026-11-10.md",
+          "sha256": "2c88d52931fbcf8ae2b3b7892f616233ccce0f1221bd8f2f7c44b2fbc3c1eb12"
+        },
+        "status": "bounded GUI globalTempo creation verified; whole acceptance incomplete",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 648,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestLengthPrimaryTempoTrial": {
+        "updatedUtc": "2026-11-09T20:59:07.047216+00:00",
+        "candidate": "20261109T201457752Z",
+        "unit": {
+          "path": "work/analysis/ui-length-primary-tempo/20261109T201400000Z/unit-record-v3.json",
+          "sha256": "38aaafe8b6a6eaa2e2fc391ef2f6102f417aed20cae1995decee2f1d7c537333"
+        },
+        "report": {
+          "path": "docs/analysis/ui-length-primary-tempo-2026-11-10.md",
+          "sha256": "2922d3ec7301af1424d21e6f9b8201b4d7c81714e8ffbd9fa0f21edbc79ea22b"
+        },
+        "status": "bounded Length controllingTempo conversion verified; whole acceptance incomplete",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 671,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSegmentLoopMusicTrial": {
+        "updatedUtc": "2026-11-10T00:46:52.348369+00:00",
+        "candidate": "20261109T235737154Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v3.json",
+          "sha256": "07a2d7e0a6eb20ee0011fa9616efa431e6e189c07e613d05a49205285cbe837b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-loop-music-2026-11-10.md",
+          "sha256": "25d9f9e7933c58a548ca291f04c99702d5d0a4487e88ff9c40385bf8ecf9d25c"
+        },
+        "status": "bounded Segment music-time Loop UI/native/history/restore/whole and custom Infinite PCM verified; finite native runtime verified; whole acceptance incomplete",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 7,
+        "relatedPassedChecks": 932,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -1890,6 +2314,168 @@
           "path": "work/analysis/ui-velocity-revalidation/20261011T090428025Z/artifact-audit-v1.json",
           "sha256": "6ca26ee22d91febab450d8176532d3af8331bd41946064b03860221285894536"
         },
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceOriginalComparison": {
+        "updatedUtc": "2026-11-09T16:13:55.944531+00:00",
+        "unit": {
+          "path": "work/analysis/ui-sequence-original/20261109T150614000Z/unit-record-v3.json",
+          "sha256": "67bf59b7be58026701878ed79b66b80c414125daaa42d550e5050ac8c790c58b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-original-2026-11-10.md",
+          "sha256": "a8d6ecf91e4188e64abb3bf2b9131e8373f8dc518b6c258b7a3be7743b92f4d9"
+        },
+        "candidateCompared": "20261109T131516936Z",
+        "formalOriginalPid": 1164,
+        "normalExit": true,
+        "parityGapsRemain": true,
+        "originalAudioExecuted": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestTimelineOrderTrial": {
+        "updatedUtc": "2026-11-09T16:42:41.874458+00:00",
+        "candidate": "20261109T162522992Z",
+        "unit": {
+          "path": "work/analysis/ui-timeline-order/20261109T162156000Z/unit-record-v3.json",
+          "sha256": "ce1c4c12507075b8e468035655cf7072eab8cf5f198f4bd810d63955d2f0d7be"
+        },
+        "report": {
+          "path": "docs/analysis/ui-timeline-order-2026-11-10.md",
+          "sha256": "94c0478ee653739cc0baeb64b70302005cb6331b551dbc2eb51b70639a2b9ff6"
+        },
+        "status": "Timeline known4strip order/actualmask ranges/labels verified;3related478;4row Properties owners;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 478,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequencePitchViewTrial": {
+        "updatedUtc": "2026-11-09T17:17:02.883240+00:00",
+        "candidate": "20261109T165309981Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-pitch-view/20261109T164346000Z/unit-record-v3.json",
+          "sha256": "e57107246251c67dda1dda21a6abfaca25af69de244153ff887a7adfca2df098"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-pitch-view-2026-11-10.md",
+          "sha256": "55abfe416c965e22ebeb027349ea50de4dca847d70cacb606780f2d5201fe67b"
+        },
+        "status": "Part verticalzoom/native keyboard semitone-page-thumb verified;3related494 incl16new;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 494,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceLogicalTimeTrial": {
+        "updatedUtc": "2026-11-09T18:35:11.398560+00:00",
+        "candidate": "20261109T180733499Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-logical-time/20261109T180300000Z/unit-record-v3.json",
+          "sha256": "25923022650c7413a30ac87312bc24ae268d033fe13efc052d6b33d614f2d7f5"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-logical-time-2026-11-10.md",
+          "sha256": "e5e85804bd56cb56c8f7605d141dd29fe6c7047aab332ce8c76d35495a6d6702"
+        },
+        "status": "Sequence logical ownership/Properties/UndoRedo/native/separate reload verified;related4/566 incl35new;freshPCM18of18+6negative4clock;2normalexit0/292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 566,
+        "relatedReferenceOnly": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceLogicalLookaheadTrial": {
+        "updatedUtc": "2026-11-09T22:24:03.494036+00:00",
+        "candidate": "20261109T214458343Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-logical-lookahead/20261109T214400000Z/unit-record-v3.json",
+          "sha256": "a3fe5fcc90c18c1917c7899625dfc85b1baf7daef648ff05fd71c620ef0425f4"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-logical-lookahead-2026-11-10.md",
+          "sha256": "f7d13c2f246ab5b9abdca97b7a0fae859d0e14629bc58c7e74cfd9589b31b79a"
+        },
+        "status": "bounded Sequence negative-offset lookahead verified; old failed member and first baseline timing failure preserved; whole acceptance incomplete",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 7,
+        "relatedPassedChecks": 870,
         "boundedFinished": true,
         "completed": false,
         "fullAcceptance": false
@@ -3076,7 +3662,60 @@
           "sha256": "eea73cd8d861aa0545c1e6dc47857d6e4279936cf9713de6a05f2482a4cc0ef3"
         }
       ],
-      "completed": false
+      "completed": false,
+      "latestMenuTrial": {
+        "updatedUtc": "2026-11-09T10:33:30.208542+00:00",
+        "candidate": "20261109T100901325Z",
+        "unit": {
+          "path": "work/analysis/ui-frame-menu/20261109T095015925Z/unit-record-v4.json",
+          "sha256": "6d1fd1eaaa755be64b2a2461975b3daaf68216489ff19d8e139984c65826df34"
+        },
+        "report": {
+          "path": "docs/analysis/ui-frame-menu-2026-11-09.md",
+          "sha256": "eb21e7a861465260b7bc32ba4b3268a42f771ee6b5cb06390c5c3689189fb926"
+        },
+        "status": "100901 menu prefix/AltF/F10/View submenu/MDI-Edit focus/old transport keys verified; related4/238; 3normalexit0; native initial/author/reload unchanged",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "keyboardRuntimePassed": true,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestTempoTargetTrial": {
+        "updatedUtc": "2026-11-09T11:02:40.457205+00:00",
+        "candidate": "20261109T103640944Z",
+        "unit": {
+          "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/unit-record-v2.json",
+          "sha256": "7073fc4bee626aaf1ce45ee15f64ecf514a7953ed6e85587c302f6fdfe41ccb9"
+        },
+        "report": {
+          "path": "docs/analysis/ui-tempo-target-display-2026-11-09.md",
+          "sha256": "154b9819eb13ca473c1a854cea36e17bd351e9981c91fcee958535c55ec388e3"
+        },
+        "status": "No-primary120/NoTempo-blank/numeric132.25 display verified; related4/238; native100:50/2855+49frozen+anonymous1; 3normalexit0 and native roundtrip",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "nativeMilestone": {
+          "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/native-milestone-proof-v1.json",
+          "sha256": "6ac78f5241843c40ab6b54adc9bd091d03067c86936600f6e265e454d081a26c"
+        },
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      }
     },
     {
       "number": 2,
@@ -3094,7 +3733,7 @@
       "uiCase": "UI13.priority-02",
       "baselineKind": "userScreenshotAndReportedBehavior",
       "capturedExecutableIdentity": "未確認。正式原版の別セッション観測から画像のEXE/hashを推定しない。",
-      "productComparisonStatus": "試聴倍率/部分Transport機能と本体操作限定確認・全原版比較未達",
+      "productComparisonStatus": "SegmentのTransport List/停止中Tempo/primary再生の独立選択/保存復元/固定PCMを限定確認。全component/録音/Transition/全外観未達。",
       "implementationEvidence": {
         "candidate": "20261010T074753429Z",
         "unit": {
@@ -3106,6 +3745,241 @@
           "sha256": "669c3511a406658bd3bdaa8f60728d84897fe8dcf5cca47188a36e54dd69941f"
         },
         "completed": false,
+        "fullAcceptance": false
+      },
+      "latestCurrentTempoTrial": {
+        "updatedUtc": "2026-11-09T05:40:08.856675+00:00",
+        "candidate": "20261109T050149058Z",
+        "unit": {
+          "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v3.json",
+          "sha256": "b105500e72bc96e01af896e04bb82d8b598b75869b825e237b80e7db382ce4c5"
+        },
+        "report": {
+          "path": "docs/analysis/ui-current-tempo-resume-2026-11-09.md",
+          "sha256": "7c208b3a5e7b20a3dc190fe3d1b62ae2ec986bed6b69c605d364d3f1a6f92b5a"
+        },
+        "status": "bounded-stopped-Segment-functionality-verified; strict-appearance-and-broader-Transport-open",
+        "sourceChanged": true,
+        "compiled": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 496,
+        "candidateMainExecuted": true,
+        "candidateNativeRoundTrip": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "originalAdditionalContract": true,
+        "strictAppearance": false,
+        "pausedByUser": false,
+        "functionalBoundedFinished": true,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestTransportControlsTrial": {
+        "updatedUtc": "2026-11-09T06:13:52.703037+00:00",
+        "candidate": "20261109T055400398Z",
+        "unit": {
+          "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v3.json",
+          "sha256": "568f10b907e4418cf333854770fad72959bca8a0d5dd4be5ddc9b436ab589569"
+        },
+        "report": {
+          "path": "docs/analysis/ui-transport-controls-order-2026-11-09.md",
+          "sha256": "a126797fa9c9bb04f75f76dced5510da9badb2709f5b5365a15cc7f247322b26"
+        },
+        "status": "bounded-order-glyph-relayout-native-restore-PCM-verified; fullTransport-open",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 496,
+        "strictAppearance": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestTransportPrimaryTrial": {
+        "updatedUtc": "2026-11-09T06:57:38.772110+00:00",
+        "candidate": "20261109T062231219Z",
+        "unit": {
+          "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v3.json",
+          "sha256": "7aeaee4b03bdbeb9b90f48c3cf63f4607fefd2b880fe2358746bf81e01298412"
+        },
+        "report": {
+          "path": "docs/analysis/ui-transport-primary-2026-11-09.md",
+          "sha256": "117a67b6d24b481902a3f7db33591a4223008a92f3f2dfe5611890fd0c033d3b"
+        },
+        "status": "bounded-Segment-primary-selection-owner-native-two-process-PCM-and-native100-verified; fullTransport-open",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 496,
+        "nativeMilestone": {
+          "path": "work/analysis/ui-transport-primary/20261109T062110913Z/native-milestone-proof-v1.json",
+          "sha256": "93b6d9735b27f60b7ec88536b7a792169feeeba4adc66f704e1f05306bebaa38"
+        },
+        "functionalBoundedFinished": true,
+        "nativeMilestoneRunning": false,
+        "strictAppearance": false,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestTransportLabelTrial": {
+        "updatedUtc": "2026-11-09T07:27:17.366368+00:00",
+        "candidate": "20261109T070706789Z",
+        "unit": {
+          "path": "work/analysis/ui-transport-labels/20261109T070235697Z/unit-record-v2.json",
+          "sha256": "b121560ceda195d255e5a4fada88c146b16918abadf184c54feacc59bf410976"
+        },
+        "report": {
+          "path": "docs/analysis/ui-transport-labels-2026-11-09.md",
+          "sha256": "c557bc7ad9fae04df7b007b6346aa5d4ab621f9b11225780b34e611e9d15f8e5"
+        },
+        "status": "070706 build/related5-472/main2process/native allbytes passed; original blank-name/SaveAs parity differences found; correction required",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 472,
+        "newAudioRequired": false,
+        "originalNameParityPassed": false,
+        "originalSaveAsParityPassed": false,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestTransportLabelParityTrial": {
+        "updatedUtc": "2026-11-09T07:40:19.269243+00:00",
+        "candidate": "20261109T072804038Z",
+        "unit": {
+          "path": "work/analysis/ui-transport-label-parity/20261109T072748612Z/unit-record-v2.json",
+          "sha256": "6291937198ae27be70c09bcd9409f6955cec44ae9a8ee5dfa88a24f423051438"
+        },
+        "report": {
+          "path": "docs/analysis/ui-transport-label-parity-2026-11-09.md",
+          "sha256": "47c7f2de7c9bea36863f31ffdc8a86d55da0ba78611ca45658ba7b6b7ea9f3af"
+        },
+        "status": "072804 saved absent-UNAM blank-name label matches observed original; build/4-213/main2process/native bytes passed",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 213,
+        "functionalBoundedFinished": true,
+        "originalBlankNameParity": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestEmptyUnfoTrial": {
+        "updatedUtc": "2026-11-09T08:34:49.980257+00:00",
+        "candidate": "20261109T081250588Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v2.json",
+          "sha256": "2356ca6938454ef41a152c12f2ef90d365e9527627388e3328c351376f4a5be8"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-empty-unfo-2026-11-09.md",
+          "sha256": "5e0285965d1c813438b2c01afa51281bfa8aedf2af3931b9e1f2d7c5266aa646"
+        },
+        "status": "081250 private empty-UNFO correction verified: related5-497, main/native2process, 137PCM+5controls, native100=50passed2855/49frozen/1pending",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 5,
+        "relatedPassedChecks": 497,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "nativeMilestone": {
+          "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/native-milestone-proof-v1.json",
+          "sha256": "c410c8e08f13cebbabc00329b593a29b435b53644efdc1893bfd41a2adf2d4c7"
+        },
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestStartupTrial": {
+        "updatedUtc": "2026-11-09T09:11:22.846740+00:00",
+        "candidate": "20261109T084341067Z",
+        "unit": {
+          "path": "work/analysis/ui-startup-newfiles/20261109T083128897Z/unit-record-v2.json",
+          "sha256": "290d9e84be9472fe25a3661052185a5d1021b87d097961385b005833bbee9db4"
+        },
+        "report": {
+          "path": "docs/analysis/ui-startup-newfiles-2026-11-09.md",
+          "sha256": "394261751c149b748cfdb20efd081fd48da1e0f17f9705bb44bcaa844eb07009"
+        },
+        "status": "084341 empty startup/New Files bounded lifecycle verified; related4/238; 3 normalexit0; one native Segment/20measures/TimeSig only saved and separately restored",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestEmptyFrameTrial": {
+        "updatedUtc": "2026-11-09T09:35:01.821407+00:00",
+        "candidate": "20261109T091437876Z",
+        "unit": {
+          "path": "work/analysis/ui-empty-frame/20261109T091347255Z/unit-record-v2.json",
+          "sha256": "91e006e553f1e1610f74886609e7bc6f03026d62f377d0f971b35a603fb8a313"
+        },
+        "report": {
+          "path": "docs/analysis/ui-empty-frame-2026-11-09.md",
+          "sha256": "46c5ea68f7f9b11edd7d1a00fabe9877642e0a0fd2bc69f5d223b8e0c18651bf"
+        },
+        "status": "091437 empty frame/disabled120 verified; related4/238 in2runs; 3normalexit0; explicitProject dirty protection and firstSegment/native separate restore pass",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestRegistrationTrial": {
+        "updatedUtc": "2026-11-09T12:22:38.633161+00:00",
+        "candidate": "20261109T114031247Z",
+        "unit": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json",
+          "sha256": "b8aa9bec840b9ea2127e6fe5c96eca1c6c377d29ba81e47f7c8756d747a43e7a"
+        },
+        "report": {
+          "path": "docs/analysis/ui-transport-registration-2026-11-09.md",
+          "sha256": "790703fe0eacc0489a6299b73b300c191de61f234ddd495a15904b31c87b2f3b"
+        },
+        "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioPassed": true,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 168,
+        "relatedBlocked": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+          "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+        },
+        "candidateUiNativeAudioVerified": true,
+        "functionalBoundedFinished": false,
+        "completed": false,
+        "boundedFinished": false,
         "fullAcceptance": false
       }
     },
@@ -3725,6 +4599,32 @@
       "latestOriginalObservation": {
         "path": "work/analysis/ui-new-files/20261011T105253852Z/original-created-document-v1.json",
         "sha256": "6c8da586f40b542a35e03a8525d7350847e5a26f217e9528b6c40d445d0ca992"
+      },
+      "latestLengthCancelTrial": {
+        "updatedUtc": "2026-11-09T09:49:22.115532+00:00",
+        "candidate": "20261109T091437876Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-length-cancel/20261109T093620584Z/unit-record-v2.json",
+          "sha256": "68ca4f5149f966e6a7f99cc3405e77e666e93967d18d531a0fd700b0eb8fb373"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-length-cancel-2026-11-09.md",
+          "sha256": "d2c93a4a81efc1158bec36207b566382366b3507ad75fae74ceb2b064ec5d598"
+        },
+        "status": "091437 TreeNew/Length pending30 Cancel bounded main/native verified; author20272/reload20904 normalexit0; default20/TimeSig-only/bytes preserved",
+        "sourceChanges": false,
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedExistingSameCandidateModes": 4,
+        "relatedExistingSameCandidateChecks": 238,
+        "newRelatedExecuted": false,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -3797,6 +4697,82 @@
       "latestOriginalObservation": {
         "path": "work/analysis/ui-add-tracks/20261011T114547994Z/original-observation-v2.json",
         "sha256": "90a6d52beeb0a801ac322927e7aaf63a9d6cbbe5bbe2ebbfc426a26496251ea4"
+      },
+      "latestWorkspaceCloseTrial": {
+        "updatedUtc": "2026-11-09T11:35:12.843104+00:00",
+        "candidate": "20261109T111021505Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+          "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-workspace-close-2026-11-09.md",
+          "sha256": "f7c12ea82815c02293482cebf84952335e1481e97d6890fea2307a89c9cf380b"
+        },
+        "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 238,
+        "audioExecuted": false,
+        "audioRequired": false,
+        "functionalBoundedFinished": true,
+        "completed": false,
+        "boundedFinished": false,
+        "fullAcceptance": false
+      },
+      "latestReopenTracksTrial": {
+        "updatedUtc": "2026-11-09T12:54:45.394569+00:00",
+        "candidate": "20261109T122735870Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-reopen-tracks/20261109T122451800Z/unit-record-v2.json",
+          "sha256": "bdb2f139876cdce52fb5cb45498ba3147092343ce4a5818da5406634de7c92df"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-reopen-tracks-2026-11-09.md",
+          "sha256": "28c22040404d36d7fd8e057a1a2147c9147e71e65bfae64c5b3152f28dc3be5f"
+        },
+        "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 3,
+        "relatedPassedChecks": 168,
+        "carriedRelatedBlocker": {
+          "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+          "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+        },
+        "carriedRelatedBlockerResolved": false,
+        "functionalBoundedFinished": true,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestAddBandTempoTrial": {
+        "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+        "candidate": "20261109T122735870Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+          "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+          "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+        },
+        "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+        "sourceChanged": false,
+        "newBuild": false,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedFreshChecks": 117,
+        "relatedExistingSameCandidateChecks": 168,
+        "carriedRelatedBlockerResolved": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -3851,6 +4827,30 @@
       "latestOriginalObservation": {
         "path": "work/analysis/ui-add-tracks/20261011T114547994Z/original-observation-v2.json",
         "sha256": "90a6d52beeb0a801ac322927e7aaf63a9d6cbbe5bbe2ebbfc426a26496251ea4"
+      },
+      "latestAddBandTempoTrial": {
+        "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+        "candidate": "20261109T122735870Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+          "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+          "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+        },
+        "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+        "sourceChanged": false,
+        "newBuild": false,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedFreshChecks": 117,
+        "relatedExistingSameCandidateChecks": 168,
+        "carriedRelatedBlockerResolved": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -3915,6 +4915,55 @@
         "limitedIntegrationPassed": true,
         "originalComparison": false,
         "exactAppearance": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandCycleTrial": {
+        "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+          "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+          "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+        },
+        "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 285,
+        "keyboardResidual": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+          "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+        },
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandCycleTicksTrial": {
+        "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+          "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+          "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+        },
+        "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
         "completed": false,
         "fullAcceptance": false
       }
@@ -3983,6 +5032,55 @@
         "exactAppearance": false,
         "completed": false,
         "fullAcceptance": false
+      },
+      "latestBandCycleTrial": {
+        "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+          "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+          "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+        },
+        "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 285,
+        "keyboardResidual": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+          "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+        },
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandCycleTicksTrial": {
+        "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+          "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+          "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+        },
+        "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -4049,6 +5147,55 @@
         "exactAppearance": false,
         "completed": false,
         "fullAcceptance": false
+      },
+      "latestBandCycleTrial": {
+        "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+          "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+          "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+        },
+        "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedPassedModes": 4,
+        "relatedPassedChecks": 285,
+        "keyboardResidual": {
+          "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+          "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+        },
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestBandCycleTicksTrial": {
+        "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+          "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+        },
+        "report": {
+          "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+          "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+        },
+        "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -4079,6 +5226,30 @@
           "path": "work/analysis/ui-segment-creation/20261010T104037241Z/main-create-save-reload-proof-v1.json",
           "sha256": "a4184311c88c5f3f47c60dff64bb55f53937d001e9628d743e54bdc4d7036512"
         }
+      },
+      "latestAddBandTempoTrial": {
+        "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+        "candidate": "20261109T122735870Z",
+        "unit": {
+          "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+          "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+        },
+        "report": {
+          "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+          "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+        },
+        "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+        "sourceChanged": false,
+        "newBuild": false,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": false,
+        "relatedFreshChecks": 117,
+        "relatedExistingSameCandidateChecks": 168,
+        "carriedRelatedBlockerResolved": false,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -4208,6 +5379,56 @@
           "exactAppearance": false
         },
         "nextAction": "次はSSP01/UI13のMIDI Input・Echo設定の無効表示を実責務として調査する。CHMの入力/echo/PChannel契約と現行DirectMusic経路、利用可能入力portを照合し、開始契約で閉じる不足と実機非適用を区別して実装へ進む。viewportの字体/右端ラベル/音高スクロール/厳密原版比較、Count-In031359のPCM総合不合格、独立Style015244/Q2/OS凍結は保持する",
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
         "boundedFinished": true,
         "completed": false,
         "fullAcceptance": false
@@ -4405,6 +5626,56 @@
         "exactAppearance": false,
         "completed": false,
         "fullAcceptance": false
+      },
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -4423,7 +5694,57 @@
       "uiCase": "UI02.priority-15",
       "baselineKind": "userScreenshotAndReportedBehavior",
       "capturedExecutableIdentity": "未確認。正式原版の別セッション観測から画像のEXE/hashを推定しない。",
-      "productComparisonStatus": "比較未確認"
+      "productComparisonStatus": "比較未確認",
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      }
     },
     {
       "number": 16,
@@ -4502,6 +5823,56 @@
         "completed": false,
         "fullAcceptance": false,
         "scope": "Four-phase PCM only, remaining gestures/original comparison incomplete"
+      },
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
       }
     },
     {
@@ -4762,7 +6133,57 @@
       "uiCase": "UI02.priority-21",
       "baselineKind": "userScreenshotAndReportedBehavior",
       "capturedExecutableIdentity": "未確認。正式原版の別セッション観測から画像のEXE/hashを推定しない。",
-      "productComparisonStatus": "比較未確認"
+      "productComparisonStatus": "比較未確認",
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      }
     },
     {
       "number": 22,
@@ -4782,7 +6203,57 @@
       "uiCase": "UI02.priority-22",
       "baselineKind": "userScreenshotAndReportedBehavior",
       "capturedExecutableIdentity": "未確認。正式原版の別セッション観測から画像のEXE/hashを推定しない。",
-      "productComparisonStatus": "比較未確認"
+      "productComparisonStatus": "比較未確認",
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      }
     },
     {
       "number": 23,
@@ -4802,7 +6273,57 @@
       "uiCase": "UI02.priority-23",
       "baselineKind": "userScreenshotAndReportedBehavior",
       "capturedExecutableIdentity": "未確認。正式原版の別セッション観測から画像のEXE/hashを推定しない。",
-      "productComparisonStatus": "比較未確認"
+      "productComparisonStatus": "比較未確認",
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      }
     },
     {
       "number": 24,
@@ -4854,7 +6375,57 @@
         "completed": false,
         "fullAcceptance": false
       },
-      "completed": false
+      "completed": false,
+      "latestSequenceMinimumTrial": {
+        "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+          "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+          "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+        },
+        "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": false,
+        "completed": false,
+        "fullAcceptance": false
+      },
+      "latestSequenceActiveStopTrial": {
+        "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+        "candidate": "20261109T131516936Z",
+        "unit": {
+          "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+          "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+        },
+        "report": {
+          "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+          "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+        },
+        "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+        "compiled": true,
+        "candidateMainExecuted": true,
+        "nativeRoundTripPassed": true,
+        "audioExecuted": true,
+        "audioAccepted": true,
+        "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+        "previousSixSecondStopAccepted": false,
+        "relatedReferenceOnly": true,
+        "relatedPassedModes": 49,
+        "relatedPassedChecks": 2785,
+        "boundedFinished": true,
+        "completed": false,
+        "fullAcceptance": false
+      }
     },
     {
       "number": 25,
@@ -6725,7 +8296,7 @@
     "path": "docs/analysis/priority-segment-sequence-2026-10-10.md",
     "sha256": "b1ecc1c30f11f9ebb8b150cf571ef91a9a2008a312d99dde7a17c089656b4c87"
   },
-  "next": "ユーザーが再開を指示するまで作業を進めない。再開後は004853の保存/作業291ソース・4出力・入力を照合し、現在の低解像度と最新windowを再観測。正式原版のEscape/focus-loss/不正値契約の未確認を保持し、004853本体を専用candidate Projectで初起動→132.25入力/Enter/UndoRedo/spin/文書所有権→native保存→通常終了→別process復元/通常終了→固定WASAPIテンポ/発音中Stop/無音/replay比較へ進む。保存済み235833空CC・224147一巡/CC15/16を新候補の実行証拠へ転用しない。49native/30driverの凍結、SSP04親/6640破棄回答待ち、独立Style015244/Q2/全40/全8を保持。",
+  "next": "ExtendedBoundary1128の作者15080/別15768両通常0とnative26+復元3stageを保全。次の独立作業は正式RT_DIALOGのMS Shell Dlg8と現Segment専用MS Sans Serif8の字体差を一次資料/現ホストのaliasで照合し、限定font候補の実装/本体保存別復元へ。ClockTimeLoopは旧SDK40byteにloop拡張定義がなく原版codec一次調査を先行、offset推測で編集しない。advanced位相/Queue時刻/PCM/原版dynamic/全7関連/全40全8/fullAcceptance=false、時計/Timeline/原版同条件再試行なし。",
   "latestSegmentCreationTrial": {
     "updatedUtc": "2026-10-10T11:55:45.388Z",
     "candidate": "20261010T111522433Z",
@@ -7822,7 +9393,42 @@
     {
       "savedUtc": "2026-10-12T00:59:03.662Z",
       "value": "SSP02/UI01.priority-05のCreate New File(s)空選択OKを、正式原版→235833候補の順に観測する。既定Segmentの選択を実UIで解除できるか、OKの有効性・確定後の警告/文書/dirty/historyを区別する。差が実在すれば修正し、新候補関連回帰・本体/native保存/別復元/通常終了へ進む。49native/30driverの既知OS拒否、CC短時間Stop15/16、SSP04親/6640破棄回答待ち、独立Style015244/Q2、全40/全8を保持する。"
-    }
+    },
+    "ユーザーが再開を指示するまで作業を進めない。再開後は004853の保存/作業291ソース・4出力・入力を照合し、現在の低解像度と最新windowを再観測。正式原版のEscape/focus-loss/不正値契約の未確認を保持し、004853本体を専用candidate Projectで初起動→132.25入力/Enter/UndoRedo/spin/文書所有権→native保存→通常終了→別process復元/通常終了→固定WASAPIテンポ/発音中Stop/無音/replay比較へ進む。保存済み235833空CC・224147一巡/CC15/16を新候補の実行証拠へ転用しない。49native/30driverの凍結、SSP04親/6640破棄回答待ち、独立Style015244/Q2/全40/全8を保持。",
+    "SSP01を継続。現環境の原版/CHMからTransport Listの対象と停止中/編集対象切替/再生の契約を限定観測し、同じ選択・配置・Current Tempo連動を実装→保存build/関連回帰→本体/保存/二通常終了/別復元/必要PCMへ進む。Style/live/secondary・録音/Transition・厳密外観・全40/全8/Q2・既知OS凍結を保持。",
+    "SSP01 Transport Listを実装する。編集対象とprimary再生選択を分け、停止中の選択はTempo表示へ反映し、再生中は現在primaryのTempoを維持する。編集窓の再アクティブ化でprimary選択を更新。Segmentの限定登録/選択/文書owner/FromStartとPlay/保存二process/必要PCMを閉じ、録音/Transition/他component/厳密外観は残す。既知OS凍結は条件変更なしで再試行しない。",
+    "SSP01継続。実画面で確認したUntitled SegmentのTransport List名の空表示を、ツリー/編集対象と同じfallbackへ修正し、保存後ファイル名/文書ownerの保持を限定検証する。続いてTransport Listの他component/開閉lifecycle、録音/Transition、Style/live/secondary、全外観の独立未達へ進む。全40/全8/Q2/Style015244と既知OS凍結・匿名Band失敗を保持し、条件が変わらない再試行はしない。",
+    "SSP01継続。070706は検証済み試行として保全し、保存済み無名SegmentのTransport Listを原版同様の空componentへ戻す。fallbackは未保存Untitledだけへ限定し新候補の起動/保存/通常終了/別復元で確認。その後、原版File SaveAsの別文書追加lifecycleを、既存Frameworkパス移動APIとは別のUI契約として検討する。全component/録音/Transition/厳密外観/全40/全8は未達。既知49native/30driver凍結・匿名Bandの同条件再試行なし。",
+    "SSP01→Segmentの文書lifecycleを継続。原版File SaveAsは別GUIDの文書をProjectへ追加して元文書を保つため、既存Framework save_segmentパス移動APIを保ち、別のUI用コピー保存を実装・関連回帰・本体操作・native保存/通常終了/別復元で検証する。072804の限定名表示は確認済み。全component/録音/Transition/厳密外観/全40/全8/Q2/Style015244は未達、既知49native/30driver凍結・匿名Bandの同条件再試行なし。",
+    "074348の音声失敗から継続。無音声の条件変更診断でSegment生成/UNAM追加版/空UNFO除去版はS_OK。保存bytesを維持し、private loader copyから空の任意UNFOのみ除く修正を新候補で検証する。SDKヘッダー欠落の診断build失敗も保全。新候補の関連回帰/3文書GUI保存/二通常終了/別復元/137 PCMと負例/全native100節目へ進む。原版のdisabledTempo/dirty/layout厳密一致、他component/全外観/全40/全8/Q2/Style015244/49native・30driver凍結は未達のまま。",
+    "SSP01→SSP02の起動/New Files lifecycleへ継続。原版引数なし起動PID3984を同じPIDで初期化待ちし、NoProjectのactive editor/primaryとNew/Cancelを観測。候補の自動Untitled Segment追加と空状態dirty/close/新規1文書の操作を照合し、根拠に従って修正・保存/通常終了/別復元へ進む。原版のSaveAs後Tempo disabled/dirty/全layout、他component/Recording/Transition/全40/全8/Q2/Style015244は未達。既知49native/30driver凍結・匿名Bandの同条件再試行なし、全体fullAcceptance=false。",
+    "SSP01→SSP02継続。空workspaceのlegacy編集フォームを隠し、原版のdisabled CurrentTempo120表示へ合わせる独立作業へ進む。NewCancel/View再配置/新規文書のdirty保護/保存/通常終了/別復元を確認する。AddTracksは実UIでBand初期選択をSpace/CtrlSpaceで解除できずCancelしたため空選択OK未達。厳密外観・全component/Recording/Transition/全40/全8/Q2/Style015244、既知49native/30driver凍結・匿名Bandを保持し同条件再試行しない。全体fullAcceptance=false。",
+    "SSP01→SSP02継続。保存Projectの初期editor/primary、最後のSegment編集窓Close/Reopenの原版契約を追加比較する。原版PID15872は専用StartupProof作業コピーで起動し、レジストリ更新失敗通知がSkyに列挙されず手動OK待ち。同じPIDを保ち重複起動/登録再変更/通知の偽handle操作をしない。原版比較が止まる間も独立した製品側作業を進める。全40/全8/fullAppearance/fullAcceptance=false、49native/30driver凍結/匿名Bandの同条件再試行なし。",
+    "SSP01の原版見た目/操作を継続。保存済み正式原版のメニューバー先頭File/Edit/View/Add-Insを照合し、候補の先頭Transport AudioPathとFile mnemonic欠落を限定修正する。実機の原版15872は起動通知がSkyへ列挙されず手動OK待ちで同じPIDを維持。独立したメニュー修正/保存build/関連/本体/保存/通常終了/別復元へ進む。全40/全8/fullAppearance/fullAcceptance=false、49native/30driver凍結と匿名Bandの同条件再試行なし。",
+    "SSP01 CurrentTempo表示を継続。原版15872の固定比較ではprimaryなしはdisabled120、TimeSig-only primaryありはdisabled空欄、最後の編集窓Close後もprimary/Play/空欄保持。091437の全noTempo120fallbackを、primaryなしだけ120へ狭める独立修正へ進み、numeric BPMとの切替/保存/通常終了/別復元を検証する。初期primary登録/最後Closeのgray/TimeSig-only再Open promptは別残件。全40/全8/fullAppearance/fullAcceptance=false、49native/30driver凍結と匿名Band同条件再試行なし。原版15872は通常exit0、通知手動対応待ちは解消済み。",
+    "SSP01→SSP02のエディター開閉を継続。原版15872の固定証拠では、Project初期はprimary未登録、TimeSig-only編集窓を開くとAddNewTracks、最後Close後はgray workspaceのままprimary/Play/空欄を保持し、再OpenでもAddNewTracks。次は最後Closeでlegacy formを出さずgrayを保持する独立修正を優先し、関連回帰/本体/保存/通常終了/別復元まで検証する。初期primary登録とTimeSig-only reopen promptは別未達として扱う。全40/全8/fullAppearance/fullAcceptance=false、49native/30driver凍結と匿名Bandの同条件再試行なし。正式原版15872通常exit0・通知手動対応待ちは解消済み。",
+    "SSP01の初期primary登録を継続。正式原版15872の固定契約ではProjectを読んだだけではprimaryなし/Play無効/Tempo120で、Segmentを開いてから登録され、最後Close後は登録を保持する。候補111021はProject初期に全owned Segmentを自動登録しlegacyフォームを出す差が残る。次はowned文書と登録済みtransportのUI状態を分け、明示Segment活性化/SaveAsコピー/Close後保持/Project置換を照合して実装→保存build/関連回帰→本体/保存/通常終了/別復元/必要PCMへ進む。TimeSig-only再Open AddTracks prompt・他component登録・全外観/全40/全8/Q2/Style015244は未達。fullAcceptance=false、49native/30driver凍結・匿名Band同条件再試行なし。",
+    "SSP02 TimeSig-only Segmentのopen/reopen AddNewTracks promptを継続。原版15872の固定証拠ではTimeSigのみのSegmentを開くたびにAddNewTracksを出し、Cancel後も文書/primary/grayCloseを保持する。114031ではpromptなしが残る。次は編集窓を新規openした時だけ条件判定し、NewFiles既存の初回promptと二重化しない独立修正→保存build→凍結50を再試行しない関連3回帰→本体/Cancel/再Open/既存窓再活性化/保存/通常終了/別復元・全bytesまで進む。component-name OS拒否の解消・他component登録・全外観/Recording/Transition/全40/全8/Q2/Style015244は未達。native凍結50/driver30、匿名Band同条件再試行なし、fullAcceptance=false。",
+    "SSP02のAdd New Tracks→Band/Tempo追加・UndoRedo・120既定値・保存復元を独立に継続する。現候補の保存ソースを保ち、既存実装/画像7〜12と原版の限定比較証拠を先に照合し、未検証の操作から進める。空選択OKは既知CtrlSpace/Space不成立の同条件再試行をせず未比較として保持。前114031のcomponent-name関連終了条件はWindows5で未達のまま、今回の専用GUIで代替合格にしない。全40/全8/fullAppearance/fullAcceptance=false、native凍結50/driver30・匿名Band同条件再試行なし。",
+    "SSP02の未実装Cycle Bandsを継続する。正式CHM bandtrack.htmは同じbeatに重なったBand名のitalic表示と右メニューCycle Bandsを規定するが、候補は常に無効。実装前に物理/論理時刻・同一beat判定・描画/hit/選択・Propertiesの重複許可を照合し、表示/選択だけの操作として文書bytes/dirty/historyを保護する。専用重複Band入力・保存build・未凍結関連・本体cycle/Properties/子editor所有先・保存通常終了/別復元へ進む。原版同入力動的/全外観比較・他残責務は未達のまま。component-name/segment-creationの既知OS拒否は代替合格にせず50native/30driver凍結、全40/全8/fullAcceptance=false。",
+    "同じ131516の専用文書で、Edit→Escape直後のCtrlF4が一度無効だった操作差を独立診断する。子Band CtrlF4とmouse Closeは成立しており、原因は未断定。最新window/PID/表示/実focusを再観測し、main system-key routingとTranslateMDISysAccelの順序を照合。再現した場合だけ修正し保存build/未凍結関連/本体/保存/通常終了/別復元を進める。その後の現行native100節目は50OS凍結/匿名Band1をPIDなしで保持し、49実行だけを集計する。完全同一論理時刻Band重複・同拍別physical tick・原版同入力比較/全外観/全40/全8/Q2/Style015244は未達。fullAcceptance=false、50native/30driver凍結同条件再試行なし。",
+    "131516候補のnative100登録節目を実行する。50既知OS凍結と匿名Band1はPIDなし、残49実行の期待2785検査を別集計し、driver172の新実行はしない。入力/出力/manifest/292保存・作業ソース/4出力を照合し、新たな拒否があれば証拠保全・凍結して同条件再試行しない。次はSSP02の完全同一論理時刻Band重複、または独立したSequenceの未達へ進む。menu Escape同入力原版比較、Cycle同拍別physical tick/全外観、Recording/Transition/全40/全8/Q2/Style015244は残しfullAcceptance=false。",
+    "SSP03 Sequenceの最小操作/発音経路を独立に継続する。既存Sequence基本/初回試聴失敗と後続の対策・最新状態/CHM/画像13〜16・21〜24を先に照合し、初回発音の既知失敗を同条件で反復しない。専用TimeSig/Band/Tempo120文書からSequence追加/パート1開閉/選択/楽器/Insertを本体で扱い、必要な修正があれば保存build/関連回帰、native保存/通常終了/別復元、固定PCMによる試聴/発音中Stop/無音/再開と必要な原版比較を進める。完全同一論理時刻Band重複・同拍別physical tick・menu Escape原版比較・全外観/Recording/Transition/全40/全8/Q2/Style015244は未達、fullAcceptance=false。50native/30driver凍結と匿名Band同条件再試行なし。",
+    "短い6秒操作条件の反復を止め、同じ131516の独立したSequence activeStop単位へ進む。専用コピーでEndBar16(duration46272、約30.125s)を本体編集/UndoRedo/保存/通常終了/別復元し、録音前に固定する240s PCMでcold/warm試聴・25s演奏中Stop・再開/quiet・負例6/clock4を検証する。1s開始/音高/静音/clip閾値を維持し、操作時刻条件の変更を新単位に明示、旧6秒失敗は未達で残す。原版同入力/全外観/全40/全8/Q2/Style015244、完全同一論理時刻Band等は未達。50native/30driver凍結と匿名Band同条件再試行なし、fullAcceptance=false。",
+    "正式原版の同入力Sequence比較を独立継続する。今回保存済み4track/Organ1/MIDI72長音の専用別コピーを原版で開き、正式EXE/登録先/PID/1280x800・96DPIを再照合。既知cold startup6〜7分は同一PIDで待ち重複起動/forcekillなし。Tree/Timeline/part/keyboard/楽器メニュー/Properties/endBar/Close・再open・保存native・通常終了を比較し、必要な実装修正だけ保存build/関連回帰/本体/保存別復元へ進む。全Sequence gestures/CC/複数part/全外観、Band完全同一論理時刻、全40/全8/Q2/Style015244は未達。50native30driver凍結と匿名Band同条件再試行なし、fullAcceptance=false。",
+    "正式原版のSequence比較はPID1164のunexposed registry更新通知でuserのOK操作回答待ち。同一PIDを保持し重複起動/forcekill/登録再変更/架空targetなし。独立してBand完全同一logical時刻のcore/API/選択・owner・履歴/opaque保護を一次契約と照合し、根拠ある範囲を実装・保存build・未凍結関連回帰・本体操作・保存通常終了・別復元まで進める。原版回答後はSequence同入力比較を再開。全Sequence gesture/CC/複数part/全外観・全40/全8/Q2/Style015244は未達、50native30driver凍結/匿名Band同条件再試行なし、fullAcceptance=false。",
+    "行順Tempo→TimeSig→Sequence→Bands、Tempo1-32/Bands表記、Part縦zoom/鍵盤1半音scroll、Sequence所属拍、Band子ownerタイトル/同pan-volume重なり、行高・ラベル幅・fontが製品との差。新候補153816119のBand同一logical本体/別復元・native監査を完了後、根拠ある外観操作修正を独立単位で進める。原版新PCM/別process原版復元/全外観/全40全8は未達。旧6s音声失敗を維持、50native30driver凍結/同条件再試行なし/fullAcceptance=false。",
+    "正式原版比較（1164通常exit0）で確定したTimeline行順Tempo→TimeSig→Sequence→Bandsとラベルを次の独立単位で修正する。表示とnative順を分離、未知trackの位置/同種順/選択indexを保持し、group表示は実maskを圧縮表記する。原版がgroup1を全32へ正規化した事実は別記し既存native group1を勝手に変更しない。保存build/未凍結関連/本体hit所有先/保存通常終了/別復元/native不変まで進め、その後Part縦zoom/1半音scroll・所属拍・Band子title/graphへ継続。50native30driver凍結/同条件再試行なし/fullAcceptance=false。",
+    "原版015/016とCHM tupiano/zoom仕様に基づき、Part鍵盤矢印1半音とPartごとの縦zoom・paint/hit/drag/CC境界を次単位で実装し、保存build/関連/本体/保存通常終了/別復元/native不変を進める。Sequence所属拍はmtTime+nOffsetの明示API/原版比較/音声を要する別単位、Band子ownerタイトル/graphとglobalTempoも残す。既知OS凍結の同条件再試行なし。fullAcceptance=false。",
+    "正式原版029で確定したBand子editor title「Band: Segment1 - Band1」に所有Segment名を含める修正を次の独立単位で進める。Band payload不変の早期returnでもowner名変更を反映し、本体/保存通常終了/別復元/native不変まで検証する。Band graphのinactive rack対storedpan-volume配置とactive flagsは原版/CHM/SDKを別照合し、今回に混ぜない。Sequence所属拍・globalTempo・全外観は残す。既知OS凍結の同条件再試行なし/fullAcceptance=false。",
+    "原版029の同入力Band graphはstored pan64/volume100で重なる一方、製品はinactiveを8列rackに分散する差がある。CHM/SDK/原版証拠を照合し、表示座標をstored値へ統一する独立単位を準備する。active flagsの意味やlive音声は別未達とし、native不変の本体/保存通常終了/別復元と新候補関連回帰まで進める。Sequence所属拍/globalTempo/全外観も継続、既知OS凍結の同条件再試行なし/fullAcceptance=false。",
+    "Sequence Propertiesに未実装のBelongs to Beatを次単位で進める。CHMは物理発音位置と論理所属を区別、現parserはmtTime+nOffsetのみを公開。明示的な論理位置読出/変更API、物理onset・duration/PCh/status/pitch/velocity/opaque保持、signedSHORT境界、発生位置/Undo選択を先に設計し、保存build/関連/本体編集保存通常終了/別復元/必要PCMまで進める。原版の初期1:1比較は既存証拠、offset編集/variablemeter/loop全同等性は別照合。globalTempo/全外観も未達。既知OS凍結の同条件再試行なし/fullAcceptance=false。",
+    "Tempoが全グループに適用される原版/CHM契約を次に監査する。正式原版はgroup1入力を1-32表示/0xffffffff保存へ正規化する一方、製品はselected_groupsでTempoを選別。native保持と意味上のglobal範囲、複数Tempo track/index/Timeline/CurrentTempo/runtimeの既存依存・未凍結回帰を照合して独立単位を設計・実装する。Sequence loop包含/原版offset動的比較も未達として保持し、同条件既知OS障害の再試行はしない。fullAcceptance=false、goal active。",
+    "SegmentのAdd Tracksで新規Tempoを作る際の全32グループ契約を次に進める。現在add_tracksは全種類をselectedGroupsへ割当てるため、GUI新Tempoがgroup1になる差がある。既存importedheaderとgroup/index編集APIを保ち、GUIの明示的なglobalTempo作成経路を独立実装・未凍結関連/本体AddTempo/保存通常終了/別復元/native全照合まで進める。既存group1読み込み時の原版正規化/全globalview/Length/loopは別未達。既知OS凍結の同条件再試行なし、fullAcceptance=false、goal active。",
+    "Segment Lengthがgroup1のTempoを使う依存を次に修正する。拍子のgroup1軸を保ち、既存CurrentTempoと同じ制御Tempoの読み取りmapを用いる。既存group別編集・全nativeheaderを保全し、未凍結tempo-propertiesで別group/後続Tempo/可変map/invalid/history契約、保存build/関連/本体Length/保存通常終了/別復元/必要新PCMを進める。一次設計はnext-contract-audit-v1.json。既知OS凍結の同条件再試行なし、全40全8/fullAcceptance=false、goal active。",
+    "Sequenceの所属拍とloop包含、または残るglobal Tempo editor表示を一次資料・既存回帰・実機依存から監査し、独立して安全に進められる次単位を実装・保存build/関連/本体保存通常終了/別復元/必要新PCMまで継続する。既知OS凍結の同条件再試行なし。全40全8/fullAcceptance=false、goal active。",
+    "210902079のSequence所属拍loop検証で、baseline新240sは19/19・7負例4clock合格、所属2:1の別復元新240sは18/19不合格。両再生11発音は確認したが、期待1.5+2.5n秒より約0.31〜0.39秒遅れる。閾値不変・不合格PCM保全。関連5/698、二編集/二UndoRedo/native2bytesのみ/別復元/作者7524・復元16908通常exit0は検証済み。runtime実測prepare300msが負offset500msより短いことを原因候補として、lookahead方針を次単位で修正・新build/関連/新PCM再検証する。同条件再録音はしない。全40全8・50native30driver凍結/fullAcceptance=false。",
+    "SegmentのLoopタブを一次CHM画像・既存native segh保全・既存Length/Sequenceとの依存から監査し、music-time Repeat/Infinite/開始終了の次単位へ進む。独立実装・保存build/関連/本体保存通常終了/別復元/必要新PCMまで続行し、既知OS障害の同条件再試行はしない。全40全8/fullAcceptance=false、goal active。"
   ],
   "latestPriorityCcPreparation": {
     "candidate": "20261010T210412367Z",
@@ -9853,26 +11459,1109 @@
     "fullAcceptance": false
   },
   "latestCurrentTempoTrial": {
-    "updatedUtc": "2026-10-12T00:59:03.662Z",
-    "candidate": "20261012T004853599Z",
+    "updatedUtc": "2026-11-09T05:40:08.856675+00:00",
+    "candidate": "20261109T050149058Z",
     "unit": {
-      "path": "work/analysis/ui-current-tempo/20261012T003122326Z/unit-record-v1.json",
-      "sha256": "8a8d717d09e2465bcc87028c95d8a99d560c4de2fc021a5a8cd3c9ca759f69d0"
+      "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v3.json",
+      "sha256": "b105500e72bc96e01af896e04bb82d8b598b75869b825e237b80e7db382ce4c5"
     },
     "report": {
-      "path": "docs/analysis/ui-current-tempo-pause-2026-10-12.md",
-      "sha256": "f96717ef454aa0aa624d2b09809b01315d46231c189f91ada0be45e648109936"
+      "path": "docs/analysis/ui-current-tempo-resume-2026-11-09.md",
+      "sha256": "7c208b3a5e7b20a3dc190fe3d1b62ae2ec986bed6b69c605d364d3f1a6f92b5a"
     },
-    "status": "20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。",
+    "status": "bounded-stopped-Segment-functionality-verified; strict-appearance-and-broader-Transport-open",
     "sourceChanged": true,
     "compiled": true,
-    "relatedPassedModes": 4,
-    "relatedPassedChecks": 439,
-    "candidateMainExecuted": false,
-    "audioExecuted": false,
-    "pausedByUser": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 496,
+    "candidateMainExecuted": true,
+    "candidateNativeRoundTrip": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "originalAdditionalContract": true,
+    "strictAppearance": false,
+    "pausedByUser": false,
+    "functionalBoundedFinished": true,
     "boundedFinished": false,
     "completed": false,
+    "fullAcceptance": false
+  },
+  "latestCurrentTempoTrialHistory": [
+    {
+      "updatedUtc": "2026-10-12T00:59:03.662Z",
+      "candidate": "20261012T004853599Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo/20261012T003122326Z/unit-record-v1.json",
+        "sha256": "8a8d717d09e2465bcc87028c95d8a99d560c4de2fc021a5a8cd3c9ca759f69d0"
+      },
+      "report": {
+        "path": "docs/analysis/ui-current-tempo-pause-2026-10-12.md",
+        "sha256": "f96717ef454aa0aa624d2b09809b01315d46231c189f91ada0be45e648109936"
+      },
+      "status": "20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。",
+      "sourceChanged": true,
+      "compiled": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 439,
+      "candidateMainExecuted": false,
+      "audioExecuted": false,
+      "pausedByUser": true,
+      "boundedFinished": false,
+      "completed": false,
+      "fullAcceptance": false
+    }
+  ],
+  "latestTransportControlsTrial": {
+    "updatedUtc": "2026-11-09T06:13:52.703037+00:00",
+    "candidate": "20261109T055400398Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v3.json",
+      "sha256": "568f10b907e4418cf333854770fad72959bca8a0d5dd4be5ddc9b436ab589569"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-controls-order-2026-11-09.md",
+      "sha256": "a126797fa9c9bb04f75f76dced5510da9badb2709f5b5365a15cc7f247322b26"
+    },
+    "status": "bounded-order-glyph-relayout-native-restore-PCM-verified; fullTransport-open",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 496,
+    "strictAppearance": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTransportPrimaryTrial": {
+    "updatedUtc": "2026-11-09T06:57:38.772110+00:00",
+    "candidate": "20261109T062231219Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v3.json",
+      "sha256": "7aeaee4b03bdbeb9b90f48c3cf63f4607fefd2b880fe2358746bf81e01298412"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-primary-2026-11-09.md",
+      "sha256": "117a67b6d24b481902a3f7db33591a4223008a92f3f2dfe5611890fd0c033d3b"
+    },
+    "status": "bounded-Segment-primary-selection-owner-native-two-process-PCM-and-native100-verified; fullTransport-open",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 496,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-transport-primary/20261109T062110913Z/native-milestone-proof-v1.json",
+      "sha256": "93b6d9735b27f60b7ec88536b7a792169feeeba4adc66f704e1f05306bebaa38"
+    },
+    "functionalBoundedFinished": true,
+    "nativeMilestoneRunning": false,
+    "strictAppearance": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTransportLabelTrial": {
+    "updatedUtc": "2026-11-09T07:27:17.366368+00:00",
+    "candidate": "20261109T070706789Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-labels/20261109T070235697Z/unit-record-v2.json",
+      "sha256": "b121560ceda195d255e5a4fada88c146b16918abadf184c54feacc59bf410976"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-labels-2026-11-09.md",
+      "sha256": "c557bc7ad9fae04df7b007b6346aa5d4ab621f9b11225780b34e611e9d15f8e5"
+    },
+    "status": "070706 build/related5-472/main2process/native allbytes passed; original blank-name/SaveAs parity differences found; correction required",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 472,
+    "newAudioRequired": false,
+    "originalNameParityPassed": false,
+    "originalSaveAsParityPassed": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTransportLabelParityTrial": {
+    "updatedUtc": "2026-11-09T07:40:19.269243+00:00",
+    "candidate": "20261109T072804038Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-label-parity/20261109T072748612Z/unit-record-v2.json",
+      "sha256": "6291937198ae27be70c09bcd9409f6955cec44ae9a8ee5dfa88a24f423051438"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-label-parity-2026-11-09.md",
+      "sha256": "47c7f2de7c9bea36863f31ffdc8a86d55da0ba78611ca45658ba7b6b7ea9f3af"
+    },
+    "status": "072804 saved absent-UNAM blank-name label matches observed original; build/4-213/main2process/native bytes passed",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 213,
+    "functionalBoundedFinished": true,
+    "originalBlankNameParity": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentSaveAsTrial": {
+    "updatedUtc": "2026-11-09T08:11:44.891560+00:00",
+    "candidate": "20261109T074348295Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-saveas-copy/20261109T074237460Z/unit-record-v2.json",
+      "sha256": "58d7be0002a96f09429693c3e92f2f2e29ca9ec4114c2c4d611aa7b8c0c04a97"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-saveas-copy-2026-11-09.md",
+      "sha256": "3c72285076a51f324c8a4655df80fce2df2641b81af9f5cea426ba566e1cb4dd"
+    },
+    "status": "074348 copyUI/newGUID/3doc/native/history/2normalexits and related5-493 passed; first GUI audio load failed 0x88781184; correction required",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 493,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestEmptyUnfoTrial": {
+    "updatedUtc": "2026-11-09T08:34:49.980257+00:00",
+    "candidate": "20261109T081250588Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v2.json",
+      "sha256": "2356ca6938454ef41a152c12f2ef90d365e9527627388e3328c351376f4a5be8"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-empty-unfo-2026-11-09.md",
+      "sha256": "5e0285965d1c813438b2c01afa51281bfa8aedf2af3931b9e1f2d7c5266aa646"
+    },
+    "status": "081250 private empty-UNFO correction verified: related5-497, main/native2process, 137PCM+5controls, native100=50passed2855/49frozen/1pending",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 497,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/native-milestone-proof-v1.json",
+      "sha256": "c410c8e08f13cebbabc00329b593a29b435b53644efdc1893bfd41a2adf2d4c7"
+    },
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentSaveAsCorrection": {
+    "updatedUtc": "2026-11-09T08:34:49.980257+00:00",
+    "candidate": "20261109T081250588Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v2.json",
+      "sha256": "2356ca6938454ef41a152c12f2ef90d365e9527627388e3328c351376f4a5be8"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-empty-unfo-2026-11-09.md",
+      "sha256": "5e0285965d1c813438b2c01afa51281bfa8aedf2af3931b9e1f2d7c5266aa646"
+    },
+    "status": "081250 private empty-UNFO correction verified: related5-497, main/native2process, 137PCM+5controls, native100=50passed2855/49frozen/1pending",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 497,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/native-milestone-proof-v1.json",
+      "sha256": "c410c8e08f13cebbabc00329b593a29b435b53644efdc1893bfd41a2adf2d4c7"
+    },
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestStartupTrial": {
+    "updatedUtc": "2026-11-09T09:11:22.846740+00:00",
+    "candidate": "20261109T084341067Z",
+    "unit": {
+      "path": "work/analysis/ui-startup-newfiles/20261109T083128897Z/unit-record-v2.json",
+      "sha256": "290d9e84be9472fe25a3661052185a5d1021b87d097961385b005833bbee9db4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-startup-newfiles-2026-11-09.md",
+      "sha256": "394261751c149b748cfdb20efd081fd48da1e0f17f9705bb44bcaa844eb07009"
+    },
+    "status": "084341 empty startup/New Files bounded lifecycle verified; related4/238; 3 normalexit0; one native Segment/20measures/TimeSig only saved and separately restored",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestEmptyFrameTrial": {
+    "updatedUtc": "2026-11-09T09:35:01.821407+00:00",
+    "candidate": "20261109T091437876Z",
+    "unit": {
+      "path": "work/analysis/ui-empty-frame/20261109T091347255Z/unit-record-v2.json",
+      "sha256": "91e006e553f1e1610f74886609e7bc6f03026d62f377d0f971b35a603fb8a313"
+    },
+    "report": {
+      "path": "docs/analysis/ui-empty-frame-2026-11-09.md",
+      "sha256": "46c5ea68f7f9b11edd7d1a00fabe9877642e0a0fd2bc69f5d223b8e0c18651bf"
+    },
+    "status": "091437 empty frame/disabled120 verified; related4/238 in2runs; 3normalexit0; explicitProject dirty protection and firstSegment/native separate restore pass",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestLengthCancelTrial": {
+    "updatedUtc": "2026-11-09T09:49:22.115532+00:00",
+    "candidate": "20261109T091437876Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-length-cancel/20261109T093620584Z/unit-record-v2.json",
+      "sha256": "68ca4f5149f966e6a7f99cc3405e77e666e93967d18d531a0fd700b0eb8fb373"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-length-cancel-2026-11-09.md",
+      "sha256": "d2c93a4a81efc1158bec36207b566382366b3507ad75fae74ceb2b064ec5d598"
+    },
+    "status": "091437 TreeNew/Length pending30 Cancel bounded main/native verified; author20272/reload20904 normalexit0; default20/TimeSig-only/bytes preserved",
+    "sourceChanges": false,
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedExistingSameCandidateModes": 4,
+    "relatedExistingSameCandidateChecks": 238,
+    "newRelatedExecuted": false,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestMenuTrial": {
+    "updatedUtc": "2026-11-09T10:33:30.208542+00:00",
+    "candidate": "20261109T100901325Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-menu/20261109T095015925Z/unit-record-v4.json",
+      "sha256": "6d1fd1eaaa755be64b2a2461975b3daaf68216489ff19d8e139984c65826df34"
+    },
+    "report": {
+      "path": "docs/analysis/ui-frame-menu-2026-11-09.md",
+      "sha256": "eb21e7a861465260b7bc32ba4b3268a42f771ee6b5cb06390c5c3689189fb926"
+    },
+    "status": "100901 menu prefix/AltF/F10/View submenu/MDI-Edit focus/old transport keys verified; related4/238; 3normalexit0; native initial/author/reload unchanged",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "keyboardRuntimePassed": true,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTempoTargetTrial": {
+    "updatedUtc": "2026-11-09T11:02:40.457205+00:00",
+    "candidate": "20261109T103640944Z",
+    "unit": {
+      "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/unit-record-v2.json",
+      "sha256": "7073fc4bee626aaf1ce45ee15f64ecf514a7953ed6e85587c302f6fdfe41ccb9"
+    },
+    "report": {
+      "path": "docs/analysis/ui-tempo-target-display-2026-11-09.md",
+      "sha256": "154b9819eb13ca473c1a854cea36e17bd351e9981c91fcee958535c55ec388e3"
+    },
+    "status": "No-primary120/NoTempo-blank/numeric132.25 display verified; related4/238; native100:50/2855+49frozen+anonymous1; 3normalexit0 and native roundtrip",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/native-milestone-proof-v1.json",
+      "sha256": "6ac78f5241843c40ab6b54adc9bd091d03067c86936600f6e265e454d081a26c"
+    },
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestWorkspaceCloseTrial": {
+    "updatedUtc": "2026-11-09T11:35:12.843104+00:00",
+    "candidate": "20261109T111021505Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+      "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-workspace-close-2026-11-09.md",
+      "sha256": "f7c12ea82815c02293482cebf84952335e1481e97d6890fea2307a89c9cf380b"
+    },
+    "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestRegistrationTrial": {
+    "updatedUtc": "2026-11-09T12:22:38.633161+00:00",
+    "candidate": "20261109T114031247Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json",
+      "sha256": "b8aa9bec840b9ea2127e6fe5c96eca1c6c377d29ba81e47f7c8756d747a43e7a"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-registration-2026-11-09.md",
+      "sha256": "790703fe0eacc0489a6299b73b300c191de61f234ddd495a15904b31c87b2f3b"
+    },
+    "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 168,
+    "relatedBlocked": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+      "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+    },
+    "candidateUiNativeAudioVerified": true,
+    "functionalBoundedFinished": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestNativeOsRefusal": {
+    "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+    "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+  },
+  "knownOsRefusalSummary": {
+    "nativeFrozenCount": 50,
+    "driverFrozenCount": 30,
+    "latest": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+      "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+    },
+    "unchangedRetryAllowed": false,
+    "fullAcceptance": false
+  },
+  "latestReopenTracksTrial": {
+    "updatedUtc": "2026-11-09T12:54:45.394569+00:00",
+    "candidate": "20261109T122735870Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-reopen-tracks/20261109T122451800Z/unit-record-v2.json",
+      "sha256": "bdb2f139876cdce52fb5cb45498ba3147092343ce4a5818da5406634de7c92df"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-reopen-tracks-2026-11-09.md",
+      "sha256": "28c22040404d36d7fd8e057a1a2147c9147e71e65bfae64c5b3152f28dc3be5f"
+    },
+    "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 168,
+    "carriedRelatedBlocker": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+      "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+    },
+    "carriedRelatedBlockerResolved": false,
+    "functionalBoundedFinished": true,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestAddBandTempoTrial": {
+    "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+    "candidate": "20261109T122735870Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+      "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+      "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+    },
+    "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+    "sourceChanged": false,
+    "newBuild": false,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedFreshChecks": 117,
+    "relatedExistingSameCandidateChecks": 168,
+    "carriedRelatedBlockerResolved": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandCycleTrial": {
+    "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+      "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+      "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+    },
+    "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 285,
+    "keyboardResidual": {
+      "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+      "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+    },
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestMdiCloseKeyDiagnostic": {
+    "updatedUtc": "2026-11-09T13:49:42.298447+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-mdi-close-key/20261109T133909247Z/unit-record-v2.json",
+      "sha256": "2203a48263465e0f64090f25663afb9d0f615881244ce6824ed3b7b2f173de20"
+    },
+    "report": {
+      "path": "docs/analysis/ui-mdi-close-key-2026-11-09.md",
+      "sha256": "07d879c14df98a71d80ac41f12a6b83a8d45516eae7db231ee80f537f2cc4533"
+    },
+    "status": "Same131516 menu-state diagnostic bounded: GUI_INMENUMODE4 vs0 controls CtrlF4 result; no code fix;2normalexit0/native exact",
+    "sourceChanged": false,
+    "newBuild": false,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "sourceDefectFixed": false,
+    "originalMenuParity": false,
+    "audioExecuted": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestNativeMilestone": {
+    "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "report": {
+      "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+      "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+    },
+    "run": {
+      "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+      "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+    },
+    "proof": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+      "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "registeredNative": 100,
+    "passedModes": 49,
+    "passedChecks": 2785,
+    "nativeFrozenWithoutExecution": 50,
+    "knownWorkflowWithoutRetry": "style-player-bands",
+    "inputs": 30,
+    "inputDirectories": 7,
+    "sources": 292,
+    "outputs": 4,
+    "driverRegistered": 172,
+    "driverExecutedThisRound": 0,
+    "driverFrozenCountCarried": 30,
+    "newFailureCount": 0,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latest131516Milestone": {
+    "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "report": {
+      "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+      "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+    },
+    "run": {
+      "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+      "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+    },
+    "proof": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+      "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "registeredNative": 100,
+    "passedModes": 49,
+    "passedChecks": 2785,
+    "nativeFrozenWithoutExecution": 50,
+    "knownWorkflowWithoutRetry": "style-player-bands",
+    "inputs": 30,
+    "inputDirectories": 7,
+    "sources": 292,
+    "outputs": 4,
+    "driverRegistered": 172,
+    "driverExecutedThisRound": 0,
+    "driverFrozenCountCarried": 30,
+    "newFailureCount": 0,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceMinimumTrial": {
+    "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+      "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+      "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+    },
+    "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioAccepted": false,
+    "relatedReferenceOnly": true,
+    "relatedPassedModes": 49,
+    "relatedPassedChecks": 2785,
+    "boundedFinished": false,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceActiveStopTrial": {
+    "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+      "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+      "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+    },
+    "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioAccepted": true,
+    "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+    "previousSixSecondStopAccepted": false,
+    "relatedReferenceOnly": true,
+    "relatedPassedModes": 49,
+    "relatedPassedChecks": 2785,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandCycleTicksTrial": {
+    "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+      "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+      "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+    },
+    "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedReferenceOnly": true,
+    "relatedPassedModes": 49,
+    "relatedPassedChecks": 2785,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceOriginalComparison": {
+    "updatedUtc": "2026-11-09T16:13:55.944531+00:00",
+    "unit": {
+      "path": "work/analysis/ui-sequence-original/20261109T150614000Z/unit-record-v3.json",
+      "sha256": "67bf59b7be58026701878ed79b66b80c414125daaa42d550e5050ac8c790c58b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-original-2026-11-10.md",
+      "sha256": "a8d6ecf91e4188e64abb3bf2b9131e8373f8dc518b6c258b7a3be7743b92f4d9"
+    },
+    "candidateCompared": "20261109T131516936Z",
+    "formalOriginalPid": 1164,
+    "normalExit": true,
+    "parityGapsRemain": true,
+    "originalAudioExecuted": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandLogicalCollisionTrial": {
+    "updatedUtc": "2026-11-09T16:21:13.368833+00:00",
+    "candidate": "20261109T153816119Z",
+    "unit": {
+      "path": "work/analysis/ui-band-logical-collision/20261109T153138000Z/unit-record-v3.json",
+      "sha256": "f890a59f8c41cb734ac3c1fcc726c0ceb84ca1b937ca1badf4f5780c5d3bfa01"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-logical-collision-2026-11-10.md",
+      "sha256": "411b658ba0119fe781bdaeeb98ff73049de1e65338ced6659f6c816dc403804b"
+    },
+    "status": "Same-logical Band support verified:4related508checks; GUI B/C overlap,selected rename/Cchild/Breloadchild/UndoRedo;2normalexit0/native only declared fields/292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 508,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestTimelineOrderTrial": {
+    "updatedUtc": "2026-11-09T16:42:41.874458+00:00",
+    "candidate": "20261109T162522992Z",
+    "unit": {
+      "path": "work/analysis/ui-timeline-order/20261109T162156000Z/unit-record-v3.json",
+      "sha256": "ce1c4c12507075b8e468035655cf7072eab8cf5f198f4bd810d63955d2f0d7be"
+    },
+    "report": {
+      "path": "docs/analysis/ui-timeline-order-2026-11-10.md",
+      "sha256": "94c0478ee653739cc0baeb64b70302005cb6331b551dbc2eb51b70639a2b9ff6"
+    },
+    "status": "Timeline known4strip order/actualmask ranges/labels verified;3related478;4row Properties owners;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 478,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequencePitchViewTrial": {
+    "updatedUtc": "2026-11-09T17:17:02.883240+00:00",
+    "candidate": "20261109T165309981Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-pitch-view/20261109T164346000Z/unit-record-v3.json",
+      "sha256": "e57107246251c67dda1dda21a6abfaca25af69de244153ff887a7adfca2df098"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-pitch-view-2026-11-10.md",
+      "sha256": "55abfe416c965e22ebeb027349ea50de4dca847d70cacb606780f2d5201fe67b"
+    },
+    "status": "Part verticalzoom/native keyboard semitone-page-thumb verified;3related494 incl16new;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 494,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandOwnerTitleTrial": {
+    "updatedUtc": "2026-11-09T17:44:00.680892+00:00",
+    "candidate": "20261109T172245420Z",
+    "unit": {
+      "path": "work/analysis/ui-band-owner-title/20261109T171721000Z/unit-record-v3.json",
+      "sha256": "2bc10c90c202e8d2ca1e7a7b0bcc6ec04764c253588a8d17584c6857af445afd"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-owner-title-2026-11-10.md",
+      "sha256": "c38cb751189fda7ee20a36c9273294b72504c9740bb668878997b741c3ec7eb8"
+    },
+    "status": "Owner title/live unchangedBand fastpath/Undo original verified;related3/494;2normalexit0/separate reload/native preservation292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 494,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandGraphPositionTrial": {
+    "updatedUtc": "2026-11-09T18:00:21.942669+00:00",
+    "candidate": "20261109T174532050Z",
+    "unit": {
+      "path": "work/analysis/ui-band-graph-position/20261109T174400000Z/unit-record-v3.json",
+      "sha256": "a13f2ee45961b4766d95338ba2c26a871a2b0657043becd27f2a2e7225518e86"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-graph-position-2026-11-10.md",
+      "sha256": "3bf8da0215c2c62b75f2a5a1a0e019bcc7953a18cd3524c278eb93c76b610f96"
+    },
+    "status": "Stored pan-volume graph overlap/selection/resize verified;related3/501 incl7new;2normalexit0/separate reload/native preservation292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 501,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceLogicalTimeTrial": {
+    "updatedUtc": "2026-11-09T18:35:11.398560+00:00",
+    "candidate": "20261109T180733499Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-logical-time/20261109T180300000Z/unit-record-v3.json",
+      "sha256": "25923022650c7413a30ac87312bc24ae268d033fe13efc052d6b33d614f2d7f5"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-logical-time-2026-11-10.md",
+      "sha256": "e5e85804bd56cb56c8f7605d141dd29fe6c7047aab332ce8c76d35495a6d6702"
+    },
+    "status": "Sequence logical ownership/Properties/UndoRedo/native/separate reload verified;related4/566 incl35new;freshPCM18of18+6negative4clock;2normalexit0/292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 566,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestCurrentTempoPrimaryTrackTrial": {
+    "updatedUtc": "2026-11-09T19:12:22.653829+00:00",
+    "candidate": "20261109T184801667Z",
+    "unit": {
+      "path": "work/analysis/ui-current-tempo-primary-track/20261109T184300000Z/unit-record-v3.json",
+      "sha256": "3fa08779a8bb8ea00b601556c4ab4238dfeb96f3adf485324ffc1b4f6b287b35"
+    },
+    "report": {
+      "path": "docs/analysis/ui-current-tempo-primary-track-2026-11-10.md",
+      "sha256": "de5d73bb0c001a7b1485e7208349ae451289cae96aa38a1299b09861e33e1092"
+    },
+    "status": "CurrentTempo controlling-track ownership/native/separate reload verified;related5/627 incl28new;freshPCM19of19+7negative4clock;2normalexit0/292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 627,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestTempoGlobalCreationTrial": {
+    "updatedUtc": "2026-11-09T20:12:45.443043+00:00",
+    "candidate": "20261109T194909234Z",
+    "unit": {
+      "path": "work/analysis/ui-tempo-global-creation/20261109T191400000Z/unit-record-v3.json",
+      "sha256": "92cf22281df57fc2af609aa0e2d7c51433c313e3f3dd30c9a590941a0a2cafe5"
+    },
+    "report": {
+      "path": "docs/analysis/ui-tempo-global-creation-2026-11-10.md",
+      "sha256": "2c88d52931fbcf8ae2b3b7892f616233ccce0f1221bd8f2f7c44b2fbc3c1eb12"
+    },
+    "status": "bounded GUI globalTempo creation verified; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 648,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestLengthPrimaryTempoTrial": {
+    "updatedUtc": "2026-11-09T20:59:07.047216+00:00",
+    "candidate": "20261109T201457752Z",
+    "unit": {
+      "path": "work/analysis/ui-length-primary-tempo/20261109T201400000Z/unit-record-v3.json",
+      "sha256": "38aaafe8b6a6eaa2e2fc391ef2f6102f417aed20cae1995decee2f1d7c537333"
+    },
+    "report": {
+      "path": "docs/analysis/ui-length-primary-tempo-2026-11-10.md",
+      "sha256": "2922d3ec7301af1424d21e6f9b8201b4d7c81714e8ffbd9fa0f21edbc79ea22b"
+    },
+    "status": "bounded Length controllingTempo conversion verified; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 671,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceLoopBelongsTrial": {
+    "updatedUtc": "2026-11-09T21:42:26.337423+00:00",
+    "candidate": "20261109T210902079Z",
+    "status": "member PCM18/19 failed:11notes but late logical offsets; baseline19/19 and7negative4clock passed; native/history/separate reload/normal exits verified",
+    "unit": {
+      "path": "work/analysis/ui-sequence-loop-belongs/20261109T210700000Z/unit-record-v3.json",
+      "sha256": "77e1171161171e34812be51f303c2b49e17db225c041e7da46278876eb976739"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-loop-belongs-2026-11-10.md",
+      "sha256": "0a80f3e47a7253a5f18495762bfd07859c322c8c5c1596e388caa13853475dcc"
+    },
+    "audioPassed": false,
+    "boundedFinished": false,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceLogicalLookaheadTrial": {
+    "updatedUtc": "2026-11-09T22:24:03.494036+00:00",
+    "candidate": "20261109T214458343Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-logical-lookahead/20261109T214400000Z/unit-record-v3.json",
+      "sha256": "a3fe5fcc90c18c1917c7899625dfc85b1baf7daef648ff05fd71c620ef0425f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-logical-lookahead-2026-11-10.md",
+      "sha256": "f7d13c2f246ab5b9abdca97b7a0fae859d0e14629bc58c7e74cfd9589b31b79a"
+    },
+    "status": "bounded Sequence negative-offset lookahead verified; old failed member and first baseline timing failure preserved; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 7,
+    "relatedPassedChecks": 870,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopMusicTrial": {
+    "updatedUtc": "2026-11-10T00:46:52.348369+00:00",
+    "candidate": "20261109T235737154Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v3.json",
+      "sha256": "07a2d7e0a6eb20ee0011fa9616efa431e6e189c07e613d05a49205285cbe837b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-loop-music-2026-11-10.md",
+      "sha256": "25d9f9e7933c58a548ca291f04c99702d5d0a4487e88ff9c40385bf8ecf9d25c"
+    },
+    "status": "bounded Segment music-time Loop UI/native/history/restore/whole and custom Infinite PCM verified; finite native runtime verified; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 7,
+    "relatedPassedChecks": 932,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopCursorTrial": {
+    "updatedUtc": "2026-11-10T01:22:38.939456+00:00",
+    "candidate": "20261110T005605175Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-cursor/20261110T005500000Z/unit-record-v3.json",
+      "sha256": "3f03b0104e1d7c0ee0f9967288705e3acd2722be7c36ad2e30d907f9de27fea0"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-loop-cursor-2026-11-10.md",
+      "sha256": "d31df5a3ac2c047dc0fa2664245a14e5073b84c261f75c8eec4bb3daa031331e"
+    },
+    "status": "bounded music-time loop cursor finite/Infinite mapping,GUI toggle/native save/normal exits/separate restore/new PCM verified; painting/original/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestToolbarSteadyTrial": {
+    "updatedUtc": "2026-11-10T02:02:54.179122+00:00",
+    "candidate": "20261110T012618577Z",
+    "unit": {
+      "path": "work/analysis/ui-toolbar-steady-refresh/20261110T012600000Z/unit-record-v3.json",
+      "sha256": "32426969a1aba7dbc65ec2cf4884e73042aa05265e509471312f7f561b09f8f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-toolbar-steady-refresh-2026-11-10.md",
+      "sha256": "b4592064d806c4cc980b83f11d190035b7c9f530becba251a3e222069ffd269e"
+    },
+    "status": "bounded toolbar steady refresh, pending Tempo retention/original Escape, Alternate Tempo display, Play/Cursor/Stop, native save/normal exits/separate restore/new PCM verified; full painting/original/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentBufferedPaintTrial": {
+    "updatedUtc": "2026-11-10T03:16:17.898347+00:00",
+    "candidate": "20261110T020605949Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-buffered-paint/20261110T020500000Z/unit-record-v3.json",
+      "sha256": "9ebb1dcdcd3c71a98ec876c134f58757abca32132c99606e4511b73fe5a69e30"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-buffered-paint-2026-11-10.md",
+      "sha256": "78e6bb9e3629119f988e122b7740ba1102d78181d92da089c9318aa9f890aaeb"
+    },
+    "status": "bounded Segment buffered rendering/resource/save/normal exits/separate restore/new PCM verified; parent-frame residuals/original dynamic/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestFrameRefreshPaintTrial": {
+    "updatedUtc": "2026-11-10T03:45:20.221495+00:00",
+    "candidate": "20261110T031819499Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-refresh-paint/20261110T031700000Z/unit-record-v3.json",
+      "sha256": "bf6321d62c450642b046ef3fcb5b5fed83a6c3dff4e51623844ab9be075ef421"
+    },
+    "report": {
+      "path": "docs/analysis/ui-frame-refresh-paint-2026-11-10.md",
+      "sha256": "a7110330be881743ad00dc9efe09dd4e0a81ed6ce402f50fc23656d3d5054b1e"
+    },
+    "status": "related7/988;bounded frame refresh GUI/resource/native save/two normalexits/separate restore verified;new PCM failed orchestration86.585s Stop;unchanged audio retry frozen;StartTime independent work next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentStartTimeTrial": {
+    "updatedUtc": "2026-11-10T05:36:18.274836+00:00",
+    "candidate": "20261110T041453112Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-start-time/20261110T041200000Z/unit-record-v3.json",
+      "sha256": "33d696daea5c0a9c44b888e41251463818abcb36e2cc7fd1798d0e5305920a00"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-start-time-2026-11-10.md",
+      "sha256": "5b80d96aa2a3992d75ce77df7c5993b4c7070405fdb7de3e0018c5c4e73eb4e0"
+    },
+    "status": "bounded music-time StartTime UI/history/save/four normal exits/separate restore/new baseline11 and member10 PCM19/7/4 verified;UIA failure preserved;original dynamic/clock-time/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "baselinePassed": true,
+    "memberPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentInfoTrial": {
+    "updatedUtc": "2026-11-10T07:19:36.659719+00:00",
+    "candidate": "20261110T063900475Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-info-navigation/20261110T063900475Z/unit-record-v2-failed-clock.json",
+      "sha256": "a576d15ff0c511755e1bdf2f3e689cf0565d0727662792ff56e81369eb87c88b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-info-2026-11-10.md",
+      "sha256": "10c8843019ae58688c096e0ed82156fe7cf355ecce578933f11fbf79b2277c02"
+    },
+    "status": "Info text/version and navigation GUI/save/two normal exits/separate restore passed;fresh240s capture clock drift8.5643ms exceeds5ms, positive audit exit1 before PCM;unchanged retry frozen;Boundary independent next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentBoundaryTrial": {
+    "candidate": "20261110T112858885Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-boundary/20261110T064400000Z/unit-record-v10e-extended-restore.json",
+      "sha256": "96d146b2aa803f8a244c98fff40001d815be4e9863ae4dc88423722f5f4c2356"
+    },
+    "status": "1128 unaffected6/1986/model890/nativeBasic4+Invalidation3+Extended21;GUI9Boundary4Align/Marker gates/history/tab/4pages/two recreations/GDI+1/basic mainstop/native26/save;separate15768restore/resave/two normal0 passed;advanced timing/full7/newPCM/originalDynamic/fontpixel unaccepted",
     "fullAcceptance": false
   }
 }

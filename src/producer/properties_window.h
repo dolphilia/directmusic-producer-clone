@@ -36,7 +36,7 @@ class PropertiesWindow {
     std::optional<size_t> tempoDocument_;
     std::optional<SequenceNotePropertiesTarget> sequenceTarget_;
     std::function<void(size_t)> sequenceSelectionChanged_;
-    HWND sequenceFields_[15]{},sequenceLabels_[10]{},sequenceSpins_[15]{};
+    HWND sequenceFields_[17]{},sequenceLabels_[11]{},sequenceSpins_[17]{};
     std::optional<LyricPropertiesTarget> lyricTarget_;
     std::function<void(size_t)> lyricSelectionChanged_;
     std::optional<MarkerPropertiesTarget> markerTarget_;
@@ -53,6 +53,19 @@ class PropertiesWindow {
     ChordKeyboard chordKeys_[4],scaleKeys_[4];
     bool chordFlats_=false;
     HWND segmentLengthLabel_=nullptr,segmentLengthButton_=nullptr;
+    HWND segmentStartFields_[4]{},segmentStartSpins_[4]{};
+    HFONT segmentStartFont_=nullptr;
+    std::vector<HWND> segmentStartControls_;
+    HWND segmentInfoFields_[8]{};
+    std::vector<HWND> segmentInfoControls_;
+    HWND segmentBoundaryName_=nullptr,segmentBoundaryMarker_=nullptr,segmentBoundaryFallback_=nullptr,segmentBoundaryDefault_=nullptr,segmentBoundaryList_=nullptr,segmentBoundaryTiming_[2]{};
+    HWND segmentInvalidation_[3]{};
+    HWND segmentAlignmentDescription_=nullptr,segmentAlignment_[4]{};
+    std::vector<HWND> segmentBoundaryControls_;
+    HWND loopFields_[9]{},loopSpins_[9]{},loopInfinite_=nullptr,loopReset_=nullptr,loopClock_=nullptr,loopClockFields_[2]{};
+    std::vector<HWND> loopControls_;
+    std::map<size_t,std::uint32_t> finiteLoopRepeats_;
+    int tabFamily_=0;
     HWND meterButton_=nullptr,meterMeasure_=nullptr,meterLabel_=nullptr,meterSpin_=nullptr;
     HWND tempoFields_[4]{},tempoLabels_[4]{},tempoSpins_[4]{};
     HWND lyricFields_[6]{},lyricLabels_[6]{},lyricSpins_[5]{},lyricTiming_[3]{},lyricTimingGroup_=nullptr;
@@ -64,6 +77,7 @@ class PropertiesWindow {
     bool updating_=false;
     static LRESULT CALLBACK proc(HWND,UINT,WPARAM,LPARAM);
     void synchronize(bool selectionChanged=false);
+    void clear_page_background();
     void ensure_window();
     void edit_tempo(UINT field,bool final,int delta=0);
     void edit_sequence(UINT field,int delta=0);
@@ -73,6 +87,10 @@ class PropertiesWindow {
     void edit_meter_measure(int delta=0);
     void edit_meter_signature();
     void edit_segment_length();
+    void edit_segment_start(UINT field,int delta=0);
+    void edit_segment_info(UINT field);
+    void edit_segment_boundary(UINT field);
+    void edit_segment_loop(UINT field,int delta=0);
     void edit_chord_type();
     void edit_chord_structure(unsigned level,unsigned note,bool scale);
     void transpose_chord_root(int delta);

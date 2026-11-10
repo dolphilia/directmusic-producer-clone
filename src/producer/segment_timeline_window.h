@@ -5,6 +5,8 @@
 namespace producer::app {
 inline constexpr UINT SegmentWorkspaceChangedMessage=WM_APP+23;
 bool segment_timeline_workspace_has_editors();
+// A visible workspace remains the editor surface after its last child closes.
+bool segment_timeline_workspace_visible();
 
 enum class TimelineEventKind {tempo,lyric,marker,meter,chord,band,sequence_note};
 struct TimelineEventTarget {
@@ -31,10 +33,11 @@ std::optional<std::int32_t> segment_timeline_cursor(size_t document);
 // Playback updates only the view-owned cursor, without audition/history or
 // selection publication. Active note/curve gestures retain their insertion time.
 void update_segment_timeline_play_cursor(size_t document,std::int64_t clocks);
-void show_segment_timeline(HWND parent,Framework&,size_t document,TimelineSelectionChanged,TimelineHistoryRequested,TimelineNoteAudition={},TimelineBandMixStarted={});
+// True only when a new editor was created, not when an existing one activates.
+bool show_segment_timeline(HWND parent,Framework&,size_t document,TimelineSelectionChanged,TimelineHistoryRequested,TimelineNoteAudition={},TimelineBandMixStarted={});
 void refresh_segment_timeline();
 void select_segment_timeline_event(TimelineEventKind,size_t document,size_t track,size_t event);
 void clear_segment_timeline_note_selection(size_t document,std::uint32_t groups,size_t track);
 bool translate_segment_timeline(MSG&);
-void release_segment_timeline();
+void release_segment_timeline(bool hideWorkspace=true);
 }

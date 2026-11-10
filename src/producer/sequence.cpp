@@ -35,15 +35,35 @@ Bytes track_header(DWORD clsid,const char* chunk,const char* form=nullptr){Bytes
 bool is_sequence_track(const Chunk& track) {
     const auto h=track.find("trkh");const auto expected=track_header(0xd2ac2886,"seqt");return track.id=="RIFF"&&track.type=="DMTK"&&h&&h->data.size()>=32&&std::equal(expected.begin(),expected.begin()+16,h->data.begin());
 }
-std::vector<Note> sequence_notes(const Bytes& payload) {
-    const auto p=parts(payload);const auto& part=p.at(events_part(p));const auto size=stride(part);std::vector<Note> notes;
+std::vector<SequenceNotePosition> sequence_note_positions(const Bytes& payload) {
+    const auto p=parts(payload);const auto& part=p.at(events_part(p));const auto size=stride(part);std::vector<SequenceNotePosition> notes;
     for(size_t at=12;at<8+read32(part.bytes,4);at+=size)if((part.bytes[at+14]&0xf0)==0x90&&part.bytes[at+16]){
         const auto offset=static_cast<short>(part.bytes[at+12]|(part.bytes[at+13]<<8));
         const auto time=std::int64_t(static_cast<std::int32_t>(read32(part.bytes,at)))+offset;
         if(time<INT32_MIN||time>INT32_MAX)throw std::runtime_error("Sequence time overflow");
-        notes.push_back({static_cast<std::int32_t>(time),static_cast<std::int32_t>(read32(part.bytes,at+4)),read32(part.bytes,at+8),part.bytes[at+15],part.bytes[at+16]});
+        notes.push_back({{static_cast<std::int32_t>(time),static_cast<std::int32_t>(read32(part.bytes,at+4)),read32(part.bytes,at+8),part.bytes[at+15],part.bytes[at+16]},static_cast<std::int32_t>(read32(part.bytes,at)),offset});
     }
     return notes;
+}
+std::vector<Note> sequence_notes(const Bytes& payload){
+    std::vector<Note> result;for(const auto& position:sequence_note_positions(payload))result.push_back(position.note);return result;
+}
+Bytes sequence_change_logical_time(const Bytes& payload,size_t index,std::int32_t logicalTime,size_t* resultingIndex){
+    if(logicalTime<0)throw std::runtime_error("Invalid Sequence logical time");
+    auto p=parts(payload);auto& part=p.at(events_part(p));const auto size=stride(part);const auto at=note_record(part,size,index);
+    Bytes record(part.bytes.begin()+at,part.bytes.begin()+at+size);
+    const auto oldTime=static_cast<std::int32_t>(read32(record,0));const auto oldOffset=static_cast<short>(record[12]|(record[13]<<8));
+    const auto physical=std::int64_t(oldTime)+oldOffset,offset=physical-logicalTime;
+    if(physical<0||physical>INT32_MAX||offset<INT16_MIN||offset>INT16_MAX)throw std::runtime_error("Sequence logical offset exceeds signed SHORT");
+    size_t resultAt=at;
+    if(logicalTime!=oldTime){
+        put32(record,0,static_cast<std::uint32_t>(logicalTime));const auto encoded=static_cast<std::uint16_t>(offset);record[12]=static_cast<BYTE>(encoded);record[13]=static_cast<BYTE>(encoded>>8);
+        part.bytes.erase(part.bytes.begin()+at,part.bytes.begin()+at+size);size_t insert=12;const auto end=8+read32(part.bytes,4)-size;
+        for(;insert<end;insert+=size)if(static_cast<std::int32_t>(read32(part.bytes,insert))>logicalTime)break;
+        part.bytes.insert(part.bytes.begin()+insert,record.begin(),record.end());resultAt=insert;
+    }
+    if(resultingIndex){size_t count=0;for(size_t pos=12;pos<resultAt;pos+=size)if((part.bytes[pos+14]&0xf0)==0x90&&part.bytes[pos+16])++count;*resultingIndex=count;}
+    return join(p);
 }
 Bytes sequence_insert(const Bytes& payload,Note note,size_t* resultingIndex) {
     if(note.time<0||note.duration<=0||note.pitch>127||!note.velocity||note.velocity>127||note.channel>=0xfffffffcu)throw std::runtime_error("Invalid Sequence note");

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
+#include <filesystem>
 namespace producer::app { namespace {
 constexpr UINT Channels=4800,Readout=4801,FirstChannel=4810,SelectionChanged=WM_APP+51;
 std::vector<HWND> windows;
@@ -13,7 +14,7 @@ struct Marquee {POINT start{},end{};std::vector<std::uint32_t> previous;bool add
 struct Session {
     Framework& host;EmbeddedBandTarget target;TimelineSelectionChanged changed;TimelineHistoryRequested history;TimelineBandMixStarted mixStarted;
     HWND list=nullptr,readout=nullptr;std::vector<HWND> buttons;std::vector<std::uint32_t> selected;std::vector<BandInstrument> instruments;
-    std::optional<Drag> drag;std::optional<Marquee> marquee;Bytes displayedBand;bool displayInitialized=false,updating=false,owned=false,selectionPending=false;
+    std::optional<Drag> drag;std::optional<Marquee> marquee;Bytes displayedBand;std::wstring displayedTitle;bool displayInitialized=false,updating=false,owned=false,selectionPending=false;
     void publish(bool properties=false){if(const auto view=read_embedded_band(host,target)){target=view->target;if(changed)changed(TimelineEventTarget{TimelineEventKind::band,target.document,target.track,target.event,target.groups},properties);}}
 };
 HWND control(HWND parent,const wchar_t* type,const wchar_t* title,DWORD style,UINT id){auto w=CreateWindowW(type,title,WS_CHILD|WS_VISIBLE|style,0,0,1,1,parent,reinterpret_cast<HMENU>(static_cast<UINT_PTR>(id)),GetModuleHandleW(nullptr),nullptr);if(!w)throw std::runtime_error("Band control creation failed");SendMessageW(w,WM_SETFONT,reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)),TRUE);return w;}
@@ -55,6 +56,11 @@ LRESULT CALLBACK button_proc(HWND button,UINT message,WPARAM wp,LPARAM lp,UINT_P
 void refresh(HWND w,Session& s){
     if(s.updating)return;if(s.drag){if(s.host.document(s.target.document).save_bytes()==s.drag->ownerBytes)return;cancel(w,s);return;}
     const auto view=read_embedded_band(s.host,s.target);
+    std::wstring title=L"Band: unavailable";
+    if(view){auto owner=s.host.document(view->target.document).name();if(owner.empty()){const auto& path=s.host.documents().at(view->target.document).path;owner=path.empty()?L"Segment":std::filesystem::path(path).stem().wstring();}title=L"Band: "+owner+L" - "+view->band.name();}
+    // Owner-only edits leave the embedded Band payload intact. Refresh the
+    // caption before preserving the native ListView's selection/focus anchor.
+    if(title!=s.displayedTitle){SetWindowTextW(w,title.c_str());s.displayedTitle=std::move(title);}
     if(view&&s.displayInitialized&&view->event.band==s.displayedBand){
         // Selection notifications refresh the host while a native ListView click is
         // still in progress. Keep its items, focus and selection anchor intact.
@@ -63,7 +69,7 @@ void refresh(HWND w,Session& s){
     s.displayedBand=view?view->event.band:Bytes{};s.displayInitialized=view.has_value();
     s.updating=true;s.instruments=view?view->band.instruments():std::vector<BandInstrument>{};if(view)s.target=view->target;
     s.selected.erase(std::remove_if(s.selected.begin(),s.selected.end(),[&](auto c){return std::none_of(s.instruments.begin(),s.instruments.end(),[&](const auto& i){return i.pchannel==c;});}),s.selected.end());
-    SetWindowTextW(w,view?(L"Band: "+view->band.name()).c_str():L"Band: unavailable");EnableWindow(s.list,view.has_value());ListView_DeleteAllItems(s.list);
+    EnableWindow(s.list,view.has_value());ListView_DeleteAllItems(s.list);
     for(size_t i=0;i<s.instruments.size();++i){const auto& instrument=s.instruments[i];const auto channel=std::to_wstring(std::uint64_t(instrument.pchannel)+1);LVITEMW item{};item.mask=LVIF_TEXT;item.iItem=static_cast<int>(i);item.pszText=const_cast<wchar_t*>(channel.c_str());ListView_InsertItem(s.list,&item);const std::wstring values[]={channel,gm_instrument_name(instrument.patch),(instrument.flags&128)?L"—":L"0",(instrument.flags&128)?L"—":L"None",(instrument.flags&2048)?L"—":L"Standard"};for(int column=1;column<6;++column)ListView_SetItemText(s.list,item.iItem,column,const_cast<wchar_t*>(values[column-1].c_str()));if(selected(s,instrument.pchannel))ListView_SetItemState(s.list,item.iItem,LVIS_SELECTED,LVIS_SELECTED);}
     if(s.buttons.size()!=s.instruments.size()){for(auto button:s.buttons)DestroyWindow(button);s.buttons.clear();for(size_t i=0;i<s.instruments.size();++i){if(i>=65535-FirstChannel)throw std::runtime_error("Band editor control capacity exceeded");const auto label=std::to_wstring(std::uint64_t(s.instruments[i].pchannel)+1);auto b=control(w,L"BUTTON",label.c_str(),WS_TABSTOP|BS_OWNERDRAW,FirstChannel+static_cast<UINT>(i));SetWindowSubclass(b,button_proc,1,0);s.buttons.push_back(b);}}
     for(size_t i=0;i<s.buttons.size();++i){const auto label=std::to_wstring(std::uint64_t(s.instruments[i].pchannel)+1);SetWindowTextW(s.buttons[i],label.c_str());EnableWindow(s.buttons[i],view.has_value());InvalidateRect(s.buttons[i],nullptr,TRUE);}s.updating=false;layout(w,s);readout(s);
@@ -85,7 +91,7 @@ LRESULT CALLBACK proc(HWND w,UINT message,WPARAM wp,LPARAM lp){auto s=reinterpre
         if(header->code==NM_CUSTOMDRAW){auto draw=reinterpret_cast<NMLVCUSTOMDRAW*>(lp);if(draw->nmcd.dwDrawStage==CDDS_PREPAINT)return CDRF_NOTIFYITEMDRAW;if(draw->nmcd.dwDrawStage==CDDS_ITEMPREPAINT)return CDRF_NOTIFYSUBITEMDRAW;if(draw->nmcd.dwDrawStage==(CDDS_ITEMPREPAINT|CDDS_SUBITEM)){const auto i=draw->nmcd.dwItemSpec;if(i<s->instruments.size()&&draw->iSubItem>=2&&!(s->instruments[i].flags&0x28fbu))draw->clrText=GetSysColor(COLOR_GRAYTEXT);return CDRF_NEWFONT;}}}}
     if(message==WM_DRAWITEM&&s){const auto draw=reinterpret_cast<DRAWITEMSTRUCT*>(lp);const auto i=draw->CtlID-FirstChannel;if(draw->CtlID>=FirstChannel&&i<s->instruments.size()){const auto instrument=display(*s,i);const bool active=selected(*s,instrument.pchannel);auto brush=CreateSolidBrush(active?RGB(255,0,0):GetSysColor(COLOR_BTNFACE));FillRect(draw->hDC,&draw->rcItem,brush);DeleteObject(brush);RECT edge=draw->rcItem;DrawEdge(draw->hDC,&edge,EDGE_RAISED,BF_RECT);SetBkMode(draw->hDC,TRANSPARENT);SetTextColor(draw->hDC,active?RGB(255,255,255):GetSysColor(band_mixer_active(instrument)?COLOR_BTNTEXT:COLOR_GRAYTEXT));const auto label=std::to_wstring(std::uint64_t(instrument.pchannel)+1);DrawTextW(draw->hDC,label.c_str(),-1,&edge,DT_CENTER|DT_VCENTER|DT_SINGLELINE);if(draw->itemState&ODS_FOCUS)DrawFocusRect(draw->hDC,&edge);return TRUE;}}
     if(message==WM_PAINT&&s){PAINTSTRUCT p{};const auto dc=BeginPaint(w,&p);auto r=grid(w);FillRect(dc,&r,reinterpret_cast<HBRUSH>(COLOR_BTNFACE+1));DrawEdge(dc,&r,EDGE_SUNKEN,BF_RECT);const auto pen=CreatePen(PS_DOT,1,GetSysColor(COLOR_GRAYTEXT));const auto old=SelectObject(dc,pen);for(int x=r.left+8;x<r.right;x+=8){MoveToEx(dc,x,r.top,nullptr);LineTo(dc,x,r.bottom);}for(int y=r.top+8;y<r.bottom;y+=8){MoveToEx(dc,r.left,y,nullptr);LineTo(dc,r.right,y);}SelectObject(dc,old);DeleteObject(pen);const auto center=CreatePen(PS_SOLID,1,RGB(128,128,0));SelectObject(dc,center);const int x=(r.left+r.right)/2,y=(r.top+r.bottom)/2;MoveToEx(dc,x,r.top,nullptr);LineTo(dc,x,r.bottom);MoveToEx(dc,r.left,y,nullptr);LineTo(dc,r.right,y);SelectObject(dc,old);DeleteObject(center);if(s->marquee){const auto& m=*s->marquee;RECT selection{std::min(m.start.x,m.end.x),std::min(m.start.y,m.end.y),std::max(m.start.x,m.end.x),std::max(m.start.y,m.end.y)};DrawFocusRect(dc,&selection);}EndPaint(w,&p);return 0;}
-    if(message==WM_NCDESTROY&&s){if(s->drag){auto d=std::move(*s->drag);s->drag.reset();rollback(*s,d);}windows.erase(std::remove(windows.begin(),windows.end(),w),windows.end());const auto parent=GetParent(w);SetWindowLongPtrW(w,GWLP_USERDATA,0);if(s->owned)delete s;const auto result=DefMDIChildProcW(w,message,wp,lp);if(parent){PostMessageW(GetParent(parent),SegmentWorkspaceChangedMessage,0,0);if(!segment_timeline_workspace_has_editors())ShowWindow(parent,SW_HIDE);}return result;}
+    if(message==WM_NCDESTROY&&s){if(s->drag){auto d=std::move(*s->drag);s->drag.reset();rollback(*s,d);}windows.erase(std::remove(windows.begin(),windows.end(),w),windows.end());const auto parent=GetParent(w);SetWindowLongPtrW(w,GWLP_USERDATA,0);if(s->owned)delete s;const auto result=DefMDIChildProcW(w,message,wp,lp);if(parent)PostMessageW(GetParent(parent),SegmentWorkspaceChangedMessage,0,0);return result;}
 }catch(const std::exception& e){if(message==WM_CREATE)return -1;if(s&&(s->drag||s->marquee))cancel(w,*s);MessageBoxA(w,e.what(),"Band editor operation failed",MB_OK|MB_ICONERROR);}return DefMDIChildProcW(w,message,wp,lp);}
 }
 size_t embedded_band_editor_count(){return windows.size();}

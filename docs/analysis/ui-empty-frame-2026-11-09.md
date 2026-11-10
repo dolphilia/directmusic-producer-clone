@@ -1,0 +1,13 @@
+# 空frameとdisabled Current Tempo — 2026-11-09
+
+091437は空workspaceの編集欄103個を隠し、作業領域をシステムgray、targetなしCurrentTempoをdisabled120へ修正。関連4件238検査（2run）、空18412/作者3780/復元17648の三通常exit0。NewCancel/Tree/View Transport再配置を保持し、明示作成した空ProjectとSegmentの両方で破棄確認/No保持を確認。最初Segment1の20小節・TimeSig4/4のみ、native保存/別復元/再保存でSegment全bytesとProject FILETIME以外一致。292ソース/4出力一致、音を含まないframe変更で新PCMは不要。
+
+作業前のmain.cpp/frame_toolbar.cppをbefore-sourceへ保全。legacy control helperが作った欄だけを登録し、refresh開始時に以前表示されていた欄だけ復帰して既存の文書別可視処理を実行、全10catalogが空なら表示欄を隠す。Treeとtoolbarは対象外。空領域はCOLOR_APPWORKSPACEで描く。Tempoにtargetがないときのラベルを120にするが、edit/spinの有効条件は変更しない。
+
+空起動/再配置後/明示空Projectを読取で測定し、103欄のown WS_VISIBLEなしを確認。初回読取はcross-process GetWindowTextの文字列をassertして失敗し、そのscript/失敗記録を保持。v2は表示/有効/metricsだけを測定し、disabled120はSky UIAと画像で別に確認した。回帰の誤ったtempo-transaction指定で欠けた33検査は、tempo-propertiesだけを別runで補完。候補の成功証拠を変更していない。
+
+原版は084341単位の正式原版3984の空frame/disabled120契約を参照。追加の編集窓開閉比較は原版15872の通知で未達。013/035画像に別appの原版splash通知が重なったため外観判定から除外し、空001/作成015/復元editor036を使う。厳密なfont/glyph/client寸法/docking一致は主張しない。
+
+一次入口：`work/analysis/ui-empty-frame/20261109T091347255Z/unit-record-v2.json`、`gui-proof-v1.json`、`native-proof-v1.json`。新しい音声受入やnative100一巡は主張しない。
+
+SSP01→SSP02継続。保存Projectの初期editor/primary、最後のSegment編集窓Close/Reopenの原版契約を追加比較する。原版PID15872は専用StartupProof作業コピーで起動し、レジストリ更新失敗通知がSkyに列挙されず手動OK待ち。同じPIDを保ち重複起動/登録再変更/通知の偽handle操作をしない。原版比較が止まる間も独立した製品側作業を進める。全40/全8/fullAppearance/fullAcceptance=false、49native/30driver凍結/匿名Bandの同条件再試行なし。 goal active。

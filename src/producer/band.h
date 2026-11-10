@@ -67,8 +67,9 @@ struct BandEvent {std::int32_t logicalTime,physicalTime;Bytes band;};
 bool is_band_track(const Chunk&);
 std::vector<BandEvent> band_track_events(const Chunk&);
 Chunk make_band_track();
-// Replace at logical time or append; retain all other events/opaque bytes.
+// Replace at a unique logical time or append; reject ambiguous timed updates.
 bool set_band_track_event(Chunk&,std::int32_t time,const Bytes& band);
-bool move_band_track_event(Chunk&,size_t index,std::int32_t logical,std::int32_t physical);
+bool replace_band_track_event(Chunk&,size_t index,const Bytes& band);
+bool move_band_track_event(Chunk&,size_t index,std::int32_t logical,std::int32_t physical,size_t* resultingIndex=nullptr);
 bool delete_band_track_event(Chunk&,size_t index);
 }

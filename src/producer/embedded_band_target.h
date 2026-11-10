@@ -3,7 +3,7 @@
 namespace producer::app {
 struct EmbeddedBandTarget {
     size_t document=0,track=0,event=0;std::uint32_t groups=1;
-    std::int32_t logical=0;Bytes identity,lastBytes;
+    std::int32_t logical=0,physical=0;Bytes identity,lastBytes,ownerBytes;
 };
 struct EmbeddedBandView {EmbeddedBandTarget target;BandEvent event;BandDocument band;Timeline timeline;};
 EmbeddedBandTarget make_embedded_band_target(const Framework&,size_t document,std::uint32_t groups,size_t track,size_t event);

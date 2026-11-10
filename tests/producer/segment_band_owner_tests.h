@@ -71,7 +71,9 @@ void embedded_band_target_tests(const std::filesystem::path& dir){
     require(read_embedded_band(host,target)&&read_embedded_band(host,target)->target.event==0&&read_embedded_band(host,target)->event.logicalTime==0,"An open target follows its unique identity after Undo reorders events");
     require(host.document(0).redo()&&read_embedded_band(host,target)->event.logicalTime==1536,"An open target follows the same native identity through Redo");
     const auto stable=host.document(0).save_bytes();auto other=make_embedded_band_target(host,0,1,0,0);
-    require(!update_embedded_band(host,target,768,767,read_embedded_band(host,target)->event.band)&&host.document(0).save_bytes()==stable,"Duplicate logical target cannot overwrite a different embedded Band");
+    const auto siblingBefore=host.document(0).band_events()[0].band;
+    require(update_embedded_band(host,target,768,767,read_embedded_band(host,target)->event.band)&&host.document(0).band_events()[0].band==siblingBefore,"Explicit logical collision keeps both embedded Band instances");
+    require(host.document(0).undo()&&host.document(0).save_bytes()==stable,"Logical collision restores complete bytes on Undo");
     host.document(0).select_track_group(2);host.document(0).add_tracks({SegmentTrackKind::band});host.document(0).insert_default_band(0);
     view=read_embedded_band(host,target);view->band.set_name(L"Group one");
     require(update_embedded_band(host,target,1536,1535,view->band.save_bytes())&&host.document(0).selected_groups()==2,"Embedded target commits its own group and restores the active owner selection");
@@ -82,7 +84,9 @@ void embedded_band_target_tests(const std::filesystem::path& dir){
     const auto copy=read_embedded_band(host,target)->event.band;host.document(0).set_band(2304,copy);
     auto ambiguous=target;ambiguous.logical=3072;
     require(!read_embedded_band(host,ambiguous),"Ambiguous copied native identities never guess an event by array index");
-    require(read_embedded_band(host,target)&&read_embedded_band(host,target)->event.logicalTime==1536,"Exact logical identity still selects a copied Band independently");
+    require(!read_embedded_band(host,target),"Copied native identities require explicit reselection after an independent edit");
+    target=make_embedded_band_target(host,0,1,0,1);
+    require(read_embedded_band(host,target)&&read_embedded_band(host,target)->event.logicalTime==1536,"Explicit reselection selects the copied Band independently");
     auto invalid=target;invalid.document=99;
     require(!read_embedded_band(host,invalid)&&!update_embedded_band(host,invalid,0,-1,copy),"Stale owner indexes disable embedded reads and writes");
 }
@@ -111,7 +115,7 @@ void segment_band_owner_tests(const std::filesystem::path& dir){
     const auto edit=d.save_bytes();require(d.undo()&&d.save_bytes()==two&&d.redo()&&d.save_bytes()==edit,"Combined name/timing change is one Segment transaction");
     require(d.undo(),"Prepare retained Redo before invalid embedded Band edits");
     const auto stable=d.save_bytes();at=77;
-    require(!d.update_band(8,0,-1,first.save_bytes(),&at)&&!d.update_band(0,-1,0,first.save_bytes())&&!d.update_band(0,d.length(),0,first.save_bytes())&&!d.update_band(0,0,d.length(),first.save_bytes())&&!d.update_band(0,768,767,first.save_bytes()),"Invalid index, bounds and ambiguous logical target are rejected");
+    require(!d.update_band(8,0,-1,first.save_bytes(),&at)&&!d.update_band(0,-1,0,first.save_bytes())&&!d.update_band(0,d.length(),0,first.save_bytes())&&!d.update_band(0,0,d.length(),first.save_bytes()),"Invalid index and bounds are rejected");
     rejected([&]{d.update_band(0,0,-1,Bytes{1,2,3});},"Malformed edited Band rejected before owner mutation");
     require(d.save_bytes()==stable&&d.can_redo()&&at==77,"Rejected updates retain bytes dirty history and result index");
     BandDocument original;original.load(d.band_events()[0].band);require(!d.update_band(0,0,-1,original.save_bytes())&&d.save_bytes()==stable&&d.can_redo(),"Unchanged embedded edit retains Redo");

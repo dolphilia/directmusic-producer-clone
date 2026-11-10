@@ -233,7 +233,6 @@ std::vector<BandEvent> band_track_events(const Chunk& track){
         const auto old=unique_band(item,"bdih"),header=unique_band(item,"bd2h"),band=unique_band(item,"RIFF","DMBD");
         if((old&&header)||(!old&&!header)||!band||(header&&header->data.size()<8)||(old&&old->data.size()<4))throw std::runtime_error("Ambiguous or truncated BandTrack item");
         const auto time=static_cast<std::int32_t>(read32((header?header:old)->data,0));const auto physical=header?static_cast<std::int32_t>(read32(header->data,4)):time;
-        for(const auto& e:events)if(e.logicalTime==time)throw std::runtime_error("Duplicate Band logical time requires explicit selection");
         BandDocument validation;const auto bytes=band->encode();validation.load(bytes);events.push_back({time,physical,bytes});
     }return events;
 }
@@ -242,7 +241,9 @@ Chunk make_band_track(){
     Chunk data;data.id="RIFF";data.type="DMBT";Chunk automatic;automatic.id="bdth";automatic.data=Bytes(4);put32(automatic.data,0,1);data.children.push_back(automatic);Chunk items;items.id="LIST";items.type="lbdl";data.children.push_back(items);track.children.push_back(data);return track;
 }
 bool set_band_track_event(Chunk& track,std::int32_t time,const Bytes& bytes){
-    if(time<0)return false;BandDocument validation;validation.load(bytes);(void)band_track_events(track);auto next=track;
+    if(time<0)return false;BandDocument validation;validation.load(bytes);const auto events=band_track_events(track);
+    if(std::count_if(events.begin(),events.end(),[&](const auto& e){return e.logicalTime==time;})>1)throw std::runtime_error("Duplicate Band logical time requires explicit selection");
+    auto next=track;
     auto items=next.find("RIFF","DMBT")->find("LIST","lbdl");
     for(auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd"){
         const auto header=item.find("bd2h")?item.find("bd2h"):item.find("bdih");
@@ -252,19 +253,28 @@ bool set_band_track_event(Chunk& track,std::int32_t time,const Bytes& bytes){
     auto pos=items->children.end();for(auto i=items->children.begin();i!=items->children.end();++i)if(i->id=="LIST"&&i->type=="lbnd"){const auto h=i->find("bd2h")?i->find("bd2h"):i->find("bdih");if(static_cast<std::int32_t>(read32(h->data,0))>time){pos=i;break;}}
     items->children.insert(pos,item);track=std::move(next);return true;
 }
-bool move_band_track_event(Chunk& track,size_t index,std::int32_t logical,std::int32_t physical){
+bool replace_band_track_event(Chunk& track,size_t index,const Bytes& bytes){
+    const auto events=band_track_events(track);if(index>=events.size())return false;
+    BandDocument validation;validation.load(bytes);if(events[index].band==bytes)return false;
+    auto next=track;auto items=next.find("RIFF","DMBT")->find("LIST","lbdl");size_t at=0;
+    for(auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd"&&at++==index){*item.find("RIFF","DMBD")=Chunk::parse(bytes);break;}
+    track=std::move(next);return true;
+}
+bool move_band_track_event(Chunk& track,size_t index,std::int32_t logical,std::int32_t physical,size_t* resultingIndex){
     const auto events=band_track_events(track);if(index>=events.size()||logical<0)return false;
     if(events[index].logicalTime==logical&&events[index].physicalTime==physical)return false;
-    for(size_t i=0;i<events.size();++i)if(i!=index&&events[i].logicalTime==logical)return false;
     auto next=track;auto items=next.find("RIFF","DMBT")->find("LIST","lbdl");size_t at=0;
     for(auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd"&&at++==index){
         auto header=item.find("bd2h");if(!header){header=item.find("bdih");if(logical!=physical){header->id="bd2h";header->data.insert(header->data.begin()+4,4,0);}}
         put32(header->data,0,logical);if(header->id=="bd2h")put32(header->data,4,physical);break;
     }
     // Sort Band items within their existing slots; opaque sibling positions stay.
-    std::vector<Chunk> ordered;for(const auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd")ordered.push_back(item);
-    std::stable_sort(ordered.begin(),ordered.end(),[](const Chunk& a,const Chunk& b){const auto ah=a.find("bd2h")?a.find("bd2h"):a.find("bdih"),bh=b.find("bd2h")?b.find("bd2h"):b.find("bdih");return static_cast<std::int32_t>(read32(ah->data,0))<static_cast<std::int32_t>(read32(bh->data,0));});
-    at=0;for(auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd")item=std::move(ordered[at++]);track=std::move(next);return true;
+    std::vector<Chunk> ordered;std::vector<size_t> order;
+    for(const auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd"){order.push_back(ordered.size());ordered.push_back(item);}
+    std::stable_sort(order.begin(),order.end(),[&](size_t a,size_t b){const auto ah=ordered[a].find("bd2h")?ordered[a].find("bd2h"):ordered[a].find("bdih"),bh=ordered[b].find("bd2h")?ordered[b].find("bd2h"):ordered[b].find("bdih");return static_cast<std::int32_t>(read32(ah->data,0))<static_cast<std::int32_t>(read32(bh->data,0));});
+    const auto selected=static_cast<size_t>(std::find(order.begin(),order.end(),index)-order.begin());
+    at=0;for(auto& item:items->children)if(item.id=="LIST"&&item.type=="lbnd")item=std::move(ordered[order[at++]]);
+    track=std::move(next);if(resultingIndex)*resultingIndex=selected;return true;
 }
 bool delete_band_track_event(Chunk& track,size_t index){
     const auto events=band_track_events(track);if(index>=events.size())return false;auto next=track;auto& items=next.find("RIFF","DMBT")->find("LIST","lbdl")->children;size_t at=0;

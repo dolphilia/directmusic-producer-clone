@@ -17,10 +17,12 @@
 #include "script_track.h"
 #include "chordmap_reference.h"
 #include <functional>
+#include <array>
 
 namespace producer::app {
 struct SequenceVelocityEdit {std::uint32_t groups;size_t track,note;unsigned velocity;};
 struct SequenceTimingEdit {std::uint32_t groups;size_t track,note;std::int32_t time,duration;};
+enum class SegmentInfoField {subject,author,copyright,information};
 // One document owns both its RIFF tree and editable track. History stores the
 // complete serialized tree, so unrelated chunks cannot disappear on Undo.
 class SegmentDocument {
@@ -43,15 +45,20 @@ class SegmentDocument {
     void restore_history(const Bytes& bytes);
     void commit_tempo(const Bytes& before);
     void record_edit(const Bytes& before);
+    bool update_default_resolution(std::uint32_t mask,std::uint32_t value);
     bool update_parameter_control(size_t,const std::function<bool(Chunk&)>&);
     bool update_style_reference(size_t,const std::function<bool(Chunk&)>&,const std::wstring&,const std::vector<StyleCatalogEntry>&);
     Chunk* meter_chunk();
     bool update_meters(std::vector<meter::Event> events);
+    bool add_tracks_impl(const std::vector<SegmentTrackKind>&,bool globalTempo);
 public:
     SegmentDocument();
     static SegmentDocument create_empty(const SegmentCreationLength&,const std::wstring& name);
     std::vector<SegmentTrackInfo> tracks()const;
     bool add_tracks(const std::vector<SegmentTrackKind>&);
+    // Newly created editor Tempo tracks apply to all groups. Other new tracks
+    // use the selected group; existing imported track headers remain intact.
+    bool add_editor_tracks(const std::vector<SegmentTrackKind>&);
     bool add_sequence_part(std::uint32_t channel,size_t* resultingTrack=nullptr);
     void load(const Bytes& bytes);
     // Select nth track of each type whose group bits intersect the mask.
@@ -67,12 +74,39 @@ public:
     bool dirty() const { return dirty_; }
     std::wstring name() const;
     bool set_name(const std::wstring&);
+    std::wstring info_text(SegmentInfoField)const;
+    // Unicode reference metadata is independent of the component name/GUID.
+    // Malformed or ambiguous targeted chunks refuse without changing history.
+    bool set_info_text(SegmentInfoField,const std::wstring&);
+    std::array<std::uint16_t,4> info_version()const;
+    bool set_info_version(const std::array<std::uint16_t,4>&);
     std::int32_t length() const;
     SegmentCreationLength length_settings()const;
     SegmentLengthPreview preview_length(const SegmentCreationLength&)const;
     // Refuses shortening that would remove/clip track data until typed trimming
     // is available. Invalid edits never change bytes, dirty state or history.
     bool set_length(const SegmentCreationLength&);
+    SegmentLoopSettings loop_settings()const;
+    // Atomic native music-time fields only. Clock/reference-length settings
+    // require their separate clock-time editor and remain intact on refusal.
+    bool set_music_loop(std::uint32_t repeats,std::int32_t start,std::int32_t end);
+    std::int32_t play_start()const;
+    // Initial music-time playback point, independent of the repeated loop.
+    // Writes only mtPlayStart; unsupported clocks and invalid bounds are atomic.
+    bool set_music_start(std::int32_t);
+    std::uint32_t default_resolution()const;
+    // Imported DEFAULT and conflicting boundary flags remain unavailable.
+    // Align/Queue user choices atomically clear Marker; leaving Align clears
+    // its owned valid-start flags. All other native fields are retained.
+    std::optional<SegmentPerformanceBoundary> performance_boundary()const;
+    bool set_performance_boundary(SegmentPerformanceBoundary);
+    std::optional<SegmentAlignment> alignment()const;
+    bool set_alignment(SegmentAlignment);
+    bool set_boundary_marker(bool);
+    bool set_boundary_after_prepare(bool);
+    // Conflicting imported invalidation bits remain unavailable and intact.
+    std::optional<SegmentInvalidation> invalidation()const;
+    bool set_invalidation(SegmentInvalidation);
     const std::vector<tempo::Event>& tempos() const { return tempo_.events(); }
     void select(size_t index);
     void select(const std::vector<size_t>& indexes);
@@ -81,6 +115,12 @@ public:
     bool change_selected(double bpm);
     std::optional<double> tempo_at(std::int32_t time) const;
     bool change_current_tempo(std::int32_t time,double bpm);
+    // Performance uses the first-created Tempo track across all groups.
+    // These do not switch the editor's group/index, selection or range.
+    // A validated copy of the controlling map, independent of editor groups.
+    std::vector<tempo::Event> primary_tempos() const;
+    std::optional<double> primary_tempo_at(std::int32_t time) const;
+    bool change_primary_tempo(std::int32_t time,double bpm);
     bool move_selected_tempo(std::int32_t time);
     bool delete_selected();
     Bytes copy() const;
@@ -119,6 +159,7 @@ public:
     bool edit_meter(size_t index,std::int32_t measure,unsigned beats,unsigned denominator,unsigned grids,size_t* selected=nullptr);
     bool delete_meter(std::int32_t measure);
     std::vector<Note> notes() const;
+    std::vector<SequenceNotePosition> note_positions() const;
     std::vector<SequenceCurve> curves() const;
     std::vector<SequenceController> cc_lanes(std::uint32_t channel) const;
     bool add_cc_lane(std::uint32_t channel,SequenceController);
@@ -127,6 +168,7 @@ public:
     bool delete_curve(size_t);
     bool add_note(Note note,size_t* resultingIndex=nullptr);
     bool edit_note(size_t index,Note note,size_t* resultingIndex=nullptr);
+    bool edit_note_logical_time(size_t index,std::int32_t logicalTime,size_t* resultingIndex=nullptr);
     // One owner transaction, even when a velocity command spans several parts.
     bool edit_note_velocities(const std::vector<SequenceVelocityEdit>&);
     bool edit_note_timings(const std::vector<SequenceTimingEdit>&,std::vector<size_t>* resultingIndices=nullptr);

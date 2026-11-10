@@ -1,0 +1,11 @@
+# Current Tempo と主 Tempo track — 2026-11-10
+
+184801667はCurrentTempoをeditor-selectedTempoからglobalな先作成Tempoへ分離。4source変更288同一/292savedworking4outputs、関連5モード627checks（新28）合格。作者15528で後続Properties180を選択してもtoolbar132.25を表示、toolbar120確定は主Tempoのみ変更・後続180/選択保持。Undo保存は初期全bytes、Redo期待全bytes、復元14916で主120/後続180・再保存/二通常exit0。native差は主tetrのDOUBLE132.25→120（2388bytes中2bytes）のみ、後続Tempo全体/全header-group-position/17音/Band/opaque/GUID/control二17音を保持、ProjectはFILETIME以外一致。
+
+新固定240s録音は19/19。先頭再生と再開の両方で17音/16間隔が0.5秒許容±0.03秒に一致し、後続180による間隔を採用していないことを確認。C6/発音開始1秒内/25秒activeStop/停止後静音も合格。負例6と追加wrong-tempo180の計7、clock4を全拒否し元WAV保持。作者試聴0/Play0、復元private2/primary2/explicitStarts4・API結果0を別監査。旧6秒停止不合格を保持。
+
+dwPosition最小/同値native順はsourcepolicy。SDK/CHM契約と通常の先作成入力を根拠にし、原版複数Tempo同入力動的比較/輸入並替・tie/全global表示作成正規化/Length/loop/fullgeometryは未達。グループ別編集APIは維持。文字列入力は空欄、通常数字キーで確定できた観測を保存しpaste/IME同等性としない。全40全8/50native30driver凍結/fullAcceptance=false。
+
+一次入口：`work/analysis/ui-current-tempo-primary-track/20261109T184300000Z/unit-record-v3.json`。
+
+SegmentのAdd Tracksで新規Tempoを作る際の全32グループ契約を次に進める。現在add_tracksは全種類をselectedGroupsへ割当てるため、GUI新Tempoがgroup1になる差がある。既存importedheaderとgroup/index編集APIを保ち、GUIの明示的なglobalTempo作成経路を独立実装・未凍結関連/本体AddTempo/保存通常終了/別復元/native全照合まで進める。既存group1読み込み時の原版正規化/全globalview/Length/loopは別未達。既知OS凍結の同条件再試行なし、fullAcceptance=false、goal active。

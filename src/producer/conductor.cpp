@@ -32,6 +32,17 @@
 #include <cmath>
 
 namespace producer::app {
+DWORD source_playback_prepare_milliseconds(const Bytes& bytes,bool responsive){
+    if(!responsive)return 1000;
+    if(!bytes.empty()){
+        const auto root=Chunk::parse(bytes);
+        if(const auto tracks=root.find("LIST","trkl"))for(const auto& track:tracks->children)if(is_sequence_track(track)){
+            const auto events=track.find("seqt");if(!events)throw std::runtime_error("Sequence playback payload missing");
+            for(const auto& note:sequence_note_positions(events->data))if(note.offset<0)return 1000;
+        }
+    }
+    return 300;
+}
 namespace {
 class NoteObserver final:public runtime::Tool {
     volatile LONG references_=1;
@@ -918,8 +929,14 @@ void Conductor::play_snapshot(StylePlaybackSnapshot snapshot,const std::wstring&
         // never reduce preparation while another session owns the clock.
         const bool responsive=!motif&&!s.nativeScripts&&!s.toolGraph&&!s.audioPathGraph&&
             triggers.segments.empty()&&triggers.motifs.empty()&&triggers.scripts.empty();
-        if(s.retained.empty()||!responsive)
-            check("Set source playback prepare time",s.performance->SetPrepareTime(responsive?300:1000));
+        // The native Sequence track must see the logical beat before a negatively
+        // offset note's earlier sounding time. Inspect all native tracks rather
+        // than the selected editor group. Increase shared lookahead when needed;
+        // shortening still requires sole ownership. Immediate scheduling below
+        // remains independent of this event preparation window.
+        const auto sourcePrepare=source_playback_prepare_milliseconds(s.memory,responsive);
+        if(s.retained.empty()||!responsive||sourcePrepare>300)
+            check("Set source playback prepare time",s.performance->SetPrepareTime(sourcePrepare));
         // Give the performance its advertised preparation window. Immediate
         // starts can reach the synth before the initial Band/first note is ready.
         DWORD prepareMilliseconds=0;check("Get playback prepare time",s.performance->GetPrepareTime(&prepareMilliseconds));
@@ -1008,6 +1025,17 @@ void Conductor::stop_current() {
     s.audioPathGraph.reset();release(s.audioPath);release(s.segment);s.toolGraph.reset();s.motif=false;for(auto& style:s.runtimeStyles)release(style);s.runtimeStyles.clear();for(auto& collection:s.runtimeCollections)release(collection);s.runtimeCollections.clear();for(auto& wave:s.runtimeWaves)release(wave);s.runtimeWaves.clear();s.nativeScripts.reset();s.metronome.reset();for(auto& script:s.sourceScripts)release(script);s.sourceScripts.clear();for(auto& script:s.runtimeScripts)release(script);s.runtimeScripts.clear();for(auto& map:s.runtimeMaps)release(map);s.runtimeMaps.clear();release(s.loader);s.scriptLoaderMemory.clear();s.maps.clear();s.scripts.clear();s.triggeredLoaderMemory.clear();s.loaderMemory.clear();s.waves.clear();s.styles.clear();s.collections.clear();s.firstPatches.clear();s.memory.clear();s.id=0;s.request={};s.stoppingAtBoundary=false;
     if(metronomeTrace_)metronomeTrace_->record("stop-current-exit");
 }
+PerformanceClockSnapshot Conductor::performance_clocks(){
+    auto& s=*state_;if(!s.performance)throw std::runtime_error("Performance is not initialized");PerformanceClockSnapshot result;
+    check("Observe current Performance clock",s.performance->GetTime(&result.nowReference,&result.now));
+    check("Observe Performance latency clock",s.performance->GetLatencyTime(&result.latencyReference));
+    check("Convert observed latency clock",s.performance->ReferenceToMusicTime(result.latencyReference,&result.latency));
+    check("Observe Performance queue clock",s.performance->GetQueueTime(&result.queueReference));
+    check("Convert observed queue clock",s.performance->ReferenceToMusicTime(result.queueReference,&result.queue));
+    const DWORD flags[]={runtime::playGrid,runtime::playBeat,runtime::playMeasure};
+    for(unsigned i=0;i<3;++i){LONGLONG resolved=0;check("Observe native boundary at latency clock",s.performance->GetResolvedTime(result.latencyReference,&resolved,flags[i]));check("Convert observed native boundary",s.performance->ReferenceToMusicTime(resolved,&result.boundariesAtLatency[i]));}
+    return result;
+}
 PlaybackPosition Conductor::position() {
     auto& s=*state_;if(!s.performance||!s.segment||!s.playing)return {};
     const auto playing=s.performance->IsPlaying(s.segment,s.playing);check("IsPlaying",playing);
@@ -1038,7 +1066,13 @@ void Conductor::collect_notifications(){
         if(hr!=S_OK||!message||message->message.size<sizeof(*message))throw std::runtime_error("Incomplete runtime notification");
         IUnknown* identity=nullptr;const auto queried=message->message.user?message->message.user->QueryInterface(IID_IUnknown,reinterpret_cast<void**>(&identity)):E_NOINTERFACE;
         PlaybackId id=0;if(queried==S_OK&&identity){const auto found=s.notificationIds.find(identity);if(found!=s.notificationIds.end())id=found->second;}release(identity);
-        s.pendingNotifications.push_back({message->notificationType,message->option,message->field1,message->field2,message->message.group,message->message.musicTime,id&&id==s.id,id});
+        PlaybackNotification notification{message->notificationType,message->option,message->field1,message->field2,message->message.group,message->message.musicTime,id&&id==s.id,id};
+        notification.timeFlags=message->message.flags;notification.referenceTime=message->message.referenceTime;
+        // Retain the raw message fields. A separate optional value is usable
+        // only when the SDK time-validity flags establish its clock domain.
+        if(notification.timeFlags&2)notification.resolvedClocks=notification.clocks;
+        else if(notification.timeFlags&1){LONG music=0;const auto result=s.performance->ReferenceToMusicTime(notification.referenceTime,&music);calls_.push_back({"Convert notification reference timestamp",result});if(result==S_OK)notification.resolvedClocks=music;}
+        s.pendingNotifications.push_back(notification);
         if(id&&IsEqualGUID(message->notificationType,runtime::segmentNotification)&&(message->option==runtime::segmentEnded||message->option==4))terminal.push_back(id);
         owned.value=nullptr;check("Free notification",s.performance->FreePMsg(&message->message));
     }

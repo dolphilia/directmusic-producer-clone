@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedUtc": "2026-10-12T00:59:03.662Z",
+  "updatedUtc": "2026-11-10T12:15:40.675251+00:00",
   "candidate": "20261008T073500338Z",
   "build": "work/build/product-snapshot/20261008T073500338Z/build-summary.json",
   "configuration": {
@@ -23762,7 +23762,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-08T04:44:24.390Z",
+      "savedUtc": "2026-10-08T04:44:24.39Z",
       "value": {
         "candidate": "20261008T030413240Z",
         "status": "本体/native保存/別PID exact復元・通常exit0成立。四条件PCM全結合待ち",
@@ -23995,7 +23995,7 @@
       },
       {
         "label": "Initial Redo settled",
-        "utc": "2026-10-08T08:54:03.590Z",
+        "utc": "2026-10-08T08:54:03.59Z",
         "window": 77472040
       },
       {
@@ -24020,12 +24020,12 @@
       },
       {
         "label": "Style Undo108 settled",
-        "utc": "2026-10-08T09:06:01.260Z",
+        "utc": "2026-10-08T09:06:01.26Z",
         "window": 77472040
       },
       {
         "label": "Style Redo109 settled",
-        "utc": "2026-10-08T09:06:22.060Z",
+        "utc": "2026-10-08T09:06:22.06Z",
         "window": 77472040
       },
       {
@@ -24035,7 +24035,7 @@
       },
       {
         "label": "Band Change101 settled",
-        "utc": "2026-10-08T09:09:39.750Z",
+        "utc": "2026-10-08T09:09:39.75Z",
         "window": 77472040
       },
       {
@@ -24050,7 +24050,7 @@
       },
       {
         "label": "Band Save menu",
-        "utc": "2026-10-08T09:10:50.320Z",
+        "utc": "2026-10-08T09:10:50.32Z",
         "window": 77472040
       },
       {
@@ -24085,7 +24085,7 @@
       },
       {
         "label": "Separate process restored Fresh native Project",
-        "utc": "2026-10-08T09:46:37.080Z",
+        "utc": "2026-10-08T09:46:37.08Z",
         "window": 12587044
       },
       {
@@ -24115,12 +24115,12 @@
       },
       {
         "label": "final-route-reloaded",
-        "utc": "2026-10-08T09:51:00.840Z",
+        "utc": "2026-10-08T09:51:00.84Z",
         "window": 26609026
       },
       {
         "label": "final-script-reloaded",
-        "utc": "2026-10-08T09:52:03.420Z",
+        "utc": "2026-10-08T09:52:03.42Z",
         "window": 31985974
       },
       {
@@ -24161,7 +24161,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-08T04:44:24.390Z",
+      "savedUtc": "2026-10-08T04:44:24.39Z",
       "value": {
         "candidate": "20261008T030413240Z",
         "status": "Waves前1条件の実PCM数値合格・残3条件/全結合未実行",
@@ -24334,7 +24334,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-08T04:44:24.390Z",
+      "savedUtc": "2026-10-08T04:44:24.39Z",
       "value": {
         "path": "work/analysis/q3-audiopath-send/20261007T094855774Z/main-20261008T030413240Z/checkpoint-20261008T0402/progress.json",
         "sha256": "d76a403cb8bb255566b7b269a902c12014522fcc8775a5c01eb2458740195044"
@@ -25652,11 +25652,11 @@
       "productExecuted": false
     },
     {
-      "at": "2026-10-09T13:06:03.470Z",
+      "at": "2026-10-09T13:06:03.47Z",
       "previous": null
     },
     {
-      "at": "2026-10-09T13:51:29.020Z",
+      "at": "2026-10-09T13:51:29.02Z",
       "value": {
         "path": "work/analysis/ui-wave-viewport/20261009T125539491Z/source-pending-v1.json",
         "sha256": "be784f13f4ecc6bad2d9aa1e310745cba584d833e951c2174d81df2ad50c9455"
@@ -25702,7 +25702,7 @@
       }
     },
     {
-      "utc": "2026-10-09T18:11:36.530Z",
+      "utc": "2026-10-09T18:11:36.53Z",
       "value": {
         "path": "work/analysis/ui-wave-best-loop/20261009T173239834Z/source-changes-v1.json",
         "sha256": "7ce190777d3a414be4d41b1a311e03644af432fd07e00ad9848d8686b4478364",
@@ -25783,7 +25783,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T22:56:39.720Z",
+      "savedUtc": "2026-10-09T22:56:39.72Z",
       "value": {
         "unit": {
           "path": "work/analysis/ui-transport-keys/20261009T204823638Z/start-v1.json",
@@ -26127,6 +26127,41 @@
         "path": "work/analysis/ui-audition-onset/20261011T075312250Z/source-changes-v1.json",
         "sha256": "8205049109c3558e37872c7dc1bc3c6dde6f924edd8fb1d462b97bd51c0e90a4"
       }
+    },
+    {
+      "files": [
+        "src/producer/main.cpp",
+        "src/producer/frame_toolbar.cpp",
+        "src/producer/frame_toolbar.h"
+      ],
+      "candidate": "20261109T050149058Z",
+      "reason": "Observed stale field/binding after Insert Files restores focus before document activation",
+      "buildStarted": true,
+      "fullAcceptance": false
+    },
+    {
+      "files": [
+        "src/producer/frame_toolbar.cpp",
+        "src/producer/frame_toolbar.h"
+      ],
+      "reason": "Original left-to-right Tempo/modifier order and paired glyph distinction",
+      "buildStarted": true,
+      "correctedAfterSnapshot": false,
+      "candidate": "20261109T055400398Z",
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T062231219Z",
+      "files": [
+        "src/producer/frame_toolbar.cpp",
+        "src/producer/frame_toolbar.h",
+        "src/producer/main.cpp",
+        "src/producer/segment_timeline_window.cpp"
+      ],
+      "reason": "independent primary selection and editor owner, Segment-only Transport List",
+      "buildStarted": true,
+      "syntaxPassed": true,
+      "fullAcceptance": false
     }
   ],
   "regressionRoundHistory": [
@@ -28255,16 +28290,9 @@
     "fullAcceptance": false
   },
   "latestBuildAttempt": {
-    "candidate": "20261011T080641928Z",
-    "build": {
-      "path": "work/build/product-snapshot/20261011T080641928Z/build-summary.json",
-      "sha256": "afe82b409802a87d289da921f00ef96b5135d77ff201408ebf9dded971d09db7"
-    },
-    "passed": true,
+    "candidate": "20261110T041453112Z",
+    "status": "bounded music-time StartTime UI/history/save/four normal exits/separate restore/new baseline11 and member10 PCM19/7/4 verified;UIA failure preserved;original dynamic/clock-time/whole acceptance incomplete",
     "compiled": true,
-    "mainExecuted": true,
-    "sources": 288,
-    "outputs": 4,
     "fullAcceptance": false
   },
   "farmDescriptorPreparation": {
@@ -28647,7 +28675,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T10:21:15.900Z",
+      "savedUtc": "2026-10-09T10:21:15.9Z",
       "value": {
         "path": "work/analysis/ui-document-workspace/20261009T085146502Z/unit-0927-limited-v3.json",
         "sha256": "5fa31dfd1d2c687349c46e5386bb0b68ab9eff5fa120de87d2fb5dd268add63c",
@@ -28733,7 +28761,7 @@
       "mutableRecord": "work/analysis/ui-wave-loop-tools/20261009T115211263Z/unit-record.json"
     },
     {
-      "at": "2026-10-09T13:51:29.020Z",
+      "at": "2026-10-09T13:51:29.02Z",
       "value": {
         "path": "work/analysis/ui-wave-viewport/20261009T125539491Z/unit-start-v1.json",
         "sha256": "0292aed42c67152a0d9c724541c443763be7abe9c01de0c6f9d5a4bbb8635a53",
@@ -28766,7 +28794,7 @@
       "reason": "Main CtrlS boundedGUI/native done;comparison unmet recorded inunfinishedUnits"
     },
     {
-      "utc": "2026-10-09T18:11:36.530Z",
+      "utc": "2026-10-09T18:11:36.53Z",
       "value": {
         "path": "work/analysis/ui-wave-best-loop/20261009T173239834Z/unit-start-v1.json",
         "sha256": "e898e27102bc13961a626127f750031c902d96930c41fee3cd2b049ca36fda55",
@@ -28847,7 +28875,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T21:18:06.420Z",
+      "savedUtc": "2026-10-09T21:18:06.42Z",
       "value": {
         "path": "work/analysis/ui-transport-keys/20261009T204823638Z/start-v1.json",
         "sha256": "12105f4d2bf928bd2aa72edb34dc8635b64d679c58ddbdf8e13fcb964a90c8e4",
@@ -28875,7 +28903,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T22:56:39.720Z",
+      "savedUtc": "2026-10-09T22:56:39.72Z",
       "value": {
         "path": "work/analysis/q3-script-ansi-name/20261009T211806287Z/start-v1.json",
         "sha256": "b46cd97f9afceb2c53fa799b65145acb72eed31047043c819b4b0f063bdc4eef",
@@ -29629,7 +29657,7 @@
       ]
     },
     {
-      "utc": "2026-10-09T18:11:36.530Z",
+      "utc": "2026-10-09T18:11:36.53Z",
       "value": {
         "path": "work/build/product-snapshot/20261009T173457914Z/build-summary.json",
         "sha256": "758d9c68692e1d487e103f95ac8142188869220636dd1c170ceddd4a21aaebfb",
@@ -31128,6 +31156,156 @@
         "adopted": false,
         "fullAcceptance": false
       }
+    },
+    {
+      "candidate": "20261011T080641928Z",
+      "build": {
+        "path": "work/build/product-snapshot/20261011T080641928Z/build-summary.json",
+        "sha256": "afe82b409802a87d289da921f00ef96b5135d77ff201408ebf9dded971d09db7"
+      },
+      "passed": true,
+      "compiled": true,
+      "mainExecuted": true,
+      "sources": 288,
+      "outputs": 4,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T050149058Z",
+      "status": "building",
+      "buildDirectory": "work/build/product-snapshot/20261109T050149058Z",
+      "compiled": false,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T050149058Z",
+      "status": "configure/build/install exit0",
+      "compiled": true,
+      "build": {
+        "path": "work/build/product-snapshot/20261109T050149058Z/build-summary.json",
+        "sha256": "4f78d3441db4d747b1e68d1c93279702101750d1777f0297e773a56b1e28aa18"
+      },
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T054537665Z",
+      "status": "building; source type declaration corrected after snapshot",
+      "compiled": false,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T055400398Z",
+      "status": "building corrected source",
+      "compiled": false,
+      "failedPreviousBuild": {
+        "path": "work/build/product-snapshot/20261109T054537665Z/build-summary.json",
+        "sha256": "e25f064a206f49a568ded46f8698e7287d37e809857682df5d8b028adc4f0008"
+      },
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T055400398Z",
+      "status": "configure/build/install exit0",
+      "compiled": true,
+      "build": {
+        "path": "work/build/product-snapshot/20261109T055400398Z/build-summary.json",
+        "sha256": "e5b7494fd7d017e401eed9ff3fb1f4533098ffe857994c59c0eba3f129179ffe"
+      },
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T062231219Z",
+      "status": "building",
+      "compiled": false,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T062231219Z",
+      "status": "configure/build/install exit0",
+      "compiled": true,
+      "build": {
+        "path": "work/build/product-snapshot/20261109T062231219Z/build-summary.json",
+        "sha256": "d4a2145c6c9a60a5b51c1b2beda3529154e718b2b2889f2236d4538fbf1c178a"
+      },
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T070706789Z",
+      "status": "configure/build/install0; runtime/native passed; original parity failed",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T072804038Z",
+      "status": "configure/build/install0; original blank-name label/main2process/native verified",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T074348295Z",
+      "status": "build/native passed; first GUI audio load failed; correction next",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T081250588Z",
+      "status": "build/related/native/PCM/native100 passed within bounded scope; strict overall incomplete",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T084341067Z",
+      "status": "build/related/main/native3normalexit passed within bounded scope; strict appearance/overall incomplete",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T091437876Z",
+      "status": "build/related/main/native3normalexit passed within empty-frame scope; overall incomplete",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T095232696Z",
+      "status": "building",
+      "compiled": false,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T100901325Z",
+      "status": "build/related/menu keyboard/main/native3normalexit passed in bounded scope; NoTempo correction/overall incomplete",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T103640944Z",
+      "status": "No-primary120/NoTempo-blank/numeric132.25 display verified; related4/238; native100:50/2855+49frozen+anonymous1; 3normalexit0 and native roundtrip",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T110449470Z",
+      "status": "building",
+      "compiled": false,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T111021505Z",
+      "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T114031247Z",
+      "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+      "compiled": true,
+      "fullAcceptance": false
+    },
+    {
+      "candidate": "20261109T122735870Z",
+      "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+      "compiled": true,
+      "fullAcceptance": false
     }
   ],
   "uiCompatibility": {
@@ -31142,35 +31320,1066 @@
       "resume": "After plan maintenance, verify current/saved1713 hashes and current process identity; use prepared protocol for Computer Use main Add Env/default Send/-600/UndoRedo/native save/normal author exit/separate process exact restore/normal reload exit, then fixed WASAPI Play/active Stop/silence/replay and current candidate comparison. If source changes, save/build/test a new candidate. Keep original/Q2/Windows5 gates frozen.",
       "resumedUtc": "2026-10-08T18:07:39.966Z",
       "resumeRecord": "work/analysis/execution-resume/20261008T180701567Z/unit-record.json"
+    },
+    {
+      "requested": true,
+      "request": "キリの良いところで作業を休止してください",
+      "recordedUtc": "2026-10-12T00:59:03.662Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo/20261012T003122326Z/unit-record-v1.json",
+        "sha256": "8a8d717d09e2465bcc87028c95d8a99d560c4de2fc021a5a8cd3c9ca759f69d0"
+      },
+      "boundary": "Immutable build/install and related native complete; candidate GUI not started",
+      "resumeRequiresUserInstruction": true,
+      "fullAcceptance": false
     }
   ],
   "executionResume": {
     "schema": 1,
     "requestedBy": "user",
-    "instruction": "計画の一時停止を解除してください。",
-    "resumedUtc": "2026-10-08T18:07:39.966Z",
+    "instruction": "一時停止を解除し、優先計画に沿って実装・検証を継続する。Current Tempo本体・保存復元・音声から再開。",
+    "resumedUtc": "2026-11-09T13:10:18.515867+09:00",
     "goalStatus": "active",
-    "goalObjective": {
-      "path": "C:/Users/dolph/.codex/attachments/61dd27ad-274f-4ade-aacf-42b1048990ae/goal-objective.md",
-      "sha256": "ec2c21bccd974b9f18502eedf26dddd4d3e87e6fc6a222106c28e17ff51a128a"
+    "candidate": "20261012T004853599Z",
+    "identity": {
+      "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/resume-identity-v1.json",
+      "sha256": "a62310edf0be09dd8f3e36c376d6ec328cb694cb8604d4db831f948b24f7934c"
     },
-    "previousPause": {
-      "requestedBy": "user",
-      "pausedUtc": "2026-10-08T17:24:44.657Z",
-      "boundary": "Current snapshot build and native13 finished, all current CLI processes exited",
-      "resume": "After plan maintenance, verify current/saved1713 hashes and current process identity; use prepared protocol for Computer Use main Add Env/default Send/-600/UndoRedo/native save/normal author exit/separate process exact restore/normal reload exit, then fixed WASAPI Play/active Stop/silence/replay and current candidate comparison. If source changes, save/build/test a new candidate. Keep original/Q2/Windows5 gates frozen."
+    "display": {
+      "primaryPixels": [
+        1280,
+        800
+      ],
+      "effectiveDpi": 96,
+      "scalePercent": 100,
+      "measuredUtc": "2026-11-09T12:58:02.600995+09:00"
     },
-    "verification": {
-      "path": "work/analysis/execution-resume/20261008T180701567Z/candidate-verification.json",
-      "sha256": "3283d71dc8b41b9c4c1fa7da68c44cabfb199431902ff409d86beb8b7075602b"
+    "process": {
+      "pid": 11092,
+      "startUtc": "2026-11-09T03:58:13.7062595Z",
+      "executable": "work/build/product-snapshot/20261012T004853599Z/install/bin/Producer.exe",
+      "sha256": "e07895d9d8b28ce982d319401d03851e517d7553931a408a6e462fff4030c15d"
     },
-    "candidate": "20261008T171355889Z",
-    "displayScalePercent": 200,
-    "completed": true,
-    "productUnitCompleted": false,
-    "productExecuted": false,
+    "previousTurnClassification": "progress: immutable sources/outputs/inputs verified; display measured; new GUI process opened dedicated Project and saved132.25; no product completion inferred",
+    "status": "active;Info clock failure preserved;independent Boundary next",
+    "completed": false,
     "fullAcceptance": false,
-    "next": "Prepared 1713 Add Env/default Send/-600/UndoRedo/native author-save/normal exit/separate-process reload, fixed WASAPI; then original screen/operation baseline and common UI. Preserve frozen independent blockers."
+    "latestTrial": {
+      "updatedUtc": "2026-11-09T14:40:08.856675+09:00",
+      "candidate": "20261109T050149058Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v3.json",
+        "sha256": "b105500e72bc96e01af896e04bb82d8b598b75869b825e237b80e7db382ce4c5"
+      },
+      "report": {
+        "path": "docs/analysis/ui-current-tempo-resume-2026-11-09.md",
+        "sha256": "7c208b3a5e7b20a3dc190fe3d1b62ae2ec986bed6b69c605d364d3f1a6f92b5a"
+      },
+      "status": "bounded-stopped-Segment-functionality-verified; strict-appearance-and-broader-Transport-open",
+      "sourceChanged": true,
+      "compiled": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 496,
+      "candidateMainExecuted": true,
+      "candidateNativeRoundTrip": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "originalAdditionalContract": true,
+      "strictAppearance": false,
+      "pausedByUser": false,
+      "functionalBoundedFinished": true,
+      "boundedFinished": false,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "processesNormallyExited": [
+      14160,
+      12000
+    ],
+    "latestTransportControlsTrial": {
+      "updatedUtc": "2026-11-09T15:13:52.703037+09:00",
+      "candidate": "20261109T055400398Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v3.json",
+        "sha256": "568f10b907e4418cf333854770fad72959bca8a0d5dd4be5ddc9b436ab589569"
+      },
+      "report": {
+        "path": "docs/analysis/ui-transport-controls-order-2026-11-09.md",
+        "sha256": "a126797fa9c9bb04f75f76dced5510da9badb2709f5b5365a15cc7f247322b26"
+      },
+      "status": "bounded-order-glyph-relayout-native-restore-PCM-verified; fullTransport-open",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 496,
+      "strictAppearance": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestTransportPrimaryTrial": {
+      "updatedUtc": "2026-11-09T15:57:38.77211+09:00",
+      "candidate": "20261109T062231219Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v3.json",
+        "sha256": "7aeaee4b03bdbeb9b90f48c3cf63f4607fefd2b880fe2358746bf81e01298412"
+      },
+      "report": {
+        "path": "docs/analysis/ui-transport-primary-2026-11-09.md",
+        "sha256": "117a67b6d24b481902a3f7db33591a4223008a92f3f2dfe5611890fd0c033d3b"
+      },
+      "status": "bounded-Segment-primary-selection-owner-native-two-process-PCM-and-native100-verified; fullTransport-open",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 496,
+      "nativeMilestone": {
+        "path": "work/analysis/ui-transport-primary/20261109T062110913Z/native-milestone-proof-v1.json",
+        "sha256": "93b6d9735b27f60b7ec88536b7a792169feeeba4adc66f704e1f05306bebaa38"
+      },
+      "functionalBoundedFinished": true,
+      "nativeMilestoneRunning": false,
+      "strictAppearance": false,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestProcessesNormallyExited": [
+      8940,
+      20808,
+      14356
+    ],
+    "latestEnvironment": {
+      "path": "work/analysis/ui-segment-start-time/20261110T041200000Z/coordinate-reload-ui-v1.json",
+      "sha256": "af5d9e582e040e3585537e0eb7cf3f12c779ab8bf374de0260575191515c0359"
+    },
+    "latestTransportLabelTrial": {
+      "updatedUtc": "2026-11-09T16:27:17.366368+09:00",
+      "candidate": "20261109T070706789Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-labels/20261109T070235697Z/unit-record-v2.json",
+        "sha256": "b121560ceda195d255e5a4fada88c146b16918abadf184c54feacc59bf410976"
+      },
+      "report": {
+        "path": "docs/analysis/ui-transport-labels-2026-11-09.md",
+        "sha256": "c557bc7ad9fae04df7b007b6346aa5d4ab621f9b11225780b34e611e9d15f8e5"
+      },
+      "status": "070706 build/related5-472/main2process/native allbytes passed; original blank-name/SaveAs parity differences found; correction required",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 472,
+      "newAudioRequired": false,
+      "originalNameParityPassed": false,
+      "originalSaveAsParityPassed": false,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestTransportLabelParityTrial": {
+      "updatedUtc": "2026-11-09T16:40:19.269243+09:00",
+      "candidate": "20261109T072804038Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-label-parity/20261109T072748612Z/unit-record-v2.json",
+        "sha256": "6291937198ae27be70c09bcd9409f6955cec44ae9a8ee5dfa88a24f423051438"
+      },
+      "report": {
+        "path": "docs/analysis/ui-transport-label-parity-2026-11-09.md",
+        "sha256": "47c7f2de7c9bea36863f31ffdc8a86d55da0ba78611ca45658ba7b6b7ea9f3af"
+      },
+      "status": "072804 saved absent-UNAM blank-name label matches observed original; build/4-213/main2process/native bytes passed",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 213,
+      "functionalBoundedFinished": true,
+      "originalBlankNameParity": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestSegmentSaveAsTrial": {
+      "updatedUtc": "2026-11-09T17:11:44.89156+09:00",
+      "candidate": "20261109T074348295Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-saveas-copy/20261109T074237460Z/unit-record-v2.json",
+        "sha256": "58d7be0002a96f09429693c3e92f2f2e29ca9ec4114c2c4d611aa7b8c0c04a97"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-saveas-copy-2026-11-09.md",
+        "sha256": "3c72285076a51f324c8a4655df80fce2df2641b81af9f5cea426ba566e1cb4dd"
+      },
+      "status": "074348 copyUI/newGUID/3doc/native/history/2normalexits and related5-493 passed; first GUI audio load failed 0x88781184; correction required",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 493,
+      "audioExecuted": true,
+      "audioPassed": false,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestEmptyUnfoTrial": {
+      "updatedUtc": "2026-11-09T17:34:49.980257+09:00",
+      "candidate": "20261109T081250588Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v2.json",
+        "sha256": "2356ca6938454ef41a152c12f2ef90d365e9527627388e3328c351376f4a5be8"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-empty-unfo-2026-11-09.md",
+        "sha256": "5e0285965d1c813438b2c01afa51281bfa8aedf2af3931b9e1f2d7c5266aa646"
+      },
+      "status": "081250 private empty-UNFO correction verified: related5-497, main/native2process, 137PCM+5controls, native100=50passed2855/49frozen/1pending",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 497,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "nativeMilestone": {
+        "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/native-milestone-proof-v1.json",
+        "sha256": "c410c8e08f13cebbabc00329b593a29b435b53644efdc1893bfd41a2adf2d4c7"
+      },
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "currentOriginalProcess": {
+      "processId": 15872,
+      "state": "normally exited0; fresh lifecycle comparison frozen",
+      "launch": {
+        "path": "work/analysis/ui-segment-editor-context/20261109T092034457Z/original-launch-v1.json",
+        "sha256": "0e2781aa91bf68da50584019a61a49c0d694dae30e6251f983ecc0ace5c32e83"
+      },
+      "observations": {
+        "path": "work/analysis/ui-segment-editor-context/20261109T092034457Z/original-observations-v1.json",
+        "sha256": "2788ebf8f01f23a86cfe6f9bbd30b802fe3f39c2dd9cd187986e9cd61ac610c3"
+      }
+    },
+    "latestStartupTrial": {
+      "updatedUtc": "2026-11-09T18:11:22.84674+09:00",
+      "candidate": "20261109T084341067Z",
+      "unit": {
+        "path": "work/analysis/ui-startup-newfiles/20261109T083128897Z/unit-record-v2.json",
+        "sha256": "290d9e84be9472fe25a3661052185a5d1021b87d097961385b005833bbee9db4"
+      },
+      "report": {
+        "path": "docs/analysis/ui-startup-newfiles-2026-11-09.md",
+        "sha256": "394261751c149b748cfdb20efd081fd48da1e0f17f9705bb44bcaa844eb07009"
+      },
+      "status": "084341 empty startup/New Files bounded lifecycle verified; related4/238; 3 normalexit0; one native Segment/20measures/TimeSig only saved and separately restored",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 238,
+      "audioExecuted": false,
+      "audioRequired": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestEmptyFrameTrial": {
+      "updatedUtc": "2026-11-09T09:35:01.821407+00:00",
+      "candidate": "20261109T091437876Z",
+      "unit": {
+        "path": "work/analysis/ui-empty-frame/20261109T091347255Z/unit-record-v2.json",
+        "sha256": "91e006e553f1e1610f74886609e7bc6f03026d62f377d0f971b35a603fb8a313"
+      },
+      "report": {
+        "path": "docs/analysis/ui-empty-frame-2026-11-09.md",
+        "sha256": "46c5ea68f7f9b11edd7d1a00fabe9877642e0a0fd2bc69f5d223b8e0c18651bf"
+      },
+      "status": "091437 empty frame/disabled120 verified; related4/238 in2runs; 3normalexit0; explicitProject dirty protection and firstSegment/native separate restore pass",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 238,
+      "audioExecuted": false,
+      "audioRequired": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestLengthCancelTrial": {
+      "updatedUtc": "2026-11-09T09:49:22.115532+00:00",
+      "candidate": "20261109T091437876Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-length-cancel/20261109T093620584Z/unit-record-v2.json",
+        "sha256": "68ca4f5149f966e6a7f99cc3405e77e666e93967d18d531a0fd700b0eb8fb373"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-length-cancel-2026-11-09.md",
+        "sha256": "d2c93a4a81efc1158bec36207b566382366b3507ad75fae74ceb2b064ec5d598"
+      },
+      "status": "091437 TreeNew/Length pending30 Cancel bounded main/native verified; author20272/reload20904 normalexit0; default20/TimeSig-only/bytes preserved",
+      "sourceChanges": false,
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedExistingSameCandidateModes": 4,
+      "relatedExistingSameCandidateChecks": 238,
+      "newRelatedExecuted": false,
+      "audioExecuted": false,
+      "audioRequired": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestMenuTrial": {
+      "updatedUtc": "2026-11-09T10:33:30.208542+00:00",
+      "candidate": "20261109T100901325Z",
+      "unit": {
+        "path": "work/analysis/ui-frame-menu/20261109T095015925Z/unit-record-v4.json",
+        "sha256": "6d1fd1eaaa755be64b2a2461975b3daaf68216489ff19d8e139984c65826df34"
+      },
+      "report": {
+        "path": "docs/analysis/ui-frame-menu-2026-11-09.md",
+        "sha256": "eb21e7a861465260b7bc32ba4b3268a42f771ee6b5cb06390c5c3689189fb926"
+      },
+      "status": "100901 menu prefix/AltF/F10/View submenu/MDI-Edit focus/old transport keys verified; related4/238; 3normalexit0; native initial/author/reload unchanged",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 238,
+      "keyboardRuntimePassed": true,
+      "audioExecuted": false,
+      "audioRequired": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestTempoTargetTrial": {
+      "updatedUtc": "2026-11-09T11:02:40.457205+00:00",
+      "candidate": "20261109T103640944Z",
+      "unit": {
+        "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/unit-record-v2.json",
+        "sha256": "7073fc4bee626aaf1ce45ee15f64ecf514a7953ed6e85587c302f6fdfe41ccb9"
+      },
+      "report": {
+        "path": "docs/analysis/ui-tempo-target-display-2026-11-09.md",
+        "sha256": "154b9819eb13ca473c1a854cea36e17bd351e9981c91fcee958535c55ec388e3"
+      },
+      "status": "No-primary120/NoTempo-blank/numeric132.25 display verified; related4/238; native100:50/2855+49frozen+anonymous1; 3normalexit0 and native roundtrip",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 238,
+      "nativeMilestone": {
+        "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/native-milestone-proof-v1.json",
+        "sha256": "6ac78f5241843c40ab6b54adc9bd091d03067c86936600f6e265e454d081a26c"
+      },
+      "audioExecuted": false,
+      "audioRequired": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestWorkspaceCloseTrial": {
+      "updatedUtc": "2026-11-09T11:35:12.843104+00:00",
+      "candidate": "20261109T111021505Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+        "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-workspace-close-2026-11-09.md",
+        "sha256": "f7c12ea82815c02293482cebf84952335e1481e97d6890fea2307a89c9cf380b"
+      },
+      "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 238,
+      "audioExecuted": false,
+      "audioRequired": false,
+      "functionalBoundedFinished": true,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestRegistrationTrial": {
+      "updatedUtc": "2026-11-09T12:22:38.633161+00:00",
+      "candidate": "20261109T114031247Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json",
+        "sha256": "b8aa9bec840b9ea2127e6fe5c96eca1c6c377d29ba81e47f7c8756d747a43e7a"
+      },
+      "report": {
+        "path": "docs/analysis/ui-transport-registration-2026-11-09.md",
+        "sha256": "790703fe0eacc0489a6299b73b300c191de61f234ddd495a15904b31c87b2f3b"
+      },
+      "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 3,
+      "relatedPassedChecks": 168,
+      "relatedBlocked": {
+        "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+        "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+      },
+      "candidateUiNativeAudioVerified": true,
+      "functionalBoundedFinished": false,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    },
+    "latestReopenTracksTrial": {
+      "updatedUtc": "2026-11-09T12:54:45.394569+00:00",
+      "candidate": "20261109T122735870Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-reopen-tracks/20261109T122451800Z/unit-record-v2.json",
+        "sha256": "bdb2f139876cdce52fb5cb45498ba3147092343ce4a5818da5406634de7c92df"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-reopen-tracks-2026-11-09.md",
+        "sha256": "28c22040404d36d7fd8e057a1a2147c9147e71e65bfae64c5b3152f28dc3be5f"
+      },
+      "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 3,
+      "relatedPassedChecks": 168,
+      "carriedRelatedBlocker": {
+        "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+        "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+      },
+      "carriedRelatedBlockerResolved": false,
+      "functionalBoundedFinished": true,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestAddBandTempoTrial": {
+      "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+      "candidate": "20261109T122735870Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+        "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+        "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+      },
+      "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+      "sourceChanged": false,
+      "newBuild": false,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedFreshChecks": 117,
+      "relatedExistingSameCandidateChecks": 168,
+      "carriedRelatedBlockerResolved": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestBandCycleTrial": {
+      "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+      "candidate": "20261109T131516936Z",
+      "unit": {
+        "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+        "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+      },
+      "report": {
+        "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+        "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+      },
+      "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 285,
+      "keyboardResidual": {
+        "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+        "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+      },
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestMdiCloseKeyDiagnostic": {
+      "updatedUtc": "2026-11-09T13:49:42.298447+00:00",
+      "candidate": "20261109T131516936Z",
+      "unit": {
+        "path": "work/analysis/ui-mdi-close-key/20261109T133909247Z/unit-record-v2.json",
+        "sha256": "2203a48263465e0f64090f25663afb9d0f615881244ce6824ed3b7b2f173de20"
+      },
+      "report": {
+        "path": "docs/analysis/ui-mdi-close-key-2026-11-09.md",
+        "sha256": "07d879c14df98a71d80ac41f12a6b83a8d45516eae7db231ee80f537f2cc4533"
+      },
+      "status": "Same131516 menu-state diagnostic bounded: GUI_INMENUMODE4 vs0 controls CtrlF4 result; no code fix;2normalexit0/native exact",
+      "sourceChanged": false,
+      "newBuild": false,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "sourceDefectFixed": false,
+      "originalMenuParity": false,
+      "audioExecuted": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestNativeMilestone": {
+      "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+      "candidate": "20261109T131516936Z",
+      "unit": {
+        "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+        "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+      },
+      "report": {
+        "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+        "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+      },
+      "run": {
+        "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+        "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+      },
+      "proof": {
+        "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+        "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+      },
+      "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+      "registeredNative": 100,
+      "passedModes": 49,
+      "passedChecks": 2785,
+      "nativeFrozenWithoutExecution": 50,
+      "knownWorkflowWithoutRetry": "style-player-bands",
+      "inputs": 30,
+      "inputDirectories": 7,
+      "sources": 292,
+      "outputs": 4,
+      "driverRegistered": 172,
+      "driverExecutedThisRound": 0,
+      "driverFrozenCountCarried": 30,
+      "newFailureCount": 0,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSequenceMinimumTrial": {
+      "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+      "candidate": "20261109T131516936Z",
+      "unit": {
+        "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+        "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+      },
+      "report": {
+        "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+        "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+      },
+      "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioAccepted": false,
+      "relatedReferenceOnly": true,
+      "relatedPassedModes": 49,
+      "relatedPassedChecks": 2785,
+      "boundedFinished": false,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSequenceActiveStopTrial": {
+      "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+      "candidate": "20261109T131516936Z",
+      "unit": {
+        "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+        "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+      },
+      "report": {
+        "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+        "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+      },
+      "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioAccepted": true,
+      "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+      "previousSixSecondStopAccepted": false,
+      "relatedReferenceOnly": true,
+      "relatedPassedModes": 49,
+      "relatedPassedChecks": 2785,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestBandCycleTicksTrial": {
+      "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+      "candidate": "20261109T131516936Z",
+      "unit": {
+        "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+        "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+      },
+      "report": {
+        "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+        "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+      },
+      "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedReferenceOnly": true,
+      "relatedPassedModes": 49,
+      "relatedPassedChecks": 2785,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSequenceOriginalComparison": {
+      "updatedUtc": "2026-11-09T16:13:55.944531+00:00",
+      "unit": {
+        "path": "work/analysis/ui-sequence-original/20261109T150614000Z/unit-record-v3.json",
+        "sha256": "67bf59b7be58026701878ed79b66b80c414125daaa42d550e5050ac8c790c58b"
+      },
+      "report": {
+        "path": "docs/analysis/ui-sequence-original-2026-11-10.md",
+        "sha256": "a8d6ecf91e4188e64abb3bf2b9131e8373f8dc518b6c258b7a3be7743b92f4d9"
+      },
+      "candidateCompared": "20261109T131516936Z",
+      "formalOriginalPid": 1164,
+      "normalExit": true,
+      "parityGapsRemain": true,
+      "originalAudioExecuted": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestBandLogicalCollisionTrial": {
+      "updatedUtc": "2026-11-09T16:21:13.368833+00:00",
+      "candidate": "20261109T153816119Z",
+      "unit": {
+        "path": "work/analysis/ui-band-logical-collision/20261109T153138000Z/unit-record-v3.json",
+        "sha256": "f890a59f8c41cb734ac3c1fcc726c0ceb84ca1b937ca1badf4f5780c5d3bfa01"
+      },
+      "report": {
+        "path": "docs/analysis/ui-band-logical-collision-2026-11-10.md",
+        "sha256": "411b658ba0119fe781bdaeeb98ff73049de1e65338ced6659f6c816dc403804b"
+      },
+      "status": "Same-logical Band support verified:4related508checks; GUI B/C overlap,selected rename/Cchild/Breloadchild/UndoRedo;2normalexit0/native only declared fields/292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 508,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestTimelineOrderTrial": {
+      "updatedUtc": "2026-11-09T16:42:41.874458+00:00",
+      "candidate": "20261109T162522992Z",
+      "unit": {
+        "path": "work/analysis/ui-timeline-order/20261109T162156000Z/unit-record-v3.json",
+        "sha256": "ce1c4c12507075b8e468035655cf7072eab8cf5f198f4bd810d63955d2f0d7be"
+      },
+      "report": {
+        "path": "docs/analysis/ui-timeline-order-2026-11-10.md",
+        "sha256": "94c0478ee653739cc0baeb64b70302005cb6331b551dbc2eb51b70639a2b9ff6"
+      },
+      "status": "Timeline known4strip order/actualmask ranges/labels verified;3related478;4row Properties owners;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 3,
+      "relatedPassedChecks": 478,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSequencePitchViewTrial": {
+      "updatedUtc": "2026-11-09T17:17:02.883240+00:00",
+      "candidate": "20261109T165309981Z",
+      "unit": {
+        "path": "work/analysis/ui-sequence-pitch-view/20261109T164346000Z/unit-record-v3.json",
+        "sha256": "e57107246251c67dda1dda21a6abfaca25af69de244153ff887a7adfca2df098"
+      },
+      "report": {
+        "path": "docs/analysis/ui-sequence-pitch-view-2026-11-10.md",
+        "sha256": "55abfe416c965e22ebeb027349ea50de4dca847d70cacb606780f2d5201fe67b"
+      },
+      "status": "Part verticalzoom/native keyboard semitone-page-thumb verified;3related494 incl16new;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 3,
+      "relatedPassedChecks": 494,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestBandOwnerTitleTrial": {
+      "updatedUtc": "2026-11-09T17:44:00.680892+00:00",
+      "candidate": "20261109T172245420Z",
+      "unit": {
+        "path": "work/analysis/ui-band-owner-title/20261109T171721000Z/unit-record-v3.json",
+        "sha256": "2bc10c90c202e8d2ca1e7a7b0bcc6ec04764c253588a8d17584c6857af445afd"
+      },
+      "report": {
+        "path": "docs/analysis/ui-band-owner-title-2026-11-10.md",
+        "sha256": "c38cb751189fda7ee20a36c9273294b72504c9740bb668878997b741c3ec7eb8"
+      },
+      "status": "Owner title/live unchangedBand fastpath/Undo original verified;related3/494;2normalexit0/separate reload/native preservation292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 3,
+      "relatedPassedChecks": 494,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestBandGraphPositionTrial": {
+      "updatedUtc": "2026-11-09T18:00:21.942669+00:00",
+      "candidate": "20261109T174532050Z",
+      "unit": {
+        "path": "work/analysis/ui-band-graph-position/20261109T174400000Z/unit-record-v3.json",
+        "sha256": "a13f2ee45961b4766d95338ba2c26a871a2b0657043becd27f2a2e7225518e86"
+      },
+      "report": {
+        "path": "docs/analysis/ui-band-graph-position-2026-11-10.md",
+        "sha256": "3bf8da0215c2c62b75f2a5a1a0e019bcc7953a18cd3524c278eb93c76b610f96"
+      },
+      "status": "Stored pan-volume graph overlap/selection/resize verified;related3/501 incl7new;2normalexit0/separate reload/native preservation292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": false,
+      "relatedPassedModes": 3,
+      "relatedPassedChecks": 501,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSequenceLogicalTimeTrial": {
+      "updatedUtc": "2026-11-09T18:35:11.398560+00:00",
+      "candidate": "20261109T180733499Z",
+      "unit": {
+        "path": "work/analysis/ui-sequence-logical-time/20261109T180300000Z/unit-record-v3.json",
+        "sha256": "25923022650c7413a30ac87312bc24ae268d033fe13efc052d6b33d614f2d7f5"
+      },
+      "report": {
+        "path": "docs/analysis/ui-sequence-logical-time-2026-11-10.md",
+        "sha256": "e5e85804bd56cb56c8f7605d141dd29fe6c7047aab332ce8c76d35495a6d6702"
+      },
+      "status": "Sequence logical ownership/Properties/UndoRedo/native/separate reload verified;related4/566 incl35new;freshPCM18of18+6negative4clock;2normalexit0/292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 566,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestCurrentTempoPrimaryTrackTrial": {
+      "updatedUtc": "2026-11-09T19:12:22.653829+00:00",
+      "candidate": "20261109T184801667Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo-primary-track/20261109T184300000Z/unit-record-v3.json",
+        "sha256": "3fa08779a8bb8ea00b601556c4ab4238dfeb96f3adf485324ffc1b4f6b287b35"
+      },
+      "report": {
+        "path": "docs/analysis/ui-current-tempo-primary-track-2026-11-10.md",
+        "sha256": "de5d73bb0c001a7b1485e7208349ae451289cae96aa38a1299b09861e33e1092"
+      },
+      "status": "CurrentTempo controlling-track ownership/native/separate reload verified;related5/627 incl28new;freshPCM19of19+7negative4clock;2normalexit0/292sources4outputs",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 627,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestTempoGlobalCreationTrial": {
+      "updatedUtc": "2026-11-09T20:12:45.443043+00:00",
+      "candidate": "20261109T194909234Z",
+      "unit": {
+        "path": "work/analysis/ui-tempo-global-creation/20261109T191400000Z/unit-record-v3.json",
+        "sha256": "92cf22281df57fc2af609aa0e2d7c51433c313e3f3dd30c9a590941a0a2cafe5"
+      },
+      "report": {
+        "path": "docs/analysis/ui-tempo-global-creation-2026-11-10.md",
+        "sha256": "2c88d52931fbcf8ae2b3b7892f616233ccce0f1221bd8f2f7c44b2fbc3c1eb12"
+      },
+      "status": "bounded GUI globalTempo creation verified; whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 648,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestLengthPrimaryTempoTrial": {
+      "updatedUtc": "2026-11-09T20:59:07.047216+00:00",
+      "candidate": "20261109T201457752Z",
+      "unit": {
+        "path": "work/analysis/ui-length-primary-tempo/20261109T201400000Z/unit-record-v3.json",
+        "sha256": "38aaafe8b6a6eaa2e2fc391ef2f6102f417aed20cae1995decee2f1d7c537333"
+      },
+      "report": {
+        "path": "docs/analysis/ui-length-primary-tempo-2026-11-10.md",
+        "sha256": "2922d3ec7301af1424d21e6f9b8201b4d7c81714e8ffbd9fa0f21edbc79ea22b"
+      },
+      "status": "bounded Length controllingTempo conversion verified; whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 671,
+      "relatedReferenceOnly": false,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSequenceLogicalLookaheadTrial": {
+      "updatedUtc": "2026-11-09T22:24:03.494036+00:00",
+      "candidate": "20261109T214458343Z",
+      "unit": {
+        "path": "work/analysis/ui-sequence-logical-lookahead/20261109T214400000Z/unit-record-v3.json",
+        "sha256": "a3fe5fcc90c18c1917c7899625dfc85b1baf7daef648ff05fd71c620ef0425f4"
+      },
+      "report": {
+        "path": "docs/analysis/ui-sequence-logical-lookahead-2026-11-10.md",
+        "sha256": "f7d13c2f246ab5b9abdca97b7a0fae859d0e14629bc58c7e74cfd9589b31b79a"
+      },
+      "status": "bounded Sequence negative-offset lookahead verified; old failed member and first baseline timing failure preserved; whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 7,
+      "relatedPassedChecks": 870,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSegmentLoopMusicBaseline": {
+      "candidate": "20261109T235737154Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v2a.json",
+        "sha256": "eac0d06f61b2b5d8a613e1ac6ba232d6034d0e26c3bd52cef9ac8920c25df3ed"
+      },
+      "processId": 18312,
+      "passed": true,
+      "audioProof": {
+        "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/baseline/audio/audio-proof-v1.json",
+        "sha256": "b7b756ba75e4afb80c72651e1d0222a7d0d7f48481012dcd853b68afc5810ab8"
+      },
+      "relatedChecks": 932,
+      "fullAcceptance": false
+    },
+    "latestSegmentLoopMusicTrial": {
+      "updatedUtc": "2026-11-10T00:46:52.348369+00:00",
+      "candidate": "20261109T235737154Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v3.json",
+        "sha256": "07a2d7e0a6eb20ee0011fa9616efa431e6e189c07e613d05a49205285cbe837b"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-loop-music-2026-11-10.md",
+        "sha256": "25d9f9e7933c58a548ca291f04c99702d5d0a4487e88ff9c40385bf8ecf9d25c"
+      },
+      "status": "bounded Segment music-time Loop UI/native/history/restore/whole and custom Infinite PCM verified; finite native runtime verified; whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 7,
+      "relatedPassedChecks": 932,
+      "boundedFinished": true,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    "latestSegmentLoopCursorTrial": {
+      "updatedUtc": "2026-11-10T01:22:38.939456+00:00",
+      "candidate": "20261110T005605175Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-loop-cursor/20261110T005500000Z/unit-record-v3.json",
+        "sha256": "3f03b0104e1d7c0ee0f9967288705e3acd2722be7c36ad2e30d907f9de27fea0"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-loop-cursor-2026-11-10.md",
+        "sha256": "d31df5a3ac2c047dc0fa2664245a14e5073b84c261f75c8eec4bb3daa031331e"
+      },
+      "status": "bounded music-time loop cursor finite/Infinite mapping,GUI toggle/native save/normal exits/separate restore/new PCM verified; painting/original/whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "boundedFinished": true,
+      "originalDynamic": false,
+      "fullAcceptance": false
+    },
+    "latestToolbarSteadyTrial": {
+      "updatedUtc": "2026-11-10T02:02:54.179122+00:00",
+      "candidate": "20261110T012618577Z",
+      "unit": {
+        "path": "work/analysis/ui-toolbar-steady-refresh/20261110T012600000Z/unit-record-v3.json",
+        "sha256": "32426969a1aba7dbc65ec2cf4884e73042aa05265e509471312f7f561b09f8f4"
+      },
+      "report": {
+        "path": "docs/analysis/ui-toolbar-steady-refresh-2026-11-10.md",
+        "sha256": "b4592064d806c4cc980b83f11d190035b7c9f530becba251a3e222069ffd269e"
+      },
+      "status": "bounded toolbar steady refresh, pending Tempo retention/original Escape, Alternate Tempo display, Play/Cursor/Stop, native save/normal exits/separate restore/new PCM verified; full painting/original/whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "boundedFinished": true,
+      "originalDynamic": false,
+      "fullAcceptance": false
+    },
+    "latestSegmentBufferedPaintTrial": {
+      "updatedUtc": "2026-11-10T03:16:17.898347+00:00",
+      "candidate": "20261110T020605949Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-buffered-paint/20261110T020500000Z/unit-record-v3.json",
+        "sha256": "9ebb1dcdcd3c71a98ec876c134f58757abca32132c99606e4511b73fe5a69e30"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-buffered-paint-2026-11-10.md",
+        "sha256": "78e6bb9e3629119f988e122b7740ba1102d78181d92da089c9318aa9f890aaeb"
+      },
+      "status": "bounded Segment buffered rendering/resource/save/normal exits/separate restore/new PCM verified; parent-frame residuals/original dynamic/whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "boundedFinished": true,
+      "originalDynamic": false,
+      "fullAcceptance": false
+    },
+    "latestFrameRefreshPaintTrial": {
+      "updatedUtc": "2026-11-10T03:45:20.221495+00:00",
+      "candidate": "20261110T031819499Z",
+      "unit": {
+        "path": "work/analysis/ui-frame-refresh-paint/20261110T031700000Z/unit-record-v3.json",
+        "sha256": "bf6321d62c450642b046ef3fcb5b5fed83a6c3dff4e51623844ab9be075ef421"
+      },
+      "report": {
+        "path": "docs/analysis/ui-frame-refresh-paint-2026-11-10.md",
+        "sha256": "a7110330be881743ad00dc9efe09dd4e0a81ed6ce402f50fc23656d3d5054b1e"
+      },
+      "status": "related7/988;bounded frame refresh GUI/resource/native save/two normalexits/separate restore verified;new PCM failed orchestration86.585s Stop;unchanged audio retry frozen;StartTime independent work next",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": false,
+      "boundedFinished": false,
+      "originalDynamic": false,
+      "fullAcceptance": false
+    },
+    "latestSegmentStartTimeTrial": {
+      "updatedUtc": "2026-11-10T05:36:18.274836+00:00",
+      "candidate": "20261110T041453112Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-start-time/20261110T041200000Z/unit-record-v3.json",
+        "sha256": "33d696daea5c0a9c44b888e41251463818abcb36e2cc7fd1798d0e5305920a00"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-start-time-2026-11-10.md",
+        "sha256": "5b80d96aa2a3992d75ce77df7c5993b4c7070405fdb7de3e0018c5c4e73eb4e0"
+      },
+      "status": "bounded music-time StartTime UI/history/save/four normal exits/separate restore/new baseline11 and member10 PCM19/7/4 verified;UIA failure preserved;original dynamic/clock-time/whole acceptance incomplete",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "baselinePassed": true,
+      "memberPassed": true,
+      "boundedFinished": true,
+      "originalDynamic": false,
+      "fullAcceptance": false
+    },
+    "latestSegmentInfoTrial": {
+      "updatedUtc": "2026-11-10T07:19:36.659719+00:00",
+      "candidate": "20261110T063900475Z",
+      "unit": {
+        "path": "work/analysis/ui-segment-info-navigation/20261110T063900475Z/unit-record-v2-failed-clock.json",
+        "sha256": "a576d15ff0c511755e1bdf2f3e689cf0565d0727662792ff56e81369eb87c88b"
+      },
+      "report": {
+        "path": "docs/analysis/ui-segment-info-2026-11-10.md",
+        "sha256": "10c8843019ae58688c096e0ed82156fe7cf355ecce578933f11fbf79b2277c02"
+      },
+      "status": "Info text/version and navigation GUI/save/two normal exits/separate restore passed;fresh240s capture clock drift8.5643ms exceeds5ms, positive audit exit1 before PCM;unchanged retry frozen;Boundary independent next",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": false,
+      "boundedFinished": false,
+      "originalDynamic": false,
+      "fullAcceptance": false
+    }
   },
   "regressionManifestHistory": [
     {
@@ -31355,7 +32564,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/regression-manifest.json",
         "sha256": "029c9379a51f6f591cfe0691137b6f36c0c67d5b813e424b9269a7de77fdf987"
@@ -31369,7 +32578,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/regression-manifest.json",
         "sha256": "529a81bda5bd9ce0304686f2d7c849c3594aad283e22bea18b6bc2e3ce402013"
@@ -31486,7 +32695,7 @@
       "sha256": "3f45930f48349a29429efdc0be1a492e2361623f551b147a6dcc284ae95c3fd7"
     }
   },
-  "nextAction": "ユーザーが再開を指示するまで作業を進めない。再開後は004853の保存/作業291ソース・4出力・入力を照合し、現在の低解像度と最新windowを再観測。正式原版のEscape/focus-loss/不正値契約の未確認を保持し、004853本体を専用candidate Projectで初起動→132.25入力/Enter/UndoRedo/spin/文書所有権→native保存→通常終了→別process復元/通常終了→固定WASAPIテンポ/発音中Stop/無音/replay比較へ進む。保存済み235833空CC・224147一巡/CC15/16を新候補の実行証拠へ転用しない。49native/30driverの凍結、SSP04親/6640破棄回答待ち、独立Style015244/Q2/全40/全8を保持。",
+  "nextAction": "ExtendedBoundary1128の作者15080/別15768両通常0とnative26+復元3stageを保全。次の独立作業は正式RT_DIALOGのMS Shell Dlg8と現Segment専用MS Sans Serif8の字体差を一次資料/現ホストのaliasで照合し、限定font候補の実装/本体保存別復元へ。ClockTimeLoopは旧SDK40byteにloop拡張定義がなく原版codec一次調査を先行、offset推測で編集しない。advanced位相/Queue時刻/PCM/原版dynamic/全7関連/全40全8/fullAcceptance=false、時計/Timeline/原版同条件再試行なし。",
   "verifiedSourceChanges": {
     "path": "work/analysis/ui-midi-echo/20261011T062616160Z/source-changes-v5.json",
     "sha256": "955e29f8081bfb1404557297b6beece2a0ce100da83a29367c81088b240a39be"
@@ -31617,7 +32826,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T22:56:39.720Z",
+      "savedUtc": "2026-10-09T22:56:39.72Z",
       "value": {
         "candidate": "20261009T214135299Z",
         "primaryRun": {
@@ -32015,7 +33224,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T22:56:39.720Z",
+      "savedUtc": "2026-10-09T22:56:39.72Z",
       "value": {
         "candidate": "20261009T214135299Z",
         "primaryRun": {
@@ -32438,7 +33647,7 @@
       "utc": "2026-10-09T17:24:19.971Z"
     },
     {
-      "utc": "2026-10-09T18:11:36.530Z",
+      "utc": "2026-10-09T18:11:36.53Z",
       "value": "Wave Find Best Loop End: implement preregistered range/WSMP-only transaction, then new build/related/Main/native/reload/audio; original comparison remains blocked",
       "reason": "1734 limited main/native evidence bound; audio/original remain unfinished"
     },
@@ -32583,7 +33792,7 @@
       "value": "SequenceノートのF11/Properties入口と数値編集を、確認済み原版Sequence PropertiesとCHMから独立単位で実装・検証する。原版の左右端/中央ドラッグが未成立の同じ試行を繰り返さず、画像18・19の同入力比較と135522の編集/UndoRedoを未達で保持。新変更は関連回帰・本体・native保存/別process復元/通常終了まで確認し、発音はPCM取得条件のみ評価。Properties残欄、Add Tracks初期focus/原版空選択、旧Band停止失敗・Count-In15/16・Echo/SSP04全操作/SSP08・Style015244/Q2/OS凍結を保持。"
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": "次はSSP07/画像43のChoose DLS Instrumentについて、未確認の空collectionとCancelを正式原版の観測・候補本体・文書不変/別復元で検証する。差が判明すれば既存DLS選択モデルを修正し新候補で関連回帰を行う。Quantizeの丸め/境界の原版動的比較と複数物理Part GUI、SSP04親ドラッグ、Add Tracks原版空OK、Count-In/旧PCM/Style015244/Q2/47native・29driver凍結は保持。"
     },
     {
@@ -32591,7 +33800,7 @@
       "value": "SSP07/画像43のChoose DLS Instrument空一覧で、未確認のEnter/OKを正式原版→候補の順に同入力で観測する。空一覧でも原版OK有効・候補無効の差を、確定後の文書/履歴効果まで調べ、差があれば修正して関連回帰・保存/別復元/二通常終了を行う。6640の検証Project破棄は明示回答まで保留。Quantize複数物理Part/境界/音符glyph/設定保持、原版drag未成立、AddTracks空OK、Count-In、Style015244、Q2、48native/30driver凍結、全40/全8を保持。"
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": "SSP01 Count-Inの固定PCM15/16失敗へ戻り、観測済み操作遅延80.906秒を、Play/Stopの前後時刻記録と目標絶対時刻への短い分割待機で改善する。新候補204251・既存32小節/64秒fixtureコピーに同じ閾値を適用し、Count-In中Stop/元の開始予定を越えた無音/再開128クリック/64秒後C6/発音中Stopを録音監査する。旧PCM・原版未比較・DLS flags/再表示/音声差・Quantize親残件・6640破棄回答待ち・Style015244/Q2・将来48native/30driver凍結・全40/全8を保持。"
     },
     {
@@ -32630,7 +33839,7 @@
       }
     },
     {
-      "at": "2026-10-09T02:44:31.250Z",
+      "at": "2026-10-09T02:44:31.25Z",
       "previous": {
         "path": "docs/analysis/ui-compatibility.json",
         "sha256": "1c8ef7ca0651a843a26e856bc91102da6a30961f93e4af25f5489fe70029575e",
@@ -32811,7 +34020,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/ui-compatibility.md",
         "sha256": "920cb296fc6d1d4d9b9df149c11a0b0eb66b0eef18e41ab22d31a3152003819b"
@@ -32825,7 +34034,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/ui-compatibility.md",
         "sha256": "f41214d242eb6a8a46f31e845b119cc1c7e32f1a68da1c45802609697a3c280f"
@@ -33810,7 +35019,7 @@
       "candidate": "20261009T110740409Z"
     },
     {
-      "at": "2026-10-09T13:51:29.020Z",
+      "at": "2026-10-09T13:51:29.02Z",
       "unit": {
         "path": "work/analysis/ui-wave-viewport/20261009T125539491Z/unit-1306-limited-v1.json",
         "sha256": "1ff1cae91ad2e3996ab0847d890c4a091e0477fd56362e8761343271cbd3fa75"
@@ -34292,7 +35501,7 @@
       "sha256": "8d83ffd215906fa5f57cb45d4d624d4e0dc603cfbeae74f6e8913a4defa664ac"
     },
     {
-      "at": "2026-10-09T13:51:29.020Z",
+      "at": "2026-10-09T13:51:29.02Z",
       "value": {
         "path": "docs/analysis/ui-wave-loop-tools-2026-10-09.md",
         "sha256": "f23029dfdde73e6e1a47b5342c3952ffb9be76db9bc325db21af816a919d3c43"
@@ -34300,7 +35509,7 @@
       "reason": "1306 bounded viewport integration closed;previous evidence retained"
     },
     {
-      "utc": "2026-10-09T18:11:36.530Z",
+      "utc": "2026-10-09T18:11:36.53Z",
       "value": {
         "path": "docs/analysis/ui-text-select-all-2026-10-10.md",
         "sha256": "c817640f16cb302f7ce73b66b32b4292bae4c6cc3b74ebd2c19abdbe24c265f9"
@@ -34326,7 +35535,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-09T22:56:39.720Z",
+      "savedUtc": "2026-10-09T22:56:39.72Z",
       "value": {
         "path": "docs/analysis/q3-script-ansi-name-2026-10-10.md",
         "sha256": "36c25ab9f1171c28b739bb058699b9ab9e8550397656c55f304550c00b4711b3"
@@ -34459,7 +35668,7 @@
   },
   "pendingBuildHistory": [
     {
-      "at": "2026-10-09T13:51:29.020Z",
+      "at": "2026-10-09T13:51:29.02Z",
       "value": {
         "candidate": "20261009T110740409Z",
         "status": "compiled/installed/current-source andbounded GUI/native/audio qualified;originalcomparison incomplete",
@@ -35062,7 +36271,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/continuation-prompt-2026-10-10.md",
         "sha256": "8493f4caf135d7d0cda83300762c08c7e6995c2e5852b6b580a87eaab2ded252"
@@ -35076,7 +36285,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/continuation-prompt-2026-10-10.md",
         "sha256": "cacec69bab1880ae9c199ba0eb12e4f7707977f3ce5c62461e4ebefbd8a3553e"
@@ -35337,7 +36546,7 @@
   },
   "nextIndependentUnitHistory": [
     {
-      "utc": "2026-10-09T18:11:36.530Z",
+      "utc": "2026-10-09T18:11:36.53Z",
       "value": {
         "feature": "Wave Find Best Loop End From Selection",
         "reason": "Two bounded common keyboard units reduced actual input gaps. Prioritize a different unfinished Wave responsibility and documented context-menu workflow; preserve existing coldWave failure and original comparison blocker.",
@@ -36206,7 +37415,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis-plan.md",
         "sha256": "5c20f9e34ed3b7ab4da3d3e30db7021eeff8970691cc68f58d2a61eb0443eb13"
@@ -36220,7 +37429,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis-plan.md",
         "sha256": "b0f6e67e01d694ac50d3e63d23b98a518f7c458c66643d3f75dc88a69b19db78"
@@ -36567,7 +37776,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T05:30:12.860Z",
+      "savedUtc": "2026-10-11T05:30:12.86Z",
       "value": {
         "path": "docs/analysis/ui-compatibility.json",
         "sha256": "d88ea083247dbc615967c03f6e92e2851ab46fb0f41804b709f1a7a2287be4e5"
@@ -36658,7 +37867,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/ui-compatibility.json",
         "sha256": "00dc774435c9102796e2bed47b7e63c56682bf5a3f6cf5a98b0f9332b62c81de"
@@ -36672,7 +37881,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/ui-compatibility.json",
         "sha256": "ea430a59e3ad10fb2e2a7a4b92c139163119f62a267e76e43cc2ae2156a787be"
@@ -37865,7 +39074,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-10T12:10:43.440Z",
+      "savedUtc": "2026-10-10T12:10:43.44Z",
       "value": {
         "updatedUtc": "2026-10-10T11:55:45.388Z",
         "candidate": "20261010T111522433Z",
@@ -39180,7 +40389,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T05:05:27.230Z",
+      "savedUtc": "2026-10-11T05:05:27.23Z",
       "value": {
         "path": "work/analysis/ui-segment-viewport/20261011T045417593Z/unit-progress-v1.json",
         "sha256": "27fa029f72e2a23384bf27f538002ab766bcd08c43361dd9681477560b3a4578"
@@ -39387,7 +40596,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T12:20:29.130Z",
+      "savedUtc": "2026-10-11T12:20:29.13Z",
       "value": null
     },
     {
@@ -40532,7 +41741,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/ui-note-snap-resume-2026-10-12.md",
         "sha256": "b1fd8ed3e479e1c1dc9ecc2cee47174d83efca6c6b5f82078675ed8e05c9998d"
@@ -40546,7 +41755,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/ui-dls-empty-accept-2026-10-12.md",
         "sha256": "78d478545a43804141bf719ec135068e33a2eb147abb399e98daad8aa845baeb"
@@ -40782,7 +41991,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T13:35:06.430Z",
+      "savedUtc": "2026-10-11T13:35:06.43Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence-2026-10-10.md",
         "sha256": "ac9dd4c59ec40a28711a63bec2977debf5f4d2ec91e88a7a004402da96e62f8e"
@@ -40796,7 +42005,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T15:43:22.690Z",
+      "savedUtc": "2026-10-11T15:43:22.69Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence-2026-10-10.md",
         "sha256": "d6d22cddca0c57d8b2fdaa7e22b17176678360d5a154af7d2b52ca4e6090e115"
@@ -40852,7 +42061,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence-2026-10-10.md",
         "sha256": "b3b8f816dbc01fc2b326e25ba4342bcc6ce0734a3c835d8605eedfcc44a04066"
@@ -40866,7 +42075,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence-2026-10-10.md",
         "sha256": "b7c2426134f9a18d14738957976de8b7a45b1b34c985807ee5f83092a5a530de"
@@ -40988,7 +42197,7 @@
     ],
     "next": "SSP02: 画像5/6/7のFile・Standard・ツリーNew→Create New File(s)→Segment Length→TimeSig4/4→Add New Tracksを既存Frameworkへ接続する。SSP01のMIDI入力/録音/Echo/Download/メトロノーム/全外観・原版同入力比較は未達のままqueueへ保全する。"
   },
-  "latestPriorityTrialCandidate": "20261012T004853599Z",
+  "latestPriorityTrialCandidate": "20261110T095233098Z",
   "latestPriorityRegisteredNative": 100,
   "latestPriorityRegisteredDrivers": 172,
   "segmentCreationIntegration": {
@@ -42152,7 +43361,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "compiled": true,
         "workingMatchesSaved": true,
@@ -42170,7 +43379,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:32:53.760Z",
+      "savedUtc": "2026-10-11T20:32:53.76Z",
       "value": {
         "compiled": true,
         "workingMatchesSaved": true,
@@ -42224,7 +43433,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "compiled": true,
         "workingMatchesSaved": true,
@@ -42597,7 +43806,7 @@
       "value": "20261011T170010134Z"
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": "20261011T175125037Z"
     },
     {
@@ -43532,7 +44741,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "id": "SSP04-sequence-quantize",
         "phase": "SSP04",
@@ -43549,7 +44758,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:32:53.760Z",
+      "savedUtc": "2026-10-11T20:32:53.76Z",
       "value": {
         "id": "SSP07-DLS-empty-accept",
         "phase": "SSP07",
@@ -43610,7 +44819,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "id": "SSP01-countin-timing-resume",
         "phase": "SSP01",
@@ -44385,7 +45594,7 @@
     }
   ],
   "latestCountInTrial": {
-    "updatedUtc": "2026-10-11T21:12:36.520Z",
+    "updatedUtc": "2026-10-11T21:12:36.52Z",
     "candidate": "20261011T204251930Z",
     "unit": {
       "path": "work/analysis/ui-countin-timing-resume/20261011T205700Z/unit-record-v1.json",
@@ -44610,7 +45819,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "candidate": "20261011T151135963Z",
         "primaryRun": {
@@ -44836,7 +46045,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "candidate": "20261011T151135963Z",
         "primaryRun": {
@@ -44962,7 +46171,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T16:12:19.800Z",
+      "savedUtc": "2026-10-11T16:12:19.8Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence.json",
         "sha256": "9dc6838a20eb456351311357f57a020766ebc50edc78f5eeccbb76ad61c9e6ac"
@@ -45004,7 +46213,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence.json",
         "sha256": "1769d10afefb12f6f071cea813f38506ba6fdd9286870d045b483fe40dc934b4"
@@ -45018,7 +46227,7 @@
       }
     },
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "path": "docs/analysis/priority-segment-sequence.json",
         "sha256": "2be4293bf0d1863fb52a92682d22ec7ce5bd3251dd5319092d95843e22bd3d3b"
@@ -45288,7 +46497,7 @@
       }
     }
   ],
-  "latestPriorityPreparationCandidate": "20261011T080641928Z",
+  "latestPriorityPreparationCandidate": "20261109T131516936Z",
   "latestSegmentViewportPreparation": {
     "unitStart": {
       "path": "work/analysis/ui-segment-viewport/20261011T045417593Z/start-v1.json",
@@ -46580,7 +47789,7 @@
     "fullAcceptance": false
   },
   "latestSequenceQuantizeTrial": {
-    "updatedUtc": "2026-10-11T20:17:48.160Z",
+    "updatedUtc": "2026-10-11T20:17:48.16Z",
     "candidate": "20261011T193237148Z",
     "unit": {
       "path": "work/analysis/ui-quantize-original-compare/20261011T190600Z/unit-record-v1.json",
@@ -46690,7 +47899,7 @@
   },
   "latestSequenceQuantizeTrialHistory": [
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "updatedUtc": "2026-10-11T17:27:48.205Z",
         "candidate": "20261011T170010134Z",
@@ -46712,7 +47921,7 @@
   ],
   "latestPriorityRegressionMilestoneHistory": [
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "candidate": "20261011T151135963Z",
         "unit": {
@@ -46733,7 +47942,7 @@
     {
       "savedUtc": "2026-10-11T23:17:00.989Z",
       "value": {
-        "updatedUtc": "2026-10-11T20:17:48.160Z",
+        "updatedUtc": "2026-10-11T20:17:48.16Z",
         "candidate": "20261011T193237148Z",
         "unit": {
           "path": "work/analysis/priority-regression-milestone/20261011T194000Z/unit-record-v1.json",
@@ -46753,7 +47962,7 @@
   ],
   "latestPriorityPublicationRefusalHistory": [
     {
-      "savedUtc": "2026-10-11T20:17:48.160Z",
+      "savedUtc": "2026-10-11T20:17:48.16Z",
       "value": {
         "path": "work/analysis/priority-regression-milestone/20261011T160018805Z/motif-publication-refusal-v1.json",
         "sha256": "72c3efd4323d8e8885676122764bee79a130a3a199ab1fafc3e2ef1cf1689c12"
@@ -46779,7 +47988,7 @@
   },
   "latestCountInTrialHistory": [
     {
-      "savedUtc": "2026-10-11T21:12:36.520Z",
+      "savedUtc": "2026-10-11T21:12:36.52Z",
       "value": {
         "updatedUtc": "2026-10-11T03:56:15.363Z",
         "candidate": "20261011T031359218Z",
@@ -47042,24 +48251,29 @@
     }
   ],
   "latestCurrentTempoTrial": {
-    "updatedUtc": "2026-10-12T00:59:03.662Z",
-    "candidate": "20261012T004853599Z",
+    "updatedUtc": "2026-11-09T14:40:08.856675+09:00",
+    "candidate": "20261109T050149058Z",
     "unit": {
-      "path": "work/analysis/ui-current-tempo/20261012T003122326Z/unit-record-v1.json",
-      "sha256": "8a8d717d09e2465bcc87028c95d8a99d560c4de2fc021a5a8cd3c9ca759f69d0"
+      "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v3.json",
+      "sha256": "b105500e72bc96e01af896e04bb82d8b598b75869b825e237b80e7db382ce4c5"
     },
     "report": {
-      "path": "docs/analysis/ui-current-tempo-pause-2026-10-12.md",
-      "sha256": "f96717ef454aa0aa624d2b09809b01315d46231c189f91ada0be45e648109936"
+      "path": "docs/analysis/ui-current-tempo-resume-2026-11-09.md",
+      "sha256": "7c208b3a5e7b20a3dc190fe3d1b62ae2ec986bed6b69c605d364d3f1a6f92b5a"
     },
-    "status": "20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。",
+    "status": "bounded-stopped-Segment-functionality-verified; strict-appearance-and-broader-Transport-open",
     "sourceChanged": true,
     "compiled": true,
-    "relatedPassedModes": 4,
-    "relatedPassedChecks": 439,
-    "candidateMainExecuted": false,
-    "audioExecuted": false,
-    "pausedByUser": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 496,
+    "candidateMainExecuted": true,
+    "candidateNativeRoundTrip": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "originalAdditionalContract": true,
+    "strictAppearance": false,
+    "pausedByUser": false,
+    "functionalBoundedFinished": true,
     "boundedFinished": false,
     "completed": false,
     "fullAcceptance": false
@@ -47075,15 +48289,1759 @@
     "fullAcceptance": false
   },
   "userPause": {
-    "requested": true,
-    "request": "キリの良いところで作業を休止してください",
-    "recordedUtc": "2026-10-12T00:59:03.662Z",
-    "unit": {
-      "path": "work/analysis/ui-current-tempo/20261012T003122326Z/unit-record-v1.json",
-      "sha256": "8a8d717d09e2465bcc87028c95d8a99d560c4de2fc021a5a8cd3c9ca759f69d0"
-    },
-    "boundary": "Immutable build/install and related native complete; candidate GUI not started",
-    "resumeRequiresUserInstruction": true,
+    "requested": false,
+    "revokedByUserResumeUtc": "2026-11-09T13:10:18.515867+09:00",
+    "historicalPausePreserved": true,
     "fullAcceptance": false
+  },
+  "executionResumeHistory": [
+    {
+      "schema": 1,
+      "requestedBy": "user",
+      "instruction": "計画の一時停止を解除してください。",
+      "resumedUtc": "2026-10-08T18:07:39.966Z",
+      "goalStatus": "active",
+      "goalObjective": {
+        "path": "C:/Users/dolph/.codex/attachments/61dd27ad-274f-4ade-aacf-42b1048990ae/goal-objective.md",
+        "sha256": "ec2c21bccd974b9f18502eedf26dddd4d3e87e6fc6a222106c28e17ff51a128a"
+      },
+      "previousPause": {
+        "requestedBy": "user",
+        "pausedUtc": "2026-10-08T17:24:44.657Z",
+        "boundary": "Current snapshot build and native13 finished, all current CLI processes exited",
+        "resume": "After plan maintenance, verify current/saved1713 hashes and current process identity; use prepared protocol for Computer Use main Add Env/default Send/-600/UndoRedo/native save/normal author exit/separate process exact restore/normal reload exit, then fixed WASAPI Play/active Stop/silence/replay and current candidate comparison. If source changes, save/build/test a new candidate. Keep original/Q2/Windows5 gates frozen."
+      },
+      "verification": {
+        "path": "work/analysis/execution-resume/20261008T180701567Z/candidate-verification.json",
+        "sha256": "3283d71dc8b41b9c4c1fa7da68c44cabfb199431902ff409d86beb8b7075602b"
+      },
+      "candidate": "20261008T171355889Z",
+      "displayScalePercent": 200,
+      "completed": true,
+      "productUnitCompleted": false,
+      "productExecuted": false,
+      "fullAcceptance": false,
+      "next": "Prepared 1713 Add Env/default Send/-600/UndoRedo/native author-save/normal exit/separate-process reload, fixed WASAPI; then original screen/operation baseline and common UI. Preserve frozen independent blockers."
+    }
+  ],
+  "latestCurrentTempoTrialHistory": [
+    {
+      "updatedUtc": "2026-10-12T00:59:03.662Z",
+      "candidate": "20261012T004853599Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo/20261012T003122326Z/unit-record-v1.json",
+        "sha256": "8a8d717d09e2465bcc87028c95d8a99d560c4de2fc021a5a8cd3c9ca759f69d0"
+      },
+      "report": {
+        "path": "docs/analysis/ui-current-tempo-pause-2026-10-12.md",
+        "sha256": "f96717ef454aa0aa624d2b09809b01315d46231c189f91ada0be45e648109936"
+      },
+      "status": "20261012T004853599Z Current Tempoの停止中Segment編集を実装。正式原版で132.25の保存/UndoRedo、spin上133・下131、bar2から既存time0 markerの編集を観測しnative7合格。新候補configure/build/install0、291保存/作業ソース・4出力一致、関連4件/439検査合格。segment-creationは既知Mixer.sgp Windows5のため未実行・障害維持。候補本体/native二process/音声/追加原版契約は未検証。ユーザー指示で休止。",
+      "sourceChanged": true,
+      "compiled": true,
+      "relatedPassedModes": 4,
+      "relatedPassedChecks": 439,
+      "candidateMainExecuted": false,
+      "audioExecuted": false,
+      "pausedByUser": false,
+      "boundedFinished": false,
+      "completed": false,
+      "fullAcceptance": false,
+      "resume": {
+        "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/execution-resume-v1.json",
+        "sha256": "b994172e0ad8ed966f341860311ad2a0932c4b99c47b765d6968d428c556c5f1"
+      }
+    },
+    {
+      "updatedUtc": "2026-11-09T13:45:23.962883+09:00",
+      "candidate": "20261109T044017307Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v1.json",
+        "sha256": "e604d96f61a5ab492881b67ccf57db1d996f6fc3fc0a4004a5d238c639215538"
+      },
+      "report": {
+        "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/report-before-owner-display-fix-v1.md",
+        "sha256": "b5d0f52484d989bdaad35314e7d077440835fddba0cb4eff5eee3bbadfcec281"
+      },
+      "status": "new-parity-candidate-building",
+      "sourceChanged": true,
+      "compiled": false,
+      "candidateMainExecuted": false,
+      "audioExecuted": false,
+      "pausedByUser": false,
+      "boundedFinished": false,
+      "completed": false,
+      "fullAcceptance": false
+    },
+    {
+      "updatedUtc": "2026-11-09T14:05:52.692343+09:00",
+      "candidate": "20261109T050149058Z",
+      "unit": {
+        "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/unit-record-v2.json",
+        "sha256": "df2bf79f8b553341b4241145ceb4d7217b478f3618e0d609f8cc2c7dfcbcc917"
+      },
+      "report": {
+        "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/before-completion-publication-v4/docs/analysis/ui-current-tempo-resume-2026-11-09.md",
+        "sha256": "f29c51ecb28089000bfd0e36f8ddfcbcf4d739e96bf33efd6efa74f51c43b494"
+      },
+      "status": "owner-display-repair-building",
+      "sourceChanged": true,
+      "compiled": false,
+      "candidateMainExecuted": false,
+      "audioExecuted": false,
+      "pausedByUser": false,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    }
+  ],
+  "latestCurrentTempoNativeMilestone": {
+    "path": "work/analysis/ui-current-tempo-resume/20261109T035725Z/native-milestone-summary-v1.json",
+    "sha256": "896930134cf42e6f413f6a0271981e065d102008a69a504a3d6616d07c184f6d"
+  },
+  "latestTransportControlsPreparation": {
+    "candidate": "20261109T055400398Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v2.json",
+      "sha256": "9d50fa1613d40434cbcdcba2cfc2d969545e4b40542ca0fbc504ce8ecf81f370"
+    },
+    "report": {
+      "path": "work/analysis/ui-transport-list/20261109T054141550Z/before-result-publication-v3/docs/analysis/ui-transport-controls-order-2026-11-09.md",
+      "sha256": "9432addccd66fbbd2dfb099d94a1775de39d81faa2d2e8ef1537efafc527edba"
+    },
+    "status": "corrected saved build in progress; original bounded reference captured",
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestTransportControlsPreparationHistory": [
+    {
+      "unit": {
+        "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v1.json",
+        "sha256": "145aaa39be0570ab0fa00d19caec082626a924d33dc4f592331f3e679fe59dff"
+      },
+      "candidate": "20261109T054537665Z",
+      "status": "preparing; first snapshot building but source correction needed",
+      "fullAcceptance": false
+    }
+  ],
+  "latestTransportControlsTrial": {
+    "updatedUtc": "2026-11-09T15:13:52.703037+09:00",
+    "candidate": "20261109T055400398Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-list/20261109T054141550Z/unit-record-v3.json",
+      "sha256": "568f10b907e4418cf333854770fad72959bca8a0d5dd4be5ddc9b436ab589569"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-controls-order-2026-11-09.md",
+      "sha256": "a126797fa9c9bb04f75f76dced5510da9badb2709f5b5365a15cc7f247322b26"
+    },
+    "status": "bounded-order-glyph-relayout-native-restore-PCM-verified; fullTransport-open",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 496,
+    "strictAppearance": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTransportPrimaryPreparation": {
+    "candidate": "20261109T062231219Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v1.json",
+      "sha256": "f955e287ec13cb73f712d8f2520637602645c5aefb08836302d7f3df9ed5b84b"
+    },
+    "report": {
+      "path": "work/analysis/ui-transport-primary/20261109T062110913Z/before-progress-publication-v2/docs/analysis/ui-transport-primary-2026-11-09.md",
+      "sha256": "3cb61763c103f395e7fe4f52929d350337c2e7c82083390ad7ef2645ef0730e7"
+    },
+    "status": "Segment-only primary selector implemented; saved build running",
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestTransportPrimaryPreparationHistory": [
+    {
+      "candidate": "20261109T062231219Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v1.json",
+        "sha256": "f955e287ec13cb73f712d8f2520637602645c5aefb08836302d7f3df9ed5b84b"
+      },
+      "report": {
+        "path": "work/analysis/ui-transport-primary/20261109T062110913Z/before-progress-publication-v2/docs/analysis/ui-transport-primary-2026-11-09.md",
+        "sha256": "3cb61763c103f395e7fe4f52929d350337c2e7c82083390ad7ef2645ef0730e7"
+      },
+      "status": "Segment-only primary selector implemented; saved build running",
+      "completed": false,
+      "fullAcceptance": false
+    }
+  ],
+  "latestTransportPrimaryTrial": {
+    "updatedUtc": "2026-11-09T15:57:38.77211+09:00",
+    "candidate": "20261109T062231219Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v3.json",
+      "sha256": "7aeaee4b03bdbeb9b90f48c3cf63f4607fefd2b880fe2358746bf81e01298412"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-primary-2026-11-09.md",
+      "sha256": "117a67b6d24b481902a3f7db33591a4223008a92f3f2dfe5611890fd0c033d3b"
+    },
+    "status": "bounded-Segment-primary-selection-owner-native-two-process-PCM-and-native100-verified; fullTransport-open",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 496,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-transport-primary/20261109T062110913Z/native-milestone-proof-v1.json",
+      "sha256": "93b6d9735b27f60b7ec88536b7a792169feeeba4adc66f704e1f05306bebaa38"
+    },
+    "functionalBoundedFinished": true,
+    "nativeMilestoneRunning": false,
+    "strictAppearance": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTransportPrimaryTrialHistory": [
+    {
+      "updatedUtc": "2026-11-09T15:53:00.457439+09:00",
+      "candidate": "20261109T062231219Z",
+      "unit": {
+        "path": "work/analysis/ui-transport-primary/20261109T062110913Z/unit-record-v2.json",
+        "sha256": "7eb071026b9bf2251dbc00ed29d3186ca657689ff4f6b59c73ef3488ce923dce"
+      },
+      "report": {
+        "path": "work/analysis/ui-transport-primary/20261109T062110913Z/before-result-publication-v3/docs/analysis/ui-transport-primary-2026-11-09.md",
+        "sha256": "8de118048fefcea739e99f383050bd95227545cfb0a6b97a946e6976fee11367"
+      },
+      "status": "bounded-Segment-primary-owner-native-roundtrip-PCM-verified; native100 milestone running",
+      "compiled": true,
+      "candidateMainExecuted": true,
+      "nativeRoundTripPassed": true,
+      "audioExecuted": true,
+      "audioPassed": true,
+      "relatedPassedModes": 5,
+      "relatedPassedChecks": 496,
+      "functionalBoundedFinished": true,
+      "nativeMilestoneRunning": true,
+      "strictAppearance": false,
+      "completed": false,
+      "boundedFinished": false,
+      "fullAcceptance": false
+    }
+  ],
+  "latestTransportPrimaryNativeMilestone": {
+    "path": "work/analysis/ui-transport-primary/20261109T062110913Z/native-milestone-proof-v1.json",
+    "sha256": "93b6d9735b27f60b7ec88536b7a792169feeeba4adc66f704e1f05306bebaa38"
+  },
+  "latestTransportLabelPreparation": {
+    "candidate": "20261109T070706789Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-labels/20261109T070235697Z/unit-record-v1.json",
+      "sha256": "920c004554a992dc26c9d5c89fde340fc8e304aec472e015a51a88ad21b96bfa"
+    },
+    "report": {
+      "path": "work/analysis/ui-transport-labels/20261109T070235697Z/before-result-publication-v2/docs/analysis/ui-transport-labels-2026-11-09.md",
+      "sha256": "1ee9bd56256e493caf2dff6bd1745a9517dafd297781c7717a57f3ed81788ca2"
+    },
+    "status": "x86 syntax exit0; saved candidate building; runtime pending",
+    "fullAcceptance": false
+  },
+  "latestTransportLabelTrial": {
+    "updatedUtc": "2026-11-09T16:27:17.366368+09:00",
+    "candidate": "20261109T070706789Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-labels/20261109T070235697Z/unit-record-v2.json",
+      "sha256": "b121560ceda195d255e5a4fada88c146b16918abadf184c54feacc59bf410976"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-labels-2026-11-09.md",
+      "sha256": "c557bc7ad9fae04df7b007b6346aa5d4ab621f9b11225780b34e611e9d15f8e5"
+    },
+    "status": "070706 build/related5-472/main2process/native allbytes passed; original blank-name/SaveAs parity differences found; correction required",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 472,
+    "newAudioRequired": false,
+    "originalNameParityPassed": false,
+    "originalSaveAsParityPassed": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTransportLabelParityPreparation": {
+    "candidate": "20261109T072804038Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-label-parity/20261109T072748612Z/unit-record-v1.json",
+      "sha256": "bfc2c3961ed56cfb7436734f388aa053ab065d168b53464c5e7dcd70156a7166"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestTransportLabelParityTrial": {
+    "updatedUtc": "2026-11-09T16:40:19.269243+09:00",
+    "candidate": "20261109T072804038Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-label-parity/20261109T072748612Z/unit-record-v2.json",
+      "sha256": "6291937198ae27be70c09bcd9409f6955cec44ae9a8ee5dfa88a24f423051438"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-label-parity-2026-11-09.md",
+      "sha256": "47c7f2de7c9bea36863f31ffdc8a86d55da0ba78611ca45658ba7b6b7ea9f3af"
+    },
+    "status": "072804 saved absent-UNAM blank-name label matches observed original; build/4-213/main2process/native bytes passed",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 213,
+    "functionalBoundedFinished": true,
+    "originalBlankNameParity": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentSaveAsPreparation": {
+    "candidate": "20261109T074348295Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-saveas-copy/20261109T074237460Z/unit-record-v1.json",
+      "sha256": "afb03c0ab801b77043983c31223b1dba4efe32cd1cea504bd5866caf72a3e6c2"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestSegmentSaveAsTrial": {
+    "updatedUtc": "2026-11-09T17:11:44.89156+09:00",
+    "candidate": "20261109T074348295Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-saveas-copy/20261109T074237460Z/unit-record-v2.json",
+      "sha256": "58d7be0002a96f09429693c3e92f2f2e29ca9ec4114c2c4d611aa7b8c0c04a97"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-saveas-copy-2026-11-09.md",
+      "sha256": "3c72285076a51f324c8a4655df80fce2df2641b81af9f5cea426ba566e1cb4dd"
+    },
+    "status": "074348 copyUI/newGUID/3doc/native/history/2normalexits and related5-493 passed; first GUI audio load failed 0x88781184; correction required",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 493,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestEmptyUnfoPreparation": {
+    "candidate": "20261109T081250588Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v1.json",
+      "sha256": "fbf5e57caf6498c7db687f73757d145617a400965429c7b1100b949bc339b873"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestEmptyUnfoTrial": {
+    "updatedUtc": "2026-11-09T17:34:49.980257+09:00",
+    "candidate": "20261109T081250588Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v2.json",
+      "sha256": "2356ca6938454ef41a152c12f2ef90d365e9527627388e3328c351376f4a5be8"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-empty-unfo-2026-11-09.md",
+      "sha256": "5e0285965d1c813438b2c01afa51281bfa8aedf2af3931b9e1f2d7c5266aa646"
+    },
+    "status": "081250 private empty-UNFO correction verified: related5-497, main/native2process, 137PCM+5controls, native100=50passed2855/49frozen/1pending",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 497,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/native-milestone-proof-v1.json",
+      "sha256": "c410c8e08f13cebbabc00329b593a29b435b53644efdc1893bfd41a2adf2d4c7"
+    },
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentSaveAsCorrection": {
+    "updatedUtc": "2026-11-09T17:34:49.980257+09:00",
+    "candidate": "20261109T081250588Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/unit-record-v2.json",
+      "sha256": "2356ca6938454ef41a152c12f2ef90d365e9527627388e3328c351376f4a5be8"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-empty-unfo-2026-11-09.md",
+      "sha256": "5e0285965d1c813438b2c01afa51281bfa8aedf2af3931b9e1f2d7c5266aa646"
+    },
+    "status": "081250 private empty-UNFO correction verified: related5-497, main/native2process, 137PCM+5controls, native100=50passed2855/49frozen/1pending",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 497,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-segment-empty-unfo/20261109T081231083Z/native-milestone-proof-v1.json",
+      "sha256": "c410c8e08f13cebbabc00329b593a29b435b53644efdc1893bfd41a2adf2d4c7"
+    },
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestStartupPreparation": {
+    "candidate": "20261109T084341067Z",
+    "unit": {
+      "path": "work/analysis/ui-startup-newfiles/20261109T083128897Z/unit-record-v1.json",
+      "sha256": "c9e29c18823480ea543723e0af3d8c8688a9a0c1d16f88bc45137bfde1cf6b91"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestStartupTrial": {
+    "updatedUtc": "2026-11-09T18:11:22.84674+09:00",
+    "candidate": "20261109T084341067Z",
+    "unit": {
+      "path": "work/analysis/ui-startup-newfiles/20261109T083128897Z/unit-record-v2.json",
+      "sha256": "290d9e84be9472fe25a3661052185a5d1021b87d097961385b005833bbee9db4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-startup-newfiles-2026-11-09.md",
+      "sha256": "394261751c149b748cfdb20efd081fd48da1e0f17f9705bb44bcaa844eb07009"
+    },
+    "status": "084341 empty startup/New Files bounded lifecycle verified; related4/238; 3 normalexit0; one native Segment/20measures/TimeSig only saved and separately restored",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestEmptyFramePreparation": {
+    "candidate": "20261109T091437876Z",
+    "unit": {
+      "path": "work/analysis/ui-empty-frame/20261109T091347255Z/unit-record-v1.json",
+      "sha256": "bb41df6b857dfa22f007e39389d3a03f1fd5b57a14ce577892b980206184d27a"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestEmptyFrameTrial": {
+    "updatedUtc": "2026-11-09T09:35:01.821407+00:00",
+    "candidate": "20261109T091437876Z",
+    "unit": {
+      "path": "work/analysis/ui-empty-frame/20261109T091347255Z/unit-record-v2.json",
+      "sha256": "91e006e553f1e1610f74886609e7bc6f03026d62f377d0f971b35a603fb8a313"
+    },
+    "report": {
+      "path": "docs/analysis/ui-empty-frame-2026-11-09.md",
+      "sha256": "46c5ea68f7f9b11edd7d1a00fabe9877642e0a0fd2bc69f5d223b8e0c18651bf"
+    },
+    "status": "091437 empty frame/disabled120 verified; related4/238 in2runs; 3normalexit0; explicitProject dirty protection and firstSegment/native separate restore pass",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestLengthCancelPreparation": {
+    "candidate": "20261109T091437876Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-length-cancel/20261109T093620584Z/unit-record-v1.json",
+      "sha256": "5ca9e6cf600e0a3642294c0c44ef44f6d258ed4b23255f183fa4c8038c07d970"
+    },
+    "sourceChanges": false,
+    "fullAcceptance": false
+  },
+  "latestLengthCancelTrial": {
+    "updatedUtc": "2026-11-09T09:49:22.115532+00:00",
+    "candidate": "20261109T091437876Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-length-cancel/20261109T093620584Z/unit-record-v2.json",
+      "sha256": "68ca4f5149f966e6a7f99cc3405e77e666e93967d18d531a0fd700b0eb8fb373"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-length-cancel-2026-11-09.md",
+      "sha256": "d2c93a4a81efc1158bec36207b566382366b3507ad75fae74ceb2b064ec5d598"
+    },
+    "status": "091437 TreeNew/Length pending30 Cancel bounded main/native verified; author20272/reload20904 normalexit0; default20/TimeSig-only/bytes preserved",
+    "sourceChanges": false,
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedExistingSameCandidateModes": 4,
+    "relatedExistingSameCandidateChecks": 238,
+    "newRelatedExecuted": false,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestMenuPreparation": {
+    "candidate": "20261109T100901325Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-menu/20261109T095015925Z/unit-record-v3.json",
+      "sha256": "0aaf688ceddc78b12b5a7d09968ff99c495c38b8f2fc2f1ddaf0684b6a9a8718"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestMenuPartialTrial": {
+    "candidate": "20261109T095232696Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-menu/20261109T095015925Z/unit-record-v2.json",
+      "sha256": "d68732afb9ea6234fb5fe473e25d3500a98de41bd1fa09800df088ee27794d69"
+    },
+    "altFPassed": false,
+    "nativeExecuted": false,
+    "functionalBoundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestMenuTrial": {
+    "updatedUtc": "2026-11-09T10:33:30.208542+00:00",
+    "candidate": "20261109T100901325Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-menu/20261109T095015925Z/unit-record-v4.json",
+      "sha256": "6d1fd1eaaa755be64b2a2461975b3daaf68216489ff19d8e139984c65826df34"
+    },
+    "report": {
+      "path": "docs/analysis/ui-frame-menu-2026-11-09.md",
+      "sha256": "eb21e7a861465260b7bc32ba4b3268a42f771ee6b5cb06390c5c3689189fb926"
+    },
+    "status": "100901 menu prefix/AltF/F10/View submenu/MDI-Edit focus/old transport keys verified; related4/238; 3normalexit0; native initial/author/reload unchanged",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "keyboardRuntimePassed": true,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestTempoTargetPreparation": {
+    "candidate": "20261109T103640944Z",
+    "unit": {
+      "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/unit-record-v1.json",
+      "sha256": "0ec9d560df810e62e22a27de66d34e6d85dec962c6a56707c9e5ac220d7e6800"
+    },
+    "status": "building",
+    "fullAcceptance": false
+  },
+  "latestTempoTargetTrial": {
+    "updatedUtc": "2026-11-09T11:02:40.457205+00:00",
+    "candidate": "20261109T103640944Z",
+    "unit": {
+      "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/unit-record-v2.json",
+      "sha256": "7073fc4bee626aaf1ce45ee15f64ecf514a7953ed6e85587c302f6fdfe41ccb9"
+    },
+    "report": {
+      "path": "docs/analysis/ui-tempo-target-display-2026-11-09.md",
+      "sha256": "154b9819eb13ca473c1a854cea36e17bd351e9981c91fcee958535c55ec388e3"
+    },
+    "status": "No-primary120/NoTempo-blank/numeric132.25 display verified; related4/238; native100:50/2855+49frozen+anonymous1; 3normalexit0 and native roundtrip",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "nativeMilestone": {
+      "path": "work/analysis/ui-tempo-target-display/20261109T103529762Z/native-milestone-proof-v1.json",
+      "sha256": "6ac78f5241843c40ab6b54adc9bd091d03067c86936600f6e265e454d081a26c"
+    },
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestWorkspaceClosePreparation": {
+    "candidate": "20261109T111021505Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+      "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+    },
+    "status": "bounded main/native verified; overall incomplete",
+    "fullAcceptance": false
+  },
+  "latestWorkspaceCloseTrial": {
+    "updatedUtc": "2026-11-09T11:35:12.843104+00:00",
+    "candidate": "20261109T111021505Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-workspace-close/20261109T110310557Z/unit-record-v3.json",
+      "sha256": "30d13c89154ccf80427437cb7a353f2df64eaa66933004a722781b7cd6ae7c41"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-workspace-close-2026-11-09.md",
+      "sha256": "f7c12ea82815c02293482cebf84952335e1481e97d6890fea2307a89c9cf380b"
+    },
+    "status": "111021 workspace close verified: related4/238; native MDI hides103legacy; lastSegment/lastBand/CloseAll gray and primary/tempo retained;3normalexit0; native wholebytes roundtrip",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 238,
+    "audioExecuted": false,
+    "audioRequired": false,
+    "functionalBoundedFinished": true,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestRegistrationPreparation": {
+    "candidate": "20261109T114031247Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json",
+      "sha256": "b8aa9bec840b9ea2127e6fe5c96eca1c6c377d29ba81e47f7c8756d747a43e7a"
+    },
+    "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+    "fullAcceptance": false
+  },
+  "latestNativeOsRefusal": {
+    "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+    "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+  },
+  "knownOsRefusalSummary": {
+    "nativeFrozenCount": 50,
+    "driverFrozenCount": 30,
+    "latest": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+      "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+    },
+    "unchangedRetryAllowed": false,
+    "fullAcceptance": false
+  },
+  "latestRegistrationTrial": {
+    "updatedUtc": "2026-11-09T12:22:38.633161+00:00",
+    "candidate": "20261109T114031247Z",
+    "unit": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/unit-record-v3.json",
+      "sha256": "b8aa9bec840b9ea2127e6fe5c96eca1c6c377d29ba81e47f7c8756d747a43e7a"
+    },
+    "report": {
+      "path": "docs/analysis/ui-transport-registration-2026-11-09.md",
+      "sha256": "790703fe0eacc0489a6299b73b300c191de61f234ddd495a15904b31c87b2f3b"
+    },
+    "status": "114031 UI/native/audio verified; related3/168 passed, component-name Windows5 after67 frozen; related end condition unmet",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 168,
+    "relatedBlocked": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+      "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+    },
+    "candidateUiNativeAudioVerified": true,
+    "functionalBoundedFinished": false,
+    "completed": false,
+    "boundedFinished": false,
+    "fullAcceptance": false
+  },
+  "latestReopenTracksPreparation": {
+    "candidate": "20261109T122735870Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-reopen-tracks/20261109T122451800Z/unit-record-v2.json",
+      "sha256": "bdb2f139876cdce52fb5cb45498ba3147092343ce4a5818da5406634de7c92df"
+    },
+    "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestReopenTracksTrial": {
+    "updatedUtc": "2026-11-09T12:54:45.394569+00:00",
+    "candidate": "20261109T122735870Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-reopen-tracks/20261109T122451800Z/unit-record-v2.json",
+      "sha256": "bdb2f139876cdce52fb5cb45498ba3147092343ce4a5818da5406634de7c92df"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-reopen-tracks-2026-11-09.md",
+      "sha256": "28c22040404d36d7fd8e057a1a2147c9147e71e65bfae64c5b3152f28dc3be5f"
+    },
+    "status": "Declared3 related modes168checks; empty/author/reload normalexit0; TimeSig-only open/reopen/Cancel and no duplicate creation prompt verified; native wholebytes292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 168,
+    "carriedRelatedBlocker": {
+      "path": "work/analysis/ui-transport-registration/20261109T113809853Z/component-name-os-refusal-v1.json",
+      "sha256": "c015c4e8ee88bdc3a3b0ce4454019e1a36084745499d8b566f97ee78b1c6c7a0"
+    },
+    "carriedRelatedBlockerResolved": false,
+    "functionalBoundedFinished": true,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestAddBandTempoPreparation": {
+    "candidate": "20261109T122735870Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+      "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+    },
+    "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+    "fullAcceptance": false
+  },
+  "latestAddBandTempoTrial": {
+    "updatedUtc": "2026-11-09T13:09:18.527336+00:00",
+    "candidate": "20261109T122735870Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-add-band-tempo/20261109T125633600Z/unit-record-v2.json",
+      "sha256": "0f775095e4a1debbd838c20de18651ad552f2571d7cee05f2d5bb1837b1d85b2"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-add-band-tempo-2026-11-09.md",
+      "sha256": "504b25ab7d9607f58bef465b33d985f834a0df33918e0440a631f5bad3dfb82d"
+    },
+    "status": "Same122735 candidate Band/Tempo120/history/Cancel/reopen/native/separate reload verified;2normalexit0;fresh timeline117 + existing3/168 references",
+    "sourceChanged": false,
+    "newBuild": false,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedFreshChecks": 117,
+    "relatedExistingSameCandidateChecks": 168,
+    "carriedRelatedBlockerResolved": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandCyclePreparation": {
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+      "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+    },
+    "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+    "fullAcceptance": false
+  },
+  "latestBandCycleTrial": {
+    "updatedUtc": "2026-11-09T13:37:58.016578+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-band-cycle/20261109T131212131Z/unit-record-v2.json",
+      "sha256": "06027cbb42fee90b4bfdc5c6ffb683921583f741c71d9b98f7cf3ffa921f89b6"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-cycle-2026-11-09.md",
+      "sha256": "042440bee4273a18029a91290b8f6598a72dc411d19742f6aa3b81210179f01d"
+    },
+    "status": "131516 physical-beat stack/Cycle/Properties/child-owner verified; related4/285;author3548/reload1156 normalexit0;native exact292sources4outputs;CtrlF4 residual separate",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 285,
+    "keyboardResidual": {
+      "path": "work/analysis/ui-band-cycle/20261109T131212131Z/keyboard-close-observation-v1.json",
+      "sha256": "7c9743815808f8f28c02f946b4d110c88153cfef88e8669862ade54fa53748dd"
+    },
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestMdiCloseKeyPreparation": {
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-mdi-close-key/20261109T133909247Z/unit-record-v2.json",
+      "sha256": "2203a48263465e0f64090f25663afb9d0f615881244ce6824ed3b7b2f173de20"
+    },
+    "status": "Same131516 menu-state diagnostic bounded: GUI_INMENUMODE4 vs0 controls CtrlF4 result; no code fix;2normalexit0/native exact",
+    "fullAcceptance": false
+  },
+  "latestMdiCloseKeyDiagnostic": {
+    "updatedUtc": "2026-11-09T13:49:42.298447+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-mdi-close-key/20261109T133909247Z/unit-record-v2.json",
+      "sha256": "2203a48263465e0f64090f25663afb9d0f615881244ce6824ed3b7b2f173de20"
+    },
+    "report": {
+      "path": "docs/analysis/ui-mdi-close-key-2026-11-09.md",
+      "sha256": "07d879c14df98a71d80ac41f12a6b83a8d45516eae7db231ee80f537f2cc4533"
+    },
+    "status": "Same131516 menu-state diagnostic bounded: GUI_INMENUMODE4 vs0 controls CtrlF4 result; no code fix;2normalexit0/native exact",
+    "sourceChanged": false,
+    "newBuild": false,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "sourceDefectFixed": false,
+    "originalMenuParity": false,
+    "audioExecuted": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latest131516MilestonePreparation": {
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "fullAcceptance": false
+  },
+  "latestNativeMilestone": {
+    "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "report": {
+      "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+      "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+    },
+    "run": {
+      "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+      "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+    },
+    "proof": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+      "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "registeredNative": 100,
+    "passedModes": 49,
+    "passedChecks": 2785,
+    "nativeFrozenWithoutExecution": 50,
+    "knownWorkflowWithoutRetry": "style-player-bands",
+    "inputs": 30,
+    "inputDirectories": 7,
+    "sources": 292,
+    "outputs": 4,
+    "driverRegistered": 172,
+    "driverExecutedThisRound": 0,
+    "driverFrozenCountCarried": 30,
+    "newFailureCount": 0,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latest131516Milestone": {
+    "updatedUtc": "2026-11-09T13:59:26.834674+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/unit-record-v2.json",
+      "sha256": "76f4647a3a283418985436e657e701ed56945a5eca1a3dcef9b6880bd8efa4d0"
+    },
+    "report": {
+      "path": "docs/analysis/priority-regression-131516-2026-11-09.md",
+      "sha256": "e30184314deffa96e0e5f8375996bc0c4bb814f76c477a3bfcdda3339d87ffe4"
+    },
+    "run": {
+      "path": "work/acceptance/regression/20261109T135217235Z/run.json",
+      "sha256": "e4aa9c1f51a006f721ff0a07a460a4c75fa60c8cc9ec9a2c4e1a088a9186f1df"
+    },
+    "proof": {
+      "path": "work/analysis/priority-regression-131516/20261109T135113300Z/native-milestone-proof-v1.json",
+      "sha256": "ec873e0c8649d0e7e8e341f80cc026da45566e8233fdf4c89edfd1d894fb0472"
+    },
+    "status": "131516 native100 milestone:49pass2785checks/50frozen+anonymous1 withoutPID;30inputs7dirs292sources4outputs intact;driver172 inventory only",
+    "registeredNative": 100,
+    "passedModes": 49,
+    "passedChecks": 2785,
+    "nativeFrozenWithoutExecution": 50,
+    "knownWorkflowWithoutRetry": "style-player-bands",
+    "inputs": 30,
+    "inputDirectories": 7,
+    "sources": 292,
+    "outputs": 4,
+    "driverRegistered": 172,
+    "driverExecutedThisRound": 0,
+    "driverFrozenCountCarried": 30,
+    "newFailureCount": 0,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceMinimumPreparation": {
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+      "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+    },
+    "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+    "fullAcceptance": false
+  },
+  "latestSequenceMinimumTrial": {
+    "updatedUtc": "2026-11-09T14:45:56.536055+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-minimum/20261109T140607429Z/unit-record-v2.json",
+      "sha256": "0e599af36000c870a0a68a0c4f0a7f75af2994d5a19421a1f9bc0cd4b540842b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-minimum-2026-11-09.md",
+      "sha256": "3f0e99df485ad20863945b5b5d780060b42abe4b2c01e72adfcad8180655c09b"
+    },
+    "status": "Sequence minimal GUI/native verified; three normal exits; two180s PCM captures rejected by actual Stop timing, bounded acceptance remains false; continue independent longer-held activeStop unit",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioAccepted": false,
+    "relatedReferenceOnly": true,
+    "relatedPassedModes": 49,
+    "relatedPassedChecks": 2785,
+    "boundedFinished": false,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceActiveStopPreparation": {
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+      "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+    },
+    "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+    "fullAcceptance": false
+  },
+  "latestSequenceActiveStopTrial": {
+    "updatedUtc": "2026-11-09T15:05:53.557214+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-active-stop/20261109T144604000Z/unit-record-v2.json",
+      "sha256": "cbf81ae750c105e127f15e0ef43f471f4d2870d3091495eb2a794f4b912b611b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-active-stop-2026-11-10.md",
+      "sha256": "29a3af683db1661920e30d8bb5121deb85b737985d9b38047d49a0c232ddb889"
+    },
+    "status": "Independent30.125s held/25s activeStop unit verified:240s PCM18/18+6negative4clock;2normalexit0/native only durationLONG changed;prior6s timing failures retained",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioAccepted": true,
+    "audioScope": "Independent30.125s held/25sStop only; previous6s false",
+    "previousSixSecondStopAccepted": false,
+    "relatedReferenceOnly": true,
+    "relatedPassedModes": 49,
+    "relatedPassedChecks": 2785,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceOriginalPreparation": {
+    "unit": {
+      "path": "work/analysis/ui-sequence-original/20261109T150614000Z/unit-record-v2.json",
+      "sha256": "08548a04ccbc3de3b506d54c889257a73d0734651e6e186b2f980e0845860678"
+    },
+    "status": "active original PID1164 waiting for user to close unexposed registry-update notification; independent product Band different-tick test prepared",
+    "fullAcceptance": false,
+    "processId": 1164
+  },
+  "latestBandCycleTicksPreparation": {
+    "unit": {
+      "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+      "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+    },
+    "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestBandCycleTicksTrial": {
+    "updatedUtc": "2026-11-09T15:25:56.999048+00:00",
+    "candidate": "20261109T131516936Z",
+    "unit": {
+      "path": "work/analysis/ui-band-cycle-ticks/20261109T151300000Z/unit-record-v2.json",
+      "sha256": "50ab74496dbb7571fae4b23dead8612258783c97bcba29b5a6f08ef6e03e11f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-cycle-ticks-2026-11-10.md",
+      "sha256": "6fa22ae933eb091f6183ee5c452e03ed66de5496153d9bba01f6aa2c77943021"
+    },
+    "status": "Same displayed Band beat/different ticks0/96/191 verified;6Cycle calls2wraps/Properties owner/disabledSolo+blank/nohistory;2normalexit0/native exact292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedReferenceOnly": true,
+    "relatedPassedModes": 49,
+    "relatedPassedChecks": 2785,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandLogicalCollisionPreparation": {
+    "unit": {
+      "path": "work/analysis/ui-band-logical-collision/20261109T153138000Z/unit-record-v3.json",
+      "sha256": "f890a59f8c41cb734ac3c1fcc726c0ceb84ca1b937ca1badf4f5780c5d3bfa01"
+    },
+    "status": "Same-logical Band support verified:4related508checks; GUI B/C overlap,selected rename/Cchild/Breloadchild/UndoRedo;2normalexit0/native only declared fields/292sources4outputs",
+    "candidate": "20261109T153816119Z",
+    "fullAcceptance": false
+  },
+  "latestSequenceOriginalComparison": {
+    "updatedUtc": "2026-11-09T16:13:55.944531+00:00",
+    "unit": {
+      "path": "work/analysis/ui-sequence-original/20261109T150614000Z/unit-record-v3.json",
+      "sha256": "67bf59b7be58026701878ed79b66b80c414125daaa42d550e5050ac8c790c58b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-original-2026-11-10.md",
+      "sha256": "a8d6ecf91e4188e64abb3bf2b9131e8373f8dc518b6c258b7a3be7743b92f4d9"
+    },
+    "candidateCompared": "20261109T131516936Z",
+    "formalOriginalPid": 1164,
+    "normalExit": true,
+    "parityGapsRemain": true,
+    "originalAudioExecuted": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandLogicalCollisionTrial": {
+    "updatedUtc": "2026-11-09T16:21:13.368833+00:00",
+    "candidate": "20261109T153816119Z",
+    "unit": {
+      "path": "work/analysis/ui-band-logical-collision/20261109T153138000Z/unit-record-v3.json",
+      "sha256": "f890a59f8c41cb734ac3c1fcc726c0ceb84ca1b937ca1badf4f5780c5d3bfa01"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-logical-collision-2026-11-10.md",
+      "sha256": "411b658ba0119fe781bdaeeb98ff73049de1e65338ced6659f6c816dc403804b"
+    },
+    "status": "Same-logical Band support verified:4related508checks; GUI B/C overlap,selected rename/Cchild/Breloadchild/UndoRedo;2normalexit0/native only declared fields/292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 508,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestTimelineOrderPreparation": {
+    "candidate": "20261109T162522992Z",
+    "unit": {
+      "path": "work/analysis/ui-timeline-order/20261109T162156000Z/unit-record-v3.json",
+      "sha256": "ce1c4c12507075b8e468035655cf7072eab8cf5f198f4bd810d63955d2f0d7be"
+    },
+    "status": "Timeline known4strip order/actualmask ranges/labels verified;3related478;4row Properties owners;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestTimelineOrderTrial": {
+    "updatedUtc": "2026-11-09T16:42:41.874458+00:00",
+    "candidate": "20261109T162522992Z",
+    "unit": {
+      "path": "work/analysis/ui-timeline-order/20261109T162156000Z/unit-record-v3.json",
+      "sha256": "ce1c4c12507075b8e468035655cf7072eab8cf5f198f4bd810d63955d2f0d7be"
+    },
+    "report": {
+      "path": "docs/analysis/ui-timeline-order-2026-11-10.md",
+      "sha256": "94c0478ee653739cc0baeb64b70302005cb6331b551dbc2eb51b70639a2b9ff6"
+    },
+    "status": "Timeline known4strip order/actualmask ranges/labels verified;3related478;4row Properties owners;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 478,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequencePitchViewPreparation": {
+    "candidate": "20261109T165309981Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-pitch-view/20261109T164346000Z/unit-record-v3.json",
+      "sha256": "e57107246251c67dda1dda21a6abfaca25af69de244153ff887a7adfca2df098"
+    },
+    "status": "Part verticalzoom/native keyboard semitone-page-thumb verified;3related494 incl16new;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestSequencePitchViewTrial": {
+    "updatedUtc": "2026-11-09T17:17:02.883240+00:00",
+    "candidate": "20261109T165309981Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-pitch-view/20261109T164346000Z/unit-record-v3.json",
+      "sha256": "e57107246251c67dda1dda21a6abfaca25af69de244153ff887a7adfca2df098"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-pitch-view-2026-11-10.md",
+      "sha256": "55abfe416c965e22ebeb027349ea50de4dca847d70cacb606780f2d5201fe67b"
+    },
+    "status": "Part verticalzoom/native keyboard semitone-page-thumb verified;3related494 incl16new;2normalexit0/separate reload/allSegmentbytes exact292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 494,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandOwnerTitlePreparation": {
+    "candidate": "20261109T172245420Z",
+    "unit": {
+      "path": "work/analysis/ui-band-owner-title/20261109T171721000Z/unit-record-v3.json",
+      "sha256": "2bc10c90c202e8d2ca1e7a7b0bcc6ec04764c253588a8d17584c6857af445afd"
+    },
+    "status": "Owner title/live unchangedBand fastpath/Undo original verified;related3/494;2normalexit0/separate reload/native preservation292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestBandOwnerTitleTrial": {
+    "updatedUtc": "2026-11-09T17:44:00.680892+00:00",
+    "candidate": "20261109T172245420Z",
+    "unit": {
+      "path": "work/analysis/ui-band-owner-title/20261109T171721000Z/unit-record-v3.json",
+      "sha256": "2bc10c90c202e8d2ca1e7a7b0bcc6ec04764c253588a8d17584c6857af445afd"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-owner-title-2026-11-10.md",
+      "sha256": "c38cb751189fda7ee20a36c9273294b72504c9740bb668878997b741c3ec7eb8"
+    },
+    "status": "Owner title/live unchangedBand fastpath/Undo original verified;related3/494;2normalexit0/separate reload/native preservation292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 494,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestBandGraphPositionPreparation": {
+    "candidate": "20261109T174532050Z",
+    "unit": {
+      "path": "work/analysis/ui-band-graph-position/20261109T174400000Z/unit-record-v3.json",
+      "sha256": "a13f2ee45961b4766d95338ba2c26a871a2b0657043becd27f2a2e7225518e86"
+    },
+    "status": "Stored pan-volume graph overlap/selection/resize verified;related3/501 incl7new;2normalexit0/separate reload/native preservation292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestBandGraphPositionTrial": {
+    "updatedUtc": "2026-11-09T18:00:21.942669+00:00",
+    "candidate": "20261109T174532050Z",
+    "unit": {
+      "path": "work/analysis/ui-band-graph-position/20261109T174400000Z/unit-record-v3.json",
+      "sha256": "a13f2ee45961b4766d95338ba2c26a871a2b0657043becd27f2a2e7225518e86"
+    },
+    "report": {
+      "path": "docs/analysis/ui-band-graph-position-2026-11-10.md",
+      "sha256": "3bf8da0215c2c62b75f2a5a1a0e019bcc7953a18cd3524c278eb93c76b610f96"
+    },
+    "status": "Stored pan-volume graph overlap/selection/resize verified;related3/501 incl7new;2normalexit0/separate reload/native preservation292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": false,
+    "relatedPassedModes": 3,
+    "relatedPassedChecks": 501,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceLogicalTimePreparation": {
+    "candidate": "20261109T180733499Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-logical-time/20261109T180300000Z/unit-record-v3.json",
+      "sha256": "25923022650c7413a30ac87312bc24ae268d033fe13efc052d6b33d614f2d7f5"
+    },
+    "status": "Sequence logical ownership/Properties/UndoRedo/native/separate reload verified;related4/566 incl35new;freshPCM18of18+6negative4clock;2normalexit0/292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestSequenceLogicalTimeTrial": {
+    "updatedUtc": "2026-11-09T18:35:11.398560+00:00",
+    "candidate": "20261109T180733499Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-logical-time/20261109T180300000Z/unit-record-v3.json",
+      "sha256": "25923022650c7413a30ac87312bc24ae268d033fe13efc052d6b33d614f2d7f5"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-logical-time-2026-11-10.md",
+      "sha256": "e5e85804bd56cb56c8f7605d141dd29fe6c7047aab332ce8c76d35495a6d6702"
+    },
+    "status": "Sequence logical ownership/Properties/UndoRedo/native/separate reload verified;related4/566 incl35new;freshPCM18of18+6negative4clock;2normalexit0/292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 4,
+    "relatedPassedChecks": 566,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestCurrentTempoPrimaryTrackPreparation": {
+    "candidate": "20261109T184801667Z",
+    "unit": {
+      "path": "work/analysis/ui-current-tempo-primary-track/20261109T184300000Z/unit-record-v3.json",
+      "sha256": "3fa08779a8bb8ea00b601556c4ab4238dfeb96f3adf485324ffc1b4f6b287b35"
+    },
+    "status": "CurrentTempo controlling-track ownership/native/separate reload verified;related5/627 incl28new;freshPCM19of19+7negative4clock;2normalexit0/292sources4outputs",
+    "fullAcceptance": false
+  },
+  "latestCurrentTempoPrimaryTrackTrial": {
+    "updatedUtc": "2026-11-09T19:12:22.653829+00:00",
+    "candidate": "20261109T184801667Z",
+    "unit": {
+      "path": "work/analysis/ui-current-tempo-primary-track/20261109T184300000Z/unit-record-v3.json",
+      "sha256": "3fa08779a8bb8ea00b601556c4ab4238dfeb96f3adf485324ffc1b4f6b287b35"
+    },
+    "report": {
+      "path": "docs/analysis/ui-current-tempo-primary-track-2026-11-10.md",
+      "sha256": "de5d73bb0c001a7b1485e7208349ae451289cae96aa38a1299b09861e33e1092"
+    },
+    "status": "CurrentTempo controlling-track ownership/native/separate reload verified;related5/627 incl28new;freshPCM19of19+7negative4clock;2normalexit0/292sources4outputs",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 627,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestTempoGlobalCreationPreparation": {
+    "candidate": "20261109T194909234Z",
+    "unit": {
+      "path": "work/analysis/ui-tempo-global-creation/20261109T191400000Z/unit-record-v3.json",
+      "sha256": "92cf22281df57fc2af609aa0e2d7c51433c313e3f3dd30c9a590941a0a2cafe5"
+    },
+    "status": "bounded GUI globalTempo creation verified; whole acceptance incomplete",
+    "fullAcceptance": false
+  },
+  "latestTempoGlobalCreationTrial": {
+    "updatedUtc": "2026-11-09T20:12:45.443043+00:00",
+    "candidate": "20261109T194909234Z",
+    "unit": {
+      "path": "work/analysis/ui-tempo-global-creation/20261109T191400000Z/unit-record-v3.json",
+      "sha256": "92cf22281df57fc2af609aa0e2d7c51433c313e3f3dd30c9a590941a0a2cafe5"
+    },
+    "report": {
+      "path": "docs/analysis/ui-tempo-global-creation-2026-11-10.md",
+      "sha256": "2c88d52931fbcf8ae2b3b7892f616233ccce0f1221bd8f2f7c44b2fbc3c1eb12"
+    },
+    "status": "bounded GUI globalTempo creation verified; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 648,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestLengthPrimaryTempoPreparation": {
+    "candidate": "20261109T201457752Z",
+    "unit": {
+      "path": "work/analysis/ui-length-primary-tempo/20261109T201400000Z/unit-record-v3.json",
+      "sha256": "38aaafe8b6a6eaa2e2fc391ef2f6102f417aed20cae1995decee2f1d7c537333"
+    },
+    "status": "bounded Length controllingTempo conversion verified; whole acceptance incomplete",
+    "fullAcceptance": false
+  },
+  "latestLengthPrimaryTempoTrial": {
+    "updatedUtc": "2026-11-09T20:59:07.047216+00:00",
+    "candidate": "20261109T201457752Z",
+    "unit": {
+      "path": "work/analysis/ui-length-primary-tempo/20261109T201400000Z/unit-record-v3.json",
+      "sha256": "38aaafe8b6a6eaa2e2fc391ef2f6102f417aed20cae1995decee2f1d7c537333"
+    },
+    "report": {
+      "path": "docs/analysis/ui-length-primary-tempo-2026-11-10.md",
+      "sha256": "2922d3ec7301af1424d21e6f9b8201b4d7c81714e8ffbd9fa0f21edbc79ea22b"
+    },
+    "status": "bounded Length controllingTempo conversion verified; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 5,
+    "relatedPassedChecks": 671,
+    "relatedReferenceOnly": false,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceLoopBelongsPreparation": {
+    "candidate": "20261109T210902079Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-loop-belongs/20261109T210700000Z/unit-record-v2.json",
+      "sha256": "dd33ef6be04ee57258adf8d6989c5d8b65597b5716ea02509d5dc5ce2bd99480"
+    },
+    "status": "savedbuild passed/1test source changed291same/292sources4outputs;related/baseline/member mainPCM pending",
+    "fullAcceptance": false
+  },
+  "latestSequenceLoopBelongsTrial": {
+    "updatedUtc": "2026-11-09T21:42:26.337423+00:00",
+    "candidate": "20261109T210902079Z",
+    "status": "member PCM18/19 failed:11notes but late logical offsets; baseline19/19 and7negative4clock passed; native/history/separate reload/normal exits verified",
+    "unit": {
+      "path": "work/analysis/ui-sequence-loop-belongs/20261109T210700000Z/unit-record-v3.json",
+      "sha256": "77e1171161171e34812be51f303c2b49e17db225c041e7da46278876eb976739"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-loop-belongs-2026-11-10.md",
+      "sha256": "0a80f3e47a7253a5f18495762bfd07859c322c8c5c1596e388caa13853475dcc"
+    },
+    "audioPassed": false,
+    "boundedFinished": false,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSequenceLogicalLookaheadPreparation": {
+    "candidate": "20261109T214458343Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-logical-lookahead/20261109T214400000Z/unit-record-v3.json",
+      "sha256": "a3fe5fcc90c18c1917c7899625dfc85b1baf7daef648ff05fd71c620ef0425f4"
+    },
+    "status": "bounded Sequence negative-offset lookahead verified; old failed member and first baseline timing failure preserved; whole acceptance incomplete",
+    "fullAcceptance": false
+  },
+  "latestSequenceLogicalLookaheadTrial": {
+    "updatedUtc": "2026-11-09T22:24:03.494036+00:00",
+    "candidate": "20261109T214458343Z",
+    "unit": {
+      "path": "work/analysis/ui-sequence-logical-lookahead/20261109T214400000Z/unit-record-v3.json",
+      "sha256": "a3fe5fcc90c18c1917c7899625dfc85b1baf7daef648ff05fd71c620ef0425f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-sequence-logical-lookahead-2026-11-10.md",
+      "sha256": "f7d13c2f246ab5b9abdca97b7a0fae859d0e14629bc58c7e74cfd9589b31b79a"
+    },
+    "status": "bounded Sequence negative-offset lookahead verified; old failed member and first baseline timing failure preserved; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 7,
+    "relatedPassedChecks": 870,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopMusicPreparation": {
+    "candidate": "20261109T235737154Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v3.json",
+      "sha256": "07a2d7e0a6eb20ee0011fa9616efa431e6e189c07e613d05a49205285cbe837b"
+    },
+    "status": "bounded Segment music-time Loop UI/native/history/restore/whole and custom Infinite PCM verified; finite native runtime verified; whole acceptance incomplete",
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopMusicUiFailure": {
+    "path": "work/analysis/ui-segment-loop-music/20261109T223000000Z/failed-candidate-v4.json",
+    "sha256": "ffe6544fcea19cd494a7cbaebf32a4d928f2769c07dbb22597af1088fec38e70"
+  },
+  "latestSegmentLoopMusicBaseline": {
+    "candidate": "20261109T235737154Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v2a.json",
+      "sha256": "eac0d06f61b2b5d8a613e1ac6ba232d6034d0e26c3bd52cef9ac8920c25df3ed"
+    },
+    "processId": 18312,
+    "passed": true,
+    "audioProof": {
+      "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/baseline/audio/audio-proof-v1.json",
+      "sha256": "b7b756ba75e4afb80c72651e1d0222a7d0d7f48481012dcd853b68afc5810ab8"
+    },
+    "relatedChecks": 932,
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopMusicTrial": {
+    "updatedUtc": "2026-11-10T00:46:52.348369+00:00",
+    "candidate": "20261109T235737154Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-music/20261109T235737154Z/unit-record-v3.json",
+      "sha256": "07a2d7e0a6eb20ee0011fa9616efa431e6e189c07e613d05a49205285cbe837b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-loop-music-2026-11-10.md",
+      "sha256": "25d9f9e7933c58a548ca291f04c99702d5d0a4487e88ff9c40385bf8ecf9d25c"
+    },
+    "status": "bounded Segment music-time Loop UI/native/history/restore/whole and custom Infinite PCM verified; finite native runtime verified; whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "relatedPassedModes": 7,
+    "relatedPassedChecks": 932,
+    "boundedFinished": true,
+    "completed": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopCursorPreparation": {
+    "updatedUtc": "2026-11-10T01:22:38.939456+00:00",
+    "candidate": "20261110T005605175Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-cursor/20261110T005500000Z/unit-record-v3.json",
+      "sha256": "3f03b0104e1d7c0ee0f9967288705e3acd2722be7c36ad2e30d907f9de27fea0"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-loop-cursor-2026-11-10.md",
+      "sha256": "d31df5a3ac2c047dc0fa2664245a14e5073b84c261f75c8eec4bb3daa031331e"
+    },
+    "status": "bounded music-time loop cursor finite/Infinite mapping,GUI toggle/native save/normal exits/separate restore/new PCM verified; painting/original/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentLoopCursorTrial": {
+    "updatedUtc": "2026-11-10T01:22:38.939456+00:00",
+    "candidate": "20261110T005605175Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-loop-cursor/20261110T005500000Z/unit-record-v3.json",
+      "sha256": "3f03b0104e1d7c0ee0f9967288705e3acd2722be7c36ad2e30d907f9de27fea0"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-loop-cursor-2026-11-10.md",
+      "sha256": "d31df5a3ac2c047dc0fa2664245a14e5073b84c261f75c8eec4bb3daa031331e"
+    },
+    "status": "bounded music-time loop cursor finite/Infinite mapping,GUI toggle/native save/normal exits/separate restore/new PCM verified; painting/original/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestToolbarSteadyPreparation": {
+    "updatedUtc": "2026-11-10T02:02:54.179122+00:00",
+    "candidate": "20261110T012618577Z",
+    "unit": {
+      "path": "work/analysis/ui-toolbar-steady-refresh/20261110T012600000Z/unit-record-v3.json",
+      "sha256": "32426969a1aba7dbc65ec2cf4884e73042aa05265e509471312f7f561b09f8f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-toolbar-steady-refresh-2026-11-10.md",
+      "sha256": "b4592064d806c4cc980b83f11d190035b7c9f530becba251a3e222069ffd269e"
+    },
+    "status": "bounded toolbar steady refresh, pending Tempo retention/original Escape, Alternate Tempo display, Play/Cursor/Stop, native save/normal exits/separate restore/new PCM verified; full painting/original/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestToolbarSteadyTrial": {
+    "updatedUtc": "2026-11-10T02:02:54.179122+00:00",
+    "candidate": "20261110T012618577Z",
+    "unit": {
+      "path": "work/analysis/ui-toolbar-steady-refresh/20261110T012600000Z/unit-record-v3.json",
+      "sha256": "32426969a1aba7dbc65ec2cf4884e73042aa05265e509471312f7f561b09f8f4"
+    },
+    "report": {
+      "path": "docs/analysis/ui-toolbar-steady-refresh-2026-11-10.md",
+      "sha256": "b4592064d806c4cc980b83f11d190035b7c9f530becba251a3e222069ffd269e"
+    },
+    "status": "bounded toolbar steady refresh, pending Tempo retention/original Escape, Alternate Tempo display, Play/Cursor/Stop, native save/normal exits/separate restore/new PCM verified; full painting/original/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentBufferedPaintPreparation": {
+    "updatedUtc": "2026-11-10T03:16:17.898347+00:00",
+    "candidate": "20261110T020605949Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-buffered-paint/20261110T020500000Z/unit-record-v3.json",
+      "sha256": "9ebb1dcdcd3c71a98ec876c134f58757abca32132c99606e4511b73fe5a69e30"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-buffered-paint-2026-11-10.md",
+      "sha256": "78e6bb9e3629119f988e122b7740ba1102d78181d92da089c9318aa9f890aaeb"
+    },
+    "status": "bounded Segment buffered rendering/resource/save/normal exits/separate restore/new PCM verified; parent-frame residuals/original dynamic/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentBufferedPaintTrial": {
+    "updatedUtc": "2026-11-10T03:16:17.898347+00:00",
+    "candidate": "20261110T020605949Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-buffered-paint/20261110T020500000Z/unit-record-v3.json",
+      "sha256": "9ebb1dcdcd3c71a98ec876c134f58757abca32132c99606e4511b73fe5a69e30"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-buffered-paint-2026-11-10.md",
+      "sha256": "78e6bb9e3629119f988e122b7740ba1102d78181d92da089c9318aa9f890aaeb"
+    },
+    "status": "bounded Segment buffered rendering/resource/save/normal exits/separate restore/new PCM verified; parent-frame residuals/original dynamic/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestFrameRefreshPaintPreparation": {
+    "updatedUtc": "2026-11-10T03:45:20.221495+00:00",
+    "candidate": "20261110T031819499Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-refresh-paint/20261110T031700000Z/unit-record-v3.json",
+      "sha256": "bf6321d62c450642b046ef3fcb5b5fed83a6c3dff4e51623844ab9be075ef421"
+    },
+    "report": {
+      "path": "docs/analysis/ui-frame-refresh-paint-2026-11-10.md",
+      "sha256": "a7110330be881743ad00dc9efe09dd4e0a81ed6ce402f50fc23656d3d5054b1e"
+    },
+    "status": "related7/988;bounded frame refresh GUI/resource/native save/two normalexits/separate restore verified;new PCM failed orchestration86.585s Stop;unchanged audio retry frozen;StartTime independent work next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestFrameRefreshPaintTrial": {
+    "updatedUtc": "2026-11-10T03:45:20.221495+00:00",
+    "candidate": "20261110T031819499Z",
+    "unit": {
+      "path": "work/analysis/ui-frame-refresh-paint/20261110T031700000Z/unit-record-v3.json",
+      "sha256": "bf6321d62c450642b046ef3fcb5b5fed83a6c3dff4e51623844ab9be075ef421"
+    },
+    "report": {
+      "path": "docs/analysis/ui-frame-refresh-paint-2026-11-10.md",
+      "sha256": "a7110330be881743ad00dc9efe09dd4e0a81ed6ce402f50fc23656d3d5054b1e"
+    },
+    "status": "related7/988;bounded frame refresh GUI/resource/native save/two normalexits/separate restore verified;new PCM failed orchestration86.585s Stop;unchanged audio retry frozen;StartTime independent work next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentStartTimePreparation": {
+    "updatedUtc": "2026-11-10T05:36:18.274836+00:00",
+    "candidate": "20261110T041453112Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-start-time/20261110T041200000Z/unit-record-v3.json",
+      "sha256": "33d696daea5c0a9c44b888e41251463818abcb36e2cc7fd1798d0e5305920a00"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-start-time-2026-11-10.md",
+      "sha256": "5b80d96aa2a3992d75ce77df7c5993b4c7070405fdb7de3e0018c5c4e73eb4e0"
+    },
+    "status": "bounded music-time StartTime UI/history/save/four normal exits/separate restore/new baseline11 and member10 PCM19/7/4 verified;UIA failure preserved;original dynamic/clock-time/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "baselinePassed": true,
+    "memberPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentStartTimeCheckpoint": {
+    "updatedUtc": "2026-11-10T05:36:18.274836+00:00",
+    "candidate": "20261110T041453112Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-start-time/20261110T041200000Z/unit-record-v3.json",
+      "sha256": "33d696daea5c0a9c44b888e41251463818abcb36e2cc7fd1798d0e5305920a00"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-start-time-2026-11-10.md",
+      "sha256": "5b80d96aa2a3992d75ce77df7c5993b4c7070405fdb7de3e0018c5c4e73eb4e0"
+    },
+    "status": "bounded music-time StartTime UI/history/save/four normal exits/separate restore/new baseline11 and member10 PCM19/7/4 verified;UIA failure preserved;original dynamic/clock-time/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "baselinePassed": true,
+    "memberPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentStartTimeTrial": {
+    "updatedUtc": "2026-11-10T05:36:18.274836+00:00",
+    "candidate": "20261110T041453112Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-start-time/20261110T041200000Z/unit-record-v3.json",
+      "sha256": "33d696daea5c0a9c44b888e41251463818abcb36e2cc7fd1798d0e5305920a00"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-start-time-2026-11-10.md",
+      "sha256": "5b80d96aa2a3992d75ce77df7c5993b4c7070405fdb7de3e0018c5c4e73eb4e0"
+    },
+    "status": "bounded music-time StartTime UI/history/save/four normal exits/separate restore/new baseline11 and member10 PCM19/7/4 verified;UIA failure preserved;original dynamic/clock-time/whole acceptance incomplete",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": true,
+    "baselinePassed": true,
+    "memberPassed": true,
+    "boundedFinished": true,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentInfoPreparation": {
+    "updatedUtc": "2026-11-10T07:19:36.659719+00:00",
+    "candidate": "20261110T063900475Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-info-navigation/20261110T063900475Z/unit-record-v2-failed-clock.json",
+      "sha256": "a576d15ff0c511755e1bdf2f3e689cf0565d0727662792ff56e81369eb87c88b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-info-2026-11-10.md",
+      "sha256": "10c8843019ae58688c096e0ed82156fe7cf355ecce578933f11fbf79b2277c02"
+    },
+    "status": "Info text/version and navigation GUI/save/two normal exits/separate restore passed;fresh240s capture clock drift8.5643ms exceeds5ms, positive audit exit1 before PCM;unchanged retry frozen;Boundary independent next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentInfoTrial": {
+    "updatedUtc": "2026-11-10T07:19:36.659719+00:00",
+    "candidate": "20261110T063900475Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-info-navigation/20261110T063900475Z/unit-record-v2-failed-clock.json",
+      "sha256": "a576d15ff0c511755e1bdf2f3e689cf0565d0727662792ff56e81369eb87c88b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-info-2026-11-10.md",
+      "sha256": "10c8843019ae58688c096e0ed82156fe7cf355ecce578933f11fbf79b2277c02"
+    },
+    "status": "Info text/version and navigation GUI/save/two normal exits/separate restore passed;fresh240s capture clock drift8.5643ms exceeds5ms, positive audit exit1 before PCM;unchanged retry frozen;Boundary independent next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentInfoCheckpoint": {
+    "updatedUtc": "2026-11-10T07:19:36.659719+00:00",
+    "candidate": "20261110T063900475Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-info-navigation/20261110T063900475Z/unit-record-v2-failed-clock.json",
+      "sha256": "a576d15ff0c511755e1bdf2f3e689cf0565d0727662792ff56e81369eb87c88b"
+    },
+    "report": {
+      "path": "docs/analysis/ui-segment-info-2026-11-10.md",
+      "sha256": "10c8843019ae58688c096e0ed82156fe7cf355ecce578933f11fbf79b2277c02"
+    },
+    "status": "Info text/version and navigation GUI/save/two normal exits/separate restore passed;fresh240s capture clock drift8.5643ms exceeds5ms, positive audit exit1 before PCM;unchanged retry frozen;Boundary independent next",
+    "compiled": true,
+    "candidateMainExecuted": true,
+    "nativeRoundTripPassed": true,
+    "audioExecuted": true,
+    "audioPassed": false,
+    "boundedFinished": false,
+    "originalDynamic": false,
+    "fullAcceptance": false
+  },
+  "latestSegmentBoundaryPreparation": {
+    "candidate": "20261110T112858885Z",
+    "unit": {
+      "path": "work/analysis/ui-segment-boundary/20261110T064400000Z/unit-record-v10e-extended-restore.json",
+      "sha256": "96d146b2aa803f8a244c98fff40001d815be4e9863ae4dc88423722f5f4c2356"
+    },
+    "status": "1128 unaffected6/1986/model890/nativeBasic4+Invalidation3+Extended21;GUI9Boundary4Align/Marker gates/history/tab/4pages/two recreations/GDI+1/basic mainstop/native26/save;separate15768restore/resave/two normal0 passed;advanced timing/full7/newPCM/originalDynamic/fontpixel unaccepted",
+    "fullAcceptance": false
+  },
+  "latestClockConditionObservation": {
+    "path": "work/analysis/ui-segment-boundary/20261110T064400000Z/clock-condition-observation-v1.json",
+    "sha256": "1d52a7588f078ea5e567699ddb05a63f4f3d91e8bfbecaf35955f66c883a15ed"
+  },
+  "latestTimelineRangeOsRefusal": {
+    "path": "work/analysis/ui-segment-boundary/20261110T064400000Z/timeline-range-os-refusal-v1.json",
+    "sha256": "d921e99cc8a8c63126d39a1bc88180cf7e74883c740cd4606dd57f2588999aac"
+  },
+  "nextIndependentBoundaryAudit": {
+    "path": "work/analysis/ui-segment-boundary/20261110T064400000Z/advanced-boundary-audit-v2.json",
+    "sha256": "d9cdb5a5066b2d3f37ec72bf1dd68067445a660b86dbb006a37f80cf65be082a"
   }
 }

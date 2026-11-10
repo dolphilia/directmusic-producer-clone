@@ -8,11 +8,11 @@ int pixel(unsigned value,int length){return static_cast<int>((std::uint64_t(valu
 unsigned value(std::int64_t position,int length){return static_cast<unsigned>(std::clamp<std::int64_t>((position*127+length/2)/length,0,127));}
 }
 bool band_mixer_active(const BandInstrument& i){return (i.flags&0x60u)!=0;}
-BandMixerPoint band_mixer_position(const BandInstrument& i,size_t ordinal,const BandMixerArea& a){
+BandMixerPoint band_mixer_position(const BandInstrument& i,size_t,const BandMixerArea& a){
     const auto x=span(a.left,a.right,a.width),y=span(a.top,a.bottom,a.height);
-    if(band_mixer_active(i))return {a.left+pixel(std::min(i.pan,127u),x),a.top+pixel(127-std::min(i.volume,127u),y)};
-    // Inactive channels retain the original eight-column rack until edited.
-    const auto rows=ordinal/8;return {a.left+int(ordinal%8)*(a.width+8),a.top+y/2-a.height*2+int(rows)*(a.height+4)};
+    // Validity controls whether values override playback state, not their
+    // graph position. Equal stored values overlap in the original editor.
+    return {a.left+pixel(std::min(i.pan,127u),x),a.top+pixel(127-std::min(i.volume,127u),y)};
 }
 BandMixValue band_mixer_value(std::uint32_t channel,BandMixerPoint p,const BandMixerArea& a){
     if(channel>=0xfffffffcu)throw std::runtime_error("Reserved mixer PChannel");

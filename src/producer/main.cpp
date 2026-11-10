@@ -62,6 +62,28 @@ namespace {
 using namespace producer::app;
 enum : UINT { AudioPathEditor=1500,ChordMapEditor,StyleReferenceEditor,SegmentTriggerEditor,ScriptTrackEditor,ChordMapReferenceEditor,NewProject=100,NewSegment,Open,SaveSegment,SaveProject,Exit,NewPlaybackTest,NewStyle,NewBand,SaveDocumentAs,NewDls,Add=200,Change,Delete,Copy,Paste,Undo,Redo,Documents,Events,MeterSet=300,MeterDelete,Play=400,Stop,NoteAdd,GrooveBottom=500,GrooveTop,GrooveSet,PatternLayout=600,StylePartSelect=700,StyleNoteSelect,StyleNoteSet,StyleNoteInsert,StyleNoteDelete,StyleVariationSelect,StyleVariationSet };
 Framework framework;
+// A fresh frame has no authored project or component yet. This is UI context;
+// Framework's explicit new_project dirty/history contract stays unchanged.
+bool startupWorkspacePristine=true;
+std::vector<HWND> legacyEditorControls,emptyWorkspaceHiddenControls;
+bool workspace_empty(){
+    return framework.documents().empty()&&framework.style_documents().empty()&&framework.band_documents().empty()&&
+        framework.collections().empty()&&framework.audio_paths().empty()&&framework.chordmaps().empty()&&
+        framework.waves().empty()&&framework.scripts().empty()&&framework.containers().empty()&&framework.tool_graphs().empty();
+}
+bool legacy_editor_hidden();
+void restore_empty_workspace_controls(){
+    for(const auto child:emptyWorkspaceHiddenControls)if(IsWindow(child))ShowWindow(child,SW_SHOW);
+    emptyWorkspaceHiddenControls.clear();
+}
+void hide_empty_workspace_controls(HWND window){
+    if(!legacy_editor_hidden())return;
+    for(const auto child:legacyEditorControls)if(IsWindow(child)&&(GetWindowLongPtrW(child,GWL_STYLE)&WS_VISIBLE)){
+        emptyWorkspaceHiddenControls.push_back(child);
+        const auto focused=GetFocus();if(focused==child||IsChild(child,focused))SetFocus(window);
+        ShowWindow(child,SW_HIDE);
+    }
+}
 Conductor conductor;
 Conductor noteAudition;
 MidiInputs midiInput;
@@ -75,7 +97,14 @@ std::filesystem::path midiInputPreferencesFile;
 std::uint64_t midiInputMessages=0;
 bool midiInputIncomplete=false;
 bool midiInputShutdownPassed=true;
-struct SegmentPlaybackBinding {const SegmentDocument* owner=nullptr;PlaybackId id=0;Bytes snapshot;LONG startPoint=0;};
+struct SegmentPlaybackBinding {
+    const SegmentDocument* owner=nullptr;PlaybackId id=0;Bytes snapshot;LONG startPoint=0,length=0;SegmentLoopSettings loop;
+    std::int64_t source_clock(const PlaybackPosition& position)const{
+        const auto elapsed=std::int64_t(position.clocks)-position.start;
+        if(const auto mapped=segment_playback_clock(length,loop,startPoint,elapsed))return *mapped;
+        return std::int64_t(startPoint)+elapsed;
+    }
+};
 std::optional<SegmentPlaybackBinding> segmentPlayback;
 HMENU transportMenu=nullptr;
 HMENU fileMenu=nullptr;
@@ -91,8 +120,18 @@ size_t transportPathSelection=0;
 constexpr UINT ToggleOptionsToolbar=4811,OptionsToolbarControl=4812,MidiOptionsCommand=4813,AudioPathCombo=4814,ToggleMetronome=4815,TogglePlayCursor=4816,ToggleMidiEcho=4817;
 constexpr UINT ToggleTransportToolbar=4805,TransportToolbarControl=4806,ToggleTempoModifier=4807,AlternateTempoCommand=4808,PlayFromStart=4809,StopAtBoundary=4810;
 constexpr UINT CurrentTempoEdit=4818,CurrentTempoSpin=4819,CommitCurrentTempo=4821,CancelCurrentTempo=4822;
+constexpr UINT TransportPrimaryList=4823;
+struct TransportSegmentTarget {size_t index=0;const SegmentDocument* identity=nullptr;};
+std::optional<TransportSegmentTarget> transportPrimary,transportEditor;
+std::vector<TransportSegmentTarget> transportPrimaryRows,transportRegistered;
 struct CurrentTempoTarget {bool style=false;size_t index=0;const void* identity=nullptr;std::int32_t clocks=0;};
 std::optional<CurrentTempoTarget> currentTempoBinding;
+std::optional<CurrentTempoTarget> currentTempoDisplayTarget;
+std::optional<CurrentTempoTarget> current_tempo_target();
+bool same_current_tempo_target(const std::optional<CurrentTempoTarget>& a,const std::optional<CurrentTempoTarget>& b){
+    if(!a||!b)return !a&&!b;
+    return a->style==b->style&&a->index==b->index&&a->identity==b->identity&&a->clocks==b->clocks;
+}
 unsigned alternateTempoPercent=50;
 bool tempoModifierEnabled=false;
 bool playCursorEnabled=true;
@@ -131,6 +170,8 @@ HWND docs,events,timeEdit,bpmEdit,status;
 HWND tempoEvents,componentEvents;
 constexpr UINT Cut=3400,SelectAll=3401;
 constexpr UINT SegmentTimelineCommand=3402;
+// New Files already owns its initial Add New Tracks prompt after Length.
+constexpr UINT SegmentCreationTimeline=1;
 HWND measureEdit,beatsEdit,denominatorEdit,gridsEdit;
 constexpr UINT GroupApply=900,GroupMask=901,GroupTempo=902,GroupMeter=903,GroupSequence=904,GroupBand=905;
 HWND groupLabel,groupEdit,groupTempoLabel,groupTempoEdit,groupMeterLabel,groupMeterEdit,groupSequenceLabel,groupSequenceEdit,groupBandLabel,groupBandEdit;
@@ -225,7 +266,7 @@ bool can_insert_tempo(){
     std::int32_t end=0;try{end=timeline.clocks(position);}catch(const std::exception&){++position.measure;position.beat=0;end=timeline.clocks(position);}
     return std::none_of(d.tempos().begin(),d.tempos().end(),[&](const auto& e){return e.bpm>0&&e.time>=time&&e.time<end;});
 }
-bool tempo_strip_point(POINT point){return tempo_context_available()&&point.x>=editorOffset+20&&point.x<=editorOffset+550&&point.y>=410+editorTop&&point.y<=485+editorTop;}
+bool tempo_strip_point(POINT point){return !legacy_editor_hidden()&&tempo_context_available()&&point.x>=editorOffset+20&&point.x<=editorOffset+550&&point.y>=410+editorTop&&point.y<=485+editorTop;}
 void select_tempo_point(HWND window,POINT point){
     sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();
     const auto& d=document();const double zoom=520.0/std::max(1,d.length());const Timeline axis;
@@ -240,11 +281,46 @@ std::optional<size_t> selected_wave_component(){
     if(sequencePropertiesContext||tempoPropertiesContext||lyricPropertiesContext||markerPropertiesContext||meterPropertiesContext||chordPropertiesContext||bandPropertiesContext)return {};
     const auto target=projectTree.selected_component();if(target&&target->kind==DocumentKind::Wave&&target->index<framework.waves().size())return target->index;return {};
 }
+bool same_transport_target(const std::optional<TransportSegmentTarget>& a,const std::optional<TransportSegmentTarget>& b){
+    return a&&b?a->index==b->index&&a->identity==b->identity:!a&&!b;
+}
+bool transport_segment_registered(size_t index){
+    if(index>=framework.documents().size())return false;
+    const auto identity=framework.documents()[index].document.get();
+    return std::any_of(transportRegistered.begin(),transportRegistered.end(),[&](const auto& target){return target.index==index&&target.identity==identity;});
+}
+void register_transport_segment(size_t index){
+    if(index<framework.documents().size()&&!transport_segment_registered(index))transportRegistered.push_back({index,framework.documents()[index].document.get()});
+}
+void clear_transport_selection(){transportPrimary.reset();transportEditor.reset();transportPrimaryRows.clear();transportRegistered.clear();}
+void activate_transport_editor_segment(size_t index){
+    if(index>=framework.documents().size())return;
+    register_transport_segment(index);
+    transportEditor=transportPrimary=TransportSegmentTarget{index,framework.documents()[index].document.get()};
+}
+bool legacy_editor_hidden(){
+    // A loaded Project's catalog is not an open editor or a registered
+    // transport. Explicit activation starts this session's editor context;
+    // closing its windows keeps the owned documents and registrations.
+    return workspace_empty()||segment_timeline_workspace_visible()||
+        (!styleMode&&!bandMode&&!framework.documents().empty()&&transportRegistered.empty());
+}
+void sync_transport_editor(){
+    transportRegistered.erase(std::remove_if(transportRegistered.begin(),transportRegistered.end(),[](const auto& target){return target.index>=framework.documents().size()||framework.documents()[target.index].document.get()!=target.identity;}),transportRegistered.end());
+    std::optional<TransportSegmentTarget> editor;
+    if(!styleMode&&!bandMode&&!selected_wave_component()&&transport_segment_registered(active))editor=TransportSegmentTarget{active,framework.documents()[active].document.get()};
+    if(!same_transport_target(editor,transportEditor)){transportEditor=editor;transportPrimary=editor;}
+    if(transportPrimary&&(!transport_segment_registered(transportPrimary->index)||framework.documents()[transportPrimary->index].document.get()!=transportPrimary->identity))transportPrimary=editor;
+}
+std::optional<size_t> primary_segment_index(){
+    sync_transport_editor();
+    return transportPrimary?std::optional<size_t>(transportPrimary->index):std::nullopt;
+}
 std::optional<std::wstring> active_file_path() {
     if(const auto wave=selected_wave_component())return framework.waves()[*wave].path;
     if(bandMode){if(activeBand>=framework.band_documents().size())return std::nullopt;return framework.band_documents()[activeBand].path;}
     if(styleMode){if(activeStyle>=framework.style_documents().size())return std::nullopt;return framework.style_documents()[activeStyle].path;}
-    if(active>=framework.documents().size())return std::nullopt;
+    if(!transport_segment_registered(active))return std::nullopt;
     return framework.documents()[active].path;
 }
 bool active_history_available(bool redo) {
@@ -319,7 +395,7 @@ bool translate_transport_key(HWND window,const MSG& message) {
         if(lstrcmpiW(className,L"SourceProducerSegmentTimeline")!=0)return false;
     }
     const bool stopping=conductor.current_playback_id()!=0;
-    if(!stopping&&(styleMode||bandMode||framework.documents().empty()||selected_wave_component()))return false;
+    if(!stopping&&(styleMode||bandMode||framework.documents().empty()||selected_wave_component()||!primary_segment_index()))return false;
     (space?spaceHeld:fromStart?startHeld:playHeld)=true;
     // A held key must not alternate between starting and stopping playback.
     if((message.lParam&(static_cast<LPARAM>(1)<<30))==0)
@@ -365,20 +441,52 @@ void update_play_cursor(){
     if(!position.playing||position.countingIn||position.clocks<position.start)return;
     const auto& documents=framework.documents();
     for(size_t index=0;index<documents.size();++index)if(documents[index].document.get()==segmentPlayback->owner){
-        update_segment_timeline_play_cursor(index,std::int64_t(segmentPlayback->startPoint)+std::int64_t(position.clocks)-position.start);return;
+        update_segment_timeline_play_cursor(index,segmentPlayback->source_clock(position));return;
     }
 }
 void refresh_transport_toolbar(){
+    sync_transport_editor();
+    const auto tempoTarget=current_tempo_target();
+    const bool targetChanged=!same_current_tempo_target(currentTempoDisplayTarget,tempoTarget);
+    if(targetChanged){
+        // An owned file dialog can restore focus to the tempo field before
+        // its command activates a different document. Discard the old field
+        // binding and display the new owner even though focus never moved.
+        currentTempoBinding.reset();currentTempoDisplayTarget=tempoTarget;
+    }
     std::optional<double> bpm;const auto sessions=conductor.playback_sessions();
     for(const auto& session:sessions)if(!session.secondary&&session.position.playing&&session.position.tempoAvailable){bpm=session.position.tempo;break;}
     if(sessions.empty()){
         if(styleMode&&activeStyle<framework.style_documents().size()&&SendMessageW(events,LB_GETCURSEL,0,0)>0)bpm=framework.style_document(activeStyle).tempo();
-        else if(!styleMode&&!bandMode&&!selected_wave_component()&&active<framework.documents().size()){
-            bpm=document().tempo_at(segment_timeline_cursor(active).value_or(0));
+        else if(const auto primary=primary_segment_index()){
+            bpm=framework.document(*primary).primary_tempo_at(segment_timeline_cursor(*primary).value_or(0));
         }
     }
-    const bool canPlay=!styleMode&&!bandMode&&!selected_wave_component()&&active<framework.documents().size();
-    transportToolbar.refresh(canPlay,!sessions.empty(),tempoModifierEnabled,alternateTempoPercent,bpm);
+    const bool canPlay=primary_segment_index().has_value();
+    transportToolbar.refresh(canPlay,!sessions.empty(),tempoModifierEnabled,alternateTempoPercent,bpm,targetChanged);
+    if(targetChanged&&transportToolbar.tempo_focused())currentTempoBinding=tempoTarget;
+    std::vector<std::pair<std::wstring,TransportSegmentTarget>> entries;
+    for(size_t index=0;index<framework.documents().size();++index){
+        if(!transport_segment_registered(index))continue;
+        const auto& item=framework.documents()[index];
+        const auto file=item.path.empty()?L"Untitled Segment "+std::to_wstring(index+1):std::filesystem::path(item.path).filename().wstring();
+        auto component=item.document->name();
+        // Native files can deliberately have no component name: the original
+        // leaves that part of the transport label empty. Only an unsaved
+        // default document needs the same generated name as the Project Tree.
+        if(component.empty()&&item.path.empty())component=L"Segment"+std::to_wstring(index+1);
+        entries.push_back({file+L": "+component,{index,item.document.get()}});
+    }
+    std::stable_sort(entries.begin(),entries.end(),[](const auto& a,const auto& b){return CompareStringOrdinal(a.first.c_str(),-1,b.first.c_str(),-1,TRUE)==CSTR_LESS_THAN;});
+    std::vector<std::wstring> labels;std::optional<size_t> selected;
+    transportPrimaryRows.clear();
+    for(const auto& entry:entries){
+        if(transportPrimary&&same_transport_target(transportPrimary,entry.second))selected=labels.size();
+        labels.push_back(entry.first);transportPrimaryRows.push_back(entry.second);
+    }
+    // This first registration scope is the Segment editor. Style/other
+    // component transports keep their existing paths and remain unqualified.
+    transportToolbar.refresh_primary_list(labels,selected,transportEditor.has_value());
     std::vector<std::wstring> paths{L"Default AudioPath"};for(const auto& item:framework.audio_paths())paths.push_back(item.document->name());
     transportOptionsToolbar.refresh(paths,transportPathSelection,metronomeSettings.enabled,playCursorEnabled,midiEchoSettings.enabled);
 }
@@ -511,6 +619,11 @@ void refresh_status() {
     set_status(message);
 }
 void refresh(HWND window) {
+    // Restore only previously visible legacy controls before the existing
+    // document-specific refresh chooses its own visible fields. The native
+    // MDI workspace owns the surface and focus while visible, even after its
+    // last editor closes; hidden legacy controls must not remain Tab targets.
+    restore_empty_workspace_controls();
     SendMessageW(docs,CB_RESETCONTENT,0,0);
     for(const auto& d:framework.documents()) {const auto label=(d.path.empty()?L"Untitled segment":std::filesystem::path(d.path).filename().wstring())+(d.document->dirty()?L" *":L"");SendMessageW(docs,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}
     for(const auto& d:framework.style_documents()){const auto label=L"Style: "+(d.path.empty()?std::wstring(L"Untitled"):std::filesystem::path(d.path).filename().wstring())+(d.document->dirty()?L" *":L"");SendMessageW(docs,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}
@@ -518,6 +631,9 @@ void refresh(HWND window) {
     for(const auto& c:framework.collections()){const auto label=L"DLS: "+std::filesystem::path(c.path).filename().wstring()+(c.document.dirty()?L" *":L"");SendMessageW(docs,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str()));}
     if(framework.documents().empty()&&!framework.style_documents().empty()&&!bandMode)styleMode=true;
     if(framework.documents().empty()&&framework.style_documents().empty()&&!framework.band_documents().empty()){bandMode=true;styleMode=false;}
+    // Explicit legacy Style/Band commands also switch away from the native
+    // Segment surface, including when its last child has already closed.
+    if(styleMode||bandMode)hide_segment_timeline_workspace();
     const auto nextEvents=styleMode||bandMode?componentEvents:tempoEvents;
     if(events!=nextEvents){
         const bool focused=GetFocus()==events;
@@ -528,7 +644,7 @@ void refresh(HWND window) {
     if(bandMode&&!framework.band_documents().empty()){activeBand=std::min(activeBand,framework.band_documents().size()-1);SendMessageW(docs,CB_SETCURSEL,framework.documents().size()+framework.style_documents().size()+activeBand,0);}
     else if(styleMode&&!framework.style_documents().empty()){activeStyle=std::min(activeStyle,framework.style_documents().size()-1);SendMessageW(docs,CB_SETCURSEL,framework.documents().size()+activeStyle,0);}
     else if(!framework.documents().empty()) {active=std::min(active,framework.documents().size()-1);SendMessageW(docs,CB_SETCURSEL,active,0);}
-    const bool segmentAvailable=!styleMode&&!bandMode&&!framework.documents().empty();
+    const bool segmentAvailable=!styleMode&&!bandMode&&transport_segment_registered(active);
     EnableMenuItem(GetMenu(window),AddTracksCommand,MF_BYCOMMAND|(segmentAvailable?MF_ENABLED:MF_GRAYED));
     for(const auto id:{Add,Delete,Copy,Paste,MeterDelete,Play,NoteAdd})EnableWindow(GetDlgItem(window,id),segmentAvailable);
     EnableWindow(timeEdit,!styleMode&&!bandMode);for(const auto edit:{measureEdit,pitchEdit,durationEdit,velocityEdit})EnableWindow(edit,!styleMode&&!bandMode);for(const auto edit:{bpmEdit,beatsEdit,denominatorEdit,gridsEdit,GetDlgItem(window,Change),GetDlgItem(window,MeterSet)})EnableWindow(edit,!bandMode);
@@ -553,22 +669,29 @@ void refresh(HWND window) {
     refresh_lyric_editor();refresh_marker_editor();refresh_segment_timeline();
     refresh_file_menu(window);
     refresh_edit_commands(window);
-    InvalidateRect(window,nullptr,TRUE);
+    hide_empty_workspace_controls(window);
+    // Legacy children can paint while refresh temporarily restores them.
+    // Complete the final frame and child repaint after they are hidden, as
+    // layout_frame already does after moving the native workspace controls.
+    RedrawWindow(window,nullptr,nullptr,RDW_INVALIDATE|RDW_ERASE|RDW_ALLCHILDREN|RDW_UPDATENOW);
 }
-bool allow_discard(HWND window) {return !framework.dirty()||MessageBoxW(window,L"Discard unsaved documents?",L"Producer",MB_YESNO|MB_ICONQUESTION)==IDYES;}
+bool allow_discard(HWND window) {
+    const bool untouchedEmpty=startupWorkspacePristine&&framework.project_path().empty()&&workspace_empty();
+    return untouchedEmpty||!framework.dirty()||MessageBoxW(window,L"Discard unsaved documents?",L"Producer",MB_YESNO|MB_ICONQUESTION)==IDYES;
+}
 std::optional<CurrentTempoTarget> current_tempo_target(){
     if(!conductor.playback_sessions().empty())return {};
     if(styleMode&&activeStyle<framework.style_documents().size()&&SendMessageW(events,LB_GETCURSEL,0,0)>0)return CurrentTempoTarget{true,activeStyle,&framework.style_document(activeStyle),0};
-    if(styleMode||bandMode||selected_wave_component()||active>=framework.documents().size())return {};
-    const auto clocks=segment_timeline_cursor(active).value_or(0);if(!document().tempo_at(clocks))return {};
-    return CurrentTempoTarget{false,active,&document(),clocks};
+    const auto primary=primary_segment_index();if(!primary)return {};
+    const auto clocks=segment_timeline_cursor(*primary).value_or(0);auto& target=framework.document(*primary);if(!target.primary_tempo_at(clocks))return {};
+    return CurrentTempoTarget{false,*primary,&target,clocks};
 }
 void commit_current_tempo(HWND window,bool cancel=false){
     const auto target=currentTempoBinding?currentTempoBinding:current_tempo_target();currentTempoBinding.reset();
     const auto value=transportToolbar.tempo_value();bool changed=false;
     if(!cancel&&value&&target&&conductor.playback_sessions().empty()){
         if(target->style){if(target->index<framework.style_documents().size()&& &framework.style_document(target->index)==target->identity)changed=framework.set_style_tempo(target->index,*value);}
-        else if(target->index<framework.documents().size()&& &framework.document(target->index)==target->identity)changed=framework.document(target->index).change_current_tempo(target->clocks,*value);
+        else if(target->index<framework.documents().size()&& &framework.document(target->index)==target->identity)changed=framework.document(target->index).change_primary_tempo(target->clocks,*value);
     }
     if(changed)refresh(window);else refresh_transport_toolbar();transportToolbar.restore_tempo();
 }
@@ -633,9 +756,10 @@ void activate_document(HWND window,OpenedDocument opened){
     sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();
     switch(opened.kind){
     case DocumentKind::Project:
+        clear_transport_selection();
         projectTree.reset_context();noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();active=activeStyle=activeBand=0;
         styleMode=framework.documents().empty()&&!framework.style_documents().empty();bandMode=framework.documents().empty()&&framework.style_documents().empty()&&!framework.band_documents().empty();break;
-    case DocumentKind::Segment:framework.documents().at(opened.index);active=opened.index;styleMode=bandMode=false;break;
+    case DocumentKind::Segment:framework.documents().at(opened.index);active=opened.index;styleMode=bandMode=false;activate_transport_editor_segment(active);break;
     case DocumentKind::Style:framework.style_documents().at(opened.index);activeStyle=opened.index;styleMode=true;bandMode=false;break;
     case DocumentKind::Band:framework.band_documents().at(opened.index);activeBand=opened.index;bandMode=true;styleMode=false;break;
     case DocumentKind::Collection:show_dls_editor(window,framework,opened.index);break;
@@ -686,8 +810,8 @@ void create_new_files(HWND window,DocumentKind initial=DocumentKind::Project){
         if(kind==DocumentKind::Wave){const auto path=choose(window,false,L"Wave files\0*.wav;*.wvp\0All files\0*.*\0",L"wav");if(path.empty())return;r.initial=read_file(path);}
         requests.push_back(std::move(r));
     }
-    if(replace){if(!allow_discard(window))return;release_lyric_editor();release_marker_editor();release_segment_timeline();segmentPlayback.reset();noteAudition.stop();sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";projectTree.reset_context();noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();styleMode=bandMode=false;active=activeStyle=activeBand=0;}
-    const auto created=framework.create_files(requests);refresh(window);
+    if(replace){if(!allow_discard(window))return;clear_transport_selection();release_lyric_editor();release_marker_editor();release_segment_timeline();segmentPlayback.reset();noteAudition.stop();sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";projectTree.reset_context();noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();styleMode=bandMode=false;active=activeStyle=activeBand=0;}
+    const auto created=framework.create_files(requests);if(!created.empty())startupWorkspacePristine=false;refresh(window);
     for(const auto& d:created)if(d.kind!=DocumentKind::Project){
         activate_document(window,d);
         if(d.kind==DocumentKind::Segment){
@@ -698,9 +822,9 @@ void create_new_files(HWND window,DocumentKind initial=DocumentKind::Project){
                 document.set_length(*length);
                 document.load(document.save_bytes());
             }
-            SendMessageW(window,WM_COMMAND,SegmentTimelineCommand,0);
+            SendMessageW(window,WM_COMMAND,MAKEWPARAM(SegmentTimelineCommand,SegmentCreationTimeline),0);
             const auto tracks=show_add_tracks(window,document.name());
-            if(tracks)document.add_tracks(*tracks);
+            if(tracks)document.add_editor_tracks(*tracks);
             refresh(window);
         }
     }
@@ -744,7 +868,7 @@ TimelineBandMixUpdate start_band_mix(HWND window,const EmbeddedBandTarget& targe
         const auto ids=conductor.playback_ids();if(std::find(ids.begin(),ids.end(),binding.id)==ids.end())return;
         try{
             const auto position=conductor.position(binding.id);
-            const auto clock=std::int64_t(position.clocks)-position.start+binding.startPoint;
+            const auto clock=binding.source_clock(position);
             if(!position.playing||clock<0||clock>INT32_MAX||!embedded_band_is_playing(binding.snapshot,target,static_cast<LONG>(clock)))return;
             conductor.set_band_mix(binding.id,values);
             playbackStatus=L"Band pan/volume applied to the playing Segment";refresh_status();
@@ -758,7 +882,7 @@ TimelineBandMixUpdate start_band_mix(HWND window,const EmbeddedBandTarget& targe
 void apply_history(HWND window,bool redo){
     if(!active_history_available(redo))return;
     const auto sequence=sequencePropertiesContext;
-    const auto sequenceBefore=sequence&&propertiesWindow.supports_sequence(*sequence)?framework.document(sequence->document).notes():std::vector<Note>{};
+    const auto sequenceBefore=sequence&&propertiesWindow.supports_sequence(*sequence)?framework.document(sequence->document).note_positions():std::vector<SequenceNotePosition>{};
     const auto target=bandPropertiesContext;
     const auto before=target?read_embedded_band(framework,*target):std::optional<EmbeddedBandView>{};
     const auto live=before?start_band_mix(window,before->target):TimelineBandMixUpdate{};
@@ -770,7 +894,7 @@ void apply_history(HWND window,bool redo){
         std::optional<size_t> mapped;
         if(sequence->document<framework.documents().size()){
             const auto& d=framework.document(sequence->document);
-            if(d.selected_groups()==sequence->groups&&d.selected_sequence_index()==sequence->track)mapped=sequence_property_history_selection(sequenceBefore,d.notes(),sequence->event);
+            if(d.selected_groups()==sequence->groups&&d.selected_sequence_index()==sequence->track)mapped=sequence_property_position_history_selection(sequenceBefore,d.note_positions(),sequence->event);
         }
         if(mapped)sequence_properties_selection(*mapped);
         else {sequencePropertiesContext.reset();noteSelections.erase({sequence->document,sequence->groups,sequence->track});clear_segment_timeline_note_selection(sequence->document,sequence->groups,sequence->track);}
@@ -808,6 +932,16 @@ void command(HWND window,UINT id,UINT notification) {
     }
     switch(id) {
     case CurrentTempoEdit:if(notification==EN_SETFOCUS)currentTempoBinding=current_tempo_target();else if(notification==EN_KILLFOCUS&&currentTempoBinding)commit_current_tempo(window);return;
+    case TransportPrimaryList:
+        if(notification==CBN_SELCHANGE&&transportEditor){
+            const auto row=transportToolbar.primary_selection();
+            if(row&&*row<transportPrimaryRows.size()){
+                const auto target=transportPrimaryRows[*row];
+                if(target.index<framework.documents().size()&&framework.documents()[target.index].document.get()==target.identity)transportPrimary=target;
+            }
+            refresh_transport_toolbar();
+        }
+        return;
     case CommitCurrentTempo:commit_current_tempo(window);return;
     case CancelCurrentTempo:commit_current_tempo(window,true);return;
     case ToggleMetronome:{auto next=metronomeSettings;next.enabled=!next.enabled;save_metronome_settings(metronomePreferencesFile,next);conductor.set_metronome(next);metronomeSettings=next;refresh_transport_toolbar();return;}
@@ -821,7 +955,7 @@ void command(HWND window,UINT id,UINT notification) {
     case ToggleTempoModifier:{const bool next=!tempoModifierEnabled;conductor.set_tempo_modifier(next?alternateTempoPercent/100.0f:1.0f);tempoModifierEnabled=next;refresh_transport_toolbar();return;}
     case AlternateTempoCommand:{const auto value=show_alternate_tempo(window,alternateTempoPercent);if(value){if(tempoModifierEnabled)conductor.set_tempo_modifier(*value/100.0f);alternateTempoPercent=*value;}refresh_transport_toolbar();return;}
     case ToolbarNew:create_new_files(window);return;
-    case AddTracksCommand:if(!styleMode&&!bandMode&&!framework.documents().empty()){const auto tracks=show_add_tracks(window,document().name().empty()?L"Segment":document().name());if(tracks)document().add_tracks(*tracks);refresh(window);}return;
+    case AddTracksCommand:if(!styleMode&&!bandMode&&!framework.documents().empty()){const auto tracks=show_add_tracks(window,document().name().empty()?L"Segment":document().name());if(tracks)document().add_editor_tracks(*tracks);refresh(window);}return;
     case ToggleProjectTree:toggle_project_tree(window);return;
     case PropertiesCommand:show_properties();return;
     case InsertTempoCommand:if(can_insert_tempo()){
@@ -835,7 +969,7 @@ void command(HWND window,UINT id,UINT notification) {
     case ToolGraphDocuments:show_tool_graph_documents(window,framework);break;
     case ContainerDocuments:show_container_documents(window,framework);break;
     case TimelineRangeEditor:if(!styleMode&&!bandMode&&!framework.documents().empty()){show_timeline_range(window,document());refresh(window);}else throw std::runtime_error("Select a Segment for Timeline range editing");break;
-    case SegmentTimelineCommand:
+    case SegmentTimelineCommand: {
         if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment for Timeline");
         // Load the first preview's instrument/path without playing a Segment.
         // Subsequent note clicks reuse this private owner, never Transport.
@@ -849,8 +983,9 @@ void command(HWND window,UINT id,UINT notification) {
         } catch(const std::exception&) {
             playbackStatus=L"Note audition is unavailable; clicking a note will try again";refresh_status();
         }
-        show_segment_timeline(window,framework,active,[window,timelineDocument=active](std::optional<TimelineEventTarget> target,bool show){
+        const bool opened=show_segment_timeline(window,framework,active,[window,timelineDocument=active](std::optional<TimelineEventTarget> target,bool show){
             active=timelineDocument;styleMode=bandMode=false;
+            activate_transport_editor_segment(active);
             sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();tempoPropertiesContext=false;tempoInsertionTime.reset();
             if(target){active=target->document;styleMode=bandMode=false;
                 if(target->kind==TimelineEventKind::band)bandPropertiesContext=make_embedded_band_target(framework,target->document,target->groups,target->track,target->event);
@@ -867,23 +1002,34 @@ void command(HWND window,UINT id,UINT notification) {
             const auto& path=framework.documents().at(index).path;const auto ext=std::filesystem::path(path).extension().wstring();const auto dependencies=resolve_collections(document_collection_references(bytes),std::filesystem::path(path).parent_path().wstring(),catalog,ext==L".sgt"||ext==L".SGT");
             if(noteAudition.performance_settings()!=conductor.performance_settings())noteAudition.apply_performance_settings(conductor.performance_settings(),window);
             noteAudition.set_default_audio_path(conductor.default_audio_path());noteAudition.play_note_audition(bytes,window,dependencies);
-        },[window](const EmbeddedBandTarget& target){return start_band_mix(window,target);});return;
+        },[window](const EmbeddedBandTarget& target){return start_band_mix(window,target);});
+        if(opened&&notification!=SegmentCreationTimeline){
+            // Inspect the complete native track list, not the currently
+            // selected group: a hidden non-TimeSig track still counts.
+            const auto root=Chunk::parse(document().save_bytes());const auto tracks=root.find("LIST","trkl");
+            if(tracks&&tracks->children.size()==1&&segment_track_kind(tracks->children.front())==SegmentTrackKind::meter){
+                const auto selected=show_add_tracks(window,document().name().empty()?L"Segment":document().name());
+                if(selected)document().add_editor_tracks(*selected);
+                refresh(window);
+            }
+        }
+        return;}
     case ChordMapEditor:show_chordmap_editor(window,framework);break;
-    case StylePlayerCommand:{const auto adopted=show_style_player(window,framework,conductor,styleMode?std::optional<size_t>(activeStyle):std::nullopt);if(adopted){active=*adopted;styleMode=false;bandMode=false;refresh_group_fields(window,true);}break;}
+    case StylePlayerCommand:{const auto adopted=show_style_player(window,framework,conductor,styleMode?std::optional<size_t>(activeStyle):std::nullopt);if(adopted){active=*adopted;styleMode=false;bandMode=false;activate_transport_editor_segment(active);refresh_group_fields(window,true);}break;}
     case FarmPlayerCommand:show_farm_player(window,framework);break;
     case AudioPathEditor:show_audio_path_editor(window,framework);break;
     case ScriptTrackEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_script_track_editor(window,framework,active);break;
     case SegmentTriggerEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_segment_trigger_editor(window,framework,active);break;
     case ChordMapReferenceEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_chordmap_reference_editor(window,framework,active);break;
     case StyleReferenceEditor:if(styleMode||bandMode||framework.documents().empty())throw std::runtime_error("Select a Segment first");show_style_reference_editor(window,framework,active);break;
-    case NewProject: if(allow_discard(window)){release_lyric_editor();release_marker_editor();release_segment_timeline();segmentPlayback.reset();noteAudition.stop();sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";framework.new_project();projectTree.reset_context();noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();styleMode=false;bandMode=false;active=framework.new_segment();refresh_group_fields(window,true);}break;
+    case NewProject: if(allow_discard(window)){clear_transport_selection();release_lyric_editor();release_marker_editor();release_segment_timeline();segmentPlayback.reset();noteAudition.stop();sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();conductor.stop();playbackMonitor.clear();KillTimer(window,1);playbackStatus=L"Stopped";framework.new_project();startupWorkspacePristine=false;projectTree.reset_context();noteSelections.clear();commandSelections.clear();chordSelections.clear();signpostSelections.clear();markerSelections.clear();waveSelections.clear();lyricSelections.clear();muteSelections.clear();paramSelections.clear();styleMode=false;bandMode=false;active=0;refresh_group_fields(window,true);}break;
     case NewSegment:create_new_files(window,DocumentKind::Segment);return;
     case ImportMidi: {const auto path=choose(window,false,L"MIDI files\0*.mid;*.midi\0",L"mid");if(path.empty())return;
-        active=framework.import_midi_segment(path);styleMode=false;bandMode=false;refresh_group_fields(window,true);break;}
+        active=framework.import_midi_segment(path);styleMode=false;bandMode=false;activate_transport_editor_segment(active);refresh_group_fields(window,true);break;}
     case NewStyle: activeStyle=framework.new_style();styleMode=true;bandMode=false;break;
     case NewBand: activeBand=framework.new_band();bandMode=true;styleMode=false;break;
     case NewDls: {const auto collection=framework.new_collection();show_dls_editor(window,framework,collection);break;}
-    case NewPlaybackTest: styleMode=false;bandMode=false;active=framework.new_segment();framework.document(active)=SegmentDocument::playback_test();refresh_group_fields(window,true);break;
+    case NewPlaybackTest: styleMode=false;bandMode=false;active=framework.new_segment();framework.document(active)=SegmentDocument::playback_test();activate_transport_editor_segment(active);refresh_group_fields(window,true);break;
     case Open: case OpenProjectOnly: case InsertFilesCommand: {
         const auto path=choose(window,false,id==OpenProjectOnly?L"Producer projects\0*.pro;*.dmpj\0":L"Producer documents\0*.sgp;*.sgt;*.stp;*.sty;*.bnp;*.bnd;*.dls;*.dlp;*.aup;*.aud;*.cdp;*.cdm;*.wav;*.wvp;*.spp;*.spt;*.cop;*.con;*.tgp;*.tgr;*.pro;*.dmpj\0All files\0*.*\0",L"sgp");if(path.empty())return;
         const auto kind=Framework::document_kind(path);
@@ -899,7 +1045,12 @@ void command(HWND window,UINT id,UINT notification) {
         if(const auto wave=selected_wave_component()){auto path=framework.waves()[*wave].path;if(saveAs||path.empty())path=choose(window,true,L"Producer Wave\0*.wvp;*.wav\0",L"wvp");if(!path.empty())framework.save_wave(*wave,path);break;}
         if(bandMode){auto path=framework.band_documents().at(activeBand).path;if(saveAs||path.empty())path=choose(window,true,L"Band\0*.bnp;*.bnd\0",L"bnp");if(!path.empty())framework.save_band(activeBand,path);break;}
         if(styleMode){auto path=framework.style_documents().at(activeStyle).path;if(saveAs||path.empty())path=choose(window,true,L"Style\0*.stp;*.sty\0",L"stp");if(!path.empty())framework.save_style(activeStyle,path);break;}
-        auto path=framework.documents().at(active).path;if(saveAs||path.empty())path=choose(window,true,L"Segment\0*.sgp\0",L"sgp");if(!path.empty())framework.save_segment(active,path);break;
+        const bool savedSource=!framework.documents().at(active).path.empty();
+        auto path=framework.documents().at(active).path;if(saveAs||path.empty())path=choose(window,true,L"Segment\0*.sgp\0",L"sgp");
+        if(!path.empty()){
+            if(saveAs&&savedSource){const auto copy=framework.save_segment_copy(active,path);register_transport_segment(copy);transportPrimary=TransportSegmentTarget{copy,framework.documents()[copy].document.get()};}
+            else framework.save_segment(active,path);
+        }break;
     }
     case SaveProject: case SaveProjectAs: {
         auto path=framework.project_path();
@@ -969,10 +1120,11 @@ void command(HWND window,UINT id,UINT notification) {
     }
     case MeterDelete: if(!document().delete_meter(static_cast<std::int32_t>(meter_input(measureEdit)-1)))throw std::runtime_error("Cannot remove the initial meter or edit a Style-backed document");break;
     case PlayFromStart:
-    case Play: {const auto& path=framework.documents().at(active).path;
-        const auto start=id==PlayFromStart?0:segment_timeline_cursor(active).value_or(0);
-        conductor.play(document().save_bytes(),path.empty()?L"":std::filesystem::path(path).parent_path().wstring(),window,document().styles(),framework.playback_collections(active),{},framework.playback_waves(active),framework.trigger_playback(active),framework.playback_chordmaps(active),start,document().timeline());
-        segmentPlayback=SegmentPlaybackBinding{framework.documents().at(active).document.get(),conductor.current_playback_id(),document().save_bytes(),start};
+    case Play: {const auto primary=primary_segment_index();if(!primary)throw std::runtime_error("Select a Segment transport first");
+        auto& playing=framework.document(*primary);const auto& path=framework.documents().at(*primary).path;
+        const auto start=id==PlayFromStart?(playing.loop_settings().music_time()?playing.play_start():0):segment_timeline_cursor(*primary).value_or(0);
+        conductor.play(playing.save_bytes(),path.empty()?L"":std::filesystem::path(path).parent_path().wstring(),window,playing.styles(),framework.playback_collections(*primary),{},framework.playback_waves(*primary),framework.trigger_playback(*primary),framework.playback_chordmaps(*primary),start,playing.timeline());
+        segmentPlayback=SegmentPlaybackBinding{framework.documents().at(*primary).document.get(),conductor.current_playback_id(),playing.save_bytes(),start,playing.length(),playing.loop_settings()};
         playbackStatus=conductor.playback_request().countInClocks?L"Counting in before document snapshot":L"Playing document snapshot from "+std::to_wstring(start)+L" clocks";SetTimer(window,1,100,nullptr);break;}
     case StartFileOutput:{Bytes bytes=document().audio_path();if(bytes.empty())bytes=conductor.default_audio_path();if(bytes.empty())throw std::runtime_error("Select an AudioPath with FileOutput first");const auto output=choose(window,true,L"Buffer recording WAV\0*.wav\0",L"wav");if(!output.empty()){conductor.start_file_output(bytes,output,window);playbackStatus=L"Buffer recording started; Play and Stop leave recording active";}break;}
     case WavesReverbCommand:{
@@ -1044,14 +1196,14 @@ HWND control(HWND parent,const wchar_t* type,const wchar_t* text,DWORD style,int
     // Legacy controls share the frame with MDICLIENT. Clip their painting
     // against the workspace when an editing window covers them.
     const auto c=CreateWindowW(type,text,WS_CHILD|WS_VISIBLE|WS_CLIPSIBLINGS|style,x+editorOffset,y+editorTop,w,h,parent,reinterpret_cast<HMENU>(static_cast<UINT_PTR>(id)),nullptr,nullptr);
-    if(!c)throw std::runtime_error("Unable to create editor control");SendMessageW(c,WM_SETFONT,reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)),TRUE);return c;
+    if(!c)throw std::runtime_error("Unable to create editor control");legacyEditorControls.push_back(c);SendMessageW(c,WM_SETFONT,reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)),TRUE);return c;
 }
 LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
     try {
         switch(message) {
         case WM_CREATE: {
             standardToolbar.create(window,StandardToolbarControl,{ToolbarNew,OpenProjectOnly,InsertFilesCommand,SaveProject,SaveSegment,ToggleProjectTree,4702,4703});
-            transportToolbar.create(window,TransportToolbarControl,{Play,Stop,ToggleTempoModifier,PlayFromStart,StopAtBoundary,CurrentTempoEdit,CurrentTempoSpin,CommitCurrentTempo,CancelCurrentTempo});
+            transportToolbar.create(window,TransportToolbarControl,{Play,Stop,ToggleTempoModifier,PlayFromStart,StopAtBoundary,CurrentTempoEdit,CurrentTempoSpin,CommitCurrentTempo,CancelCurrentTempo,TransportPrimaryList});
             transportOptionsToolbar.create(window,OptionsToolbarControl,{AudioPathCombo,MidiOptionsCommand,ToggleMetronome,TogglePlayCursor,ToggleMidiEcho});
             editorTop=standardToolbar.height()+transportToolbar.height()+transportOptionsToolbar.height();
             projectTree.create(window,ProjectTreeControl,ProjectTreeWidth);
@@ -1100,9 +1252,8 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             patternNameLabel=control(window,L"STATIC",L"Pattern name / type",0,780,500,174,22);patternNameEdit=control(window,L"EDIT",L"",WS_BORDER|WS_TABSTOP|ES_AUTOHSCROLL,780,524,174,25);SendMessageW(patternNameEdit,EM_SETLIMITTEXT,255,0);
             patternKindSelect=control(window,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP,780,560,174,180);control(window,L"BUTTON",L"Set Pattern Properties",WS_TABSTOP,780,600,174,28,PatternProperties);
             status=control(window,L"EDIT",L"",ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL|WS_VSCROLL|WS_TABSTOP,16,650,940,65);
-            // A project loaded at startup already owns its documents. Do not
-            // add an unsaved placeholder to the restored project.
-            if(framework.project_path().empty())active=framework.new_segment();
+            // Opening the application does not create an authored Segment.
+            // New Files is the sole initial component-creation gesture.
             if(!AddClipboardFormatListener(window))throw std::runtime_error("Clipboard notification registration failed");
             layout_frame(window);refresh(window);
             PostMessageW(window,PreparePlaybackMessage,0,0);return 0;
@@ -1126,7 +1277,17 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
                 for(size_t i=0;i<framework.audio_paths().size()&&i<999;++i){const auto& path=framework.audio_path_document(i);const auto label=path.name()+L" (next playback copy)";AppendMenuW(transportMenu,MF_STRING|(path.save_bytes()==conductor.default_audio_path()?MF_CHECKED:0),TransportPath+static_cast<UINT>(i)+1,label.c_str());}
             }return 0;
         case WM_CLIPBOARDUPDATE:refresh_edit_commands(window);return 0;
-        case WM_COMMAND:if(!segment_timeline_workspace_command(window,LOWORD(w)))command(window,LOWORD(w),HIWORD(w));return 0;
+        case WM_COMMAND:
+            // Focus arrives after the previous Edit's EN_KILLFOCUS commit.
+            // Re-activating an editor restores it as primary without sending
+            // a pending tempo value to the new playback selection.
+            if(l&&((HIWORD(w)==EN_SETFOCUS)||(LOWORD(w)==Events&&HIWORD(w)==LBN_SETFOCUS))){
+                const auto child=reinterpret_cast<HWND>(l);
+                if(!styleMode&&!bandMode&&!transportToolbar.owns(child)&&IsChild(window,child)){
+                    activate_transport_editor_segment(active);refresh_transport_toolbar();
+                }
+            }
+            if(!segment_timeline_workspace_command(window,LOWORD(w)))command(window,LOWORD(w),HIWORD(w));return 0;
         case WM_NOTIFY:{
             const auto& notification=*reinterpret_cast<const NMHDR*>(l);
             if(transportToolbar.spin(notification))return TRUE;
@@ -1171,7 +1332,7 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
             if(chosen==ToolbarNew){command(window,ToolbarNew,0);return 0;}
             if(chosen==PropertiesCommand){sequencePropertiesContext.reset();bandPropertiesContext.reset();chordPropertiesContext.reset();lyricPropertiesContext.reset();meterPropertiesContext.reset();markerPropertiesContext.reset();tempoPropertiesContext=false;propertiesWindow.show(selected);}return 0;
         }break;
-        case SegmentWorkspaceChangedMessage:refresh_file_menu(window);return 0;
+        case SegmentWorkspaceChangedMessage:hide_empty_workspace_controls(window);refresh_file_menu(window);InvalidateRect(window,nullptr,TRUE);return 0;
         case WM_SIZE:layout_frame(window);return 0;
         case PlaybackStoppedMessage:
             playbackStatus=conductor.current_playback_id()?L"Stopped selected playback; other playback retained":L"Stopped";
@@ -1217,6 +1378,10 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l) {
         case WM_PAINT: {
             struct Paint { HWND window;PAINTSTRUCT state{};HDC dc;explicit Paint(HWND w):window(w),dc(BeginPaint(w,&state)){}~Paint(){EndPaint(window,&state);} } paint(window);
             HDC dc=paint.dc;SetBkMode(dc,TRANSPARENT);
+            if(legacy_editor_hidden()){
+                RECT area{};GetClientRect(window,&area);area.left=editorOffset;area.top=editorTop;
+                FillRect(dc,&area,GetSysColorBrush(COLOR_APPWORKSPACE));return 0;
+            }
             SetViewportOrgEx(dc,editorOffset,editorTop,nullptr);
             if(!styleMode&&!bandMode&&!framework.documents().empty()) {
                 const auto& d=document();const double zoom=520.0/std::max(1,d.length());const Timeline t; // Raw clock axis; pixel conversion does not depend on meter.
@@ -2075,13 +2240,16 @@ auto number=[](const wchar_t* text,unsigned long maximum){const std::wstring val
             if(!RegisterClassW(&c))throw std::runtime_error("Window class registration failed");
             HMENU menu=CreateMenu(),file=CreatePopupMenu();
             fileMenu=file;
-            transportMenu=CreatePopupMenu();AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(transportMenu),L"Transport AudioPath");
-            AppendMenuW(file,MF_STRING,ToolbarNew,L"&New...\tCtrl+N");AppendMenuW(file,MF_STRING,NewProject,L"New Project");AppendMenuW(file,MF_STRING,NewSegment,L"New Segment");AppendMenuW(file,MF_STRING,Open,L"Open...");AppendMenuW(file,MF_STRING,InsertFilesCommand,L"Insert Files...");AppendMenuW(file,MF_STRING,ImportMidi,L"Import MIDI as Segment...");AppendMenuW(file,MF_STRING|MF_GRAYED,SaveSegment,L"Save File");AppendMenuW(file,MF_STRING|MF_GRAYED,SaveDocumentAs,L"Save As...");AppendMenuW(file,MF_STRING,SaveProject,L"Save Project");AppendMenuW(file,MF_STRING,SaveProjectAs,L"Save Project As...");AppendMenuW(file,MF_STRING,CopyProject,L"Copy Project...");AppendMenuW(file,MF_STRING,Exit,L"Exit");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(file),L"File");
+            transportMenu=CreatePopupMenu();
+            AppendMenuW(file,MF_STRING,ToolbarNew,L"&New...\tCtrl+N");AppendMenuW(file,MF_STRING,NewProject,L"New Project");AppendMenuW(file,MF_STRING,NewSegment,L"New Segment");AppendMenuW(file,MF_STRING,Open,L"Open...");AppendMenuW(file,MF_STRING,InsertFilesCommand,L"Insert Files...");AppendMenuW(file,MF_STRING,ImportMidi,L"Import MIDI as Segment...");AppendMenuW(file,MF_STRING|MF_GRAYED,SaveSegment,L"Save File");AppendMenuW(file,MF_STRING|MF_GRAYED,SaveDocumentAs,L"Save As...");AppendMenuW(file,MF_STRING,SaveProject,L"Save Project");AppendMenuW(file,MF_STRING,SaveProjectAs,L"Save Project As...");AppendMenuW(file,MF_STRING,CopyProject,L"Copy Project...");AppendMenuW(file,MF_STRING,Exit,L"Exit");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(file),L"&File");
             editMenu=CreatePopupMenu();AppendMenuW(editMenu,MF_STRING|MF_GRAYED,Undo,L"&Undo\tCtrl+Z");AppendMenuW(editMenu,MF_STRING|MF_GRAYED,Redo,L"&Redo\tCtrl+Y");
             AppendMenuW(editMenu,MF_SEPARATOR,0,nullptr);
             AppendMenuW(editMenu,MF_STRING|MF_GRAYED,Cut,L"Cu&t\tCtrl+X");AppendMenuW(editMenu,MF_STRING|MF_GRAYED,Copy,L"&Copy\tCtrl+C");AppendMenuW(editMenu,MF_STRING|MF_GRAYED,Paste,L"&Paste\tCtrl+V");AppendMenuW(editMenu,MF_STRING|MF_GRAYED,Delete,L"&Delete\tDel");
             AppendMenuW(editMenu,MF_STRING,AddTracksCommand,L"Add Track(s)...");AppendMenuW(editMenu,MF_SEPARATOR,0,nullptr);AppendMenuW(editMenu,MF_STRING|MF_GRAYED,SelectAll,L"Select &All\tCtrl+A");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(editMenu),L"&Edit");
             HMENU view=CreatePopupMenu();AppendMenuW(view,MF_STRING|MF_CHECKED,ToggleProjectTree,L"&Project Tree");AppendMenuW(view,MF_STRING|MF_CHECKED,ToggleStandardToolbar,L"&Standard Toolbar");AppendMenuW(view,MF_STRING|MF_CHECKED,ToggleTransportToolbar,L"&Transport Controls");AppendMenuW(view,MF_STRING|MF_CHECKED,ToggleOptionsToolbar,L"Transport &Options");AppendMenuW(view,MF_STRING,SegmentTimelineCommand,L"&Timeline");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(view),L"&View");
+            // Keep File/Edit/View at the original frame's leading positions.
+            // The existing dynamic AudioPath choices remain available here.
+            AppendMenuW(view,MF_SEPARATOR,0,nullptr);AppendMenuW(view,MF_POPUP,reinterpret_cast<UINT_PTR>(transportMenu),L"Transport &AudioPath");
             HMENU addInsMenu=CreatePopupMenu();AppendMenuW(addInsMenu,MF_STRING,MessageWindowCommand,L"Message Window");AppendMenuW(addInsMenu,MF_STRING,StylePlayerCommand,L"StylePlayer...");AppendMenuW(addInsMenu,MF_STRING,FarmPlayerCommand,L"Farm Score Player...");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(addInsMenu),L"Add-Ins");
             HMENU recordingMenu=CreatePopupMenu();AppendMenuW(recordingMenu,MF_STRING,StartFileOutput,L"Start Buffer Recording...");AppendMenuW(recordingMenu,MF_STRING,StopFileOutput,L"Stop Buffer Recording");AppendMenuW(recordingMenu,MF_STRING,WavesReverbCommand,L"Playing Waves Reverb Parameters...");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(recordingMenu),L"Recording");
             HMENU patternMenu=CreatePopupMenu();AppendMenuW(patternMenu,MF_STRING,PatternNew,L"New Pattern");AppendMenuW(patternMenu,MF_STRING,MotifNew,L"New Motif");AppendMenuW(patternMenu,MF_STRING,MotifSettings,L"Motif Playback Settings...");AppendMenuW(patternMenu,MF_STRING,MotifPlay,L"Play Selected Motif");AppendMenuW(patternMenu,MF_STRING,StopCurrentPlayback,L"Stop Most Recent Playback");AppendMenuW(patternMenu,MF_STRING,PlaybackSessions,L"Playback Sessions...");AppendMenuW(patternMenu,MF_STRING,MotifBandAssign,L"Assign Selected Style Band to Motif");AppendMenuW(patternMenu,MF_STRING,MotifBandEdit,L"Edit Motif Band Instruments...");AppendMenuW(patternMenu,MF_STRING,PatternDelete,L"Delete Pattern...");AppendMenuW(patternMenu,MF_STRING,PatternDuplicate,L"Duplicate Pattern");AppendMenuW(patternMenu,MF_STRING,PatternUnshare,L"Make Selected Part Independent");AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(patternMenu),L"Pattern");
@@ -2122,6 +2290,14 @@ auto number=[](const wchar_t* text,unsigned long maximum){const std::wstring val
                     if(shift&&!control){SendMessageW(window,WM_COMMAND,ToggleProjectTree,0);continue;}
                 }
                 if(translate_transport_key(window,message))continue;
+                const bool frameTarget=message.hwnd==window||IsChild(window,message.hwnd);
+                const bool menuSystemKey=message.message==WM_SYSKEYDOWN||message.message==WM_SYSKEYUP||message.message==WM_SYSCHAR||message.message==WM_SYSDEADCHAR;
+                const bool menuF10=(message.message==WM_KEYDOWN||message.message==WM_KEYUP)&&message.wParam==VK_F10&&!(GetKeyState(VK_CONTROL)&0x8000)&&!(GetKeyState(VK_SHIFT)&0x8000);
+                // Preserve the canvas transport's Alt+Shift shortcuts first.
+                // IsDialogMessage consumes frame menu mnemonics too, so let
+                // the native frame handle system keys/F10 before navigation.
+                // Separate Properties windows retain their own translation.
+                if(frameTarget&&(menuSystemKey||menuF10)){TranslateMessage(&message);DispatchMessageW(&message);continue;}
                 if(transportToolbar.translate(message))continue;
                 if(translate_file_key(window,message))continue;
                 if(translate_segment_timeline(message))continue;

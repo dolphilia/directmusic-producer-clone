@@ -17,19 +17,20 @@
 #include <map>
 #include <tuple>
 namespace producer::app { namespace {
-constexpr UINT ZoomIn=4500,ZoomOut=4501,Fit=4502,Properties=4503,SelectionText=4504,AddTracks=4505,InsertBand=4506,DeleteBand=4507;
+constexpr UINT ZoomIn=4500,ZoomOut=4501,Fit=4502,Properties=4503,SelectionText=4504,AddTracks=4505,InsertBand=4506,DeleteBand=4507,CycleBands=4508;
 constexpr UINT InsertNote=4510,DeleteNote=4511,SnapNone=4512,SnapGrid=4513,SnapBeat=4514,SnapBar=4515,NewInstrument=4516,OpenSequenceBand=4517,LocateSequenceBand=4518,EditVelocity=4519,AddCC=4520,DrawCurve=4521,DeleteCurve=4522,CurveProperties=4523,FirstPatch=6000;
 constexpr UINT AddSequencePart=4524,OtherDls=4525,Quantize=4526;
+constexpr UINT PartPitchScroll=4527,PartZoomIn=4528,PartZoomOut=4529;
 constexpr UINT WorkspaceControl=4700,Cascade=4701,TileHorizontal=4702,TileVertical=4703,CloseAll=4704,FirstChild=50000;
 constexpr int labelWidth=130,rulerHeight=34,rowHeight=36,baseRows=6,footerHeight=72;
-constexpr int pitchHeight=12,pitchRows=18,ccHeight=24,ccGraphHeight=96;
+constexpr int pitchAreaHeight=SequencePitchView::areaHeight,ccHeight=24,ccGraphHeight=96;
 HWND workspace=nullptr;
 std::vector<HWND> timelineWindows;
 struct Session {
     Framework& host;size_t document;TimelineSelectionChanged changed;TimelineHistoryRequested history;
     TimelineNoteAudition audition;TimelineBandMixStarted mixStarted;
     using SequenceKey=std::tuple<std::uint32_t,size_t,std::uint32_t>;
-    struct SequenceStrip {bool expanded=false;int topPitch=70;unsigned pitch=60;SequenceSnap snap=SequenceSnap::grid;std::optional<size_t> note;std::map<SequenceController,bool> cc;std::optional<SequenceController> activeCC;std::optional<size_t> curve;bool drawCurve=false,ccContext=false;};
+    struct SequenceStrip {bool expanded=false;SequencePitchView pitchView;HWND pitchScroll=nullptr,zoomIn=nullptr,zoomOut=nullptr;unsigned pitch=60;SequenceSnap snap=SequenceSnap::grid;std::optional<size_t> note;std::map<SequenceController,bool> cc;std::optional<SequenceController> activeCC;std::optional<size_t> curve;bool drawCurve=false,ccContext=false;};
     std::map<SequenceKey,SequenceStrip> sequences;
     std::optional<SequenceKey> activeSequence;
     struct NoteDrag {SequenceKey key;size_t index;Note original,preview;SequenceNoteHandle handle;POINT start,current;Bytes before;std::int64_t fineClock=0;int finePitch=0,fineVelocity=0;};
@@ -52,15 +53,34 @@ Session::SequenceKey sequence_key(Session& s,const Row& row){return {s.doc().sel
 SegmentDocument track_document(Session& s,SegmentTrackKind kind,size_t track){
     auto d=s.doc();d.select_track_group(d.selected_groups(),kind==SegmentTrackKind::tempo?track:0,kind==SegmentTrackKind::meter?track:0,kind==SegmentTrackKind::sequence?track:0,kind==SegmentTrackKind::band?track:0);return d;
 }
+int strip_order(SegmentTrackKind kind){
+    switch(kind){case SegmentTrackKind::tempo:return 0;case SegmentTrackKind::meter:return 1;case SegmentTrackKind::sequence:return 2;case SegmentTrackKind::band:return 3;default:return -1;}
+}
+std::vector<SegmentTrackInfo> view_tracks(Session& s){
+    auto tracks=s.doc().tracks();std::vector<SegmentTrackInfo> known;
+    for(const auto& t:tracks)if(strip_order(t.kind)>=0)known.push_back(t);
+    // Original strip presentation is independent of native container/position
+    // order. Keep other kinds in their slots and retain each occurrence's index.
+    std::stable_sort(known.begin(),known.end(),[](const auto& a,const auto& b){return strip_order(a.kind)<strip_order(b.kind);});
+    size_t next=0;for(auto& t:tracks)if(strip_order(t.kind)>=0)t=known[next++];return tracks;
+}
+std::wstring group_label(std::uint32_t groups){
+    std::wstring label;for(unsigned bit=0;bit<32;++bit){
+        if(!(groups&(std::uint32_t(1)<<bit)))continue;const unsigned first=bit;
+        while(bit+1<32&&(groups&(std::uint32_t(1)<<(bit+1))))++bit;
+        if(!label.empty())label+=L",";label+=std::to_wstring(first+1);if(first!=bit)label+=L"-"+std::to_wstring(bit+1);
+    }return label;
+}
 std::vector<Row> view_rows(Session& s){
-    std::vector<Row> rows;for(const auto& t:s.doc().tracks()){
+    std::vector<Row> rows;for(const auto& t:view_tracks(s)){
         std::wstring name=L"Track";for(const auto& descriptor:segment_track_descriptors())if(descriptor.kind==t.kind){name=descriptor.name;const auto suffix=name.rfind(L" Track");if(suffix!=std::wstring::npos)name.resize(suffix);break;}
-        std::wstring groups;for(unsigned bit=0;bit<32;++bit)if(t.groups&(std::uint32_t(1)<<bit)){if(!groups.empty())groups+=L",";groups+=std::to_wstring(bit+1);}
-        if(t.kind==SegmentTrackKind::sequence){const auto part=sequence_part_info(s.doc(),t.index);for(const auto channel:part.channels){auto [partState,created]=s.sequences.try_emplace({s.doc().selected_groups(),t.index,channel});auto& state=partState->second;if(created&&channel==9){state.topPitch=43;state.pitch=36;}auto curveDoc=track_document(s,t.kind,t.index);
+        if(t.kind==SegmentTrackKind::meter)name=L"Time Sig";else if(t.kind==SegmentTrackKind::band)name=L"Bands";
+        const auto groups=group_label(t.groups);
+        if(t.kind==SegmentTrackKind::sequence){const auto part=sequence_part_info(s.doc(),t.index);for(const auto channel:part.channels){auto [partState,created]=s.sequences.try_emplace({s.doc().selected_groups(),t.index,channel});auto& state=partState->second;if(created&&channel==9){state.pitchView.topPitch=43;state.pitch=36;}auto curveDoc=track_document(s,t.kind,t.index);
             const auto lanes=curveDoc.cc_lanes(channel);std::map<SequenceController,bool> current;
             for(const auto& controller:lanes){const auto old=state.cc.find(controller);current.emplace(controller,old!=state.cc.end()&&old->second);}state.cc=std::move(current);
             if(state.activeCC&&state.cc.find(*state.activeCC)==state.cc.end()){state.activeCC.reset();state.curve.reset();state.drawCurve=false;}
-            rows.push_back({t.kind,t.index,channel,groups+L": "+std::to_wstring(std::uint64_t(channel)+1)+L" ("+std::to_wstring(std::uint64_t(channel)+1)+L"): "+part.name,state.expanded?rowHeight+pitchHeight*pitchRows+cc_section_height(state):rowHeight});}}
+            rows.push_back({t.kind,t.index,channel,groups+L": "+std::to_wstring(std::uint64_t(channel)+1)+L" ("+std::to_wstring(std::uint64_t(channel)+1)+L"): "+part.name,state.expanded?rowHeight+pitchAreaHeight+cc_section_height(state):rowHeight});}}
         else rows.push_back({t.kind,t.index,{},groups+L": "+name});
         if(t.kind==SegmentTrackKind::mute){std::vector<std::uint32_t> channels;for(std::uint32_t c=0;c<16;++c)channels.push_back(c);for(const auto& e:s.doc().mutes(t.index))channels.push_back(e.channel);std::sort(channels.begin(),channels.end());channels.erase(std::unique(channels.begin(),channels.end()),channels.end());for(auto c:channels)rows.push_back({t.kind,t.index,c,L"PChannel "+std::to_wstring(std::uint64_t(c)+1)});}
     }return rows;
@@ -96,6 +116,28 @@ bool follow_play_cursor(HWND w,Session& s){
     return s.scroll!=previous;
 }
 std::wstring band_label(const BandEvent& event){BandDocument band;band.load(event.band);return band.name().empty()?L"Band":band.name();}
+struct BandLabelGroup {std::int32_t beat;std::vector<size_t> events;size_t visible;};
+std::vector<BandLabelGroup> band_label_groups(Session& s,size_t track,const std::vector<BandEvent>& events,const Timeline& axis){
+    // Start Time is independent of Belongs To. The -1 preroll tick belongs
+    // visually to the following beat, as in the Band Properties fields.
+    std::map<std::int32_t,std::vector<size_t>> beats;
+    for(size_t i=0;i<events.size();++i){auto p=band_start_position(axis,events[i].physicalTime);p.tick=0;beats[axis.clocks(p)].push_back(i);}
+    std::vector<BandLabelGroup> groups;for(auto& pair:beats){auto visible=pair.second.back();
+        if(s.selected&&s.selected->kind==TimelineEventKind::band&&s.selected->document==s.document&&s.selected->groups==s.doc().selected_groups()&&s.selected->track==track&&std::find(pair.second.begin(),pair.second.end(),s.selected->event)!=pair.second.end())visible=s.selected->event;
+        groups.push_back({pair.first,std::move(pair.second),visible});
+    }return groups;
+}
+struct BandItalicFont {
+    HFONT font=nullptr;
+    BandItalicFont(){LOGFONTW value{};if(GetObjectW(GetStockObject(DEFAULT_GUI_FONT),sizeof(value),&value)){value.lfItalic=TRUE;font=CreateFontIndirectW(&value);}}
+    ~BandItalicFont(){if(font)DeleteObject(font);}
+};
+bool can_cycle_bands(Session& s){
+    if(!s.selected||s.selected->kind!=TimelineEventKind::band)return false;const auto target=*s.selected;
+    const auto d=track_document(s,SegmentTrackKind::band,target.track);const auto events=d.band_events();
+    for(const auto& group:band_label_groups(s,target.track,events,d.timeline()))if(group.events.size()>1&&std::find(group.events.begin(),group.events.end(),target.event)!=group.events.end())return true;
+    return false;
+}
 int band_label_right(HDC dc,const Viewport& v,int left,std::int32_t next,const std::wstring& value){
     SIZE extent{};GetTextExtentPoint32W(dc,value.c_str(),static_cast<int>(value.size()),&extent);
     return std::min({v.right,pixel(v,next)-2,left+std::max(8,static_cast<int>(extent.cx)+5)});
@@ -106,6 +148,27 @@ HWND control(HWND w,const wchar_t* cls,const wchar_t* title,DWORD style,int x,in
 }
 int strip_bottom(HWND w){RECT r{};GetClientRect(w,&r);return std::max(rulerHeight+1,static_cast<int>(r.bottom)-footerHeight);}
 int strip_page(HWND w){return strip_bottom(w)-rulerHeight;}
+void layout_pitch_controls(HWND w,Session& s,const std::vector<Row>& rows){
+    std::vector<HWND> visible;
+    const auto place=[&](HWND c,int y,int height){
+        const int first=std::max(rulerHeight-y,0),last=std::min(height,strip_bottom(w)-y);if(last<=first)return;
+        MoveWindow(c,labelWidth-20,y,19,height,TRUE);const auto region=CreateRectRgn(0,first,19,last);if(!region)throw std::runtime_error("Pitch control clipping failed");
+        if(!SetWindowRgn(c,region,TRUE)){DeleteObject(region);throw std::runtime_error("Pitch control clipping failed");}ShowWindow(c,SW_SHOWNOACTIVATE);visible.push_back(c);
+    };
+    for(size_t i=0;i<rows.size();++i)if(rows[i].kind==SegmentTrackKind::sequence){auto& state=s.sequences[sequence_key(s,rows[i])];if(!state.expanded)continue;
+        if(!state.pitchScroll){state.pitchScroll=control(w,L"SCROLLBAR",L"Pitch",SBS_VERT,0,0,19,pitchAreaHeight,PartPitchScroll);state.zoomIn=control(w,L"BUTTON",L"Zoom In",WS_TABSTOP|BS_OWNERDRAW,0,0,19,18,PartZoomIn);state.zoomOut=control(w,L"BUTTON",L"Zoom Out",WS_TABSTOP|BS_OWNERDRAW,0,0,19,18,PartZoomOut);}
+        state.pitchView.normalize();SCROLLINFO info{sizeof(info),SIF_RANGE|SIF_PAGE|SIF_POS,0,127,static_cast<UINT>(state.pitchView.visible_rows()),state.pitchView.scroll_position(),0};SetScrollInfo(state.pitchScroll,SB_CTL,&info,TRUE);
+        EnableWindow(state.zoomIn,state.pitchView.rowHeight<32);EnableWindow(state.zoomOut,state.pitchView.rowHeight>2);
+        const int top=rulerHeight+row_top(rows,i)-s.verticalScroll;place(state.zoomIn,top,18);place(state.zoomOut,top+18,18);place(state.pitchScroll,top+rowHeight,pitchAreaHeight);
+    }
+    for(auto& pair:s.sequences)for(auto c:{pair.second.pitchScroll,pair.second.zoomIn,pair.second.zoomOut})if(c&&std::find(visible.begin(),visible.end(),c)==visible.end()){if(GetFocus()==c)SetFocus(w);ShowWindow(c,SW_HIDE);}
+}
+void draw_pitch_zoom(const DRAWITEMSTRUCT& item,bool in){
+    auto rect=item.rcItem;DrawFrameControl(item.hDC,&rect,DFC_BUTTON,DFCS_BUTTONPUSH|((item.itemState&ODS_SELECTED)?DFCS_PUSHED:0)|((item.itemState&ODS_DISABLED)?DFCS_INACTIVE:0));
+    const int offset=(item.itemState&ODS_SELECTED)?1:0,x=rect.left+offset,y=rect.top+offset;const auto pen=CreatePen(PS_SOLID,1,GetSysColor((item.itemState&ODS_DISABLED)?COLOR_GRAYTEXT:COLOR_BTNTEXT));const auto oldPen=SelectObject(item.hDC,pen),oldBrush=SelectObject(item.hDC,GetStockObject(HOLLOW_BRUSH));
+    Ellipse(item.hDC,x+4,y+3,x+13,y+12);MoveToEx(item.hDC,x+11,y+10,nullptr);LineTo(item.hDC,x+16,y+15);MoveToEx(item.hDC,x+6,y+7,nullptr);LineTo(item.hDC,x+11,y+7);if(in){MoveToEx(item.hDC,x+8,y+5,nullptr);LineTo(item.hDC,x+8,y+10);}
+    SelectObject(item.hDC,oldBrush);SelectObject(item.hDC,oldPen);DeleteObject(pen);if(item.itemState&ODS_FOCUS){InflateRect(&rect,-2,-2);DrawFocusRect(item.hDC,&rect);}
+}
 void layout(HWND w){RECT r{};GetClientRect(w,&r);const int y=strip_bottom(w)+4;
     // The position and actions have separate rows: neither depends on the
     // number of visible tracks, or on how the MDI client tiles its children.
@@ -136,8 +199,8 @@ void refresh(HWND w,Session& s){
     SetDlgItemTextW(w,SelectionText,text.c_str());EnableWindow(GetDlgItem(w,Properties),s.selected.has_value());
     EnableWindow(GetDlgItem(w,ZoomIn),s.zoom<32);EnableWindow(GetDlgItem(w,ZoomOut),s.zoom>1);
     SCROLLINFO info{sizeof(info),SIF_RANGE|SIF_PAGE|SIF_POS,0,std::max(0,d.length()-1),static_cast<UINT>(v.page),s.scroll,0};SetScrollInfo(w,SB_HORZ,&info,TRUE);
-    const auto page=strip_page(w),height=rows_height(view_rows(s));s.verticalScroll=std::clamp(s.verticalScroll,0,std::max(0,height-page));
-    SCROLLINFO vertical{sizeof(vertical),SIF_RANGE|SIF_PAGE|SIF_POS|SIF_DISABLENOSCROLL,0,height-1,static_cast<UINT>(page),s.verticalScroll,0};SetScrollInfo(w,SB_VERT,&vertical,TRUE);InvalidateRect(w,nullptr,TRUE);
+    const auto rows=view_rows(s);const auto page=strip_page(w),height=rows_height(rows);s.verticalScroll=std::clamp(s.verticalScroll,0,std::max(0,height-page));
+    SCROLLINFO vertical{sizeof(vertical),SIF_RANGE|SIF_PAGE|SIF_POS|SIF_DISABLENOSCROLL,0,height-1,static_cast<UINT>(page),s.verticalScroll,0};SetScrollInfo(w,SB_VERT,&vertical,TRUE);layout_pitch_controls(w,s,rows);InvalidateRect(w,nullptr,TRUE);
 }
 std::optional<TimelineEventTarget> hit(HWND w,Session& s,POINT p){
     const auto v=viewport(w,s);if(p.x<labelWidth||p.x>v.right||p.y<rulerHeight||p.y>=strip_bottom(w))return {};
@@ -148,7 +211,7 @@ std::optional<TimelineEventTarget> hit(HWND w,Session& s,POINT p){
     if(row.kind==SegmentTrackKind::meter){const auto d=track_document(s,row.kind,row.track);const auto axis=d.timeline();const auto& events=axis.meters();for(size_t i=0;i<events.size();++i)consider(TimelineEventKind::meter,i,axis.clocks({events[i].measure,0,0}));}
     if(row.kind==SegmentTrackKind::lyric){const auto events=s.doc().lyrics(row.track);for(size_t i=0;i<events.size();++i)consider(TimelineEventKind::lyric,i,events[i].physical);}
     if(row.kind==SegmentTrackKind::marker){const auto events=s.doc().markers(row.track);const bool upper=(p.y+s.verticalScroll-rulerHeight-row_top(rows,*slot))<rowHeight/2;for(size_t i=0;i<events.size();++i)if((events[i].kind==MarkerKind::play)==upper)consider(TimelineEventKind::marker,i,events[i].time);}
-    if(row.kind==SegmentTrackKind::band){const auto d=track_document(s,row.kind,row.track);const auto events=d.band_events();auto dc=GetDC(w);const auto oldFont=SelectObject(dc,GetStockObject(DEFAULT_GUI_FONT));for(size_t i=0;i<events.size();++i){const int left=pixel(v,std::max(0,events[i].physicalTime));if(left<labelWidth||left>v.right)continue;const int right=band_label_right(dc,v,left,i+1<events.size()?std::max(0,events[i+1].physicalTime):s.doc().length(),band_label(events[i]));if(p.x>=left&&p.x<right)target=TimelineEventTarget{TimelineEventKind::band,s.document,row.track,i,groups};}SelectObject(dc,oldFont);ReleaseDC(w,dc);}
+    if(row.kind==SegmentTrackKind::band){const auto d=track_document(s,row.kind,row.track);const auto events=d.band_events();const auto labels=band_label_groups(s,row.track,events,d.timeline());BandItalicFont italic;auto dc=GetDC(w);const auto oldFont=SelectObject(dc,GetStockObject(DEFAULT_GUI_FONT));for(size_t i=0;i<labels.size();++i){const auto& group=labels[i];const auto event=group.visible;SelectObject(dc,group.events.size()>1&&italic.font?italic.font:GetStockObject(DEFAULT_GUI_FONT));const int left=pixel(v,std::max(0,events[event].physicalTime));if(left<labelWidth||left>v.right)continue;const int right=band_label_right(dc,v,left,i+1<labels.size()?labels[i+1].beat:s.doc().length(),band_label(events[event]));if(p.x>=left&&p.x<right)target=TimelineEventTarget{TimelineEventKind::band,s.document,row.track,event,groups};}SelectObject(dc,oldFont);ReleaseDC(w,dc);}
     if(row.kind==SegmentTrackKind::chord){const auto events=s.doc().chords(row.track);for(size_t i=0;i<events.size();++i){const int left=pixel(v,events[i].time),right=pixel(v,i+1<events.size()?events[i+1].time:s.doc().length());if(p.x>=left&&p.x<right)target=TimelineEventTarget{TimelineEventKind::chord,s.document,row.track,i,groups};}}
     return target;
 }
@@ -156,6 +219,10 @@ void select(HWND w,Session& s,std::optional<TimelineEventTarget> target,bool sho
     if(!target&&s.selected&&s.selected->kind==TimelineEventKind::tempo)s.doc().select(std::vector<size_t>{});
     s.selected=target;s.muteCell.reset();s.bandCell.reset();if(target&&target->kind==TimelineEventKind::band)s.doc().select_track_group(s.doc().selected_groups(),s.doc().selected_tempo_index(),s.doc().selected_meter_index(),s.doc().selected_sequence_index(),target->track);if(target&&target->kind==TimelineEventKind::meter)s.doc().select_track_group(s.doc().selected_groups(),s.doc().selected_tempo_index(),target->track,s.doc().selected_sequence_index(),s.doc().selected_band_index());if(target&&target->kind==TimelineEventKind::tempo){s.doc().select_track_group(s.doc().selected_groups(),target->track,s.doc().selected_meter_index(),s.doc().selected_sequence_index(),s.doc().selected_band_index());s.doc().select(target->event);}
     SetFocus(w);refresh(w,s);s.publish(show);
+}
+void cycle_bands(HWND w,Session& s){
+    if(!can_cycle_bands(s))return;auto target=*s.selected;const auto d=track_document(s,SegmentTrackKind::band,target.track);const auto events=d.band_events();
+    for(const auto& group:band_label_groups(s,target.track,events,d.timeline())){const auto at=std::find(group.events.begin(),group.events.end(),target.event);if(at!=group.events.end()){target.event=group.events[(static_cast<size_t>(at-group.events.begin())+1)%group.events.size()];select(w,s,target);return;}}
 }
 bool click_mute(HWND w,Session& s,POINT p){
     const auto v=viewport(w,s);if(p.x<labelWidth||p.x>=v.right||p.y<rulerHeight||p.y>=strip_bottom(w))return false;
@@ -199,15 +266,15 @@ void line(HDC dc,int x,int y,int end,int width,COLORREF color){auto p=CreatePen(
 void text(HDC dc,const std::wstring& value,RECT r){DrawTextW(dc,value.c_str(),static_cast<int>(value.size()),&r,DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS|DT_NOPREFIX);}
 void fill(HDC dc,RECT r,COLORREF color){auto brush=CreateSolidBrush(color);FillRect(dc,&r,brush);DeleteObject(brush);}
 bool black_pitch(unsigned pitch){const auto key=pitch%12;return key==1||key==3||key==6||key==8||key==10;}
-RECT sequence_note_rect(const Viewport& v,int top,int topPitch,const Note& note){
-    const int bottom=top+rowHeight+(topPitch-int(note.pitch)+1)*pitchHeight;
-    return {pixel(v,note.time),bottom-std::max(2,int(note.velocity)*pitchHeight/127),std::max(pixel(v,note.time)+2,pixel(v,static_cast<std::int32_t>(std::min<std::int64_t>(INT32_MAX,std::int64_t(note.time)+note.duration)))),bottom-1};
+RECT sequence_note_rect(const Viewport& v,int top,const SequencePitchView& pitchView,const Note& note){
+    const auto bounds=pitchView.note_bounds(note.pitch,note.velocity);
+    return {pixel(v,note.time),top+rowHeight+bounds.first,std::max(pixel(v,note.time)+2,pixel(v,static_cast<std::int32_t>(std::min<std::int64_t>(INT32_MAX,std::int64_t(note.time)+note.duration)))),top+rowHeight+bounds.second};
 }
 std::optional<Row> active_sequence(Session& s){if(!s.activeSequence)return {};for(const auto& row:view_rows(s))if(row.kind==SegmentTrackKind::sequence&&sequence_key(s,row)==*s.activeSequence)return row;return {};}
 struct CcLane {Session::SequenceKey key;SequenceController controller;int top;bool expanded;};
 std::optional<CcLane> cc_lane_at(HWND w,Session& s,POINT p){
     if(p.y<rulerHeight||p.y>=strip_bottom(w))return {};const auto rows=view_rows(s);const auto slot=row_at(rows,p.y+s.verticalScroll-rulerHeight);if(!slot||rows[*slot].kind!=SegmentTrackKind::sequence)return {};
-    const auto key=sequence_key(s,rows[*slot]);const auto& state=s.sequences[key];if(!state.expanded)return {};int top=rulerHeight+row_top(rows,*slot)-s.verticalScroll+rowHeight+pitchRows*pitchHeight;
+    const auto key=sequence_key(s,rows[*slot]);const auto& state=s.sequences[key];if(!state.expanded)return {};int top=rulerHeight+row_top(rows,*slot)-s.verticalScroll+rowHeight+pitchAreaHeight;
     for(const auto& lane:state.cc){const auto height=ccHeight+(lane.second?ccGraphHeight:0);if(p.y>=top&&p.y<top+height)return CcLane{key,lane.first,top,lane.second};top+=height;}return {};
 }
 int cc_value_y(const CcLane& lane,double value){const auto low=sequence_curve_minimum(lane.controller),high=sequence_curve_maximum(lane.controller);return lane.top+ccHeight+ccGraphHeight-4-static_cast<int>(std::lround((value-low)*(ccGraphHeight-8)/(high-low)));}
@@ -249,7 +316,7 @@ void commit_curve_drag(HWND w,Session& s,POINT p){
     s.doc().select_track_group(std::get<0>(drag.key),s.doc().selected_tempo_index(),s.doc().selected_meter_index(),std::get<1>(drag.key),s.doc().selected_band_index());size_t after=0;
     const bool changed=drag.index?s.doc().edit_curve(*drag.index,drag.preview,&after):s.doc().add_curve(drag.preview,&after);if(changed)state.curve=after;refresh(w,s);s.publish();
 }
-void follow_sequence_pitch(Session::SequenceStrip& state){if(int(state.pitch)>state.topPitch)state.topPitch=int(state.pitch);if(int(state.pitch)<=state.topPitch-pitchRows)state.topPitch=int(state.pitch)+pitchRows-1;state.topPitch=std::clamp(state.topPitch,pitchRows-1,127);}
+void follow_sequence_pitch(Session::SequenceStrip& state){state.pitchView.follow(state.pitch);}
 void insert_sequence_note(HWND w,Session& s){
     const auto row=active_sequence(s);if(!row)return;auto& state=s.sequences[*s.activeSequence];if(!state.expanded)return;
     auto& d=s.doc();d.select_track_group(d.selected_groups(),d.selected_tempo_index(),d.selected_meter_index(),row->track,d.selected_band_index());
@@ -297,8 +364,8 @@ std::optional<NoteHit> sequence_note_hit(HWND w,Session& s,POINT p){
     const auto rows=view_rows(s);const auto slot=row_at(rows,p.y+s.verticalScroll-rulerHeight);
     if(!slot||p.x<labelWidth||p.y<rulerHeight||p.y>=strip_bottom(w))return {};const auto& row=rows[*slot];if(row.kind!=SegmentTrackKind::sequence)return {};
     const auto key=sequence_key(s,row);const auto& state=s.sequences[key];if(!state.expanded)return {};
-    const int top=rulerHeight+row_top(rows,*slot)-s.verticalScroll;const auto v=viewport(w,s);const auto notes=track_document(s,row.kind,row.track).notes();
-    for(size_t i=notes.size();i>0;--i){const auto& n=notes[i-1];if(n.channel!=*row.channel)continue;const auto r=sequence_note_rect(v,top,state.topPitch,n);if(!PtInRect(&r,p))continue;
+    const int top=rulerHeight+row_top(rows,*slot)-s.verticalScroll;if(!state.pitchView.pitch_at(p.y-top-rowHeight))return {};const auto v=viewport(w,s);if(p.x>v.right)return {};const auto notes=track_document(s,row.kind,row.track).notes();
+    for(size_t i=notes.size();i>0;--i){const auto& n=notes[i-1];if(n.channel!=*row.channel)continue;const auto r=sequence_note_rect(v,top,state.pitchView,n);if(!PtInRect(&r,p))continue;
         const auto handle=p.x-r.left<2?SequenceNoteHandle::start:r.right-p.x<=2?SequenceNoteHandle::end:p.y-r.top<2?SequenceNoteHandle::velocity:SequenceNoteHandle::move;
         return NoteHit{key,i-1,n,handle};}return {};
 }
@@ -310,8 +377,8 @@ bool begin_note_drag(HWND w,Session& s,POINT p){
 void preview_note_drag(HWND w,Session& s,POINT p){
     if(!s.noteDrag)return;auto& drag=*s.noteDrag;drag.current=p;if(p.x==drag.start.x&&p.y==drag.start.y&&!drag.fineClock&&!drag.finePitch&&!drag.fineVelocity)return;const auto v=viewport(w,s);const auto axis=s.doc().timeline();
     const auto delta=static_cast<std::int64_t>(std::llround((p.x-drag.start.x)/v.scale));
-    const auto pitch=static_cast<int>(std::lround(double(drag.start.y-p.y)/pitchHeight));
-    const auto velocity=static_cast<int>(std::lround((drag.start.y-p.y)*127./pitchHeight/5))*5;
+    const auto& pitchView=s.sequences[drag.key].pitchView;const auto pitch=pitchView.drag_pitch(drag.start.y-p.y);
+    const auto velocity=pitchView.drag_velocity(drag.start.y-p.y);
     const auto snap=s.sequences[drag.key].snap;
     auto next=sequence_drag_note(axis,s.doc().length(),drag.original,drag.handle,delta,pitch,velocity,snap);
     next=sequence_drag_note(axis,s.doc().length(),next,drag.handle,drag.fineClock,drag.finePitch,drag.fineVelocity,SequenceSnap::none);
@@ -365,7 +432,7 @@ bool click_sequence(HWND w,Session& s,POINT p,bool doubleClick,bool context){
     if(!context&&((p.x>=v.right-22&&p.y<top+22)||(doubleClick&&(!state.expanded||(header&&p.x<labelWidth))))){
         state.expanded=!state.expanded;refresh(w,s);s.publish();return true;}
     if(!state.expanded){refresh(w,s);s.publish();return true;}
-    if(p.y>=top+rowHeight+pitchHeight*pitchRows){
+    if(p.y>=top+rowHeight+pitchAreaHeight){
         state.ccContext=true;const auto lane=cc_lane_at(w,s,p);state.note.reset();state.curve.reset();state.activeCC=lane?std::optional<SequenceController>(lane->controller):std::nullopt;
         if(lane){const bool laneHeader=p.y<lane->top+ccHeight;
             if(!context&&laneHeader&&((p.x>=v.right-22)||doubleClick)){state.cc[lane->controller]=!lane->expanded;refresh(w,s);s.publish();return true;}
@@ -373,14 +440,13 @@ bool click_sequence(HWND w,Session& s,POINT p,bool doubleClick,bool context){
         }refresh(w,s);s.publish();return true;
     }
     state.ccContext=false;state.activeCC.reset();state.curve.reset();state.drawCurve=false;
-    if(!context&&header&&p.x<labelWidth){if(p.x<labelWidth-30&&p.y>=top+18){if(sequence_patch(s.doc(),s.cursor,*row.channel)){POINT anchor{0,top+rowHeight};ClientToScreen(w,&anchor);sequence_instrument_menu(w,s,row,true,anchor);}}
-        else if(p.x>=labelWidth-30&&p.y>=top+18){POINT anchor{labelWidth-30,top+rowHeight};ClientToScreen(w,&anchor);sequence_instrument_menu(w,s,row,false,anchor);}refresh(w,s);s.publish();return true;}
-    if(!context&&!header&&p.x>=labelWidth-20&&p.x<labelWidth){const int direction=p.y<top+rowHeight+20?1:p.y>=top+rowHeight+pitchRows*pitchHeight-20?-1:0;if(direction)state.topPitch=std::clamp(state.topPitch+direction*12,pitchRows-1,127);refresh(w,s);s.publish();return true;}
+    if(!context&&header&&p.x<labelWidth){if(p.x<labelWidth-40&&p.y>=top+18){if(sequence_patch(s.doc(),s.cursor,*row.channel)){POINT anchor{0,top+rowHeight};ClientToScreen(w,&anchor);sequence_instrument_menu(w,s,row,true,anchor);}}
+        else if(p.x>=labelWidth-40&&p.x<labelWidth-20&&p.y>=top+18){POINT anchor{labelWidth-40,top+rowHeight};ClientToScreen(w,&anchor);sequence_instrument_menu(w,s,row,false,anchor);}refresh(w,s);s.publish();return true;}
     const int relative=p.y-top-rowHeight;
-    if(relative<0||relative>=pitchHeight*pitchRows){refresh(w,s);s.publish();return true;}
-    state.pitch=static_cast<unsigned>(std::clamp(state.topPitch-relative/pitchHeight,0,127));
+    const auto pitch=state.pitchView.pitch_at(relative);if(!pitch){refresh(w,s);s.publish();return true;}
+    state.pitch=*pitch;
     if(p.x>=labelWidth&&p.x<=v.right){const auto raw=std::clamp<std::int64_t>(std::int64_t(v.begin)+static_cast<std::int64_t>(std::floor((p.x-labelWidth)/v.scale)),0,s.doc().length()-1);s.cursor=sequence_snap_clock(s.doc().timeline(),static_cast<std::int32_t>(raw),s.doc().length(),state.snap);
-        const auto notes=s.doc().notes();state.note.reset();for(size_t i=notes.size();i>0;--i){const auto& note=notes[i-1];if(note.channel!=*row.channel)continue;const auto rect=sequence_note_rect(v,top,state.topPitch,note);if(PtInRect(&rect,p)){state.note=i-1;state.pitch=note.pitch;break;}}
+        const auto notes=s.doc().notes();state.note.reset();for(size_t i=notes.size();i>0;--i){const auto& note=notes[i-1];if(note.channel!=*row.channel)continue;const auto rect=sequence_note_rect(v,top,state.pitchView,note);if(PtInRect(&rect,p)){state.note=i-1;state.pitch=note.pitch;break;}}
         s.selected.reset();if(state.note)s.selected=TimelineEventTarget{TimelineEventKind::sequence_note,s.document,row.track,*state.note,s.doc().selected_groups()};
         if(!context&&(GetKeyState(VK_CONTROL)&0x8000)){insert_sequence_note(w,s);return true;}
         refresh(w,s);s.publish();if(!context&&state.note&&s.audition)s.audition(s.document,notes[*state.note]);
@@ -429,35 +495,56 @@ void paint_time_grid(HDC dc,const Timeline& axis,const Viewport& v,int top,int b
     RestoreDC(dc,clip);
 }
 void paint_sequence(HDC dc,HWND w,Session& s,const Row& row,int top,const Viewport& v){
-    auto& state=s.sequences[sequence_key(s,row)];const bool active=s.activeSequence&&*s.activeSequence==sequence_key(s,row)&&GetFocus()==w;
+    auto& state=s.sequences[sequence_key(s,row)];const auto focus=GetFocus();const bool active=s.activeSequence&&*s.activeSequence==sequence_key(s,row)&&(focus==w||focus==state.pitchScroll||focus==state.zoomIn||focus==state.zoomOut);
     const int clip=SaveDC(dc);IntersectClipRect(dc,0,std::max(rulerHeight,top),v.right+1,std::min(strip_bottom(w),top+row.height));
-    fill(dc,{0,top,labelWidth,top+row.height},GetSysColor(COLOR_BTNFACE));fill(dc,{0,top,labelWidth-1,top+18},RGB(224,224,255));text(dc,row.label,{4,top,labelWidth-2,top+18});
+    fill(dc,{0,top,labelWidth,top+row.height},GetSysColor(COLOR_BTNFACE));fill(dc,{0,top,labelWidth-1,top+18},RGB(224,224,255));text(dc,row.label,{4,top,labelWidth-(state.expanded?22:2),top+18});
     RECT toggle{v.right-21,top+1,v.right-1,top+21};DrawFrameControl(dc,&toggle,DFC_BUTTON,DFCS_BUTTONPUSH);text(dc,state.expanded?L"−":L"□",{v.right-17,top+1,v.right-3,top+20});
     const auto d=track_document(s,SegmentTrackKind::sequence,row.track);const auto notes=d.notes();
     if(!state.expanded){IntersectClipRect(dc,labelWidth,top,v.right+1,top+row.height);for(size_t i=0;i<notes.size();++i)if(notes[i].channel==*row.channel){const auto& n=notes[i];const int y=top+20+(127-n.pitch)*12/128;fill(dc,{pixel(v,n.time),y,std::max(pixel(v,n.time)+2,pixel(v,static_cast<std::int32_t>(std::min<std::int64_t>(INT32_MAX,std::int64_t(n.time)+n.duration)))),y+2},state.note&&*state.note==i?RGB(255,0,0):RGB(0,0,255));}RestoreDC(dc,clip);return;}
-    const auto patch=sequence_patch(s.doc(),s.cursor,*row.channel);RECT instrument{4,top+18,labelWidth-31,top+36};DrawFrameControl(dc,&instrument,DFC_BUTTON,DFCS_BUTTONPUSH|(patch?0:DFCS_INACTIVE));text(dc,patch?sequence_instrument_label(s.host,*patch):L"No Instrument",{6,top+18,labelWidth-33,top+36});
-    RECT band{labelWidth-29,top+18,labelWidth-3,top+36};DrawFrameControl(dc,&band,DFC_BUTTON,DFCS_BUTTONPUSH);text(dc,L"♪",{labelWidth-24,top+18,labelWidth-5,top+36});
-    const int noteTop=top+rowHeight,noteBottom=noteTop+pitchRows*pitchHeight;
-    for(int i=0;i<pitchRows;++i){const int pitch=state.topPitch-i,y=noteTop+i*pitchHeight;const bool black=black_pitch(static_cast<unsigned>(pitch));
+    const auto patch=sequence_patch(s.doc(),s.cursor,*row.channel);RECT instrument{4,top+18,labelWidth-41,top+36};DrawFrameControl(dc,&instrument,DFC_BUTTON,DFCS_BUTTONPUSH|(patch?0:DFCS_INACTIVE));text(dc,patch?sequence_instrument_label(s.host,*patch):L"No Instrument",{6,top+18,labelWidth-43,top+36});
+    RECT band{labelWidth-39,top+18,labelWidth-21,top+36};DrawFrameControl(dc,&band,DFC_BUTTON,DFCS_BUTTONPUSH);text(dc,L"♪",{labelWidth-36,top+18,labelWidth-23,top+36});
+    const auto& pitchView=state.pitchView;const int pitchHeight=pitchView.rowHeight,noteTop=top+rowHeight,noteBottom=noteTop+pitchAreaHeight;
+    for(int i=0;i<pitchView.visible_rows();++i){const int pitch=pitchView.topPitch-i,y=noteTop+i*pitchHeight;const bool black=black_pitch(static_cast<unsigned>(pitch));
         fill(dc,{labelWidth,y,v.right,y+pitchHeight},black?RGB(198,198,198):active?RGB(255,255,224):RGB(255,255,255));
         fill(dc,{0,y,labelWidth-21,y+pitchHeight},active?RGB(255,255,232):RGB(255,255,255));
         if(black)fill(dc,{0,y,labelWidth-21,y+pitchHeight-1},RGB(0,0,0));
         if(*row.channel==9){const auto name=gm_drum_name(static_cast<unsigned>(pitch));SetTextColor(dc,black?RGB(255,255,232):RGB(0,0,0));text(dc,name.empty()?L"":(pitch%12==0?L"C"+std::to_wstring(pitch/12)+L": ":L"")+name,{3,y,labelWidth-24,y+pitchHeight});SetTextColor(dc,RGB(0,0,0));}
         else if(!black&&pitch%12==0)text(dc,L"C "+std::to_wstring(pitch/12),{3,y,labelWidth-24,y+pitchHeight});
         MoveToEx(dc,0,y+pitchHeight,nullptr);LineTo(dc,v.right,y+pitchHeight);}
-    text(dc,L"▲",{labelWidth-20,noteTop,labelWidth-1,noteTop+20});text(dc,L"▼",{labelWidth-20,noteBottom-20,labelWidth-1,noteBottom});
     const int notesClip=SaveDC(dc);IntersectClipRect(dc,labelWidth,noteTop,v.right+1,noteBottom);
     const auto axis=d.timeline();if(fine_grid(axis,v)){
         auto grid=sequence_snap_clock(axis,v.begin,d.length(),SequenceSnap::grid);unsigned count=0;while(grid<v.end&&count++<8192){const auto span=sequence_grid_span(axis,grid);if(span*v.scale>=6)line(dc,pixel(v,grid),noteTop,noteBottom,1,RGB(110,110,210));const auto next=std::int64_t(grid)+span;if(next>INT32_MAX)break;grid=static_cast<std::int32_t>(next);}}
     paint_time_grid(dc,axis,v,noteTop,noteBottom,false);
-    if(active){const int y=noteTop+(state.topPitch-int(state.pitch))*pitchHeight;const auto span=sequence_default_duration(axis,s.cursor,state.snap);RECT ghost{pixel(v,s.cursor),y+2,pixel(v,static_cast<std::int32_t>(std::min<std::int64_t>(INT32_MAX,std::int64_t(s.cursor)+span))),y+pitchHeight-1};fill(dc,ghost,RGB(190,190,255));}
-    for(size_t i=0;i<notes.size();++i)if(notes[i].channel==*row.channel){const auto& note=s.noteDrag&&s.noteDrag->key==sequence_key(s,row)&&s.noteDrag->index==i?s.noteDrag->preview:notes[i];const auto rect=sequence_note_rect(v,top,state.topPitch,note);fill(dc,rect,state.note&&*state.note==i?RGB(255,0,0):RGB(0,0,255));}RestoreDC(dc,notesClip);
+    if(active){const int y=noteTop+(pitchView.topPitch-int(state.pitch))*pitchHeight;const auto span=sequence_default_duration(axis,s.cursor,state.snap);RECT ghost{pixel(v,s.cursor),y+std::min(2,pitchHeight-1),pixel(v,static_cast<std::int32_t>(std::min<std::int64_t>(INT32_MAX,std::int64_t(s.cursor)+span))),y+pitchHeight};fill(dc,ghost,RGB(190,190,255));}
+    for(size_t i=0;i<notes.size();++i)if(notes[i].channel==*row.channel){const auto& note=s.noteDrag&&s.noteDrag->key==sequence_key(s,row)&&s.noteDrag->index==i?s.noteDrag->preview:notes[i];const auto rect=sequence_note_rect(v,top,pitchView,note);fill(dc,rect,state.note&&*state.note==i?RGB(255,0,0):RGB(0,0,255));}RestoreDC(dc,notesClip);
     paint_cc(dc,w,s,row,noteBottom,v,active);
     MoveToEx(dc,0,top+row.height-1,nullptr);LineTo(dc,v.right,top+row.height-1);RestoreDC(dc,clip);
 }
 void paint(HWND w,Session& s){
-    struct Painting{HWND w;PAINTSTRUCT ps{};HDC dc;Painting(HWND x):w(x),dc(BeginPaint(x,&ps)){}~Painting(){EndPaint(w,&ps);}} painting(w);
-    auto dc=painting.dc;const auto oldFont=SelectObject(dc,GetStockObject(DEFAULT_GUI_FONT));SetBkMode(dc,TRANSPARENT);SetTextColor(dc,GetSysColor(COLOR_WINDOWTEXT));
+    struct Painting{
+        HWND w;PAINTSTRUCT ps{};RECT client{};HDC target=nullptr,dc=nullptr;HBITMAP bitmap=nullptr;HGDIOBJ previous=nullptr;
+        explicit Painting(HWND x):w(x),target(BeginPaint(x,&ps)),dc(target){
+            GetClientRect(w,&client);
+            if(target&&client.right>0&&client.bottom>0){
+                const auto memory=CreateCompatibleDC(target);
+                const auto pixels=memory?CreateCompatibleBitmap(target,client.right,client.bottom):nullptr;
+                if(pixels){
+                    const auto old=SelectObject(memory,pixels);
+                    if(old&&old!=HGDI_ERROR){dc=memory;bitmap=pixels;previous=old;}
+                    else {DeleteObject(pixels);DeleteDC(memory);}
+                }else if(memory)DeleteDC(memory);
+            }
+            if(dc)FillRect(dc,&client,GetSysColorBrush(COLOR_WINDOW));
+        }
+        void present(){
+            // BeginPaint's update region and WS_CLIPCHILDREN remain on the
+            // target DC; only a completed frame reaches that clipped surface.
+            if(bitmap)BitBlt(target,0,0,client.right,client.bottom,dc,0,0,SRCCOPY);
+        }
+        ~Painting(){if(bitmap){SelectObject(dc,previous);DeleteObject(bitmap);DeleteDC(dc);}EndPaint(w,&ps);}
+    } painting(w);
+    if(!painting.dc)return;
+    auto dc=painting.dc;BandItalicFont italic;const auto oldFont=SelectObject(dc,GetStockObject(DEFAULT_GUI_FONT));SetBkMode(dc,TRANSPARENT);SetTextColor(dc,GetSysColor(COLOR_WINDOWTEXT));
     const auto v=viewport(w,s);RECT body{0,0,v.right+1,strip_bottom(w)};FillRect(dc,&body,reinterpret_cast<HBRUSH>(COLOR_WINDOW+1));const auto rows=view_rows(s);
     const auto top=[&](size_t row){return rulerHeight+row_top(rows,row)-s.verticalScroll;};
     const int labelClip=SaveDC(dc);IntersectClipRect(dc,0,rulerHeight,v.right+1,body.bottom);
@@ -472,22 +559,42 @@ void paint(HWND w,Session& s){
         if(row.kind==SegmentTrackKind::tempo){const auto d=track_document(s,row.kind,row.track);const auto& events=d.tempos();for(size_t i=0;i<events.size();++i){auto value=std::to_wstring(events[i].bpm);while(value.size()>1&&value.back()==L'0')value.pop_back();if(value.back()==L'.')value.pop_back();eventLabel(TimelineEventKind::tempo,i,events[i].time,i+1<events.size()?events[i+1].time:s.doc().length(),value);}}
         if(row.kind==SegmentTrackKind::meter){const auto d=track_document(s,row.kind,row.track);const auto timeline=d.timeline();const auto& events=timeline.meters();for(size_t i=0;i<events.size();++i)eventLabel(TimelineEventKind::meter,i,timeline.clocks({events[i].measure,0,0}),i+1<events.size()?timeline.clocks({events[i+1].measure,0,0}):s.doc().length(),std::to_wstring(events[i].beats)+L" / "+std::to_wstring(events[i].denominator));}
         if(row.kind==SegmentTrackKind::sequence){const auto d=track_document(s,row.kind,row.track);for(const auto& n:d.notes()){const int left=pixel(v,n.time),right=pixel(v,static_cast<std::int32_t>(std::min<std::int64_t>(INT32_MAX,std::int64_t(n.time)+n.duration)));RECT rect{left,y+8,std::max(left+2,right),y+rowHeight-8};FillRect(dc,&rect,reinterpret_cast<HBRUSH>(COLOR_WINDOWTEXT+1));}}
-        if(row.kind==SegmentTrackKind::band){const auto d=track_document(s,row.kind,row.track);const auto events=d.band_events();for(size_t i=0;i<events.size();++i)eventLabel(TimelineEventKind::band,i,std::max(0,events[i].physicalTime),i+1<events.size()?std::max(0,events[i+1].physicalTime):s.doc().length(),band_label(events[i]));}
+        if(row.kind==SegmentTrackKind::band){const auto d=track_document(s,row.kind,row.track);const auto events=d.band_events();const auto labels=band_label_groups(s,row.track,events,d.timeline());for(size_t i=0;i<labels.size();++i){const auto& group=labels[i];const auto event=group.visible;SelectObject(dc,group.events.size()>1&&italic.font?italic.font:GetStockObject(DEFAULT_GUI_FONT));eventLabel(TimelineEventKind::band,event,std::max(0,events[event].physicalTime),i+1<labels.size()?labels[i+1].beat:s.doc().length(),band_label(events[event]));}SelectObject(dc,GetStockObject(DEFAULT_GUI_FONT));}
         if(row.kind==SegmentTrackKind::lyric){const auto events=s.doc().lyrics(row.track);for(size_t i=0;i<events.size();++i)eventLabel(TimelineEventKind::lyric,i,events[i].physical,i+1<events.size()?events[i+1].physical:s.doc().length(),events[i].text);}
         if(row.kind==SegmentTrackKind::chord){const auto events=s.doc().chords(row.track);for(size_t i=0;i<events.size();++i)eventLabel(TimelineEventKind::chord,i,events[i].time,i+1<events.size()?events[i+1].time:s.doc().length(),chord_label(events[i]));}
         if(row.kind==SegmentTrackKind::marker){const auto events=s.doc().markers(row.track);for(size_t i=0;i<events.size();++i){const int x=pixel(v,events[i].time);if(x<labelWidth||x>v.right)continue;auto brush=CreateSolidBrush(events[i].kind==MarkerKind::play?RGB(0,0,255):RGB(0,192,0));RECT r{x,events[i].kind==MarkerKind::play?y+2:y+rowHeight-14,std::min(v.right,x+6),events[i].kind==MarkerKind::play?y+14:y+rowHeight-2};FillRect(dc,&r,brush);DeleteObject(brush);if(selected(TimelineEventKind::marker,i,row.track)){InflateRect(&r,2,2);FrameRect(dc,&r,reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));}}}
         if(row.channel&&fine){const auto pos=axis.position(v.begin);const auto ticks=axis.beat_ticks(axis.clocks({pos.measure,pos.beat,0}),v.end);const auto events=s.doc().mutes(row.track);auto map=*row.channel;size_t event=0;for(const auto& tick:ticks){while(event<events.size()&&(events[event].channel<*row.channel||(events[event].channel==*row.channel&&events[event].time<=tick.clocks))){if(events[event].channel==*row.channel)map=events[event].map;++event;}auto next=std::int64_t(tick.clocks);for(const auto& meter:axis.meters())if(meter.measure<=tick.measure)next=std::min<std::int64_t>(s.doc().length(),std::int64_t(tick.clocks)+3072/meter.denominator);const bool mixed=event<events.size()&&events[event].channel==*row.channel&&events[event].time<next;if(map!=mute_channel_silent&&!mixed)continue;const int left=std::max(labelWidth,pixel(v,tick.clocks)),right=std::min(v.right,pixel(v,static_cast<std::int32_t>(next)));if(right>left)text(dc,mixed?L"…":L"X",{left+3,y+2,right,y+rowHeight-2});}}
         RestoreDC(dc,clip);
     }
-    const int x=pixel(v,s.cursor);if(x>=labelWidth&&x<=v.right)line(dc,x,0,body.bottom,1,RGB(200,0,0));SelectObject(dc,oldFont);
+    const int x=pixel(v,s.cursor);if(x>=labelWidth&&x<=v.right)line(dc,x,0,body.bottom,1,RGB(200,0,0));SelectObject(dc,oldFont);painting.present();
 }
 LRESULT CALLBACK proc(HWND w,UINT message,WPARAM wp,LPARAM lp){auto s=reinterpret_cast<Session*>(GetWindowLongPtrW(w,GWLP_USERDATA));try{
     if(message==WM_CREATE){const auto creation=static_cast<MDICREATESTRUCTW*>(reinterpret_cast<CREATESTRUCTW*>(lp)->lpCreateParams);s=reinterpret_cast<Session*>(creation->lParam);SetWindowLongPtrW(w,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(s));control(w,L"STATIC",L"No event selected",SS_LEFTNOWORDWRAP,8,260,420,28,SelectionText);control(w,L"BUTTON",L"Zoom Out",WS_TABSTOP,440,260,80,28,ZoomOut);control(w,L"BUTTON",L"Zoom In",WS_TABSTOP,526,260,80,28,ZoomIn);control(w,L"BUTTON",L"Fit",WS_TABSTOP,612,260,60,28,Fit);control(w,L"BUTTON",L"Properties (F11)",WS_TABSTOP,678,260,134,28,Properties);layout(w);refresh(w,*s);return 0;}
     if(message==WM_GETMINMAXINFO){const auto result=DefMDIChildProcW(w,message,wp,lp);auto limits=reinterpret_cast<MINMAXINFO*>(lp);limits->ptMinTrackSize.x=std::max<LONG>(limits->ptMinTrackSize.x,440);limits->ptMinTrackSize.y=std::max<LONG>(limits->ptMinTrackSize.y,220);return result;}
     if(message==WM_SIZE&&s){layout(w);refresh(w,*s);return DefMDIChildProcW(w,message,wp,lp);}
+    if(message==WM_DRAWITEM&&lp){const auto& item=*reinterpret_cast<DRAWITEMSTRUCT*>(lp);if(item.CtlID==PartZoomIn||item.CtlID==PartZoomOut){draw_pitch_zoom(item,item.CtlID==PartZoomIn);return TRUE;}}
+    if(message==WM_COMMAND&&s&&!s->updating&&(LOWORD(wp)==PartZoomIn||LOWORD(wp)==PartZoomOut)&&HIWORD(wp)==BN_CLICKED){
+        for(auto& pair:s->sequences){auto& state=pair.second;if(reinterpret_cast<HWND>(lp)!=(LOWORD(wp)==PartZoomIn?state.zoomIn:state.zoomOut))continue;
+            if(s->noteDrag)cancel_note_drag(w,*s);if(s->curveDrag)cancel_curve_drag(w,*s);
+            if(!s->activeSequence||*s->activeSequence!=pair.first){s->selected.reset();s->muteCell.reset();s->bandCell.reset();}s->activeSequence=pair.first;
+            s->doc().select_track_group(std::get<0>(pair.first),s->doc().selected_tempo_index(),s->doc().selected_meter_index(),std::get<1>(pair.first),s->doc().selected_band_index());
+            state.pitchView.zoom(LOWORD(wp)==PartZoomIn?1:-1);SetFocus(w);refresh(w,*s);s->publish();return 0;
+        }return 0;
+    }
+    if(message==WM_VSCROLL&&s&&lp){
+        for(auto& pair:s->sequences){auto& state=pair.second;if(reinterpret_cast<HWND>(lp)!=state.pitchScroll)continue;
+            SCROLLINFO info{sizeof(info),SIF_TRACKPOS};GetScrollInfo(state.pitchScroll,SB_CTL,&info);int next=state.pitchView.scroll_position();
+            switch(LOWORD(wp)){case SB_LINEUP:--next;break;case SB_LINEDOWN:++next;break;case SB_PAGEUP:next-=state.pitchView.visible_rows();break;case SB_PAGEDOWN:next+=state.pitchView.visible_rows();break;case SB_THUMBTRACK:next=info.nTrackPos;break;case SB_THUMBPOSITION:next=HIWORD(wp);break;case SB_TOP:next=0;break;case SB_BOTTOM:next=127;break;default:return 0;}
+            if(s->noteDrag)cancel_note_drag(w,*s);if(s->curveDrag)cancel_curve_drag(w,*s);
+            if(!s->activeSequence||*s->activeSequence!=pair.first){s->selected.reset();s->muteCell.reset();s->bandCell.reset();}s->activeSequence=pair.first;
+            s->doc().select_track_group(std::get<0>(pair.first),s->doc().selected_tempo_index(),s->doc().selected_meter_index(),std::get<1>(pair.first),s->doc().selected_band_index());
+            state.pitchView.set_scroll_position(next);refresh(w,*s);s->publish();return 0;
+        }return 0;
+    }
     if(message==WM_MDIACTIVATE&&s&&reinterpret_cast<HWND>(lp)==w){s->publish();return DefMDIChildProcW(w,message,wp,lp);}
+    if(message==WM_ERASEBKGND&&s)return 1; // The complete paint buffer owns its background.
     if(message==WM_PAINT&&s){paint(w,*s);return 0;}
-    if((message==WM_SETFOCUS||message==WM_KILLFOCUS)&&s){InvalidateRect(w,nullptr,TRUE);return DefMDIChildProcW(w,message,wp,lp);}
+    if((message==WM_SETFOCUS||message==WM_KILLFOCUS)&&s){if(message==WM_SETFOCUS)s->publish();InvalidateRect(w,nullptr,TRUE);return DefMDIChildProcW(w,message,wp,lp);}
     if(message==WM_LBUTTONDOWN&&s){POINT p{static_cast<short>(LOWORD(lp)),static_cast<short>(HIWORD(lp))};
         if(!click_mute(w,*s,p)){select_point(w,*s,p);if(!begin_curve_drag(w,*s,p))begin_note_drag(w,*s,p);}return 0;}
     if(message==WM_MOUSEMOVE&&s&&s->curveDrag){preview_curve_drag(w,*s,{static_cast<short>(LOWORD(lp)),static_cast<short>(HIWORD(lp))});return 0;}
@@ -499,13 +606,14 @@ LRESULT CALLBACK proc(HWND w,UINT message,WPARAM wp,LPARAM lp){auto s=reinterpre
     if(message==WM_SETCURSOR&&s&&LOWORD(lp)==HTCLIENT){POINT p{};GetCursorPos(&p);ScreenToClient(w,&p);if(const auto lane=cc_lane_at(w,*s,p)){auto& state=s->sequences[lane->key];if(lane->expanded&&p.y>=lane->top+ccHeight&&p.x>=labelWidth){auto index=cc_curve_at(*s,*lane,viewport(w,*s),p);if(state.drawCurve||s->curveDrag||index){SetCursor(LoadCursorW(nullptr,state.drawCurve?IDC_CROSS:IDC_SIZEALL));return TRUE;}}}auto hit=sequence_note_hit(w,*s,p);if(hit||s->noteDrag){const auto handle=s->noteDrag?s->noteDrag->handle:hit->handle;SetCursor(LoadCursorW(nullptr,handle==SequenceNoteHandle::velocity?IDC_SIZENS:handle==SequenceNoteHandle::move?IDC_SIZEALL:IDC_SIZEWE));return TRUE;}}
 
     if(message==WM_LBUTTONDBLCLK&&s){if(click_sequence(w,*s,{static_cast<short>(LOWORD(lp)),static_cast<short>(HIWORD(lp))},true,false))return 0;const auto target=hit(w,*s,{static_cast<short>(LOWORD(lp)),static_cast<short>(HIWORD(lp))});select(w,*s,target,target&&target->kind!=TimelineEventKind::band);if(target&&target->kind==TimelineEventKind::band)show_embedded_band_editor(workspace,s->host,make_embedded_band_target(s->host,target->document,target->groups,target->track,target->event),s->changed,s->history,s->mixStarted);return 0;}
+    if(message==WM_COMMAND&&s&&!s->updating&&LOWORD(wp)==CycleBands){cycle_bands(w,*s);return 0;}
     if(message==WM_CONTEXTMENU&&s){
         POINT p{static_cast<short>(LOWORD(lp)),static_cast<short>(HIWORD(lp))};if(p.x==-1&&p.y==-1){RECT r{};GetWindowRect(w,&r);p={r.left+labelWidth+20,r.top+rulerHeight+20};}else{POINT local=p;ScreenToClient(w,&local);select_point(w,*s,local,true);}
         auto menu=CreatePopupMenu();if(!menu)throw std::runtime_error("Timeline context creation failed");
         if(s->bandCell||(s->selected&&s->selected->kind==TimelineEventKind::band)){
             AppendMenuW(menu,MF_STRING|MF_GRAYED,0,L"Cut");AppendMenuW(menu,MF_STRING|MF_GRAYED,0,L"Copy");AppendMenuW(menu,MF_STRING|MF_GRAYED,0,L"Paste");
             AppendMenuW(menu,MF_STRING|(can_insert_band(*s)?0:MF_GRAYED),InsertBand,L"&Insert\tIns");AppendMenuW(menu,MF_STRING|(s->selected&&s->selected->kind==TimelineEventKind::band?0:MF_GRAYED),DeleteBand,L"Delete\tDel");
-            AppendMenuW(menu,MF_SEPARATOR,0,nullptr);AppendMenuW(menu,MF_STRING|MF_GRAYED,0,L"Cycle Bands");
+            AppendMenuW(menu,MF_SEPARATOR,0,nullptr);AppendMenuW(menu,MF_STRING|(can_cycle_bands(*s)?0:MF_GRAYED),CycleBands,L"Cycle Bands");
         }
         if(const auto row=active_sequence(*s)){const auto& state=s->sequences[*s->activeSequence];
             AppendMenuW(menu,MF_STRING,AddCC,L"Add New CC Track...");
@@ -520,11 +628,11 @@ LRESULT CALLBACK proc(HWND w,UINT message,WPARAM wp,LPARAM lp){auto s=reinterpre
         const auto chosen=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_RIGHTBUTTON,p.x,p.y,0,w,nullptr);DestroyMenu(menu);if(chosen)SendMessageW(w,WM_COMMAND,chosen,0);return 0;
     }
     if(message==WM_COMMAND&&s&&!s->updating&&LOWORD(wp)==AddSequencePart){if(s->noteDrag)cancel_note_drag(w,*s);if(s->curveDrag)cancel_curve_drag(w,*s);show_sequence_part_editor(w,s->doc(),[&](size_t track,std::uint32_t channel){s->doc().select_track_group(s->doc().selected_groups(),s->doc().selected_tempo_index(),s->doc().selected_meter_index(),track,s->doc().selected_band_index());s->activeSequence=Session::SequenceKey{s->doc().selected_groups(),track,channel};s->selected.reset();s->muteCell.reset();s->bandCell.reset();refresh(w,*s);s->publish();});refresh(w,*s);return 0;}
-    if(message==WM_COMMAND&&s&&!s->updating){const auto id=LOWORD(wp);if(s->noteDrag)cancel_note_drag(w,*s);if(s->curveDrag)cancel_curve_drag(w,*s);if(id==AddCC){add_cc_lane(w,*s);return 0;}if(id==DrawCurve){arm_curve(w,*s);return 0;}if(id==DeleteCurve){delete_curve(w,*s);return 0;}if(id==CurveProperties){edit_curve(w,*s);return 0;}if(id==EditVelocity){edit_sequence_velocity(w,*s);return 0;}if(id==Quantize){quantize_sequence_notes(w,*s);return 0;}if(id==InsertNote){insert_sequence_note(w,*s);return 0;}if(id==DeleteNote){delete_sequence_note(w,*s);return 0;}if(id>=SnapNone&&id<=SnapBar){if(s->activeSequence){auto& state=s->sequences[*s->activeSequence];state.snap=static_cast<SequenceSnap>(id-SnapNone);refresh(w,*s);s->publish();}return 0;}if(id==InsertBand){insert_band(w,*s);return 0;}if(id==DeleteBand){delete_band(w,*s);return 0;}if(id==AddTracks){const auto tracks=show_add_tracks(w,s->doc().name().empty()?L"Segment":s->doc().name());if(tracks)s->doc().add_tracks(*tracks);refresh(w,*s);s->publish();return 0;}if(id==Properties){if(s->selected.has_value())s->publish(true);return 0;}if(id==ZoomIn||id==ZoomOut||id==Fit){const auto v=viewport(w,*s);const auto anchor=std::clamp<std::int64_t>(s->cursor,v.begin,std::int64_t(v.begin)+v.page-1);const auto offset=anchor-v.begin;s->zoom=id==Fit?1:std::clamp(s->zoom*(id==ZoomIn?2:.5),1.,32.);const auto next=viewport(w,*s);s->scroll=id==Fit?0:static_cast<std::int32_t>(std::max<std::int64_t>(0,anchor-offset*next.page/v.page));refresh(w,*s);return 0;}}
+    if(message==WM_COMMAND&&s&&!s->updating){const auto id=LOWORD(wp);if(s->noteDrag)cancel_note_drag(w,*s);if(s->curveDrag)cancel_curve_drag(w,*s);if(id==AddCC){add_cc_lane(w,*s);return 0;}if(id==DrawCurve){arm_curve(w,*s);return 0;}if(id==DeleteCurve){delete_curve(w,*s);return 0;}if(id==CurveProperties){edit_curve(w,*s);return 0;}if(id==EditVelocity){edit_sequence_velocity(w,*s);return 0;}if(id==Quantize){quantize_sequence_notes(w,*s);return 0;}if(id==InsertNote){insert_sequence_note(w,*s);return 0;}if(id==DeleteNote){delete_sequence_note(w,*s);return 0;}if(id>=SnapNone&&id<=SnapBar){if(s->activeSequence){auto& state=s->sequences[*s->activeSequence];state.snap=static_cast<SequenceSnap>(id-SnapNone);refresh(w,*s);s->publish();}return 0;}if(id==InsertBand){insert_band(w,*s);return 0;}if(id==DeleteBand){delete_band(w,*s);return 0;}if(id==AddTracks){const auto tracks=show_add_tracks(w,s->doc().name().empty()?L"Segment":s->doc().name());if(tracks)s->doc().add_editor_tracks(*tracks);refresh(w,*s);s->publish();return 0;}if(id==Properties){if(s->selected.has_value())s->publish(true);return 0;}if(id==ZoomIn||id==ZoomOut||id==Fit){const auto v=viewport(w,*s);const auto anchor=std::clamp<std::int64_t>(s->cursor,v.begin,std::int64_t(v.begin)+v.page-1);const auto offset=anchor-v.begin;s->zoom=id==Fit?1:std::clamp(s->zoom*(id==ZoomIn?2:.5),1.,32.);const auto next=viewport(w,*s);s->scroll=id==Fit?0:static_cast<std::int32_t>(std::max<std::int64_t>(0,anchor-offset*next.page/v.page));refresh(w,*s);return 0;}}
     if(message==WM_HSCROLL&&s){auto v=viewport(w,*s);SCROLLINFO info{sizeof(info),SIF_TRACKPOS};GetScrollInfo(w,SB_HORZ,&info);auto next=std::int64_t(s->scroll);switch(LOWORD(wp)){case SB_LINELEFT:next-=768;break;case SB_LINERIGHT:next+=768;break;case SB_PAGELEFT:next-=v.page/2;break;case SB_PAGERIGHT:next+=v.page/2;break;case SB_THUMBPOSITION:case SB_THUMBTRACK:next=info.nTrackPos;break;case SB_LEFT:next=0;break;case SB_RIGHT:next=s->doc().length()-v.page;break;default:return 0;}s->scroll=static_cast<std::int32_t>(std::clamp<std::int64_t>(next,0,std::max(0,s->doc().length()-v.page)));refresh(w,*s);return 0;}
     if(message==WM_VSCROLL&&s){SCROLLINFO info{sizeof(info),SIF_TRACKPOS};GetScrollInfo(w,SB_VERT,&info);int next=s->verticalScroll;const int page=strip_page(w),height=rows_height(view_rows(*s));switch(LOWORD(wp)){case SB_LINEUP:next-=rowHeight;break;case SB_LINEDOWN:next+=rowHeight;break;case SB_PAGEUP:next-=page;break;case SB_PAGEDOWN:next+=page;break;case SB_THUMBPOSITION:case SB_THUMBTRACK:next=info.nTrackPos;break;case SB_TOP:next=0;break;case SB_BOTTOM:next=height-page;break;default:return 0;}s->verticalScroll=std::clamp(next,0,std::max(0,height-page));refresh(w,*s);return 0;}
     if(message==WM_MOUSEWHEEL&&s&&!(LOWORD(wp)&(MK_CONTROL|MK_SHIFT))){s->wheelRemainder+=static_cast<short>(HIWORD(wp));const int steps=s->wheelRemainder/WHEEL_DELTA;s->wheelRemainder%=WHEEL_DELTA;if(steps){s->verticalScroll=std::clamp(s->verticalScroll-steps*rowHeight,0,std::max(0,rows_height(view_rows(*s))-strip_page(w)));refresh(w,*s);}return 0;}
-    if(message==WM_NCDESTROY&&s){timelineWindows.erase(std::remove(timelineWindows.begin(),timelineWindows.end(),w),timelineWindows.end());if(workspace)PostMessageW(GetParent(workspace),SegmentWorkspaceChangedMessage,0,0);SetWindowLongPtrW(w,GWLP_USERDATA,0);if(s->owned)delete s;const auto result=DefMDIChildProcW(w,message,wp,lp);if(timelineWindows.empty()&&!embedded_band_editor_count()&&workspace)ShowWindow(workspace,SW_HIDE);return result;}
+    if(message==WM_NCDESTROY&&s){timelineWindows.erase(std::remove(timelineWindows.begin(),timelineWindows.end(),w),timelineWindows.end());if(workspace)PostMessageW(GetParent(workspace),SegmentWorkspaceChangedMessage,0,0);SetWindowLongPtrW(w,GWLP_USERDATA,0);if(s->owned)delete s;return DefMDIChildProcW(w,message,wp,lp);}
 }catch(const std::exception& e){MessageBoxA(w,e.what(),"Timeline view failed",MB_OK|MB_ICONERROR);return 0;}return DefMDIChildProcW(w,message,wp,lp);}
 HWND message_window(HWND target){for(auto w:timelineWindows)if(target==w||IsChild(w,target))return w;return nullptr;}
 void show_workspace(){SetWindowPos(workspace,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_SHOWWINDOW);}
@@ -545,6 +653,7 @@ void initialize_segment_timeline_workspace(HWND parent,int editorOffset,int tool
     if(!workspace)throw std::runtime_error("Editing workspace creation failed");layout_segment_timeline_workspace(parent,editorOffset,toolbarHeight);DrawMenuBar(parent);
 }
 bool segment_timeline_workspace_has_editors(){return embedded_band_editor_count()||std::any_of(timelineWindows.begin(),timelineWindows.end(),[](HWND child){return IsWindow(child)!=FALSE;});}
+bool segment_timeline_workspace_visible(){return workspace&&IsWindow(workspace)&&IsWindowVisible(workspace);}
 void hide_segment_timeline_workspace(){if(workspace&&IsWindow(workspace))ShowWindow(workspace,SW_HIDE);}
 std::optional<std::int32_t> segment_timeline_cursor(size_t document){
     for(auto w:timelineWindows){auto s=reinterpret_cast<Session*>(GetWindowLongPtrW(w,GWLP_USERDATA));if(s&&s->document==document)return std::clamp(s->cursor,0,std::max(0,s->doc().length()-1));}return {};
@@ -569,12 +678,12 @@ bool segment_timeline_workspace_command(HWND parent,UINT command){
     if(command>=FirstChild&&command<FirstChild+timelineWindows.size()+embedded_band_editor_count()){show_workspace();DefFrameProcW(parent,workspace,WM_COMMAND,command,0);return true;}
     if(command==Cascade){SendMessageW(workspace,WM_MDICASCADE,0,0);return true;}
     if(command==TileHorizontal||command==TileVertical){SendMessageW(workspace,WM_MDITILE,command==TileHorizontal?MDITILE_HORIZONTAL:MDITILE_VERTICAL,0);return true;}
-    if(command==CloseAll){release_segment_timeline();return true;}return false;
+    if(command==CloseAll){release_segment_timeline(false);return true;}return false;
 }
 LRESULT segment_timeline_frame_proc(HWND parent,UINT message,WPARAM wp,LPARAM lp){return workspace&&IsWindow(workspace)&&IsWindowVisible(workspace)?DefFrameProcW(parent,workspace,message,wp,lp):DefWindowProcW(parent,message,wp,lp);}
-void show_segment_timeline(HWND parent,Framework& host,size_t document,TimelineSelectionChanged changed,TimelineHistoryRequested history,TimelineNoteAudition audition,TimelineBandMixStarted mixStarted){
-    (void)host.document(document).timeline();if(activate_segment_timeline_document(document))return;if(!workspace||!IsWindow(workspace))throw std::runtime_error("Editing workspace is not initialized");static bool registered=false;const auto instance=GetModuleHandleW(nullptr);if(!registered){WNDCLASSW c{};c.style=CS_DBLCLKS;c.lpfnWndProc=proc;c.hInstance=instance;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hIcon=LoadIconW(nullptr,IDI_APPLICATION);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerSegmentTimeline";if(!RegisterClassW(&c))throw std::runtime_error("Timeline class registration failed");registered=true;}
-    auto session=std::make_unique<Session>(Session{host,document,std::move(changed),std::move(history),std::move(audition),std::move(mixStarted)});show_workspace();auto window=CreateMDIWindowW(L"SourceProducerSegmentTimeline",L"Segment Timeline",WS_VISIBLE|WS_CAPTION|WS_SYSMENU|WS_THICKFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_HSCROLL|WS_VSCROLL|WS_CLIPCHILDREN,CW_USEDEFAULT,CW_USEDEFAULT,850,420,workspace,instance,reinterpret_cast<LPARAM>(session.get()));if(!window)throw std::runtime_error("Timeline window creation failed");timelineWindows.push_back(window);PostMessageW(parent,SegmentWorkspaceChangedMessage,0,0);session->owned=true;session.release();SendMessageW(workspace,WM_MDIACTIVATE,reinterpret_cast<WPARAM>(window),0);SetFocus(window);UpdateWindow(window);
+bool show_segment_timeline(HWND parent,Framework& host,size_t document,TimelineSelectionChanged changed,TimelineHistoryRequested history,TimelineNoteAudition audition,TimelineBandMixStarted mixStarted){
+    (void)host.document(document).timeline();if(activate_segment_timeline_document(document))return false;if(!workspace||!IsWindow(workspace))throw std::runtime_error("Editing workspace is not initialized");static bool registered=false;const auto instance=GetModuleHandleW(nullptr);if(!registered){WNDCLASSW c{};c.style=CS_DBLCLKS;c.lpfnWndProc=proc;c.hInstance=instance;c.hCursor=LoadCursorW(nullptr,IDC_ARROW);c.hIcon=LoadIconW(nullptr,IDI_APPLICATION);c.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);c.lpszClassName=L"SourceProducerSegmentTimeline";if(!RegisterClassW(&c))throw std::runtime_error("Timeline class registration failed");registered=true;}
+    auto session=std::make_unique<Session>(Session{host,document,std::move(changed),std::move(history),std::move(audition),std::move(mixStarted)});show_workspace();auto window=CreateMDIWindowW(L"SourceProducerSegmentTimeline",L"Segment Timeline",WS_VISIBLE|WS_CAPTION|WS_SYSMENU|WS_THICKFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_HSCROLL|WS_VSCROLL|WS_CLIPCHILDREN,CW_USEDEFAULT,CW_USEDEFAULT,850,420,workspace,instance,reinterpret_cast<LPARAM>(session.get()));if(!window)throw std::runtime_error("Timeline window creation failed");timelineWindows.push_back(window);PostMessageW(parent,SegmentWorkspaceChangedMessage,0,0);session->owned=true;session.release();SendMessageW(workspace,WM_MDIACTIVATE,reinterpret_cast<WPARAM>(window),0);SetFocus(window);UpdateWindow(window);return true;
 }
 void refresh_segment_timeline(){refresh_embedded_band_editors();for(auto w:timelineWindows){auto s=reinterpret_cast<Session*>(GetWindowLongPtrW(w,GWLP_USERDATA));if(s)refresh(w,*s);}}
 void select_segment_timeline_event(TimelineEventKind kind,size_t document,size_t track,size_t event){for(auto w:timelineWindows){auto s=reinterpret_cast<Session*>(GetWindowLongPtrW(w,GWLP_USERDATA));if(s&&s->document==document&&s->selected&&s->selected->kind==kind&&s->selected->track==track){s->selected->event=event;if(kind==TimelineEventKind::sequence_note&&s->activeSequence)s->sequences[*s->activeSequence].note=event;refresh(w,*s);}}}
@@ -585,9 +694,14 @@ void clear_segment_timeline_note_selection(size_t document,std::uint32_t groups,
     }
 }
 bool translate_segment_timeline(MSG& message){
-    if(workspace&&IsWindow(workspace)&&IsWindowVisible(workspace)&&TranslateMDISysAccel(workspace,&message))return true;
+    // Separate owned Properties windows handle their own Ctrl+Tab pages.
+    // MDI acceleration belongs to the frame and its child editor hierarchy.
+    if(workspace&&IsWindow(workspace)&&IsWindowVisible(workspace)&&
+       GetAncestor(message.hwnd,GA_ROOT)==GetAncestor(workspace,GA_ROOT)&&TranslateMDISysAccel(workspace,&message))return true;
     if(translate_embedded_band_editor(message))return true;
     const auto timelineWindow=message_window(message.hwnd);if(!timelineWindow)return false;
+    // Native pitch scrollbars own their arrow/Page/Home/End keyboard behavior.
+    if(message.hwnd!=timelineWindow&&GetDlgCtrlID(message.hwnd)==PartPitchScroll)return false;
     if(message.message==WM_KEYDOWN&&IsWindowEnabled(timelineWindow)&&IsWindowEnabled(GetAncestor(timelineWindow,GA_ROOT))){
         const bool control=(GetKeyState(VK_CONTROL)&0x8000)!=0,shift=(GetKeyState(VK_SHIFT)&0x8000)!=0,alt=(GetKeyState(VK_MENU)&0x8000)!=0;
         if(control&&!shift&&!alt&&(message.wParam=='E'||message.wParam=='G'||message.wParam=='T'||message.wParam=='B')){
@@ -620,5 +734,5 @@ bool translate_segment_timeline(MSG& message){
     }
     return IsDialogMessageW(timelineWindow,&message);
 }
-void release_segment_timeline(){release_embedded_band_editors();const auto windows=timelineWindows;for(auto w:windows)if(IsWindow(w))SendMessageW(workspace,WM_MDIDESTROY,reinterpret_cast<WPARAM>(w),0);hide_segment_timeline_workspace();}
+void release_segment_timeline(bool hideWorkspace){release_embedded_band_editors();const auto windows=timelineWindows;for(auto w:windows)if(IsWindow(w))SendMessageW(workspace,WM_MDIDESTROY,reinterpret_cast<WPARAM>(w),0);if(hideWorkspace)hide_segment_timeline_workspace();}
 }

@@ -1,19 +1,51 @@
 {
   "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 22,
+    "patch": 0
+  },
   "configurePresets": [
     {
-      "name": "product-win32",
-      "displayName": "Source-only Producer (Win32)",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "Win32",
-      "binaryDir": "${sourceDir}/work/build/product",
+      "name": "macos-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
       "cacheVariables": {
-        "CMAKE_SYSTEM_VERSION": "10.0.26100.0",
-        "PRODUCER_BUILD_REFERENCE_TOOLS": "OFF",
-        "PRODUCER_BUILD_CORE_TESTS": "ON"
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "14.0"
+      }
+    },
+    {
+      "name": "macos-debug",
+      "displayName": "macOS arm64 Debug (layout scaffold)",
+      "inherits": "macos-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "macos-release",
+      "displayName": "macOS arm64 Release (layout scaffold)",
+      "inherits": "macos-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
       }
     }
   ],
-  "buildPresets": [{"name": "product-release", "configurePreset": "product-win32", "configuration": "Release"}],
-  "testPresets": [{"name": "product-core", "configurePreset": "product-win32", "configuration": "Release", "output": {"outputOnFailure": true}}]
+  "buildPresets": [
+    {
+      "name": "macos-debug",
+      "configurePreset": "macos-debug"
+    },
+    {
+      "name": "macos-release",
+      "configurePreset": "macos-release"
+    }
+  ]
 }

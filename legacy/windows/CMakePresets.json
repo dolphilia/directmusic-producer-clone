@@ -1,0 +1,19 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "product-win32",
+      "displayName": "Source-only Producer (Win32)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "Win32",
+      "binaryDir": "${sourceDir}/work/build/product",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_VERSION": "10.0.26100.0",
+        "PRODUCER_BUILD_REFERENCE_TOOLS": "OFF",
+        "PRODUCER_BUILD_CORE_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [{"name": "product-release", "configurePreset": "product-win32", "configuration": "Release"}],
+  "testPresets": [{"name": "product-core", "configurePreset": "product-win32", "configuration": "Release", "output": {"outputOnFailure": true}}]
+}

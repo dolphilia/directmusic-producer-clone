@@ -1,9 +1,18 @@
-# Downloaded historical binaries, extracted content, and local tooling.
+# Current product build output and local development data.
+/build/
+/local/
+
+# Machine-specific CMake overrides and macOS metadata.
+CMakeUserPresets.json
+.DS_Store
+
+# Local files used by the independent Windows recovery workspace.
+/legacy/windows/work/
+/legacy/windows/artifacts/
+/legacy/windows/screenshot/
+
+# Retain exclusions for local data from the original repository layout.
 /artifacts/
-
-# Local analysis copies and tool-generated working data.
 /work/
-
-# User-provided original UI reference screenshots; keep local originals.
 /screenshot/
 

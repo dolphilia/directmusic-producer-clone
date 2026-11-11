@@ -79,6 +79,7 @@
       "cases": [
         {
           "id": "UI01.main-frame",
+          "originalGuiResearch": "docs/analysis/original-gui/ui-01-view-toolbars.md",
           "group": "UI01",
           "expectation": "Project Tree at left, toolbar/menu above, editing windows to right, status below. Multiple editors can open, one active.",
           "references": [
@@ -237,6 +238,7 @@
         },
         {
           "id": "UI01.properties",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-10-properties.md",
           "group": "UI01",
           "expectation": "Right-click Properties or select and F11 opens a single nonmodal Properties window which follows selection.",
           "references": [
@@ -731,6 +733,7 @@
         },
         {
           "id": "UI01.edit-clipboard",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-05-clipboard-history.md",
           "group": "UI01",
           "status": "作業中",
           "appearanceStatus": "比較未確認",
@@ -964,6 +967,7 @@
         },
         {
           "id": "UI01.document-editing-workspace",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-02-mdi.md",
           "baselineKind": "OriginalHelp illustration/instructions;dynamiccomparisonblocked",
           "references": [
             {
@@ -1316,6 +1320,7 @@
         },
         {
           "id": "UI01.file-save-key",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-13-reopen.md",
           "feature": "Shared File CtrlS for open main editor",
           "baselineKind": "OriginalHelp keyboardshortcuts/savetheworkingfile;dynamiccomparisonblocked",
           "references": [
@@ -1709,6 +1714,7 @@
         },
         {
           "id": "UI01.priority-05",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-01-creation.md",
           "group": "UI01",
           "phase": "SSP02",
           "screenshotNumber": 5,
@@ -2275,6 +2281,7 @@
         },
         {
           "id": "UI02.tempo-selection",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-tempo-timesig.md",
           "status": "作業中",
           "appearanceStatus": "比較未確認",
           "interactionStatus": "作業中",
@@ -2392,6 +2399,7 @@
         },
         {
           "id": "UI02.tempo-properties-insert",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-tempo-timesig.md",
           "reference": [
             {
               "path": "work/analysis/help/htm/tempoproperties.htm",
@@ -2551,6 +2559,7 @@
         },
         {
           "id": "UI02.timeline-timed-strips",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-04-track-headers.md",
           "baselineKind": "Original Help anddiagram;dynamic original blocked",
           "references": [
             {
@@ -2709,6 +2718,7 @@
         },
         {
           "id": "UI02.timeline-keyboard-history",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-05-clipboard-history.md",
           "title": "Owned Segment Timeline keyboard history/document focus",
           "referenceBasis": [
             {
@@ -2828,6 +2838,7 @@
         },
         {
           "id": "UI02.timeline-tile-viewport",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-02-03-viewport.md",
           "baselineKind": "OriginalHelp internalwindows/track/ruler arrangement;responsive geometry implementation inference;dynamiccomparisonblocked",
           "references": [
             {
@@ -2899,6 +2910,7 @@
         },
         {
           "id": "UI02.timesig-selection-properties",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-tempo-timesig.md",
           "baselineKind": "Original saved Help and static dialog image; dynamic original blocked",
           "references": [
             {
@@ -3838,6 +3850,7 @@
         },
         {
           "id": "UI02.priority-17",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-07-note-gestures.md",
           "group": "UI02",
           "phase": "SSP04",
           "screenshotNumber": 17,
@@ -3923,6 +3936,7 @@
         },
         {
           "id": "UI02.priority-18",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-07-note-gestures.md",
           "group": "UI02",
           "phase": "SSP04",
           "screenshotNumber": 18,
@@ -3947,6 +3961,7 @@
         },
         {
           "id": "UI02.priority-19",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-07-note-gestures.md",
           "group": "UI02",
           "phase": "SSP04",
           "screenshotNumber": 19,
@@ -4115,6 +4130,7 @@
         },
         {
           "id": "UI02.priority-21",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP03",
           "screenshotNumber": 21,
@@ -4221,6 +4237,7 @@
         },
         {
           "id": "UI02.priority-22",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP03",
           "screenshotNumber": 22,
@@ -4327,6 +4344,7 @@
         },
         {
           "id": "UI02.priority-23",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP03",
           "screenshotNumber": 23,
@@ -4433,6 +4451,7 @@
         },
         {
           "id": "UI02.priority-24",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI02",
           "phase": "SSP03",
           "screenshotNumber": 24,
@@ -4571,6 +4590,7 @@
         },
         {
           "id": "UI02.priority-29",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 29,
@@ -4622,6 +4642,7 @@
         },
         {
           "id": "UI02.priority-30",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 30,
@@ -4673,6 +4694,7 @@
         },
         {
           "id": "UI02.priority-31",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 31,
@@ -4724,6 +4746,7 @@
         },
         {
           "id": "UI02.priority-32",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 32,
@@ -4775,6 +4798,7 @@
         },
         {
           "id": "UI02.priority-33",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 33,
@@ -4826,6 +4850,7 @@
         },
         {
           "id": "UI02.priority-34",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 34,
@@ -4928,6 +4953,7 @@
         },
         {
           "id": "UI02.priority-36",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 36,
@@ -4979,6 +5005,7 @@
         },
         {
           "id": "UI02.priority-37",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-08-cc-curves.md",
           "group": "UI02",
           "phase": "SSP06",
           "screenshotNumber": 37,
@@ -5030,6 +5057,7 @@
         },
         {
           "id": "UI02.priority-38",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP07",
           "screenshotNumber": 38,
@@ -5079,6 +5107,7 @@
         },
         {
           "id": "UI02.priority-39",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP07",
           "screenshotNumber": 39,
@@ -5128,6 +5157,7 @@
         },
         {
           "id": "UI02.priority-40",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP07",
           "screenshotNumber": 40,
@@ -5279,6 +5309,7 @@
         },
         {
           "id": "UI02.priority-41",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-06-sequence-parts.md",
           "group": "UI02",
           "phase": "SSP07",
           "screenshotNumber": 41,
@@ -5328,6 +5359,7 @@
         },
         {
           "id": "UI02.priority-42",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI02",
           "phase": "SSP07",
           "screenshotNumber": 42,
@@ -5377,6 +5409,7 @@
         },
         {
           "id": "UI02.sequence-note-properties-core",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-05-selection.md",
           "status": "作業中",
           "appearanceStatus": "比較未確認",
           "interactionStatus": "限定成立",
@@ -6304,6 +6337,7 @@
       "cases": [
         {
           "id": "UI03.priority-06",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-01-creation.md",
           "group": "UI03",
           "phase": "SSP02",
           "screenshotNumber": 6,
@@ -6477,6 +6511,7 @@
         },
         {
           "id": "UI03.priority-07",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-01-creation.md",
           "group": "UI03",
           "phase": "SSP02",
           "screenshotNumber": 7,
@@ -6768,6 +6803,7 @@
         },
         {
           "id": "UI03.priority-08",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-01-creation.md",
           "group": "UI03",
           "phase": "SSP02",
           "screenshotNumber": 8,
@@ -7489,6 +7525,7 @@
     {
       "id": "UI04",
       "name": "Style・Pattern・Motif",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-04-style-motif.md",
       "responsibilityModules": [
         "StyleDesigner.ocx"
       ],
@@ -7734,6 +7771,7 @@
         },
         {
           "id": "UI05.pchannel-properties",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "status": "未着手",
           "expectation": "Full selected PChannel properties/multiselect",
           "reference": [
@@ -7765,6 +7803,7 @@
         },
         {
           "id": "UI05.band-editor-mixer",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "status": "作業中",
           "expectation": "PChannel list plus volume/pan graphical interface",
           "reference": [
@@ -8181,6 +8220,7 @@
         },
         {
           "id": "UI05.priority-10",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI05",
           "phase": "SSP02",
           "screenshotNumber": 10,
@@ -8379,6 +8419,7 @@
         },
         {
           "id": "UI05.priority-11",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI05",
           "phase": "SSP02",
           "screenshotNumber": 11,
@@ -8577,6 +8618,7 @@
         },
         {
           "id": "UI05.priority-25",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI05",
           "phase": "SSP05",
           "screenshotNumber": 25,
@@ -8911,6 +8953,7 @@
         },
         {
           "id": "UI05.priority-26",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI05",
           "phase": "SSP05",
           "screenshotNumber": 26,
@@ -9245,6 +9288,7 @@
         },
         {
           "id": "UI05.priority-27",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI05",
           "phase": "SSP05",
           "screenshotNumber": 27,
@@ -9579,6 +9623,7 @@
         },
         {
           "id": "UI05.priority-28",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI05",
           "phase": "SSP05",
           "screenshotNumber": 28,
@@ -10223,6 +10268,7 @@
       "cases": [
         {
           "id": "UI06.chord-timeline-properties",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-chord.md",
           "title": "Chord Timeline selection and shared Chord type Properties",
           "responsibilities": [
             "ChordStripMgr.dll"
@@ -10327,6 +10373,7 @@
         },
         {
           "id": "UI06.chord-scale-keyboards",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-chord.md",
           "start": {
             "path": "work/analysis/ui-chord-scale/20261010T002919Z/start-v1.json",
             "sha256": "7bd2c37d544e77214c68e97fc189876044d4da452691d4726155f232b0f307e7"
@@ -10564,6 +10611,7 @@
     {
       "id": "UI07",
       "name": "DLS・Envelope・RegionKeyboard・PanVol",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-07-dls-wave-instrument.md",
       "responsibilityModules": [
         "DLSDesigner.ocx",
         "ADSREnvelope.ocx",
@@ -10599,6 +10647,7 @@
       "cases": [
         {
           "id": "UI07.priority-43",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-09-band-editor.md",
           "group": "UI07",
           "phase": "SSP07",
           "screenshotNumber": 43,
@@ -10882,6 +10931,7 @@
     },
     {
       "id": "UI08",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-08-audiopath-designer.md",
       "name": "AudioPath・Send・効果",
       "responsibilityModules": [
         "AudioPathDesigner.ocx"
@@ -12434,6 +12484,7 @@
       "cases": [
         {
           "id": "UI09.lyric-properties-modeless",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-groove-lyric.md",
           "group": "UI09",
           "baselineKind": "Original Help/static illustration and prior native original Lyric fixtures;dynamic original frozen",
           "references": [
@@ -12893,6 +12944,7 @@
         },
         {
           "id": "UI09.marker-properties-modeless",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-marker-mute.md",
           "group": "UI09",
           "baselineKind": "original saved dynamic UI201/204/202/208/206 and native files;Help;current dynamic original frozen",
           "references": [
@@ -13216,6 +13268,7 @@
         },
         {
           "id": "UI09.wave-editor-viewport",
+          "originalGuiResearch": "docs/analysis/original-gui/ui-07-dls-wave-instrument.md",
           "group": "UI09",
           "responsibilityModules": [
             "WaveStripMgr.dll",
@@ -13294,6 +13347,7 @@
         },
         {
           "id": "UI09.wave-properties-modeless",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-wave-track.md",
           "group": "UI09",
           "responsibilityModules": [
             "WaveStripMgr.dll",
@@ -13486,6 +13540,7 @@
         },
         {
           "id": "UI09.wave-item-loop",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-wave-track.md",
           "group": "UI09",
           "responsibilityModules": [
             "WaveStripMgr.dll",
@@ -13575,6 +13630,7 @@
         },
         {
           "id": "UI09.mute-beat-grid",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-14-marker-mute.md",
           "status": "作業中",
           "expectation": "PChannel row beat click toggles X and native mute/restore pair with one history transaction",
           "references": [
@@ -13788,6 +13844,7 @@
     {
       "id": "UI10",
       "name": "Script文書・時刻起動",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-10-script-designer.md",
       "responsibilityModules": [
         "ScriptDesigner.ocx",
         "ScriptStripMgr.dll"
@@ -13892,6 +13949,7 @@
     },
     {
       "id": "UI11",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-11-container.md",
       "name": "Container",
       "responsibilityModules": [
         "ContainerDesigner.ocx"
@@ -13935,6 +13993,7 @@
     },
     {
       "id": "UI12",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-12-toolgraph-designer.md",
       "name": "ToolGraph",
       "responsibilityModules": [
         "ToolGraphDesigner.ocx"
@@ -13979,6 +14038,7 @@
     {
       "id": "UI13",
       "name": "Transport・音声ファイル出力",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-13-transport-export.md",
       "responsibilityModules": [
         "Conductor.dll",
         "FileOutputDMO.dll"
@@ -14051,6 +14111,7 @@
       "cases": [
         {
           "id": "UI13.transport-states",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-12-loop-boundary.md",
           "group": "UI13",
           "expectation": "Stopped toolbar: Transport List, Play From Start, Play, Recording, Transition, Current Tempo, modifier. During play first two buttons replaced by Stop Immediate and Stop at Boundary.",
           "references": [
@@ -14592,6 +14653,7 @@
         },
         {
           "id": "UI13.priority-02",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-11-transport-position.md",
           "group": "UI13",
           "phase": "SSP01",
           "screenshotNumber": 2,
@@ -15049,6 +15111,7 @@
         },
         {
           "id": "UI13.priority-03",
+          "originalGuiResearch": "docs/analysis/original-gui/seg-11-transport-position.md",
           "group": "UI13",
           "phase": "SSP01",
           "screenshotNumber": 3,
@@ -18714,6 +18777,7 @@
     {
       "id": "UI14",
       "name": "Farm・StylePlayer",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-14-companion-apps.md",
       "responsibilityModules": [
         "Farm.exe",
         "StylePlayer.exe"
@@ -18829,6 +18893,7 @@
     {
       "id": "ROLE01",
       "name": "導入解除・CRT",
+      "originalGuiResearch": "docs/analysis/original-gui/ui-14-companion-apps.md",
       "responsibilityModules": [
         "Uninst.dll",
         "MSVCRT.DLL"

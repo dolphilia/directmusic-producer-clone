@@ -4,6 +4,30 @@
 
 以下のビルドコマンドと相対パスは、`legacy/windows/`を作業ルートとして解釈してください。原版や過去の録音を含むGit対象外の素材は同梱されていません。過去の候補・音声・GUIの成功記録は当時の環境に対するもので、今回の配置変更後にWindowsで再実行した結果ではありません。
 
+原版の見た目と操作は、[GUI 調査計画](docs/analysis/original-gui/README.md) と [画像付きの初回観測](docs/analysis/original-gui/pilot.md) から確認できます。
+
+## 原版をレジストリ警告なしで起動する
+
+インストール済みの原版 5.3.0.900 をもとに、起動用コピーをこのディレクトリの `work/producer-no-registry-warning/` に生成します。Windows の PowerShell から実行します。
+
+```powershell
+python .\scripts\Prepare-OriginalProducer.py
+$app = (Resolve-Path .\work\producer-no-registry-warning).Path
+Start-Process -FilePath (Join-Path $app 'DMUSProd.exe') -WorkingDirectory $app
+```
+
+作業用コピーは通常起動時のファイル関連付けと OLE 登録の更新を省きます。起動に必要な編集コンポーネントは既存のインストールを利用します。起動用コピーの設定と最近使ったプロジェクトの一覧は、同じフォルダーの `DMUSProd.ini` に保存します。
+
+### この環境のインストール済み版
+
+`C:\Program Files (x86)\Microsoft DirectMusic Producer\DMUSProd.exe` にも起動時の登録処理を省く修正を適用しました。インストール済み版は従来の設定を使います。元の実行ファイルは `work/installed-producer-startup/DMUSProd.original.exe` に保存しています。
+
+元に戻すときは Producer を終了し、管理者として開いた PowerShell で次を実行します。
+
+```powershell
+.\work\installed-producer-startup\Set-InstalledStartupFix.ps1 -Restore
+```
+
 ## 従来のREADME
 
 以下は従来のWindows版の状態・ビルド・解析記録です。原版との完全な機能・外観・操作互換や全40モジュールの再現は、新しいmacOS版の完成条件には引き継ぎません。過去の検証結果は当時の候補・環境に対する記録として保持します。

@@ -75,4 +75,4 @@ Segment2 の Edit は Undo と Redo が灰色。Edit を閉じた直後の Ctrl+
 
 確認した各段階で `guid`、`segh`、`tims`、`curl` は固定入力と一致。別文書 Segment2.sgp と Project2.pro の全バイトも固定入力と一致した。
 
-残りは Delete キーの履歴、別トラック・別文書への貼付け、クリップの部分重複・終端、選択範囲と Overwrite の細かな消去範囲。
+Sequence で残るのは Delete キーの履歴、別トラック・別文書への貼付け、クリップの部分重複・終端、選択範囲と Overwrite の細かな消去範囲。Tempo の文書間貼り付けと文書ごとの履歴は [複数 Segment の試験](seg-15-multiple-documents.md#文書をまたぐ-clipboard-と-undoredo) に記録した。

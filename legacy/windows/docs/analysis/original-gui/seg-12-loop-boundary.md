@@ -118,3 +118,5 @@ Infinite と Barline を保存後、Transport Options を非表示に戻し、�
 [Infinite と Barline を保存した SGP](../../../work/original-gui/SEG-11-12/20261111T034632165034Z/captures/infinite-barline-loop.sgp)
 
 追試はループ端点ハンドルの入口と操作、端点の保存と再表示が食い違う条件、Reset、他の停止境界や Transition、参照時刻を全トラックに設定した素材、実際の音声出力。
+
+同じ Sequence の先頭再生で、全区間と部分区間の有限 Repeat、全区間 Infinite の各周回で鳴る音を録音した。 [ピックアップと末尾の追加小節の再生](seg-10-extra-bar-playback.md)

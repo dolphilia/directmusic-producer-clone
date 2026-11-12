@@ -2,7 +2,7 @@
 
 [調査計画](README.md) · [Script Designer](ui-10-script-designer.md) · [ToolGraph Designer](ui-12-toolgraph-designer.md)
 
-図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。現行コピーでのフォルダー操作、保存と別起動は追試する。 [図の出典と寸法](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/published-help-figures.json) · [FarmGame の Container 保存値](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/farmgame-container-audit.json)
+図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。原版コピーでのフォルダー操作、設計用・実行用保存と再起動は [Container の実機操作](ui-11-container-editing.md) に掲載した。 [図の出典と寸法](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/published-help-figures.json) · [FarmGame の Container 保存値](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/farmgame-container-audit.json)
 
 ## Project Tree の入口
 
@@ -31,4 +31,4 @@ Container の Properties は `Container` と `Info` の2タブ。Container タ�
 
 2本の Script は SHA-256 が2026-10-05 の観測と一致した。実行用の参照先 `.sgt` 10本も2026-10-07 の記録と一致した。この組み合わせでの読込結果は実機で確認する。 [設計用 Project の素材](../../../work/original-gui/SEG-14-pattern-style/20261111T074828536163Z/inputs/farmgame/manifest.json) · [実行用ファイル20件の素材](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/inputs/farmgame-runtime/manifest.json)
 
-追試では同じ Project に2本の Segment を置き、空 Container から片方を Embed Runtime、もう片方を Reference Runtime へ追加する。選択・並べ替え・Reset・Cancel・OK、Tree への復帰、Locate in Tree、Design/Runtime/Cache を撮る。設計用保存、別起動、実行用保存を順に行い、各ファイルでどの項目が参照またはデータになったかを照合する。Script Content と Segment 内でも同じ入口を確認する。
+実機では BGNight を Embed Runtime、BGDawn を Reference Runtime に割り当て、Tree のドラッグと削除、Cache の再起動後の復元、`.cop` と `.con` の格納値を確認した。Script Content と Segment 内蔵版の Add/Remove Files も撮影した。次の追試は実行用依存ファイルを揃えたロード、Cache の解放動作、Script の Content Identifier の変更と呼出しへの反映。 [実機の操作と保存値](ui-11-container-editing.md)

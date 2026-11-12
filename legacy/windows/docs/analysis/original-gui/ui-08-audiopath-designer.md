@@ -2,7 +2,7 @@
 
 [調査計画](README.md) · [Parameter Control Track の入口](seg-14-control-triggers-script.md)
 
-図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。現在の実機でのドラッグ、設定変更、保存、音声は追試する。 [図の出典と寸法](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/published-help-figures.json) · [FarmGame の AudioPath 保存値](../../../work/original-gui/SEG-14-control-triggers-script/20261111T081051527595Z/farmgame-script-and-audiopath.json)
+図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。原版コピーでの選択、ドラッグ、エフェクト編集、Send 設定と再起動後の復元は [AudioPath Designer の実機操作](ui-08-audiopath-editing.md) に掲載した。 [図の出典と寸法](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/published-help-figures.json) · [FarmGame の AudioPath 保存値](../../../work/original-gui/SEG-14-control-triggers-script/20261111T081051527595Z/farmgame-script-and-audiopath.json)
 
 ## 画面の入口と2つのペイン
 
@@ -41,4 +41,4 @@ Buffer Properties の図は `Use standard buffer` がオン、種類は Reverb�
 
 ![原版ヘルプの Send。3つの Mix Group が同じ宛先 Mix Group1 に送る](figures/audiopath-help-08-send-destination.gif)
 
-[FarmGame の専用コピー](../../../work/original-gui/SEG-14-pattern-style/20261111T074828536163Z/inputs/farmgame/manifest.json) の `APFarm.aup` に2つの Mix Group と Buffer、先頭 Buffer の `Echo1` が保存されている。この素材で表の選択、Echo のプロパティと設定ダイアログ、変更の取消を調べる。新しい別コピーでは挿入前、候補選択、2効果の順序とドロップ、Send の宛先一覧、Other と Cancel、別起動での復元を撮る。音量と各効果の聴感は、表示・保存の確認後に試聴する。
+[FarmGame の専用コピー](../../../work/original-gui/SEG-14-pattern-style/20261111T074828536163Z/inputs/farmgame/manifest.json) の `APFarm.aup` に2つの Mix Group と Buffer、先頭 Buffer の `Echo1` が保存されている。この素材から原版で `APFarm1.aup` を作り、エフェクトの切り取り・貼り付け、受信用 Mix Group、Send の宛先、レベルを確認した。Echo の詳細設定ボタンが有効になる条件、ドラッグの成立条件、実際の出力音は追試する。 [実機の操作と保存値](ui-08-audiopath-editing.md)

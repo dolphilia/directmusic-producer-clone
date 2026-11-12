@@ -86,4 +86,4 @@ Length を OK で確定し、続く Add New Tracks でも初期選択の Band �
 
 [TimeSig だけの保存記録](../../../work/original-gui/SEG-01/20261110T235055790894Z/inputs/initial-timesig/manifest.json) · [2文書の保存記録](../../../work/original-gui/SEG-01/20261110T235055790894Z/inputs/sequence-and-band/manifest.json)
 
-未観測の分岐は、作成の別入口、複数ファイル種別と指定名による確定、空選択でのトラック追加、Length の最小・最大と不正値、Extension bars と pick-up、Clocktime の値変更を確定したときの保存結果。
+作成後に Length を編集した試験では、小節・時間指定の入力境界と保存、Sequence Part の追加小節とピックアップを確認した。新規作成時の別入口、複数ファイル種別と指定名による確定、空選択でのトラック追加、新規作成ダイアログでの同条件の確認が残る。 [Length の入力境界](seg-10-properties-bounds.md) · [追加小節とピックアップ](seg-10-length-pickup.md)

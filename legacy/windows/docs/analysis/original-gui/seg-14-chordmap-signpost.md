@@ -99,4 +99,4 @@
 
 ![別起動後の Activity Level は Medium High](figures/harm-90-signpost-activity-reopened.jpg)
 
-追試項目は参照先の複数候補と欠損、`Audition (Design) Only` と実行用ファイル、Signpost の移動・複数選択とコピー、ChordMap Designer のパレット・節点・リンク・Signpost Group の編集、Style/Pattern があるときの Compose Chords の確定と取り消し。今回の Chordmap1 は既定文書のまま保存した。
+追試項目は参照先の複数候補と欠損、`Audition (Design) Only` と実行用ファイル、Signpost の移動・複数選択とコピー、ChordMap Designer のパレット・節点・リンクの編集。今回の Chordmap1 は既定文書のまま保存した。後続の [Compose Chords の観測](seg-14-compose-chords.md) で Signpost Group F の割り当てと、Style・Pattern それぞれで生成・Undo・Redo を確認した。

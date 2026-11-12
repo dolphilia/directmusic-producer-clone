@@ -82,4 +82,10 @@ Properties を開いたままツリー内側の Segment2 をクリックする�
 
 Ctrl+S で保存した Segment1 の `segh` は20小節・61440 clocks、Start 3072 clocks、繰り返し `0xffffffff`、Music Time のループ端 0〜61440 clocks。`USBJ` は `GUI Study`。GUID と `tims`・`seqt`、別文書 Segment2 の全バイトは編集前の固定入力と一致した。Clock Time Looping と Boundary は [別プロセスの画面](seg-13-reopen.md) でも読み戻した。
 
-次に調べる条件は、各欄の全 Tab 順、範囲外入力とスピン上下限、Loop の Reset、Clock Time の実値、Boundary 下部の撮影と全選択肢、GUID の入力妥当性。再生確認には音符入りの別素材を使う。
+Length の小節・時間指定、Start Time、Loop の入力境界、Reset、保存値と再読込は後続試験で記録した。 [Length・Start Time・Loop の入力境界](seg-10-properties-bounds.md)
+
+Extension bars と Display pick-up bar は、Sequence Part ごとの保存、前後の音符の編集、複数パートを比較した。 [追加小節とピックアップ](seg-10-length-pickup.md)
+
+Boundary 下端の Timing と Cut Off の選択は、キー操作・保存値と照合した。楽器を割り当てた Sequence の先頭再生では、After Prepare Time でピックアップ音を録音した。 [Boundary の Timing とピックアップ再生](seg-10-boundary-prepare-time.md)
+
+Cut Off は Immediate・Quick Response での切替時に3択を録音で比較した。4ページの Tab 順、GUID の入力・確定・取消しと Info の別プロセスでの再読込は後続試験に記録した。6/8と混在拍子の Start at、Clocktime の1 ms刻みの丸め、同じ開始位置での小節指定と時間指定の先頭再生を比較した。直接 Transition の Immediate・Barline と Timing は録音で比較した。追試は、Marker や Align を使う切替、テンポ変化を含む時間指定や分欄の極値、重複した GUID を持つ文書の別プロセスでの読み込み。 [切替位置とピックアップの録音](seg-10-transition-pickup.md) [拍子と Clocktime の境界](seg-10-meter-clock.md) [Cut Off と切替時の発音](seg-10-boundary-cutoff.md) · [Tab 順と Info・GUID](seg-10-info-keyboard.md)

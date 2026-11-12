@@ -2,7 +2,7 @@
 
 [調査計画](README.md) · [原版で観測した Wave エディター](ui-07-dls-wave-instrument.md) · [AudioPath の試験素材](ui-08-audiopath-designer.md)
 
-`Wave Track` は原版の [Add New Tracks](seg-01-creation.md) で確認済み。このページの図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。Track の追加後、項目の選択と操作は現行コピーで追試する。 [図の出典と寸法](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/published-help-figures.json) · [FarmGame の Wave 保存値](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/farmgame-wave-audit.json)
+`Wave Track` は原版の [Add New Tracks](seg-01-creation.md) で確認済み。このページの図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。実機の波形選択、レイヤー、Variation、ループの保存と復元は [Wave Track の調査記録](seg-14-wave-track-editing.md) に掲載した。 [図の出典と寸法](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/published-help-figures.json) · [FarmGame の Wave 保存値](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/farmgame-wave-audit.json)
 
 ## Track、Part、Layer の表示と操作
 
@@ -74,4 +74,4 @@ Wave 文書は `.wvp` の子ノードをダブルクリックする入口を持�
 
 項目長の単位は100 ns。各行の値は、PCM フレーム数から同じ単位に換算して切り捨てた値より500大きい。6件はすべて16 bit Mono PCM で、音声データが対応する RawElements の .wav と全バイト一致した。 [元 WAV の複製とハッシュ](../../../work/original-gui/SEG-14-wave-audiopath/20261111T081723992826Z/inputs/wave-import/manifest.json)
 
-実機では既存の `SfxAlarm.sgp` で折りたたみと展開、選択色、Wave 項目の4タブ、別の Wave への差し替えと取消を撮る。空 Segment で Add Wave Part(s)、Variation の無選択と単一選択、空レイヤーへの追加、範囲選択と端のカーソルを調べる。保存後は `.sgp` の項目と `.wvp` のサンプル設定を照合し、別起動で参照と外観が戻るか確認する。
+実機では `SfxCow.sgp` で折りたたみと展開、選択色、4つの項目タブを撮影し、新規 Segment1 で Add Wave Part(s)、Variation、レイヤー、開始位置とループを確認した。次の追試は、Wave の差し替えと Undo、端や境界のカーソル、別の Part への移動、Wave 文書のループ範囲と再生音。 [実機の操作と保存値](seg-14-wave-track-editing.md)

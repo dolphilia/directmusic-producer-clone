@@ -2,7 +2,7 @@
 
 [調査計画](README.md) · [Script Designer と Message Window](ui-10-script-designer.md) · [Pattern と Style の素材](seg-14-pattern-style.md)
 
-`Add New Tracks` に `Parameter Control Track`、`Segment Trigger Track`、`Script Track` があることは原版の [トラック追加画面](seg-01-creation.md) で確認済み。この資料の図は原版同梱の HTML Help。現行調査用コピーで各ストリップを追加した後の外観と操作は追試待ち。 [画像対応表](../../../work/original-gui/SEG-14-control-triggers-script/20261111T081051527595Z/published-help-figures.json) · [FarmGame の保存値](../../../work/original-gui/SEG-14-control-triggers-script/20261111T081051527595Z/farmgame-script-and-audiopath.json)
+`Add New Tracks` に `Parameter Control Track`、`Segment Trigger Track`、`Script Track` があることは原版の [トラック追加画面](seg-01-creation.md) で確認済み。この資料の図は原版同梱の HTML Help。実機の観測は [Parameter Control](seg-14-parameter-control.md)、[Segment Trigger](seg-14-segment-trigger.md)、[Script Track](seg-14-script-track.md) に記録した。 [画像対応表](../../../work/original-gui/SEG-14-control-triggers-script/20261111T081051527595Z/published-help-figures.json) · [FarmGame の保存値](../../../work/original-gui/SEG-14-control-triggers-script/20261111T081051527595Z/farmgame-script-and-audiopath.json)
 
 ## Parameter Control の追加と曲線
 
@@ -18,7 +18,7 @@
 
 ![原版ヘルプの WavesReverb-InGain Properties。時刻3行、値、曲線形状と反転](figures/segment-help-03-parameter-properties.gif)
 
-追試では [FarmGame の作業コピー](../../../work/original-gui/SEG-14-pattern-style/20261111T074828536163Z/inputs/farmgame/manifest.json) の `APFarm.aup` を用意する。保存ファイルは AudioPath `APFarm` と Echo `Echo1` を含む。対象のバッファ GUID は先頭の Mix Group と一致する。図の PChannels 1–16 はヘルプの例で、FarmGame の対象表示は現行原版で確認する。AudioPath のない状態、既定・埋め込みの候補差、Cancel と OK、曲線1件と複数選択、端のホバー・ドラッグ、保存と別起動を記録する。
+FarmGame の単独 AudioPath `APFarm.aup` には Echo `Echo1` がある。保存された対象バッファ GUID は先頭の Mix Group と一致する。実機では SfxAlarm の埋め込み AudioPath を使い、PChannels 11 と Echo1 を確認した。曲線を1件描画し、保存とプロジェクト再読込まで確認した。複数曲線の選択、端のホバー、別起動と音声は追試する。 [実機の観測](seg-14-parameter-control.md)
 
 ## Segment Trigger の参照と Boundary
 
@@ -26,7 +26,7 @@
 
 ![原版ヘルプの Segment タブ。Segment/Motif の切替、Type と時刻](figures/segment-help-04-segment-trigger-properties.gif)
 
-追試は専用 Project の2本の Segment から始め、元と参照先を別の名前・内容にする。参照未設定、候補の選択・取消、Secondary と Controlling Segment の有効状態、Start Time を変更したときの Belongs To、Boundary の既定と上書き、Undo・別起動の順に撮る。Motif は [QuickStart の Heartland](ui-04-style-motif.md) で候補がある状態を用意する。主従の再生、移動と音の開始は表示・保存とは別に観測する。
+実機では FarmGame の BGDawn から SSBird を参照し、[QuickStart の Heartland](ui-04-style-motif.md) を追加して accordion を割り当てた。空の項目、Secondary と Controlling Segment の有効状態、時刻変更、Boundary、Undo、プロジェクト再読込を撮影した。別プロセスでの復元と発音は追試する。 [実機の観測](seg-14-segment-trigger.md)
 
 ## Script Track の呼び出しと時刻
 

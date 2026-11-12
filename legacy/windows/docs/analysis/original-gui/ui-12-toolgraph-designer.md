@@ -2,7 +2,7 @@
 
 [調査計画](README.md) · [Container](ui-11-container.md) · [AudioPath Designer](ui-08-audiopath-designer.md) · [Parameter Control Track](seg-14-control-triggers-script.md)
 
-図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。現在の実機では Designer の初期表示・選択・ドラッグを追試する。 [図の出典と寸法](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/published-help-figures.json) · [登録の読み取り記録](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/toolgraph-dependencies.json)
+図は DirectMusic Producer 5.3.0.900 の同梱 HTML Help。原版コピーでのペイン、グループ、内蔵版、保存、未登録 Tool の取り込みは [ToolGraph Designer の実機操作](ui-12-toolgraph-editing.md) に掲載した。 [図の出典と寸法](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/published-help-figures.json) · [登録の読み取り記録](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/toolgraph-dependencies.json)
 
 ## ToolGraph を開く入口
 
@@ -21,6 +21,6 @@
 
 ## 現在の登録と追試用の入力
 
-`ToolGraphDesigner.ocx` にある `Software\Microsoft\DirectMusic\Tools` を読み取りで調べた。HKLM・HKCU と32ビット・64ビットの各ビューでキーが存在しなかった。一方、32ビットの Producer の Components 一覧には `Toolgraph Designer` と `Container Designer` がある。ヘルプ図の Duration、Echo、Quantize、Time Shift、Transpose は例示された Palette であり、現行環境での候補一覧は Designer を開いて確認する。 [登録の読み取り記録](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/toolgraph-dependencies.json) · [Toolgraph Designer](../../../../../work/analysis/original-manual-session/20261010T031624075Z/help-extracted/htm/toolgraphdesigner.htm)
+`ToolGraphDesigner.ocx` にある `Software\Microsoft\DirectMusic\Tools` を読み取りで調べた。HKLM・HKCU と32ビット・64ビットの各ビューでキーが見つからなかった。32ビットの Producer の Components 一覧には `Toolgraph Designer` と `Container Designer` がある。ヘルプ図の Palette の例には Duration、Echo、Quantize、Time Shift、Transpose がある。今回、独立・内蔵の各 Designer で表示された Palette は空だった。 [登録の読み取り記録](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/toolgraph-dependencies.json) · [Toolgraph Designer](../../../../../work/analysis/original-manual-session/20261010T031624075Z/help-extracted/htm/toolgraphdesigner.htm)
 
-最初の試験は空の独立 ToolGraph、Segment 内、AudioPath 内で、入口とツリー表示、ペイン幅、グループの追加・編集・取消、保存と再読込を観測する。クラスが未登録の場合の読込・エラーには、過去の再現実装試験で作成した [Graph.tgp](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/inputs/missing-tool/manifest.json) を使える。この入力には32ビットの COM 登録が見つからない2クラスが入っている。登録済みの Tool が利用できる場合は、Palette からの追加、セルの切替、列の順序、固有 Properties と Parameter Control を追試する。
+独立・Segment 内・AudioPath 内の入口と、PChannel Group の追加・取消・再読込を撮影した。未登録2クラスを含む試験入力 [Graph.tgp](../../../work/original-gui/UI11-12-container-toolgraph/20261111T082559380067Z/inputs/missing-tool/manifest.json) は、Project へ取り込まれたコピーで2つの Tool が消えた。登録済みの Tool を用意して Palette からの追加、セルの切替、列の順序、固有 Properties と Parameter Control を追試する。 [実機の操作と保存値](ui-12-toolgraph-editing.md)

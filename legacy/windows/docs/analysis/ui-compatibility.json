@@ -18792,8 +18792,17 @@
         "pointer": "/criteria"
       },
       "reference": {
-        "inventoryStatus": "未着手",
-        "evidence": [],
+        "inventoryStatus": "作業中",
+        "evidence": [
+          {
+            "path": "work/original-gui/UI14-farm-demo/20261111T124550098820Z/published-farm-live-figures.json",
+            "sha256": "6755807b908cb37fe1be209300a317a7b1e8354e02138d5f4baa1bb95f8e8180"
+          },
+          {
+            "path": "work/original-gui/UI14-styleplayer/20261111T132150928505Z/published-styleplayer-figures.json",
+            "sha256": "568ed848acd2c7018ea73f1d72f20891628878ce8382cda14f87fdfe17372626"
+          }
+        ],
         "firstScope": "補助アプリ必要機能、選択/再生/停止の画面/手順"
       },
       "appearance": {
@@ -18871,23 +18880,13 @@
         }
       ],
       "differences": [],
-      "blockers": [
-        {
-          "scope": "原版StylePlayer起動・動的比較",
-          "reason": "Computer Use app approval timed out",
-          "tracking": {
-            "path": "docs/analysis/product-state.json",
-            "pointer": "/current"
-          },
-          "unchangedRetry": false
-        }
-      ],
+      "blockers": [],
       "applicability": {
         "status": "要確認",
         "nonApplicableResponsibilities": [],
         "rule": "責務/ケースごとにUIの必要範囲・非適用と根拠を確定する。群全体を除外しない。"
       },
-      "nextAction": "原版help・保存済み観測・許可された観測から必要画面/操作をcasesへ登録し、差分の優先順を決める。",
+      "nextAction": "補助アプリの原版実機記録から必要画面と操作を登録し、同じ素材と操作で候補側を比較する。",
       "completed": false
     },
     {

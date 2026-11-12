@@ -35,7 +35,7 @@
 
 外部で作成した PCM 入りの DLS を、別の Project `WaveSource` に置いて原版で開いた。Project Tree を下にスクロールして Project を表示し、`Created.dlp > DLS Collection1 > Waves` を展開する。Wave の `Tone` をダブルクリックすると、前面が `Wave: Tone` に変わる。画面外のツリー項目は、スクロールで表示した後にクリックできた。
 
-白い波形面に黒のサンプル線と水平の中心線があり、左端に緑、波形の終わりに青の縦線が見える。終端より右は灰色。下端に横スクロール、右下に拡大・縮小の虫眼鏡、ステータスバー右側に `Zoom 1:1` と `8000 Hz 16 bit Mono, 800 samples`。入力の Wave のループ件数は0。縦線のドラッグ、選択領域、ズーム変更、再生は追試項目。 [Wave を開いた記録](../../../../../work/analysis/dls-author-original/20261003T224300Z/source-open/open-proof.json) · [Wave エディターの再現素材](../../../work/original-gui/UI07-14-archive/20261111T080241498238Z/inputs/wave-editor/manifest.json)
+白い波形面に黒のサンプル線と水平の中心線があり、左端に緑、波形の終わりに青の縦線が見える。終端より右は灰色。下端に横スクロール、右下に拡大・縮小の虫眼鏡、ステータスバー右側に `Zoom 1:1` と `8000 Hz 16 bit Mono, 800 samples`。入力の Wave のループ件数は0。縦線のドラッグ、選択領域、試聴は後続の独立した Wave 文書で確認した。 [Wave を開いた記録](../../../../../work/analysis/dls-author-original/20261003T224300Z/source-open/open-proof.json) · [Wave エディターの再現素材](../../../work/original-gui/UI07-14-archive/20261111T080241498238Z/inputs/wave-editor/manifest.json)
 
 ![Waves を展開し、波形エディターを開く前の Tone ノード](figures/dls-archive-07-wave-tree.jpg)
 
@@ -53,4 +53,4 @@
 
 ![別起動で Instrument を作成した後の DLS 保存確認](figures/dls-archive-11-instrument-save-prompt.jpg)
 
-今後は2段ツールバーで撮り直し、Instrument Editor が開く素材で鍵盤と Region、Envelope、PanVol を調べる。Wave エディターではループ端、範囲選択、ズーム、スクロール、試聴、保存後の復元を追試する。Segment の Wave Track と Wave Editor の連動は、[FarmGame の参照付き Segment](seg-14-wave-track.md) を使って確認する。
+後続の作業コピーでは FarmGame の Ocarina で Instrument Editor が開いた。鍵盤と Region、Volume エンベロープ、Region の Sample/Playback、Collection 内 Wave の3タブを撮影した。PanVol と他のエンベロープの操作は追試に残る。 [Instrument と Region の実機画面](seg-14-dls-note-release.md)FarmGame の独立した Wave 文書で、範囲選択、ループ端のドラッグ、Undo、試聴、保存後の復元と Wave Track との連動を確認した。独立した Wave 文書では、Loop and Release の保存と単独試聴、2つの Lock、Snap To Zero、Best Loop End も確認した。DLS Region の Note Off では、Forward と Loop and Release を比較し、後者でループ終端の先に置いた PCM の成分を検出した。Wave のズーム操作とスクロール、鍵域・速度域の編集は追試に残る。 [Wave エディターの設定と単独試聴](seg-14-wave-editor-loop-options.md) [Wave 文書のループ端と継承](seg-14-wave-document-loop.md) · [FarmGame の参照付き Segment](seg-14-wave-track.md)

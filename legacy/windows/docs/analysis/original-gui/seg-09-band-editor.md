@@ -87,4 +87,4 @@ SGP では Bands トラックのイベントに `DMBD` が埋め込まれてお�
 
 ## 追試する条件
 
-同じ拍の複数 Band と Cycle Bands、別文書からの参照・埋め込み、画面外の Locate Band、複数 PChannel を選択した格子操作、DLS 実データの割当と音声を調べる。今回の観測は埋め込みの Band0 と停止中の表示。[UI 互換性台帳](../ui-compatibility.json)
+同じ拍の複数 Band と Cycle Bands、別文書からの参照・埋め込み、画面外の Locate Band、複数 PChannel を選択した格子操作と、DLS の割当を編集する操作は追試に残る。後続試験では、埋め込んだ Band の PChannel 1 に Ocarina (DLS) が表示され、Sequence の3ノートから参照 DLS の音が出た。 [Band の割当表示と録音](seg-14-dls-note-release.md#同じノートと範囲で保存再生)[UI 互換性台帳](../ui-compatibility.json)
